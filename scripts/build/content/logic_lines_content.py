@@ -1,0 +1,141 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+12 条底层逻辑主线四段精讲库 (A1~A4, G1~G6, S1, P1)
+基于所辖考点向上抽象归纳，涵盖地基、跃迁、方法论与中考矩阵
+严格遵循 What(本质)/Why(原理)/How(定义方法)/Model(变式迁移) 认知阶梯
+"""
+
+LOGIC_LINES_CONTENT = {
+    "A1": {
+        "origin_foundation_zh": "数系的三次螺旋扩充是人类数学文明演进的第一推动力。从自然数到引入负数解决反向度量亏损（有理数），再到毕达哥拉斯发现不可通约量引入无理数（实数），每一次扩充都以保持基本代数运算律的相容性为最高准则。数轴作为几何与代数的大一统载体，将抽象的离散符号转化为一维空间的连续度量，构成了代数大厦的永恒基石。",
+        "origin_foundation_en": "Three spiral expansions of number systems drove mathematical civilization: extending naturals with negative numbers for opposing directions (rationals), and completing with irrationals (reals). The number axis serves as the unifying medium mapping discrete algebra onto spatial continuous metrics.",
+        "spiral_leaps_zh": "7上聚焦有理数符号化与运算法则（建立正负与绝对值几何直观） $\\to$ 7下进阶整式与数轴动点（数形初步融合） $\\to$ 8上跃迁至无理数与实数运算（平方根、立方根与实数完备性连续统） $\\to$ 9下汇聚于中考数轴压轴分类讨论与绝对值极值距离模型。",
+        "spiral_leaps_en": "Grade 7A: Signed rationals and directional operations; Grade 7B: Number line kinematics; Grade 8A: Irrational completeness and radical arithmetic; Grade 9B: Synthesis of absolute value distance metrics and multi-point kinematics.",
+        "methodology_zh": "核心思想方法：(1) '数形结合'思想：把绝对值、相反数、大小比较转化为数轴上的几何距离、对称点与相对位置；(2) '分类讨论'思想：依据正负号（$a>0, a=0, a<0$）或绝对值零点分段化简，杜绝漏解；(3) '转化化归'思想：利用夹逼法将无理数化归为相邻完全平方数估算。",
+        "methodology_en": "Core methodologies: 1) Graph-algebra unification: interpreting $|x-a|$ as geometric distance on the number axis; 2) Exhaustive case analysis: partitioning by zero-points; 3) Monotonic squeezing to bound irrationals.",
+        "exam_matrix_zh": "中考命题矩阵：(1) 基础客观题：实数分类、相反数、科学记数法与无理数估算；(2) 压轴综合探究：数轴动点追及与往返相遇模型、含绝对值的多线段代数和最值问题（如 $|x-a|+|x-b|$ 折线极值）、新定义数轴点距运算。",
+        "exam_matrix_en": "Examination matrix: 1) Foundational items: scientific notation, opposites, absolute values; 2) Advanced capstone: moving points kinematics, multi-segment absolute distance minimization, and operational rules under novel axioms."
+    },
+
+    "A2": {
+        "origin_foundation_zh": "字母表示数是人类思维从具体算术飞跃到抽象代数的里程碑。多项式的本质是一维或高维连续变量在有限幂次张量上的形式化多维展开。乘法公式将几何面积割补的视觉守恒定格为代数恒等变形，因式分解则为其逆向解构过程。它是所有初等代数方程求解与分式化简的母机系统。",
+        "origin_foundation_en": "Representing numbers with letters marked the leap from concrete arithmetic to abstract algebra. Polynomials formalize multi-dimensional variable operations, where multiplication formulas record geometric area conservation and factoring executes its exact structural reverse.",
+        "spiral_leaps_zh": "7上从列代数式与合并同类项起步 $\\to$ 7下掌握幂的运算律、整式乘除、乘法公式与因式分解三板斧 $\\to$ 8上拓展到二次根式化简 $\\to$ 8下深化为分式通分与分式恒等变形 $\\to$ 9年级全面贯穿于二次函数解析式配方与方程降次。",
+        "spiral_leaps_en": "Grade 7A: Algebraic terms and like terms; Grade 7B: Power identities, polynomial multiplication, and factoring; Grade 8A: Radical simplifications; Grade 8B: Rational fraction reduction; Grade 9: Completing squares and high-degree polynomial factorizations.",
+        "methodology_zh": "核心思想方法：(1) '整体思想'：不纠结于单个变量的值，将多项式复合结构（如 $x^2+2x$）视作单一整体代换；(2) '配方法'：利用完全平方公式为二次项补齐常数面积，实现化异为同与极值证明；(3) '构造法'：构造平方差或裂项相消，实现复杂多项式极速消解。",
+        "methodology_en": "Core methodologies: 1) Holistic substitution: treating recurring compound sub-expressions as atomic units; 2) Completing the square: completing geometric corners to prove non-negativity and extrema; 3) Telescoping and algebraic factor pairing.",
+        "exam_matrix_zh": "中考命题矩阵：(1) 基础计算：整式混合运算、分式化简求值（自选合法值代入）；(2) 因式分解彻底性考查；(3) 压轴代数代换：利用已知代数恒等式求高次对称多项式的值，或利用配方证明非负性确定几何动点极值。",
+        "exam_matrix_en": "Examination matrix: 1) Simplification and evaluation of compound rational fractions; 2) Irreducible factoring under integer constraints; 3) Symmetrical algebraic evaluations and non-negative quadratic form optimization."
+    },
+
+    "A3": {
+        "origin_foundation_zh": "等式与不等式刻画了客观物质世界中数量约束的两种根本形态：平衡状态与界限容差。方程的本质是未知数与已知数的平等参与及同解消元；不等式的本质是半平面序关系的单调传递。消元降次思想将复杂的多元高次非线性纠缠，逐级剥离为直观的单变量线性方程。",
+        "origin_foundation_en": "Equivalence and inequality model the two fundamental forms of physical constraints: static balance and dynamic tolerances. Systems solve constraints through algebraic elimination and degree reduction, transforming non-linear entanglements into linear resolutions.",
+        "spiral_leaps_zh": "7上奠基一元一次方程天平公理 $\\to$ 7下攻克二元一次方程组（代入/加减消元）与一元一次不等式组 $\\to$ 8下跃迁至一元二次方程（配方法、求根公式、因式分解与韦达定理）及分式方程增根检验 $\\to$ 9年级中考与二次函数图象交点闭环融合。",
+        "spiral_leaps_en": "Grade 7A: Linear equations via balance principles; Grade 7B: 2x2 linear systems and linear inequality sets; Grade 8B: Quadratic equations, Vieta's formulas, and fractional extraneous root checks; Grade 9: Parabolic roots and synthetic algebra-geometry modeling.",
+        "methodology_zh": "核心思想方法：(1) '消元化归'：加减消元、代入消元把多元降为一元；(2) '降次转化'：开平方法、因式分解把二次降为一次；(3) '等价同解性控制'：去分母检验增根，解不等式除以负数改变符号，守死充要边界；(4) '韦达整体代换'：利用两根之和与两根之积求非对称式。",
+        "methodology_en": "Core methodologies: 1) Dimensional reduction via substitution and linear combinations; 2) Degree reduction via factoring and square roots; 3) Equivalence tracking to avoid extraneous roots and invalid inequality reversals; 4) Symmetric Vieta algebra.",
+        "exam_matrix_zh": "中考命题矩阵：(1) 方程组与不等式组规范求解及整数解讨论；(2) 分式方程含参增根与无解分类判定；(3) 一元二次方程判别式与韦达定理综合压轴（参数存在性、动点坐标联立、根的对称代数式求值）；(4) 实际应用题（方案调配与经济利润最优化）。",
+        "exam_matrix_en": "Examination matrix: 1) System solving with discrete integer constraints; 2) Parametric fractional equations with extraneous roots; 3) Discriminant $\\Delta$ and Vieta's relations coupled with quadratic curve intersections; 4) Multi-constraint business optimization."
+    },
+
+    "A4": {
+        "origin_foundation_zh": "静态几何与代数只能描述静止的世界，变量与函数的诞生使数学具备了描述动态运动与变化规律的能力。通过笛卡尔坐标系，函数把自变量与因变量之间的依赖对应，转化为平面上的连续几何曲线。一次函数的匀速平移、反比例函数的双曲渐近、二次函数的抛物曲度，构成了初中函数的全景图景。",
+        "origin_foundation_en": "Static mathematics cannot capture continuous physical dynamics. Functions formalize deterministic input-output mappings, and Cartesian geometry visualizes them as curves. Linear, inverse, and quadratic curves embody uniform, reciprocal, and accelerated relationships.",
+        "spiral_leaps_zh": "7上建立坐标系点坐标与象限直观 $\\to$ 8上建立函数概念与一次函数图象（斜率、截距与几何平移） $\\to$ 8下突破反比例函数（渐近线、$k$ 的面积不变性） $\\to$ 9上攻坚中考霸主二次函数（三表达式、顶点最值、抛物线几何割补） $\\to$ 9下函数与几何动点、方程不等式大一统。",
+        "spiral_leaps_en": "Grade 7A: Coordinate plane and quadrant signs; Grade 8A: Linear function slopes and translations; Grade 8B: Inverse hyperbolic functions and invariant area $|k|$; Grade 9A: Quadratic vertices, intercepts, and plumb line area optimization; Grade 9B: Unified function-geometry synthesis.",
+        "methodology_zh": "核心思想方法：(1) '数形结合'最高境界：用几何图象的高低解释代数不等式大小，用方程的根解释图象交点；(2) '待定系数法'：设式代点解方程，参数标定；(3) '铅垂高水平宽割补法'：解决割线三角形面积最值的万能微元利器；(4) '平移旋转几何变换'在解析式中的代数代换法则（左加右减，上加下减）。",
+        "methodology_en": "Core methodologies: 1) Panoramic graph-algebra unification: interpreting algebraic inequalities as curve heights; 2) Undetermined coefficients; 3) Vertical plumb height times horizontal width for parabolic triangle area extrema; 4) Rigid algebraic transformations.",
+        "exam_matrix_zh": "中考压轴霸主矩阵：(1) 二次函数与直角坐标系综合探究题（中考压轴题第 23~25 题必考）；(2) 抛物线背景下动点构成特殊四边形（平行四边形、菱形、矩形、正方形）；(3) 动点构成直角三角形或等腰三角形存在性问题；(4) 割线三角形面积最大值及线段比极值。",
+        "exam_matrix_en": "Examination matrix: The ultimate capstone of the exam: 1) Parabolic coordinate synthesis; 2) Existence of moving points forming special quadrilaterals; 3) Right/isosceles triangle existence along curves; 4) Area maximization and line ratio optimization."
+    },
+
+    "G1": {
+        "origin_foundation_zh": "欧几里得《几何原本》从五条不证自明的公设与公理出发，构建了人类历史上第一座严密的公理化演绎推理丰碑。点线面角是现实空间的几何微元抽象，相交与垂直奠定了欧氏平面的正交度量，平行公理确立了平直空间的几何秩序。它是培养学生由直观猜想到严密逻辑公理化证明的启蒙地基。",
+        "origin_foundation_en": "Euclid's Elements deduced spatial order from foundational axioms. Points, lines, and angles form geometric primitives; perpendicularity anchors orthogonal measurement; the parallel postulate defines Euclidean flat space. G1 initiates rigorous deductive proof from intuitive visual observation.",
+        "spiral_leaps_zh": "7上由生活实物抽象点线面角、线段两点最短与角度四则运算 $\\to$ 7下系统建立相交线、垂线段最短、平行线三判定三性质与命题公理化结构 $\\to$ 8、9年级作为所有三角形证明、四边形判定与圆切线证明的绝对底层逻辑支撑。",
+        "spiral_leaps_en": "Grade 7A: Dimensional abstractions, shortest segment axiom, and angle arithmetic; Grade 7B: Orthogonal perpendicular distance, parallel lines determination/properties, and formal deductive theorem structures; Grades 8-9: Pervasive axiomatic foundation for all triangles, quadrilaterals, and circles.",
+        "methodology_zh": "核心思想方法：(1) '转化化归'：遇折线拐角必过顶点作平行辅助线（铅笔头与M型模型）；(2) '逆向反证法与归纳演绎'：严格区分判定（由角推线）与性质（由线推角），构建互逆命题闭环；(3) '极值思想'：垂线段最短是空间点线距离的极值来源。",
+        "methodology_en": "Core methodologies: 1) Auxiliary parallel lines at angular bends; 2) Bidirectional deductive logic: distinguishing conditions (proving parallel) from properties (deriving equal angles); 3) Extremum principle: perpendicular segment minimizes distance.",
+        "exam_matrix_zh": "中考命题矩阵：(1) 基础客观题：余角补角对顶角计算、钟表夹角与平行线性质角推导；(2) 动态平行线拐角压轴探究：动射线扫掠过程中多拐点角度代数和恒等关系分类讨论；(3) 纸带折叠中的角平分线与等腰三角形转换链。",
+        "exam_matrix_en": "Examination matrix: 1) Angle arithmetic with complements, supplements, and clock hands; 2) Dynamic ray sweeps with multi-bend angle sums and piecewise classification; 3) Parallel strip folding converting angles to isosceles triangles."
+    },
+
+    "G2": {
+        "origin_foundation_zh": "多边形可以被对角线完全剖分为有限个三角形，因而三角形是欧几里得平面几何的最小不可分完备单元。三边关系由两点间距离最短直接决定，内角和 180° 奠定了平直空间的欧氏拓扑，全等保距保角实现了刚体形状的完全锁定，相似缩放实现了形状不变下的尺度跨维跃迁。",
+        "origin_foundation_en": "Any polygon decomposes into triangles, making the triangle the atomic irreducible polygon. The triangle inequality derives from shortest paths, the 180° interior sum establishes flat topology, congruence locks rigid isometries, and similarity enables scale transformations.",
+        "spiral_leaps_zh": "7下掌握三角形内角和外角性质、三边关系与 SSS/SAS/ASA/AAS 全等判定 $\\to$ 8上精通等腰/等边三角形性质判定与三线合一 $\\to$ 8下跃迁至 AA/SAS 相似三角形判定性质与比例线段 $\\to$ 9年级融合于手拉手旋转与四点共圆动点压轴证明。",
+        "spiral_leaps_en": "Grade 7B: Triangle angles, inequalities, and congruence criteria; Grade 8A: Isosceles/equilateral properties and three-lines-in-one; Grade 8B: Similar triangle criteria, area ratio $k^2$, and proportional line segments; Grade 9: Hand-in-hand rotations and synthetic geometric proofs.",
+        "methodology_zh": "核心思想方法：(1) '倍长中线与截长补短'：解决线段和差倍分证明的经典辅助线大招；(2) '旋转全等构造'：共顶点等线段引出手拉手全等；(3) '相似基本构型拆解'：在复杂图形中敏锐识别 A 字型、8 字型、母子型和一线三等角模型；(4) '对应对齐法'：全等与相似书写必须严格顶点字母对齐。",
+        "methodology_en": "Core methodologies: 1) Median doubling and segment truncation/extension; 2) Rotational congruence around shared vertices; 3) Dissecting canonical similarity archetypes (A-type, 8-type, mother-child, three-equal-angles); 4) Strict vertex-ordered mapping.",
+        "exam_matrix_zh": "中考命题矩阵：(1) 全等与相似三角形常规证明（解答题必考第一步）；(2) 几何探究压轴大题：图形旋转或翻折变换下全等三角形向相似三角形的变式跃迁（从 $k=1$ 全等到任意相似比 $k$ 的线段比与旋转角不变性）；(3) 一线三等角动点函数最值模型。",
+        "exam_matrix_en": "Examination matrix: 1) Standard congruence/similarity proofs; 2) Geometric capstone transformation problems: transitioning from rigid congruence ($k=1$) to scaled similarity ($k \\neq 1$) under rotations; 3) Three-equal-angles models driving moving-point coordinate functions."
+    },
+
+    "G3": {
+        "origin_foundation_zh": "三角形具有绝对的几何刚性，而四边形具有灵活的铰接形变自由度。在两组对边平行的约束下诞生了平行四边形；加入直角约束，刚性正交化升级为矩形；加入邻边相等约束，对角线垂直化升级为菱形；二者约束同时拉满，诞生了对称度极高、完美的正方形。四边形展示了约束逐步收紧下对称性的台阶式递进演化。",
+        "origin_foundation_en": "While triangles are rigid, quadrilaterals flex under shear. Adding parallel opposite sides produces parallelograms; orthogonal right angles upgrade to rectangles; equal adjacent edges yield rhombi; combining both yields the maximally symmetric square. G3 showcases symmetry enhancement via progressive constraints.",
+        "spiral_leaps_zh": "8下全面建立平行四边形性质与五大判定 $\\to$ 梯次进阶特殊四边形（矩形对角线相等、菱形对角线垂直、正方形完美融合） $\\to$ 8下突破瓦里尼翁中点四边形定理 $\\to$ 9年级中考与二次函数坐标系压轴交织，构成动点四边形存在性终极探究。",
+        "spiral_leaps_en": "Grade 8B: Parallelogram properties and criteria $\\to$ Sequential upgrade to rectangles, rhombi, and squares $\\to$ Midpoint Varignon quadrilaterals; Grade 9: Moving-point coordinate existence proofs for special quadrilaterals coupled with parabolas.",
+        "methodology_zh": "核心思想方法：(1) '化归思想'：通过对角线将四边形剖分为两个或四个三角形，继承三角形全部定理；(2) '中心对称与轴对称交融'：善用对角线互相平分（中心点）与中点坐标公式；(3) 'K字型辅助线'：利用矩形正方形的正交性在坐标系中构造全等直角三角形；(4) '逆向判定链'：从一般平行四边形向特殊形态层层递进锁定。",
+        "methodology_en": "Core methodologies: 1) Diagonal dissection reducing quadrilaterals to triangles; 2) Invariant midpoint coordinate algebra: $x_A + x_C = x_B + x_D$; 3) K-shape right triangles exploiting $90^\\circ$ orthogonality; 4) Progressive hierarchy tree.",
+        "exam_matrix_zh": "中考命题矩阵：(1) 特殊四边形性质与判定的综合论证；(2) 正方形半角旋转模型与十字架模型综合；(3) 动点存在性压轴大题：在直角坐标系中，抛物线上是否存在点 $P$ 使得四点构成平行四边形/菱形/矩形/正方形（分类讨论对角线为固定线段还是非固定线段，中点坐标公式秒杀）。",
+        "exam_matrix_en": "Examination matrix: 1) Comprehensive quadrilateral classification proofs; 2) Square half-angle rotations and perpendicular cross models; 3) Coordinate plane existence of special quadrilaterals along curves, resolved via diagonal midpoint algebraic systems."
+    },
+
+    "G4": {
+        "origin_foundation_zh": "空间两点间的距离是一维几何度量的根基，而平面直角坐标系中的欧氏距离正是勾股定理在笛卡尔平面的全息投影。勾股定理连接了线性的一维长度与二次的二维面积，圆则是到定点距离为定长的终极等距闭合轨迹。垂径定理在圆内筑起了勾股直角三角形，切线在圆周锁定了正交几何边界。",
+        "origin_foundation_en": "Euclidean metric distance is rooted in the Pythagorean theorem, connecting 1D linear distances with 2D quadratic areas. A circle is the continuous locus of constant radial distance, where the perpendicular chord theorem builds internal Pythagorean triangles and tangents lock orthogonal boundaries.",
+        "spiral_leaps_zh": "8上攻克勾股定理及其逆定理、勾股数与网格距离 $\\to$ 8下应用勾股方程解决平面折叠动点 $\\to$ 9上全面建立圆的几何体系（圆周角定理、垂径定理、切线判定性质、切线长定理、内切圆外接圆） $\\to$ 9下中考折叠圆弧与隐形圆轨迹压轴统摄。",
+        "spiral_leaps_en": "Grade 8A: Pythagorean theorem and converse; Grade 8B: Quadratic Pythagorean folding equations; Grade 9A: Circle geometry (inscribed angles, chord bisectors, tangents, and incircles/circumcircles); Grade 9B: Capstone hidden circles and circle-arc trajectories.",
+        "methodology_zh": "核心思想方法：(1) '方程建模思想'：在直角三角形中设未知数，利用勾股定理列二次方程求解几何未知量；(2) '圆中核心直角三角形'：圆心、半弦长、弦心距三者构成的 $r^2 = d^2 + (a/2)^2$ 恒等解题武器；(3) '辅助线口诀'：遇直径造直角，有交点连半径证垂直，无交点作垂直证半径；(4) '圆周角导角大循环'。",
+        "methodology_en": "Core methodologies: 1) Algebraic modeling via Pythagorean equations; 2) Canonical circular right triangle: $r^2 = d^2 + (a/2)^2$; 3) Auxiliary reflexes: diameter creates $90^\\circ$, connect radius for tangents; 4) Inscribed angle cyclic angle tracing.",
+        "exam_matrix_zh": "中考命题矩阵：(1) 勾股定理与折叠翻折计算大题；(2) 圆的切线证明与线段长计算（中考第 19~21 题解答必考大题）；(3) 弧长扇形面积与阴影割补；(4) 几何压轴大题中的'隐形圆'动点轨迹模型（定边对定角、定点定长半径、直角对直径动点最值）。",
+        "exam_matrix_en": "Examination matrix: 1) Pythagorean folding geometry; 2) Tangent determination and circle metric calculations (standard exam proof); 3) Sector and shaded area dissection; 4) Advanced 'Hidden Circle' moving point loci (fixed chord subtending fixed angle)."
+    },
+
+    "G5": {
+        "origin_foundation_zh": "传统的欧几里得几何以静态的几何图形为考察对象，而近代几何则以'运动与变换'为灵魂。平移（保向保距滑动）、轴对称（镜像翻折反演）、旋转（中心定角转动）是平面的三大刚体等距变换，它们保持线段长度、内角大小和图形面积绝对不变。图形的综合变换让静止的几何骨架在动态演化中迸发出强大的数学不变量美感。",
+        "origin_foundation_en": "Modern geometry analyzes motion and transformations. Translation (directional glide), reflection (mirror reversal), and rotation (central pivot) constitute the three isometric rigid transformations preserving distance, angles, and area. Dynamic motion reveals invariant underlying structures.",
+        "spiral_leaps_zh": "7上学习轴对称图形与角平分线垂直平分线 $\\to$ 7下掌握平移变换 $\\to$ 8下深化旋转变换与中心对称 $\\to$ 9年级中考综合突破图形折叠翻折、旋转手拉手模型、图形剪拼展开与三视图正投影空间重构。",
+        "spiral_leaps_en": "Grade 7A: Axial reflections and bisectors; Grade 7B: Rigid translations; Grade 8B: Rotational mechanics and central point symmetry; Grade 9: Synthesis across multi-stage origami folding, hand-in-hand rotations, net unfoldings, and 3D orthographic projections.",
+        "methodology_zh": "核心思想方法：(1) '动中求静、化静为动'：在动点运动和图形变换的万千表象中，牢牢锁定旋转角不变、对称线段不变、旋转半径不变的核心骨架；(2) '化折为直'：利用轴对称镜像将折线路径转化为两点之间线段最短；(3) '构造旋转全等'：共顶点等线段引出刚体旋转；(4) '空间二维化'：将三维圆柱圆锥侧面剪开铺平为平面解最短路径。",
+        "methodology_en": "Core methodologies: 1) Finding invariance within dynamic motion: identifying constant angles and lengths; 2) Straightening bent paths via reflections (Heron's principle); 3) Hand-in-hand rotational congruence; 4) 3D-to-2D spatial flattening for shortest geodesic paths.",
+        "exam_matrix_zh": "中考压轴风向标矩阵：(1) 几何操作与变换探究压轴大题（中考第 23~24 题常客）：图形绕定点旋转中的线段位置关系（垂直、平行）与数量关系证明；(2) 最短路径与最值探究（将军饮马、费马点、造桥选址）；(3) 动点折叠与勾股方程综合；(4) 空间三视图与立体几何还原。",
+        "exam_matrix_en": "Examination matrix: 1) Transformational capstone investigation problems: proving angle/length invariants under continuous rotation; 2) Path minimization (Heron, Fermat points); 3) Dynamic origami folding with quadratic equations; 4) 3D orthographic view reconstructions."
+    },
+
+    "G6": {
+        "origin_foundation_zh": "古代天文学与航海大发现推动了远程不接触测量的爆发式需求。面对无法跨越的悬崖绝壁、波涛汹涌的江河大海，人类无法直接用直尺拉出线段。锐角三角函数巧妙地将不可测的直角三角形空间边长，转化为可以在近端用测角仪精确读取的角度比值，架起了从'角度'直通'边长度量'的精密代数桥梁。",
+        "origin_foundation_en": "Astronomy and oceanic navigation required remote surveying across impassable oceans and peaks. Trigonometric ratios convert remote inaccessible spatial distances into accessible local angular measurements, bridging angular rotation and metric distance.",
+        "spiral_leaps_zh": "8上学习直角三角形性质与勾股定理边长度量 $\\to$ 8下掌握相似三角形对应边成比例 $\\to$ 9下从直角相似中提炼出正弦、余弦、正切三大无量纲三角比 $\\to$ 9下熟记特殊角数值并掌握互余转换 $\\to$ 9下终极闭环'解直角三角形'，解决真实世界测高测距工程问题。",
+        "spiral_leaps_en": "Grade 8A: Pythagorean right triangle properties; Grade 8B: Similar proportional ratios; Grade 9B: Formalization of dimensionless sine, cosine, and tangent ratios from right triangle similarities; Grade 9B: Capstone right triangle solving applied to civil engineering and surveying.",
+        "methodology_zh": "核心思想方法：(1) '斜三角化直三角'：遇到任意一般三角形，过顶点作高线（垂线）将其精妙分割为两个联立的直角三角形；(2) '设公共高列方程'：在双仰角/双俯角观测模型中，设未知高度 $h$，利用两底角正切表示底边差值建立一元一次方程求解；(3) '坡度比与直角正交分解'：将斜坡斜线段分解为垂直高与水平宽。",
+        "methodology_en": "Core methodologies: 1) Dividing general triangles into two right triangles via altitudes; 2) Shared altitude modeling: expressing horizontal base deltas in terms of $h/\\tan \\alpha$ and solving linear equations; 3) Orthogonal decomposition of slope gradients into rise and run.",
+        "exam_matrix_zh": "中考命题矩阵：(1) 特殊角三角函数与实数代数混合运算（必考第一题）；(2) 解直角三角形实际应用大题（中考第 18~20 题必考）：航海避礁、无人机航拍、建筑物测高、防汛斜坡加固；(3) 结合一次函数斜率（$k = \\tan \\alpha$）与二次函数压轴动点求角正切值。",
+        "exam_matrix_en": "Examination matrix: 1) Special trigonometric radical arithmetic evaluations; 2) Practical surveying and navigation word problems (compulsory exam multi-step problem); 3) Coupling slopes ($k = \\tan \\alpha$) and moving point tangent angles on parabolas."
+    },
+
+    "S1": {
+        "origin_foundation_zh": "面对复杂系统中的海量随机个体，单靠确定性数学公式无法把握其宏观规律。现代数据科学的基石在于'用样本特征科学推断总体特征'。统计学通过科学抽样、图表整理、数据清洗，并提炼出'平均水平（集中趋势）'与'波动幅度（离散程度）'两大核心数字特征，使人类具备了在庞大纷繁的数据迷雾中洞悉本质、做出理性决策的科学素养。",
+        "origin_foundation_en": "Massive individual randomness defies deterministic equations. Data science infers population traits from sample statistics. Summarizing distributions via central tendencies and dispersion metrics empowers rational decision-making under uncertainty.",
+        "spiral_leaps_zh": "7上学习普查、抽样调查与条形/折线/扇形三大统计图解读 $\\to$ 8下建立算术平均数、加权平均数、中位数与众数的集中趋势指标群 $\\to$ 8下进阶极差、方差与标准差的离散度量 $\\to$ 9年级中考面对双图联动与复式图表进行多维度综合统计推断与方案抉择。",
+        "spiral_leaps_en": "Grade 7A: Sampling vs census and trio chart interpretations; Grade 8B: Central tendencies (mean, weighted mean, median, mode); Grade 8B: Dispersion metrics (range, variance, standard deviation); Grade 9: Dual-chart linkage and multidimensional data-driven decision optimization.",
+        "methodology_zh": "核心思想方法：(1) '样本估计总体'思想：用具有代表性的随机样本特征（样本均值、样本方差、样本比例）等比例推断总体指标；(2) '多维立体决策'：平均数/中位数看实力水准，方差看发挥稳定性，两维联动帕累托选优；(3) '双图信息对齐'：通过条形图频数与扇形图百分比互除，快速破解样本容量。",
+        "methodology_en": "Core methodologies: 1) Statistical inference: projecting sample ratios and variance onto macroscopic populations; 2) Pareto optimization: balancing average strength against volatility risk; 3) Dual-chart linkage: equating bar chart frequencies with pie chart percentages to extract sample sizes.",
+        "exam_matrix_zh": "中考命题矩阵：(1) 统计概念客观辨析（普查/抽样、样本容量纯数字、平均数/中位数/众数计算）；(2) '条形图 + 扇形图'或'频数分布直方图'综合解答大题（中考第 17~19 题必考）：补全统计图、计算加权成绩、估算总体中特定人群总量；(3) 数据驱动的对比决策评述题（按评分细则规范答题）。",
+        "exam_matrix_en": "Examination matrix: 1) Foundational terminology checks (sample size without units); 2) Compulsory linked-chart problem: completing diagrams, calculating weighted averages, and projecting sample rates to macro populations; 3) Multi-factor verbal decision recommendations."
+    },
+
+    "P1": {
+        "origin_foundation_zh": "从赌博游戏中的投掷骰子，到气象预报中的降水概率、保险精算的风险测算。世界在微观上充满了不确定性。概率论的伟大之处在于：它并没有消灭随机性，而是发现了在大量重复试验的大样本极限下，偶然性背后隐藏着惊人严格、不可动摇的必然性规律（大数定律）。它建立了不确定世界中理性的数学度量体系。",
+        "origin_foundation_en": "Games of chance, weather forecasts, and actuarial insurance evaluate aleatory risk. The Law of Large Numbers reveals that underlying massive repetitions of chaotic micro-events lies rigorous macroscopic determinism, establishing mathematical metrics for an uncertain universe.",
+        "spiral_leaps_zh": "7下识别必然事件、不可能事件与随机事件的基本分类 $\\to$ 8下掌握单步古典概型列举法公式 $P(A) = m/n$ $\\to$ 9上突破两步试验列表法与三步试验树状图法模型（精确区分放回与不放回抽样） $\\to$ 9下理解频率与概率的极限逼近关系，运用标志重捕法解决大数估计实际问题。",
+        "spiral_leaps_en": "Grade 7B: Event classifications (certain, impossible, random); Grade 8B: Single-stage classical probability $P=m/n$; Grade 9A: Two-stage grid tables and multi-stage tree diagrams, distinguishing replacement rules; Grade 9B: Frequency convergence under the Law of Large Numbers and mark-recapture applications.",
+        "methodology_zh": "核心思想方法：(1) '模型化穷举'：用二维矩阵列表或多叉树状图对复杂多步随机过程进行无遗漏、无重复的全样本空间有序展开；(2) '频率逼近概率'：在没有理论古典对称性的场景下，用计算机模拟或大量实验的稳定频率估计内在理论概率；(3) '对立事件逆向思维'：'至少一次'概率转化为 $1 - P(\\text{一次都不发生})$。",
+        "methodology_en": "Core methodologies: 1) Exhaustive combinatorial modeling via contingency grids and branching probability trees; 2) Empirical frequency stabilization estimating theoretical probabilities under large trial counts; 3) Complementary probability strategy for 'at least one' outcomes.",
+        "exam_matrix_zh": "中考命题矩阵：(1) 客观题：随机事件辨识、简单古典概型口算；(2) 概率解答必考大题（中考第 19~21 题）：画规范树状图或绘制二维表格，求放回或不放回两次抽样的概率；(3) 结合游戏规则判定公平性（期望收益相等），或结合频率分布估计总体中的次品率或生物种群总数（标志重捕法）。",
+        "exam_matrix_en": "Examination matrix: 1) Conceptual identification of stochastic events; 2) Compulsory tree diagram/grid calculation for two-stage sampling (with or without replacement); 3) Game fairness analysis (equal expected value) and mark-recapture population sizing."
+    }
+}

@@ -1,0 +1,38 @@
+{
+  "name": "math-junior-frontend",
+  "private": true,
+  "version": "2.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@sqlite.org/sqlite-wasm": "3.46.1-build1",
+    "jsxgraph": "^1.13.3",
+    "katex": "0.16.11",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "react-router-dom": "^7.18.4",
+    "zod": "3.23.8",
+    "zustand": "4.5.5"
+  },
+  "devDependencies": {
+    "@types/katex": "0.16.7",
+    "@types/node": "20.16.5",
+    "@types/react": "18.3.5",
+    "@types/react-dom": "18.3.0",
+    "@vitejs/plugin-legacy": "5.4.2",
+    "@vitejs/plugin-react": "4.3.1",
+    "fast-check": "3.22.0",
+    "terser": "5.31.6",
+    "tsx": "4.19.1",
+    "typescript": "5.5.4",
+    "vite": "5.4.6",
+    "vite-plugin-pwa": "0.20.5",
+    "vitest": "2.1.1",
+    "workbox-window": "7.1.0"
+  }
+}

@@ -1,0 +1,60 @@
+:root {
+  /* iOS 27 Dynamic System Colors */
+  --ios-blue: #0071e3;
+  --ios-blue-glow: rgba(0, 113, 227, 0.28);
+  --ios-indigo: #5856d6;
+  --ios-purple: #af52de;
+  --ios-teal: #30b0c7;
+  --ios-green: #34c759;
+  --ios-orange: #ff9500;
+  --ios-red: #ff3b30;
+
+  /* Text & Surfaces */
+  --text-primary: #1d1d1f;
+  --text-secondary: #86868b;
+  --text-tertiary: #a1a1a6;
+
+  /* Liquid Glass Surfaces */
+  --glass-bg: rgba(255, 255, 255, 0.68);
+  --glass-bg-elevated: rgba(255, 255, 255, 0.86);
+  --glass-border: rgba(255, 255, 255, 0.8);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.08);
+  --glass-shadow-deep: 0 20px 60px -10px rgba(0, 20, 60, 0.12);
+
+  /* Semantic UI Surfaces */
+  --bg-canvas: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f1f5f9;
+  --bg-input: #f8fafc;
+  --border-subtle: #e2e8f0;
+
+  /* Squircle Radius */
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 26px;
+  --radius-pill: 9999px;
+
+  /* Spring Physics */
+  --spring-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+  --spring-bouncy: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text-primary: #f5f5f7;
+    --text-secondary: #a1a1a6;
+    --text-tertiary: #6e6e73;
+
+    --glass-bg: rgba(30, 30, 35, 0.72);
+    --glass-bg-elevated: rgba(45, 45, 52, 0.88);
+    --glass-border: rgba(255, 255, 255, 0.12);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.36);
+    --glass-shadow-deep: 0 20px 60px -10px rgba(0, 0, 0, 0.5);
+
+    --bg-canvas: #0f172a;
+    --bg-card: #1e293b;
+    --bg-card-hover: #334155;
+    --bg-input: rgba(30, 41, 59, 0.8);
+    --border-subtle: #334155;
+  }
+}

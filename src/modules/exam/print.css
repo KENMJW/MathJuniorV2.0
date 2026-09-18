@@ -1,0 +1,84 @@
+/**
+ * 模块四·A4 双栏印刷与导出排版样式 (任务 17.4, PRD §5.4, Property 20)
+ *
+ * 核心规范：
+ * 1. 标准 A4 双栏印刷版心 (column-count: 2, column-gap: 8mm)
+ * 2. 强制定界防截断 (page-break-inside: avoid / break-inside: avoid)
+ * 3. 密封线与考生信息栏排版
+ * 4. 打印时隐藏所有操作按钮与无关 UI (.no-print)
+ */
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm 10mm 15mm 12mm;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    font-size: 10pt;
+    line-height: 1.5;
+  }
+
+  /* 隐藏非打印操作控件 */
+  .no-print,
+  nav,
+  header,
+  footer,
+  button,
+  .print-action-bar {
+    display: none !important;
+  }
+
+  /* 打印容器完全铺满 */
+  .print-paper-container {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    background: transparent !important;
+  }
+
+  /* 双栏排版流 */
+  .print-columns-flow {
+    column-count: 2 !important;
+    column-gap: 8mm !important;
+    column-rule: 1px dashed var(--border-subtle) !important;
+    width: 100% !important;
+  }
+
+  /* 试题卡片严格防分页跨页截断 (核心不变量) */
+  .print-question-card {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    margin-bottom: 5mm !important;
+    padding-bottom: 2mm !important;
+  }
+
+  /* 试卷大题分块标题防截断 */
+  .print-section-header {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  /* 密封线垂直书写 */
+  .print-sealing-line {
+    border-right: 1px dashed var(--text-tertiary) !important;
+    padding-right: 4mm !important;
+    margin-right: 6mm !important;
+  }
+}
+
+/* 屏幕预览下的试卷仿真样式 */
+.screen-paper-preview {
+  background-color: var(--bg-card);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  font-family: -apple-system, BlinkMacSystemFont, 'Noto Serif SC', 'Songti SC', SimSun, serif;
+}

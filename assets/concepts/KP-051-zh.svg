@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" width="100%" height="100%">
+  <!-- Background Card -->
+  <rect width="400" height="300" rx="16" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" />
+
+  <!-- Card Header -->
+  <rect x="20" y="16" width="360" height="42" rx="10" fill="#f2f2f7" />
+  <text x="35" y="42" font-family="-apple-system, sans-serif" font-size="13" font-weight="700" fill="#0071e3">KP-051 · 三角形</text>
+  <text x="365" y="42" text-anchor="end" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#1d1d1f">全等三角形的判定</text>
+
+
+  <!-- Right Triangle / Congruence Model -->
+  <g transform="translate(90, 85)">
+    <!-- Triangle ABC: C is right angle at (40, 140) -->
+    <polygon points="40,140 200,140 40,30" fill="#0071e3" fill-opacity="0.12" stroke="#0071e3" stroke-width="2.5"/>
+    <!-- Right angle mark -->
+    <rect x="40" y="122" width="18" height="18" fill="none" stroke="#1d1d1f" stroke-width="1.5"/>
+    <!-- Vertex Labels -->
+    <text x="30" y="25" font-weight="bold" font-size="14" fill="#1d1d1f">A</text>
+    <text x="20" y="155" font-weight="bold" font-size="14" fill="#1d1d1f">C</text>
+    <text x="210" y="150" font-weight="bold" font-size="14" fill="#1d1d1f">B</text>
+    <!-- Side Labels -->
+    <text x="22" y="90" font-family="monospace" font-size="14" font-weight="bold" fill="#ff9500">b</text>
+    <text x="115" y="160" font-family="monospace" font-size="14" font-weight="bold" fill="#34c759">a</text>
+    <text x="125" y="75" font-family="monospace" font-size="14" font-weight="bold" fill="#0071e3">c</text>
+  </g>
+  <text x="200" y="268" text-anchor="middle" font-family="monospace" font-size="14" font-weight="700" fill="#1d1d1f">a² + b² = c² (∠C = 90°)</text>
+
+</svg>

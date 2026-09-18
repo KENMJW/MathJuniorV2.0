@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" width="100%" height="100%">
+  <!-- Background Card -->
+  <rect width="400" height="300" rx="16" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" />
+
+  <!-- Card Header -->
+  <rect x="20" y="16" width="360" height="42" rx="10" fill="#f2f2f7" />
+  <text x="35" y="42" font-family="-apple-system, sans-serif" font-size="13" font-weight="700" fill="#0071e3">KP-048 · 几何基础</text>
+  <text x="365" y="42" text-anchor="end" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#1d1d1f">平行线的判定与性质</text>
+
+
+  <!-- Parallel Lines with Transversal -->
+  <g transform="translate(60, 80)">
+    <!-- Line l1 -->
+    <line x1="20" y1="50" x2="260" y2="50" stroke="#0071e3" stroke-width="2.5"/>
+    <text x="268" y="54" font-size="12" font-weight="bold" fill="#0071e3">l₁</text>
+    <!-- Line l2 -->
+    <line x1="20" y1="120" x2="260" y2="120" stroke="#0071e3" stroke-width="2.5"/>
+    <text x="268" y="124" font-size="12" font-weight="bold" fill="#0071e3">l₂</text>
+    <!-- Transversal line t -->
+    <line x1="60" y1="15" x2="210" y2="155" stroke="#ff9500" stroke-width="2"/>
+    <!-- Angles -->
+    <circle cx="97" cy="50" r="14" fill="none" stroke="#af52de" stroke-width="2"/>
+    <text x="115" y="42" font-size="12" font-weight="bold" fill="#af52de">∠1</text>
+    <circle cx="172" cy="120" r="14" fill="none" stroke="#af52de" stroke-width="2"/>
+    <text x="190" y="112" font-size="12" font-weight="bold" fill="#af52de">∠2</text>
+  </g>
+  <text x="200" y="265" text-anchor="middle" font-size="13" font-weight="600" fill="#1d1d1f">l₁ // l₂ ⇒ 同位角/内错角相等</text>
+
+</svg>
