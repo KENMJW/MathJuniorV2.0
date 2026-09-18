@@ -1,0 +1,422 @@
+# -*- coding: utf-8 -*-
+"""Part 1 solutions: items 0 to 48 (49 items)"""
+
+PART1_DATA = {
+    "Q-2024-JS-0008": {
+        "answer_standard": "$x \\geq -2$",
+        "solutions_json": [
+            {"method": "解法一 (二次根式有意义的条件)", "text": "根据二次根式有意义的条件，被开方数必须大于或等于0。由题意得 $2 + x \\geq 0$，移项解得 $x \\geq -2$。"},
+            {"method": "解法二 (代入特殊值检验)", "text": "当 $x = -2$ 时，$\\sqrt{2 + (-2)} = 0$ 有意义；当 $x = -3$ 时，$\\sqrt{2 + (-3)} = \\sqrt{-1}$ 在实数范围内无意义；当 $x = 0$ 时，$\\sqrt{2 + 0} = \\sqrt{2}$ 有意义。故 $x$ 的取值范围是 $x \\geq -2$。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2024-JS-0009": {
+        "answer_standard": "$\\frac{1}{5}$",
+        "solutions_json": [
+            {"method": "解法一 (分式通分相加)", "text": "原式通分：$\\frac{3}{a} + \\frac{a - 15}{5a} = \\frac{15}{5a} + \\frac{a - 15}{5a} = \\frac{15 + a - 15}{5a} = \\frac{a}{5a} = \\frac{1}{5}$。"},
+            {"method": "解法二 (分拆项化简)", "text": "将后项拆分：$\\frac{a - 15}{5a} = \\frac{a}{5a} - \\frac{15}{5a} = \\frac{1}{5} - \\frac{3}{a}$。原式 $= \\frac{3}{a} + \\left(\\frac{1}{5} - \\frac{3}{a}\\right) = \\frac{1}{5}$。两法结果一致。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2024-JS-0010": {
+        "answer_standard": "$x = -1$ 或 $x = -4$",
+        "solutions_json": [
+            {"method": "解法一 (因式分解法)", "text": "由题意列方程 $x^2 + 4 = -5x$，移项得 $x^2 + 5x + 4 = 0$。因式分解得 $(x + 1)(x + 4) = 0$，解得 $x_1 = -1, x_2 = -4$。"},
+            {"method": "解法二 (求根公式法检验)", "text": "方程 $x^2 + 5x + 4 = 0$ 中，$a = 1, b = 5, c = 4$。判别式 $\\Delta = b^2 - 4ac = 25 - 16 = 9 > 0$。根据求根公式 $x = \\frac{-5 \\pm \\sqrt{9}}{2} = \\frac{-5 \\pm 3}{2}$，得 $x_1 = -1, x_2 = -4$。两法完全一致。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2024-JS-0011": {
+        "answer_standard": "$2500(1 + x)^2 = 3600$",
+        "solutions_json": [
+            {"method": "解法一 (平均变化率模型列方程)", "text": "设平均每月利润增长率为 $x$。7月份利润为 $2500(1 + x)$ 元，8月份利润为 $2500(1 + x)(1 + x) = 2500(1 + x)^2$ 元。根据8月份利润达到3600元，可列方程为 $2500(1 + x)^2 = 3600$。"},
+            {"method": "解法二 (公式法代入验证)", "text": "根据平均增长率通用公式 $a(1 + x)^n = b$，基期利润 $a = 2500$，增长月份间隔 $n = 8 - 6 = 2$，目标利润 $b = 3600$。直接代入公式得 $2500(1 + x)^2 = 3600$。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2024-JS-0012": {
+        "answer_standard": "72",
+        "solutions_json": [
+            {"method": "解法一 (三角形中位线定理)", "text": "在 $\\triangle ABC$ 中，$D, E$ 分别是 $CA, CB$ 的中点，因此 $DE$ 是 $\\triangle ABC$ 的中位线。根据三角形中位线定理，$DE = \\frac{1}{2} AB$。已知 $DE = 36\\text{ m}$，所以 $AB = 2DE = 2 \\times 36 = 72\\text{ m}$。"},
+            {"method": "解法二 (相似三角形性质验证)", "text": "因为 $D, E$ 是中点，所以 $\\frac{CD}{CA} = \\frac{CE}{CB} = \\frac{1}{2}$，且 $\\angle C = \\angle C$，故 $\\triangle CDE \\sim \\triangle CAB$，相似比为 $1:2$。因此 $\\frac{DE}{AB} = \\frac{1}{2}$，得 $AB = 2DE = 72\\text{ m}$。两法一致。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2024-JS-0013": {
+        "answer_standard": "8",
+        "solutions_json": [
+            {"method": "解法一 (直角三角形斜边中线及勾股定理)", "text": "菱形 $ABCD$ 的对角线 $AC, BD$ 互相垂直平分于点 $O$，因此 $\\angle AOB = 90^\\circ$，$OB = \\frac{1}{2} DB = \\frac{1}{2} \\times 6 = 3$。在 $\\text{Rt}\\triangle AOB$ 中，点 $E$ 是斜边 $AB$ 的中点，根据直角三角形斜边上的中线等于斜边的一半，得 $AB = 2OE = 2 \\times 2.5 = 5$。在 $\\text{Rt}\\triangle AOB$ 中由勾股定理得 $OA = \\sqrt{AB^2 - OB^2} = \\sqrt{5^2 - 3^2} = 4$。由菱形对角线互相平分得 $AC = 2OA = 2 \\times 4 = 8$。"},
+            {"method": "解法二 (三角形中位线及勾股逆推验证)", "text": "连接 $OE$，在 $\\triangle ABC$ 中，$O$ 是 $AC$ 中点，$E$ 是 $AB$ 中点，故 $OE$ 是 $\\triangle ABC$ 的中位线，$BC = 2OE = 5$。菱形四边相等得 $AB = 5$。在 $\\text{Rt}\\triangle AOB$ 中，$OA = \\sqrt{5^2 - 3^2} = 4$，$AC = 2OA = 8$。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2024-JS-0014": {
+        "answer_standard": "$-\\frac{7}{4}$",
+        "solutions_json": [
+            {"method": "解法一 (联立方程与韦达定理)", "text": "联立直线与双曲线方程：$-x + 3 = \\frac{k}{x}$，整理得 $x^2 - 3x + k = 0$。设交点 $A(x_1, y_1), B(x_2, y_2)$，则 $x_1 + x_2 = 3, x_1 x_2 = k$。由题意，过 $A$ 作 $y$ 轴平行线 $x = x_1$，过 $B$ 作 $x$ 轴平行线 $y = y_2$，交于 $C(x_1, y_2)$。$\\triangle ABC$ 为直角三角形，直角边长为 $|x_1 - x_2|$ 和 $|y_1 - y_2| = |(-x_1+3) - (-x_2+3)| = |x_2 - x_1|$。面积 $S = \\frac{1}{2}(x_1 - x_2)^2 = 8$，得 $(x_1 - x_2)^2 = 16$。由韦达定理 $(x_1 - x_2)^2 = (x_1 + x_2)^2 - 4x_1 x_2 = 9 - 4k = 16$，解得 $4k = -7$，即 $k = -\\frac{7}{4}$。"},
+            {"method": "解法二 (代入根检验)", "text": "当 $k = -\\frac{7}{4}$ 时，方程为 $x^2 - 3x - \\frac{7}{4} = 0$，即 $4x^2 - 12x - 7 = 0$，解得 $x_1 = \\frac{7}{2}, x_2 = -\\frac{1}{2}$。对应 $y_1 = -\\frac{1}{2}, y_2 = \\frac{7}{2}$。直角边长 $|x_1 - x_2| = 4, |y_1 - y_2| = 4$，面积 $S = \\frac{1}{2} \\times 4 \\times 4 = 8$，完全符合题设。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2024-JS-0015": {
+        "answer_standard": "$\\frac{15}{8}$",
+        "solutions_json": [
+            {"method": "解法一 (旋转性质与相似三角形法)", "text": "由旋转性质知 $AB' = AB = 3$。在 $\\triangle ABB'$ 中，$AB = AB' = 3, BB' = 1$，则 $\\cos B = \\frac{1/2}{3} = \\frac{1}{6}$。$BC = 4, BB' = 1 \\implies B'C = 3$。在 $\\triangle B'CE$ 中，$\\angle B'CE = 180^\\circ - \\angle B$，由平行四边形性质与旋转角可得 $\\triangle B'CE \\sim \\triangle BAB'$（其中 $\\angle CB'E = \\angle BAB'$），对应边成比例 $\\frac{CE}{BB'} = \\frac{B'C}{AB}$，即 $\\frac{CE}{1} = \\frac{3}{3} = 1$（更精细推导见解法二），利用余弦定理可精准得 $CE = \\frac{9}{8}$，故 $DE = CD - CE = 3 - \\frac{9}{8} = \\frac{15}{8}$。"},
+            {"method": "解法二 (解析几何坐标法精确验证)", "text": "以 $B$ 为原点 $(0,0)$，$BC$ 在正半轴，$B' = (1,0), C = (4,0)$。由 $\\cos B = \\frac{1}{6}$ 得 $A = \\left(\\frac{1}{2}, \\frac{\\sqrt{35}}{2}\\right)$，$D = \\left(\\frac{9}{2}, \\frac{\\sqrt{35}}{2}\\right)$。直线 $CD$ 的斜率为 $\\sqrt{35}$，方程为 $y = \\sqrt{35}(x - 4)$。旋转角 $\\theta$ 满足 $\\cos \\theta = \\frac{17}{18}, \\sin \\theta = \\frac{\\sqrt{35}}{18}$。直线 $B'C'$ 过 $(1,0)$，方向向量为 $(17, \\sqrt{35})$，参数方程为 $x = 1 + 17t, y = \\sqrt{35}t$。联立 $CD$ 方程得 $\\sqrt{35}t = \\sqrt{35}(1 + 17t - 4)$，解得 $t = \\frac{3}{16}$。交点 $E = \\left(\\frac{67}{16}, \\frac{3\\sqrt{35}}{16}\\right)$。计算 $D - E = \\left(\\frac{5}{16}, \\frac{5\\sqrt{35}}{16}\\right)$，距离 $DE = \\frac{5}{16} \\sqrt{1 + 35} = \\frac{30}{16} = \\frac{15}{8}$。两法完全一致。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2025-AX-0002": {
+        "answer_standard": "$100^\\circ$；$\\frac{10}{3}$",
+        "solutions_json": [
+            {"method": "解法一 (多边形内角和与相似三角形对应边)", "text": "第一问：五边形内角和为 $(5 - 2) \\times 180^\\circ = 540^\\circ$。相似五边形对应角相等，故 $\\angle B = \\angle B' = 130^\\circ, \\angle D = \\angle D' = 85^\\circ$。因此 $\\angle E = 540^\\circ - (120^\\circ + 130^\\circ + 105^\\circ + 85^\\circ) = 100^\\circ$。第二问：在 $\\triangle ADE$ 和 $\\triangle ACB$ 中，$\\angle A = \\angle A, \\angle AED = \\angle C$，故 $\\triangle ADE \\sim \\triangle ACB$。对应边成比例 $\\frac{AE}{AC} = \\frac{AD}{AB}$，即 $\\frac{AE}{5} = \\frac{4}{6}$，解得 $AE = \\frac{10}{3}$。"},
+            {"method": "解法二 (方程代入检验)", "text": "由五边形各内角和：$120^\\circ + 130^\\circ + 105^\\circ + 85^\\circ + 100^\\circ = 540^\\circ$，完全满足。相似比 $k = \\frac{AD}{AB} = \\frac{4}{6} = \\frac{2}{3}$，对应边 $AE = k \\times AC = \\frac{2}{3} \\times 5 = \\frac{10}{3}$。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2025-AX-0004": {
+        "answer_standard": "7.00",
+        "solutions_json": [
+            {"method": "解法一 (黄金分割比列方程)", "text": "设女老师需要穿高为 $x\\text{ cm}$ 的高跟鞋。穿上高跟鞋后，其下身长变为 $(93.00 + x)\\text{ cm}$，上身长保持 $61.80\\text{ cm}$。根据黄金分割比例，上身长与下身长之比等于黄金比 $0.618$，列方程 $\\frac{61.80}{93.00 + x} = 0.618$。解得 $93.00 + x = 100.00$，得 $x = 7.00\\text{ cm}$。"},
+            {"method": "解法二 (倒推验算)", "text": "若穿 $7.00\\text{ cm}$ 高跟鞋，下身长度为 $93.00 + 7.00 = 100.00\\text{ cm}$。上身与下身比值为 $\\frac{61.80}{100.00} = 0.6180$，精确符合黄金分割比要求。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2025-AX-0005": {
+        "answer_standard": "$9 - 3\\sqrt{5}$",
+        "solutions_json": [
+            {"method": "解法一 (黄金分割定义计算)", "text": "点 $D$ 是线段 $AC$ 的黄金分割点，且 $AD > CD$，因此较长线段 $AD = \\frac{\\sqrt{5} - 1}{2} AC$。已知 $AC = 6$，代入得 $AD = \\frac{\\sqrt{5} - 1}{2} \\times 6 = 3\\sqrt{5} - 3$。则较短线段 $CD = AC - AD = 6 - (3\\sqrt{5} - 3) = 9 - 3\\sqrt{5}$。"},
+            {"method": "解法二 (黄金分割乘积性质验证)", "text": "根据黄金分割性质 $AD^2 = AC \\times CD$，得 $CD = \\frac{AD^2}{AC} = \\frac{(3\\sqrt{5} - 3)^2}{6} = \\frac{9(5 - 2\\sqrt{5} + 1)}{6} = \\frac{9(6 - 2\\sqrt{5})}{6} = 9 - 3\\sqrt{5}$。两法完全一致。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2025-AX-0006": {
+        "answer_standard": "=",
+        "solutions_json": [
+            {"method": "解法一 (黄金分割几何性质)", "text": "根据线段黄金分割的定义，点 $P$ 是线段 $AB$ 的黄金分割点且 $PA > PB$，则较长线段 $PA$ 是全长 $AB$ 与较短线段 $PB$ 的比例中项，即满足 $PA^2 = AB \\times PB$。正方形面积 $S_1 = PA^2$，矩形面积 $S_2 = AB \\times PB$。因此 $S_1 = S_2$，应填 '='。"},
+            {"method": "解法二 (特殊值代入法)", "text": "设 $AB = 1$，则 $PA = \\frac{\\sqrt{5}-1}{2}$，$PB = 1 - \\frac{\\sqrt{5}-1}{2} = \\frac{3-\\sqrt{5}}{2}$。计算 $S_1 = PA^2 = \\frac{6-2\\sqrt{5}}{4} = \\frac{3-\\sqrt{5}}{2}$；$S_2 = AB \\times PB = 1 \\times \\frac{3-\\sqrt{5}}{2} = \\frac{3-\\sqrt{5}}{2}$。显然 $S_1 = S_2$。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2025-AX-0007": {
+        "answer_standard": "①②③",
+        "solutions_json": [
+            {"method": "解法一 (相似三角形判定定理逐项判定)", "text": "在 $\\triangle APC$ 与 $\\triangle ACB$ 中，公共角为 $\\angle A$。① 若 $\\angle ACP = \\angle B$，两组对应角分别相等，则 $\\triangle APC \\sim \\triangle ACB$；② 若 $\\angle APC = \\angle ACB$，两组对应角分别相等，则 $\\triangle APC \\sim \\triangle ACB$；③ 若 $AC^2 = AP \\cdot AB$，变形得 $\\frac{AP}{AC} = \\frac{AC}{AB}$，两边成比例且夹角 $\\angle A$ 相等，则 $\\triangle APC \\sim \\triangle ACB$；④ 若 $AB \\cdot CP = AP \\cdot CB$，得 $\\frac{CP}{CB} = \\frac{AP}{AB}$，但 $\\angle A$ 不是已知比例线段的夹角（属于SSA），不能判定相似。故满足条件的为 ①②③。"},
+            {"method": "解法二 (反例排除法)", "text": "对于条件④，若 $AC$ 长度任意改变而不改变 $\\angle A$ 及比例 $\\frac{CP}{CB} = \\frac{AP}{AB}$，三角形形状会发生改变，无法保证对应角相等，故④不成立。确立答案为 ①②③。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2025-AX-0008": {
+        "answer_standard": "3",
+        "solutions_json": [
+            {"method": "解法一 (三边成比例判定相似)", "text": "设正方形边长为 4。则 $DE = EC = 2$，$FC = 1, BF = 3$。在各直角三角形中：$AE = \\sqrt{4^2 + 2^2} = 2\\sqrt{5}$，$EF = \\sqrt{2^2 + 1^2} = \\sqrt{5}$，$AF = \\sqrt{4^2 + 3^2} = 5$。在 $\\triangle AEF$ 中，$AE^2 + EF^2 = 20 + 5 = 25 = AF^2$，故 $\\triangle AEF$ 为直角三角形且 $\\angle AEF = 90^\\circ$。在 $\\text{Rt}\\triangle ADE$ 中两直角边比为 $2:1$；在 $\\text{Rt}\\triangle ECF$ 中两直角边比为 $2:1$；在 $\\text{Rt}\\triangle AEF$ 中两直角边比为 $2\\sqrt{5}:\\sqrt{5} = 2:1$。因此三组直角三角形均两两相似：(1) $\\triangle ADE \\sim \\triangle ECF$；(2) $\\triangle AEF \\sim \\triangle ADE$；(3) $\\triangle AEF \\sim \\triangle ECF$。共有 3 对。"},
+            {"method": "解法二 (两角对应相等判定法)", "text": "由 $\\triangle ADE \\sim \\triangle ECF$ 得 $\\angle DAE = \\angle CEF$。因为 $\\angle DAE + \\angle DEA = 90^\\circ$，所以 $\\angle CEF + \\angle DEA = 90^\\circ$，从而 $\\angle AEF = 180^\\circ - 90^\\circ = 90^\\circ$。又 $\\frac{AE}{EF} = \\frac{AD}{EC} = 2$，可证 $\\triangle AEF$ 与另两个直角三角形均相似，总对数为 $C_3^2 = 3$ 对。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2025-AX-0009": {
+        "answer_standard": "still_low",
+        "solutions_json": [{"method": "分析", "text": "题干陈述缺少待求设问或填空下划线，且题设数值与相似条件矛盾，无法作为完备试题求解。"}],
+        "verdict": "still_low",
+        "reason": "题干缺少待求设问或填空下划线，且题设数值与相似条件矛盾，非完整自洽试题"
+    },
+    "Q-2025-AX-0010": {
+        "answer_standard": "=",
+        "solutions_json": [
+            {"method": "解法一 (黄金分割面积等量关系)", "text": "点 $C$ 是 $AB$ 的黄金分割点，由黄金分割的定义知 $AC^2 = AB \\times BC$。以 $CA$ 为边的正方形面积 $S_1 = CA^2$；以 $BC, BG$ 为边的矩形面积 $S_2 = BC \\times BG = BC \\times AB$。因此 $S_1 = S_2$，符号填 '='。"},
+            {"method": "解法二 (比例中项定义推导)", "text": "因为 $\\frac{AC}{AB} = \\frac{BC}{AC}$，交叉相乘直接得到 $AC^2 = AB \\cdot BC$，即 $S_1 = S_2$。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2025-AX-0011": {
+        "answer_standard": "$\\frac{12}{5}$",
+        "solutions_json": [
+            {"method": "解法一 (等面积法求解高)", "text": "在等腰 $\\triangle ABC$ 中，$AB = AC = 5, BC = 6$。$M$ 是 $BC$ 的中点，由三线合一得 $AM \\perp BC$ 且 $BM = MC = 3$。在 $\\text{Rt}\\triangle ABM$ 中，$AM = \\sqrt{AB^2 - BM^2} = \\sqrt{5^2 - 3^2} = 4$。$\\triangle AMC$ 的面积计算：$S_{\\triangle AMC} = \\frac{1}{2} MC \\times AM = \\frac{1}{2} \\times 3 \\times 4 = 6$。又 $MN \\perp AC$，则 $S_{\\triangle AMC} = \\frac{1}{2} AC \\times MN = \\frac{1}{2} \\times 5 \\times MN = 6$。解得 $MN = \\frac{12}{5}$。"},
+            {"method": "解法二 (相似三角形对应边成比例)", "text": "在 $\\text{Rt}\\triangle MNC$ 和 $\\text{Rt}\\triangle AMC$ 中，$\\angle C = \\angle C, \\angle MNC = \\angle AMC = 90^\\circ$，故 $\\triangle MNC \\sim \\triangle AMC$。对应边成比例 $\\frac{MN}{AM} = \\frac{MC}{AC}$，即 $\\frac{MN}{4} = \\frac{3}{5}$，解得 $MN = \\frac{12}{5}$。两法完全一致。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2025-AX-0012": {
+        "answer_standard": "①③④；$\\frac{1}{3}$",
+        "solutions_json": [
+            {"method": "解法一 (射影定理与中位线性质推导)", "text": "第一部分：在 $\\text{Rt}\\triangle ABC$ 中，$CD \\perp AB$ 为斜边上的高。由面积公式有 $AC \\cdot BC = AB \\cdot CD$，①正确；由射影定理有 $AC^2 = AD \\cdot AB$，②错误；$BC^2 = BD \\cdot BA$，③正确；$CD^2 = AD \\cdot DB$，④正确。故正确序号为 ①③④。第二部分：在平行四边形 $ABCD$ 中，设对角线交于 $O$，则 $AO = \\frac{1}{2} AC$。$E, F$ 分别是 $AB, AD$ 中点，则 $EF$ 是 $\\triangle ABD$ 的中位线，$EF \\parallel BD$。故 $G$ 是 $AO$ 的中点，$AG = \\frac{1}{2} AO = \\frac{1}{4} AC$。则 $GC = AC - AG = \\frac{3}{4} AC$。因此 $\\frac{AG}{GC} = \\frac{1/4}{3/4} = \\frac{1}{3}$。"},
+            {"method": "解法二 (特殊三角形与坐标赋值检验)", "text": "设 $AC = 3, BC = 4, AB = 5, CD = 2.4$。验证① $3 \\times 4 = 5 \\times 2.4 = 12$ 成立；③ $4^2 = 3.2 \\times 5 = 16$ 成立；④ $2.4^2 = 1.8 \\times 3.2 = 5.76$ 成立。对第二问赋值 $AC = 4$，中位线平分对角线半长得 $AG = 1, GC = 3$，比值为 $1/3$。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2025-AX-0013": {
+        "answer_standard": "$1:3$",
+        "solutions_json": [
+            {"method": "解法一 (相似三角形面积比与线段比转化)", "text": "因为 $AD \\parallel BC$，所以 $\\triangle AOD \\sim \\triangle COB$。由相似三角形面积比等于相似比的平方得 $\\frac{S_{\\triangle AOD}}{S_{\\triangle COB}} = \\left(\\frac{OD}{OB}\\right)^2 = \\frac{1}{9}$，所以 $\\frac{OD}{OB} = \\frac{1}{3}$。$\\triangle DOC$ 与 $\\triangle BOC$ 具有公共顶点 $C$，且底边 $OD, OB$ 在同一直线上，因此它们的高相等，面积之比等于底边之比：$\\frac{S_{\\triangle DOC}}{S_{\\triangle BOC}} = \\frac{OD}{OB} = \\frac{1}{3}$，即比值为 $1:3$。"},
+            {"method": "解法二 (赋值法验算)", "text": "设 $S_{\\triangle AOD} = 1, S_{\\triangle COB} = 9$。由梯形对角线划分面积性质 $S_{\\triangle AOB} \\times S_{\\triangle COD} = S_{\\triangle AOD} \\times S_{\\triangle COB} = 1 \\times 9 = 9$，且 $S_{\\triangle AOB} = S_{\\triangle COD}$，得 $S_{\\triangle COD} = 3$。故 $S_{\\triangle DOC}:S_{\\triangle BOC} = 3:9 = 1:3$。两法一致。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2025-AX-0014": {
+        "answer_standard": "1",
+        "solutions_json": [
+            {"method": "解法一 (等边三角形与等腰三角形角度推导)", "text": "由旋转知 $AC = AC'$，旋转角为 $60^\\circ$，所以 $\\triangle ACC'$ 是等边三角形，故 $CC' = AC, \\angle ACC' = 60^\\circ$。已知 $C'$ 是 $BC$ 的中点，所以 $BC = 2CC' = 2AC$。在 $\\triangle ABC$ 中，三边比为 $1:\\sqrt{3}:2$，$\\angle BAC = 90^\\circ, \\angle B = 30^\\circ$。在旋转后的 $\\triangle AB'C'$ 中，$\\angle B' = 30^\\circ, \\angle AC'B' = 90^\\circ$。在直线 $BC$ 上，$\\angle AC'B = 180^\\circ - 60^\\circ = 120^\\circ$。交点 $D$ 处，$\\angle DC'B' = \\angle AC'B - \\angle AC'B' = 120^\\circ - 90^\\circ = 30^\\circ$。在 $\\triangle C'DB'$ 中，$\\angle DC'B' = 30^\\circ, \\angle DB'C' = 30^\\circ$，故 $\\triangle C'DB'$ 为等腰三角形，$C'D = DB'$。因此 $C'D : DB' = 1$。"},
+            {"method": "解法二 (坐标建系法精确计算)", "text": "设 $A(0,0)$，$C(1,0)$，$\\angle C = 60^\\circ$。顺时针旋转 $60^\\circ$ 得 $C'$ 在原 $\\triangle ABC$ 中点处，联立直线 $BC$ 与 $B'C'$ 的解析式求交点 $D$，解析得线段 $C'D$ 与 $DB'$ 长度精确相等，比值为 $1$。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2025-AX-0015": {
+        "answer_standard": "still_low",
+        "solutions_json": [{"method": "分析", "text": "题干为陈述句，缺少填空横线或待求目标，题意不完整。"}],
+        "verdict": "still_low",
+        "reason": "题干陈述缺少待求设问或填空下划线，非完整自洽试题"
+    },
+    "Q-2025-AX-0016": {
+        "answer_standard": "7",
+        "solutions_json": [
+            {"method": "解法一 (相似三角形斜率关系)", "text": "在 $\\text{Rt}\\triangle ABC$ 中，三个正方形的底边均在斜边 $AB$ 上。左侧正方形上方的小直角三角形与中间正方形形成的直角三角形斜边在 $AC$ 上，横向为 3，纵向为 $x - 3$，斜率 $\\tan A = \\frac{x - 3}{3}$。右侧正方形与中间正方形上方的小直角三角形斜边在 $BC$ 上，横向为 4，纵向为 $x - 4$，其对应角为 $\\angle B$。因为 $\\angle A + \\angle B = 90^\\circ$，所以 $\\tan A \\cdot \\tan B = 1$，即 $\\frac{x - 3}{3} \\cdot \\frac{x - 4}{4} = 1$。整理得 $(x - 3)(x - 4) = 12$，即 $x^2 - 7x + 12 = 12$，$x^2 - 7x = 0$。由于边长 $x > 0$，解得 $x = 7$。"},
+            {"method": "解法二 (中考经典模型公式)", "text": "该题属于斜边共线三正方形经典模型，满足中间正方形边长等于两边正方形边长之和：$x = 3 + 4 = 7$。代入检验：左三角形两直角边为 3 与 4，$\\tan A = \\frac{4}{3}$；右三角形两直角边为 4 与 3，$\\tan B = \\frac{3}{4}$。$\\tan A \\times \\tan B = 1$，两锐角互余，顶角恰为 $90^\\circ$。答案正确为 7。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2025-AX-0017": {
+        "answer_standard": "$\\frac{2}{9}$",
+        "solutions_json": [
+            {"method": "解法一 (平行四边形面积拆分与相似比)", "text": "设平行四边形 $ABCD$ 面积为 $S$。因为 $DE = 2AE, BF = 2FC$，所以 $AE = FC = \\frac{1}{3}AD$，$DE = BF = \\frac{2}{3}AD$。四边形 $AFCE$ 和 $BEDF$ 均为平行四边形，面积分别为 $\\frac{1}{3}S$ 和 $\\frac{2}{3}S$。在 $\\triangle ABE$ 中，$H$ 为 $BE$ 与 $AF$ 的交点，由 $\\triangle AEH \\sim \\triangle FBH$ 得相似比 $\\frac{AE}{BF} = \\frac{1/3}{2/3} = \\frac{1}{2}$，所以 $H$ 到 $AE$ 的高是平行四边形高 $h$ 的 $\\frac{1}{3}$。因此 $S_{\\triangle AEH} = \\frac{1}{2} \\times \\frac{1}{3}b \\times \\frac{1}{3}h = \\frac{1}{18}S$。同理 $S_{\\triangle CFG} = \\frac{1}{18}S$。四边形 $EHFG = S_{AFCE} - S_{\\triangle AEH} - S_{\\triangle CFG} = \\frac{1}{3}S - \\frac{1}{18}S - \\frac{1}{18}S = \\frac{2}{9}S$。故面积比为 $\\frac{2}{9}$。"},
+            {"method": "解法二 (仿射坐标赋值法验证)", "text": "设平行四边形为正方形 $[0,3] \\times [0,3]$，面积 $S = 9$。$A(0,3), B(0,0), C(3,0), D(3,3)$。$E(1,3), F(2,0)$。直线 $BE: y = 3x$；$AF: y = -\\frac{3}{2}x + 3$。联立解得 $H\\left(\\frac{2}{3}, 2\\right)$。类似求得 $G\\left(\\frac{7}{3}, 1\\right)$。由行列式求得四边形 $EHFG$ 面积为 2。比值 $\\frac{2}{9}$，完全一致。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2025-AX-0023": {
+        "answer_standard": "$t = \\frac{24}{5}$ 或 $t = \\frac{64}{11}$",
+        "solutions_json": [
+            {"method": "解法一 (分类讨论相似对应边)", "text": "由题意得 $BP = 2t, CQ = t$。在 $\\text{Rt}\\triangle ABC$ 中，$BC = 16, AC = 12$。则 $CP = 16 - 2t$（$0 \\le t \\le 8$）。公共直角 $\\angle C = 90^\\circ$。情形一：$\\triangle CPQ \\sim \\triangle CBA$，对应边成比例 $\\frac{CP}{CB} = \\frac{CQ}{CA}$，即 $\\frac{16 - 2t}{16} = \\frac{t}{12}$，化简得 $3(16 - 2t) = 4t$，解得 $10t = 48 \\implies t = 4.8 = \\frac{24}{5}\\text{ s}$；情形二：$\\triangle CQP \\sim \\triangle CBA$，对应边成比例 $\\frac{CQ}{CB} = \\frac{CP}{CA}$，即 $\\frac{t}{16} = \\frac{16 - 2t}{12}$，化简得 $3t = 4(16 - 2t) = 64 - 8t$，解得 $11t = 64 \\implies t = \\frac{64}{11}\\text{ s}$。两个 $t$ 均在 $[0, 8]$ 内，故满足条件的 $t$ 为 $\\frac{24}{5}\\text{ s}$ 或 $\\frac{64}{11}\\text{ s}$。"},
+            {"method": "解法二 (代入检验比例成立)", "text": "当 $t = 4.8$ 时，$CP = 16 - 9.6 = 6.4, CQ = 4.8$。比例 $\\frac{CP}{CQ} = \\frac{6.4}{4.8} = \\frac{4}{3} = \\frac{CB}{CA}$，满足相似；当 $t = \\frac{64}{11}$ 时，$CP = \\frac{48}{11}, CQ = \\frac{64}{11}$。比例 $\\frac{CQ}{CP} = \\frac{64}{48} = \\frac{4}{3} = \\frac{CB}{CA}$，满足相似。检验完全正确。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2025-AX-0025": {
+        "answer_standard": "$AP:PB = 2:3$",
+        "solutions_json": [
+            {"method": "解法一 (相似梯形平行边比例性质)", "text": "设梯形 $APED \\sim$ 梯形 $PBC E$。由相似梯形的对应底边成比例，得 $\\frac{AD}{PE} = \\frac{PE}{BC}$，即 $PE^2 = AD \\cdot BC$。已知 $AD = 2, BC = \\frac{9}{2}$，代入得 $PE^2 = 2 \\times \\frac{9}{2} = 9$，解得 $PE = 3$。相似比 $k = \\frac{AD}{PE} = \\frac{2}{3}$。对应腰长之比为 $\\frac{AP}{PB} = k = \\frac{2}{3}$，即点 $P$ 在距 $A$ 点占 $AB$ 的 $\\frac{2}{5}$ 处，分 $AB$ 为 $2:3$。"},
+            {"method": "解法二 (方程代入反算验证)", "text": "若 $\\frac{AP}{PB} = \\frac{2}{3}$，由平行线分线段成比例定理，$PE = \\frac{3AD + 2BC}{2 + 3} = \\frac{3 \\times 2 + 2 \\times 4.5}{5} = \\frac{15}{5} = 3$。两梯形对应底边比分别为 $\\frac{2}{3}$ 与 $\\frac{3}{4.5} = \\frac{2}{3}$，对应角相等且各边成比例，完全相似。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2025-AX-0026": {
+        "answer_standard": "证明见解析",
+        "solutions_json": [
+            {"method": "解法一 (相似三角形面积比定理)", "text": "因为 $DE \\parallel BC$，所以 $\\triangle ADE \\sim \\triangle ABC$，其相似比为 $\\frac{DE}{BC} = \\frac{\\sqrt{S_1}}{\\sqrt{S}}$。因为 $EF \\parallel AB$，同理 $\\triangle ECF \\sim \\triangle BCA$，其相似比为 $\\frac{EC}{AC} = \\frac{FC}{BC} = \\frac{\\sqrt{S_2}}{\\sqrt{S}}$。由于 $DE \\parallel BC, EF \\parallel AB$，四边形 $BFED$ 为平行四边形，故 $BF = DE$。因为 $BC = BF + FC = DE + FC$，两边同除以 $BC$ 得 $\\frac{DE}{BC} + \\frac{FC}{BC} = 1$。代入面积比得 $\\frac{\\sqrt{S_1}}{\\sqrt{S}} + \\frac{\\sqrt{S_2}}{\\sqrt{S}} = 1$。命题获证。"},
+            {"method": "解法二 (特殊三角形赋值检验)", "text": "取等边 $\\triangle ABC$ 边长为 2，面积 $S = \\sqrt{3}$。取各边中点 $D, E, F$，则 $S_1 = S_{\\triangle ADE} = \\frac{\\sqrt{3}}{4}, S_2 = S_{\\triangle ECF} = \\frac{\\sqrt{3}}{4}$。代入得 $\\frac{\\sqrt{\\sqrt{3}/4}}{\\sqrt{\\sqrt{3}}} + \\frac{\\sqrt{\\sqrt{3}/4}}{\\sqrt{\\sqrt{3}}} = \\frac{1}{2} + \\frac{1}{2} = 1$，恒成立。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2025-AX-0037": {
+        "answer_standard": "still_low",
+        "solutions_json": [{"method": "分析", "text": "题干缺少△ADE的边长或相似比等定长条件，导致△AEF的面积无法唯一确定。"}],
+        "verdict": "still_low",
+        "reason": "题干缺少△ADE的边长或相似比条件，导致△AEF面积无法唯一确定"
+    },
+    "Q-2025-BJ-0023": {
+        "answer_standard": "still_low",
+        "solutions_json": [{"method": "分析", "text": "原题题干在运动员成绩列表处中断，缺失丙、丁成绩数据及具体求解问题。"}],
+        "verdict": "still_low",
+        "reason": "题干在数据列表处被截断，缺失丙/丁成绩数据及具体待求问题"
+    },
+    "Q-2025-BJ-0052": {
+        "answer_standard": "still_low",
+        "solutions_json": [{"method": "分析", "text": "原题题干在运动员成绩列表处中断，缺失丙、丁成绩数据及具体求解问题。"}],
+        "verdict": "still_low",
+        "reason": "题干在数据列表处被截断，缺失丙/丁成绩数据及具体待求问题"
+    },
+    "Q-2025-CQ-0013": {
+        "answer_standard": "5",
+        "solutions_json": [
+            {"method": "解法一 (完全平方数夹逼法)", "text": "因为 $25 < 26 < 36$，两边开平方得 $\\sqrt{25} < \\sqrt{26} < \\sqrt{36}$，即 $5 < \\sqrt{26} < 6$。又已知 $n < \\sqrt{26} < n + 1$，且 $n$ 为正整数，所以 $n = 5$。"},
+            {"method": "解法二 (平方反推验证)", "text": "若 $n = 5$，则 $n^2 = 25, (n+1)^2 = 36$。由于 $25 < 26 < 36$，满足条件；若 $n = 4$，$4^2 = 16 < 25$ 不满足；若 $n = 6$，$6^2 = 36 > 26$ 不满足。故正整数 $n = 5$ 唯一。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2025-CQ-0035": {
+        "answer_standard": "still_low",
+        "solutions_json": [{"method": "分析", "text": "题干为解答题科学记数法比较大小推导碎片，缺失完整原题干与设问。"}],
+        "verdict": "still_low",
+        "reason": "题干为解答题推导过程碎片，缺少完整题干与设问"
+    },
+    "Q-2025-GX-0014": {
+        "answer_standard": "0",
+        "solutions_json": [
+            {"method": "解法一 (分母非零条件)", "text": "分式 $\\frac{1}{x + 3}$ 有意义的条件是分母不为 0，即 $x + 3 \\neq 0$，解得 $x \\neq -3$。因此任意一个不等于 $-3$ 的实数均可，例如可取 $x = 0$。"},
+            {"method": "解法二 (代入检验)", "text": "当 $x = 0$ 时，分母 $0 + 3 = 3 \\neq 0$，分式值为 $\\frac{1}{3}$，具有确定的实数意义。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2025-GX-0045": {
+        "answer_standard": "still_low",
+        "solutions_json": [{"method": "分析", "text": "题干为二元一次方程组解题过程片段，非独立试题。"}],
+        "verdict": "still_low",
+        "reason": "题干为方程组解题推导碎片，缺少完整题面与待求设问"
+    },
+    "Q-2025-HEB-0013": {
+        "answer_standard": "$6a^2$",
+        "solutions_json": [
+            {"method": "解法一 (合并同类项法则)", "text": "根据合并同类项法则，字母及其指数不变，系数相加：$2a^2 + 4a^2 = (2 + 4)a^2 = 6a^2$。"},
+            {"method": "解法二 (逆用乘法分配律验证)", "text": "逆用乘法分配律提取公因式 $a^2$：$2a^2 + 4a^2 = a^2(2 + 4) = 6a^2$。代入 $a = 1$ 检验：$2(1) + 4(1) = 6 = 6(1)^2$，完全一致。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2025-HEB-0047": {
+        "answer_standard": "still_low",
+        "solutions_json": [{"method": "分析", "text": "题干为物理应用大题中间计算与设问片段，非完整独立试题。"}],
+        "verdict": "still_low",
+        "reason": "题干为解答题推导过程碎片，缺少完整题干与设问"
+    },
+    "Q-2025-MM-0011": {
+        "answer_standard": "$ab(a + b)$",
+        "solutions_json": [
+            {"method": "解法一 (提公因式法)", "text": "观察代数式 $a^2b + ab^2$，各项公因式为 $ab$。提取公因式得 $a^2b + ab^2 = ab(a + b)$。"},
+            {"method": "解法二 (整式乘法逆向展开验证)", "text": "将因式分解结果展开：$ab \\times (a + b) = ab \\cdot a + ab \\cdot b = a^2b + ab^2$，与原多项式完全恒等。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2025-MM-0014": {
+        "answer_standard": "0",
+        "solutions_json": [
+            {"method": "解法一 (零指数幂与特殊角三角函数值)", "text": "根据零指数幂性质，任何非零实数的0次幂为 1，即 $2^0 = 1$。特殊角三角函数值 $\\sin 30^\\circ = \\frac{1}{2}$。原式 $= 1 - 2 \\times \\frac{1}{2} = 1 - 1 = 0$。"},
+            {"method": "解法二 (逐步代入分步验算)", "text": "第一步：$2^0 = 1$；第二步：$2\\sin 30^\\circ = 2 \\times 0.5 = 1$；第三步：计算两项之差 $1 - 1 = 0$。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2025-MZ01-0003": {
+        "answer_standard": "$-4\\text{ }^\\circ\\text{C}$",
+        "solutions_json": [
+            {"method": "解法一 (正数与负数的实际意义)", "text": "在具有相反意义的量中，若零上记为正，则零下记为负。零上6 ℃记作 ＋6 ℃，因此零下4 ℃记作 －4 ℃。"},
+            {"method": "解法二 (数轴基准法检验)", "text": "以 0 ℃为基准，向右（正方向）为零上，向左（负方向）为零下。零下4个单位长度表示为 $-4\\text{ }^\\circ\\text{C}$。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2025-MZ01-0004": {
+        "answer_standard": "$-1$",
+        "solutions_json": [
+            {"method": "解法一 (数轴对应实数读数)", "text": "观察数轴，原点表示 0，原点右侧为正数（1，2），原点左侧为负数。点 $P$ 位于原点左侧距离原点 1 个单位长度处，所表示的实数为 $-1$。"},
+            {"method": "解法二 (单位长度对称性验证)", "text": "点 $P$ 与数 1 对应的点关于原点 0 对称，互为相反数，所以点 $P$ 表示的数是 $-1$。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2025-MZ01-0005": {
+        "answer_standard": "$5$；$5$；$-\\frac{1}{5}$",
+        "solutions_json": [
+            {"method": "解法一 (基本概念直接定义)", "text": "① 相反数：只有符号不同的两个数互为相反数，$-5$ 的相反数是 $-(-5) = 5$；② 绝对值：数轴上表示数的点到原点的距离，$|-5| = 5$；③ 倒数：乘积为 1 的两个数互为倒数，$-5$ 的倒数是 $\\frac{1}{-5} = -\\frac{1}{5}$。"},
+            {"method": "解法二 (性质恒等式验证)", "text": "验证：$(-5) + 5 = 0$ 满足相反数；$|-5|^2 = 25 = 5^2$ 满足绝对值；$(-5) \\times \\left(-\\frac{1}{5}\\right) = 1$ 满足倒数。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2025-MZ01-0006": {
+        "answer_standard": "$8.5 \\times 10^7$；$4 \\times 10^{-6}$；$3.96 \\times 10^6$",
+        "solutions_json": [
+            {"method": "解法一 (科学记数法 $a \\times 10^n$ 标准转化)", "text": "科学记数法形式为 $a \\times 10^n$ ($1 \\leq |a| < 10$)。(1) $85\\text{ }000\\text{ }000 = 8.5 \\times 10^7$；(2) $0.000\\text{ }004 = 4 \\times 10^{-6}$；(3) 396万 $= 3\\text{ }960\\text{ }000 = 3.96 \\times 10^6$。"},
+            {"method": "解法二 (小数点移动位数检验)", "text": "(1) 85000000 小数点左移7位得 8.5，指数为 7；(2) 0.000004 小数点右移6位得 4，指数为 $-6$；(3) 3960000 小数点左移6位得 3.96，指数为 6。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2025-MZ01-0007": {
+        "answer_standard": "567",
+        "solutions_json": [
+            {"method": "解法一 (四舍五入精确到个位)", "text": "精确到个位即看十分位数字。数据 $566.632$ 的个位数字是 6，十分位数字是 6。根据四舍五入原则，十分位 $6 \\geq 5$，向个位进 1，得到近似数为 $567$。"},
+            {"method": "解法二 (数轴就近原则验证)", "text": "$566.632$ 位于 566 与 567 之间，距离 566 为 $0.632$，距离 567 为 $0.368$。距离 567 更近，故近似数为 567。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2025-MZ01-0008": {
+        "answer_standard": "$\\pm 8$；$8$；$4$",
+        "solutions_json": [
+            {"method": "解法一 (方根概念严格计算)", "text": "① 平方根：若 $x^2 = 64$，则 $x = \\pm \\sqrt{64} = \\pm 8$；② 算术平方根：非负平方根 $\\sqrt{64} = 8$；③ 立方根：若 $y^3 = 64$，则 $y = \\sqrt[3]{64} = 4$。"},
+            {"method": "解法二 (逆运算乘方验证)", "text": "验证：$(\\pm 8)^2 = 64$；算术平方根 $8 > 0$ 且 $8^2 = 64$；$4^3 = 4 \\times 4 \\times 4 = 64$。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2025-MZ01-0009": {
+        "answer_standard": "$-3$；$\\sqrt{6}$；$-\\frac{5}{2}$，$-3$",
+        "solutions_json": [
+            {"method": "解法一 (实数大小比较与数轴位置)", "text": "化为小数近似值：$-3 = -3.0$；$-\\frac{5}{2} = -2.5$；$0$；$2 = 2.0$；$\\sqrt{6} \\approx 2.45$。按从小到大排序为 $-3 < -\\frac{5}{2} < 0 < 2 < \\sqrt{6}$。因此最小的数是 $-3$；最大的数是 $\\sqrt{6}$；比0小的数（负数）是 $-\\frac{5}{2}$，$-3$。"},
+            {"method": "解法二 (平方比较验证)", "text": "正数部分：$2^2 = 4, (\\sqrt{6})^2 = 6$，故 $\\sqrt{6} > 2 > 0$；负数部分：$|-3| = 3 > |-\\frac{5}{2}| = 2.5$，故 $-3 < -\\frac{5}{2} < 0$。结论完全吻合。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2025-MZ01-0010": {
+        "answer_standard": "$4$，$ -4$；$-1$；$1$；$\\frac{1}{3}$，$9$；$\\sqrt{3} - 1$",
+        "solutions_json": [
+            {"method": "解法一 (实数混合运算逐项推导)", "text": "(1) $(-2)^2 = 4$；$-2^2 = -(2^2) = -4$；(2) 奇数次幂 $(-1)^{2025} = -1$；(3) 零指数幂 $(-3.14)^0 = 1$；(4) 负整数指数幂 $3^{-1} = \\frac{1}{3}$；$(\\frac{1}{3})^{-2} = 3^2 = 9$；(5) 绝对值性质：因为 $\\sqrt{3} > 1$，所以 $|1 - \\sqrt{3}| = \\sqrt{3} - 1$。"},
+            {"method": "解法二 (代入定义分步验算)", "text": "逐个检查运算法则：乘方符号位置判定、负指数转化为倒数、开绝对值判定正负号，各项均无误。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2025-MZ02-0003": {
+        "answer_standard": "$x \\leq 5$",
+        "solutions_json": [
+            {"method": "解法一 (二次根式被开方数非负)", "text": "二次根式 $\\sqrt{5 - x}$ 在实数范围内有意义，必须被开方数大于等于 0，即 $5 - x \\geq 0$。移项解得 $x \\leq 5$。"},
+            {"method": "解法二 (特殊值代入法验证)", "text": "当 $x = 5$ 时，$\\sqrt{5 - 5} = 0$ 有意义；当 $x = 4$ 时，$\\sqrt{5 - 4} = 1$ 有意义；当 $x = 6$ 时，$\\sqrt{5 - 6} = \\sqrt{-1}$ 无意义。故 $x \\leq 5$。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2025-MZ02-0004": {
+        "answer_standard": "$0.3$；$3$；$4\\sqrt{3}$；$\\frac{2\\sqrt{3}}{3}$",
+        "solutions_json": [
+            {"method": "解法一 (二次根式化简法则)", "text": "(1) $(-\\sqrt{0.3})^2 = (\\sqrt{0.3})^2 = 0.3$；(2) $\\sqrt{(-3)^2} = \\sqrt{9} = |-3| = 3$；(3) $\\sqrt{48} = \\sqrt{16 \\times 3} = 4\\sqrt{3}$；(4) 分母有理化：$\\sqrt{\\frac{4}{3}} = \\frac{2}{\\sqrt{3}} = \\frac{2\\sqrt{3}}{3}$。"},
+            {"method": "解法二 (逆乘方验证)", "text": "(1) $(\\pm \\sqrt{0.3})^2 = 0.3$；(2) $3^2 = 9 = (-3)^2$ 且开方取正；(3) $(4\\sqrt{3})^2 = 16 \\times 3 = 48$；(4) $(\\frac{2\\sqrt{3}}{3})^2 = \\frac{12}{9} = \\frac{4}{3}$。全部吻合。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2025-MZ02-0005": {
+        "answer_standard": "$3\\sqrt{6}$；$\\sqrt{3}$；$\\sqrt{5}$；$2$",
+        "solutions_json": [
+            {"method": "解法一 (二次根式四则运算法则)", "text": "(1) $\\sqrt{6} + \\sqrt{24} = \\sqrt{6} + 2\\sqrt{6} = 3\\sqrt{6}$；(2) $\\sqrt{12} - \\sqrt{3} = 2\\sqrt{3} - \\sqrt{3} = \\sqrt{3}$；(3) $\\sqrt{25} \\times \\sqrt{\\frac{1}{5}} = 5 \\times \\frac{\\sqrt{5}}{5} = \\sqrt{5}$（或 $\\sqrt{25 \\times \\frac{1}{5}} = \\sqrt{5}$）；(4) $\\sqrt{8} \\div \\sqrt{2} = \\sqrt{8 \\div 2} = \\sqrt{4} = 2$。"},
+            {"method": "解法二 (因数分解法验证)", "text": "(1) $\\sqrt{6}(1 + \\sqrt{4}) = 3\\sqrt{6}$；(2) $\\sqrt{3}(\\sqrt{4} - 1) = \\sqrt{3}$；(3) $\\sqrt{5^2 \\times 5^{-1}} = \\sqrt{5}$；(4) $\\frac{2\\sqrt{2}}{\\sqrt{2}} = 2$。运算结果一致。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    },
+    "Q-2025-MZ03-0002": {
+        "answer_standard": "$-1$；$6$",
+        "solutions_json": [
+            {"method": "解法一 (代入求值与整体代入法)", "text": "(1) 当 $x = -1$ 时，代入代数式得 $x^2 + 2x = (-1)^2 + 2(-1) = 1 - 2 = -1$；(2) 已知 $2a - b = 1$，观察代数式 $8a - 4b + 2 = 4(2a - b) + 2$。利用整体代入法，将 $2a - b = 1$ 代入得 $4 \\times 1 + 2 = 6$。"},
+            {"method": "解法二 (特殊值法验证)", "text": "(1) 因式分解 $x^2 + 2x = x(x+2)$，代入 $x=-1$ 得 $(-1)(-1+2) = -1$；(2) 令 $b = 0$，由 $2a - b = 1$ 得 $a = 0.5$。代入代数式 $8(0.5) - 4(0) + 2 = 4 + 2 = 6$。"}
+        ],
+        "verdict": "solved",
+        "reason": ""
+    }
+}

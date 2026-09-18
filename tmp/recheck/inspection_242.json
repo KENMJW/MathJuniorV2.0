@@ -1,0 +1,2422 @@
+[
+  {
+    "qid": "Q-2024-JS-0008",
+    "source": "江苏省苏州市吴江区、吴中区、相城区2024-2025学年八年级下学期期末考试数学试卷+",
+    "point": "KP-015",
+    "difficulty": 3,
+    "stem_zh": "二次根式$\\sqrt[\\ ]{2 + x}$有意义，则*x*的取值范围是\\_\\_\\_\\_\\_\\_.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2024-JS-0009",
+    "source": "江苏省苏州市吴江区、吴中区、相城区2024-2025学年八年级下学期期末考试数学试卷+",
+    "point": "KP-004",
+    "difficulty": 3,
+    "stem_zh": "计算：$\\frac{3}{a} + \\frac{a - 15}{5a} =$\\_\\_\\_\\_\\_\\_",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2024-JS-0010",
+    "source": "江苏省苏州市吴江区、吴中区、相城区2024-2025学年八年级下学期期末考试数学试卷+",
+    "point": "KP-009",
+    "difficulty": 3,
+    "stem_zh": "若代数式$x^{2} + 4$的值与$- 5x$的值相等，则$x =$\\_\\_\\_\\_\\_\\_.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2024-JS-0011",
+    "source": "江苏省苏州市吴江区、吴中区、相城区2024-2025学年八年级下学期期末考试数学试卷+",
+    "point": "KP-021",
+    "difficulty": 3,
+    "stem_zh": "某商店6月份的利润是2500元，要使8月份的利润达到3600元，设平均每月利润增长的百分率为*x*，则可列方程为\\_\\_\\_\\_\\_\\_.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2024-JS-0012",
+    "source": "江苏省苏州市吴江区、吴中区、相城区2024-2025学年八年级下学期期末考试数学试卷+",
+    "point": "KP-004",
+    "difficulty": 3,
+    "stem_zh": "如图，*A*，*B*两地被建筑物遮挡，为测量*A*，*B*两地的距离，在地面上选一点*C*，连结*CA*，*CB*，分别取*CA*，*CB*的中点*D*，*E*，若*DE*的长为36*m*，则*A*，*B*两地距离为\\_\\_\\_\\_\\_\\_$m.$\n\n  -----------------------------------------------------------------------------------\n  [[IMG:0]]\n\n  -----------------------------------------------------------------------------------",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2024-JS-0013",
+    "source": "江苏省苏州市吴江区、吴中区、相城区2024-2025学年八年级下学期期末考试数学试卷+",
+    "point": "KP-065",
+    "difficulty": 4,
+    "stem_zh": "如图，菱形*ABCD*的对角线*AC*、*BD*相交于*O*，点*E*是*AB*的中点，连接*OE*，$OE = 2.5$，$DB = 6$，则*AC*的长为\\_\\_\\_\\_\\_\\_.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2024-JS-0014",
+    "source": "江苏省苏州市吴江区、吴中区、相城区2024-2025学年八年级下学期期末考试数学试卷+",
+    "point": "KP-034",
+    "difficulty": 4,
+    "stem_zh": "[[IMG:0]]如图，一次函数$y = - x + 3$的图象与反比例函数$y = \\frac{k}{x}$的图象相交于*A*、*B*两点，过*A*作*y*轴的平行线，过*B*作*x*轴的平行线，两条平行线相交于*C*，且$S_{\\bigtriangleup ABC} = 8$，则$k =$\\_\\_\\_\\_\\_\\_.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2024-JS-0015",
+    "source": "江苏省苏州市吴江区、吴中区、相城区2024-2025学年八年级下学期期末考试数学试卷+",
+    "point": "KP-081",
+    "difficulty": 4,
+    "stem_zh": "[[IMG:0]]如图，将▱*ABCD*绕点*A*逆时针旋转到▱$AB'C'D'$的位置，使点$B'$落在*BC*上，$B'C'$与*CD*交于点*E*，若$AB = 3$，$BC = 4$，$BB' = 1$，则*DE*的长为\\_\\_\\_\\_\\_\\_.\n\n三、计算题：本大题共**1**小题，共**6**分。",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-AX-0002",
+    "source": "0c417a41-ace8-4c_Simplified Chinese",
+    "point": "KP-004",
+    "difficulty": 6,
+    "stem_zh": "五边形 ABCDE\\\\\\~五边形\n    A'B'C'D'E'，∠A=120°，∠B'=130°，∠C=105°，∠D'=85°，则∠E=＿。\n\n如图，在△ABC 中，D、E 分别是 AC、AB\n边上的点，∠AED=∠C，AB=6，AD=4，AC=5，则 AE=＿。\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-AX-0004",
+    "source": "0c417a41-ace8-4c_Simplified Chinese",
+    "point": "KP-046",
+    "difficulty": 6,
+    "stem_zh": "从美学角度来说，当人的上身长与下身长之比为黄金比时，可以给人一种协调的美感。某女老师上身长约61.80cm，下身长约93.00cm，她要穿约＿\n    cm 的高跟鞋才能达到黄金比的美感效果（精确到0.01cm）。",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-AX-0005",
+    "source": "0c417a41-ace8-4c_Simplified Chinese",
+    "point": "KP-004",
+    "difficulty": 6,
+    "stem_zh": "如图，△ABC 中，AB=AC，∠A=36°，BD 平分∠ABC 交 AC 于点 D，点 D 是 AC\n    的黄金分割点（AD\\>CD），AC=6，则 CD=＿。\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-AX-0006",
+    "source": "0c417a41-ace8-4c_Simplified Chinese",
+    "point": "KP-064",
+    "difficulty": 6,
+    "stem_zh": "如图，已知 P 是线段 AB 的黄金分割点，且 PA \\> PB，若 S\\_{1} 表示 PA\n    为一边的正方形的面积，S\\_{2} 表示长是 AB，宽是 PB 的矩形的面积，则\n    S\\_{1}\\_ S\\_{2} .（填 \"＞\" \"＞\" 或 \"＜\" ）\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-AX-0007",
+    "source": "0c417a41-ace8-4c_Simplified Chinese",
+    "point": "KP-004",
+    "difficulty": 6,
+    "stem_zh": "如图，△ABC 中，P 为 AB 上一点，在下列四个条件中：\n\n①∠ACP=∠B；②∠APC=∠ACB；③AC\\^{2}=AP•AB；④AB•CP=AP•CB，能满足△APC 与△ACB\n相似的条件是（）\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-AX-0008",
+    "source": "0c417a41-ace8-4c_Simplified Chinese",
+    "point": "KP-066",
+    "difficulty": 6,
+    "stem_zh": "如图，在正方形 ABCD 中，E 是 CD 的中点，点 F 在 BC 上，且\n    FC=\\\\frac{1}{4}BC。图中相似三角形共有()对\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-AX-0009",
+    "source": "0c417a41-ace8-4c_Simplified Chinese",
+    "point": "KP-066",
+    "difficulty": 6,
+    "stem_zh": "如图，正方形 ABCD 的边长为 2，AE=EB，MN=1，线段 MN 的两端在 CB、CD\n    上滑动，当 CM=\\\\frac{1}{2} 时，△AED 与以 M、N、C\n    为顶点的三角形相似。\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-AX-0010",
+    "source": "0c417a41-ace8-4c_Simplified Chinese",
+    "point": "KP-064",
+    "difficulty": 6,
+    "stem_zh": "如图，C 是 AB 的黄金分割点，BG=AB，以 CA 为边的正方形的面积为\n    S\\_{1}，以 BC、BG 为边的矩形的面积为 S\\_{2}，则 S\\_{1}*S*{2} （填\n    \"\\>\" \"\\<\" \"=\" ）。\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-AX-0011",
+    "source": "0c417a41-ace8-4c_Simplified Chinese",
+    "point": "KP-004",
+    "difficulty": 8,
+    "stem_zh": "如图，在△ABC 中，AB=AC=5，BC=6，点 M 为 BC 的中点，MN⊥AC 于点 N，则\n    MN 等于（）\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-AX-0012",
+    "source": "0c417a41-ace8-4c_Simplified Chinese",
+    "point": "KP-004",
+    "difficulty": 8,
+    "stem_zh": "在△ABC 中，∠ACB=90°，CD⊥AB 于点\n    D，则下列说法正确的有\\_（填序号）．①AC•BC=AB•CD；②AC^{2}=AD•DB；③BC^{2}=BD•BA；④CD\\^{2}=AD•DB。\n\n[[IMG:0]]\n\n如图，在$▫$ABCD中，E、F分别是AB、AD的中点，EF交AC于点G，则$\\frac{AG}{GC}$的值是\n\n[[IMG:1]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-AX-0013",
+    "source": "0c417a41-ace8-4c_Simplified Chinese",
+    "point": "KP-001",
+    "difficulty": 8,
+    "stem_zh": "如图，在梯形ABCD中，AD∥BC，AC、BD相交于点O，$S_{\\bigtriangleup AOD}:S_{\\bigtriangleup COB} = 1:9$，则$S_{\\bigtriangleup DOC}:S_{\\bigtriangleup BOC} =$。\n\n[[IMG:0]]\n\n【此段建议校对(This paragraph is recommended for\nproofreading)】17．如图，在△ABC中，BC=a。若D\\_{1}、E\\_{1}分别是AB、AC的中点，则D\\_{1}E\\_{1}=$\\frac{1}{2}a$；若D\\_{2}、E\\_{2}分别是D\\_{1}B、E\\_{1}C的中点，则D\\_{2}E\\_{2}=$\\frac{1}{2}（\\frac{a}{2} + a） = \\frac{3}{4}a$......若D\\_{n}、E\\_{n}分别是D\\_{n-1}B、E\\_{n-1}C的中点，则D\\_{n}、E\\_{n}的长是多少（n\\>1，且n为整数，结果用含a、n的代数式表示）？\n\n[[IMG:1]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-AX-0014",
+    "source": "0c417a41-ace8-4c_Simplified Chinese",
+    "point": "KP-081",
+    "difficulty": 8,
+    "stem_zh": "如图，将△ABC绕顶点A按顺时针方向旋转60°后，得到△AB'C'，且C'为BC的中点，则C'D：DB'\n    =（）\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-AX-0015",
+    "source": "0c417a41-ace8-4c_Simplified Chinese",
+    "point": "KP-066",
+    "difficulty": 8,
+    "stem_zh": "如图，在正方形网格中，点A、B、C、D都是格点，点E是线段AC上任意一点。如果AD=1，那么当AE=$\\frac{1}{2}$时，以点A、D、E为顶点的三角形与△ABC相似。\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-AX-0016",
+    "source": "0c417a41-ace8-4c_Simplified Chinese",
+    "point": "KP-066",
+    "difficulty": 8,
+    "stem_zh": "如图，在直角三角形ABC中（$\\angle C = 90^{\\circ}$），放置边长分别为3、4、x的三个正方形，则x的值为（）\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-AX-0017",
+    "source": "0c417a41-ace8-4c_Simplified Chinese",
+    "point": "KP-004",
+    "difficulty": 8,
+    "stem_zh": "如图，在$▫$ABCD中，E、F分别位于AD、BC上，且DE=2AE，BF=2FC，连接BE、AF交于点H，连接DF、CE交于点G，则$\\frac{S_{\\text{四边形EHFG}}}{S_{\\text{平行四边形ABCI}}}$\n    =\\_。\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-AX-0023",
+    "source": "0c417a41-ace8-4c_Simplified Chinese",
+    "point": "KP-046",
+    "difficulty": 8,
+    "stem_zh": "如图，在△ABC中，$\\angle C = 90^{\\circ}$，BC=16cm，AC=12cm。点P从B出发沿BC以2cm/s的速度向C移动，点Q从C出发，以1cm/s的速度向A移动。若P、Q分别从B、C同时出发，设运动时间为ts，当何值时，$\\bigtriangleup CPQ$与$\\bigtriangleup CBA$相似？\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-AX-0025",
+    "source": "0c417a41-ace8-4c_Simplified Chinese",
+    "point": "KP-067",
+    "difficulty": 8,
+    "stem_zh": "如图，在梯形ABCD中，AD∥BC，P是AB上一点，PE∥BC交CD于点E。若AD=2，BC=$\\frac{9}{2}$，则点P在何处时，PE将梯形ABCD分成两个相似的小梯形？\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-AX-0026",
+    "source": "0c417a41-ace8-4c_Simplified Chinese",
+    "point": "KP-004",
+    "difficulty": 8,
+    "stem_zh": "如图，已知DE∥BC，EF∥AB，设$S_{\\bigtriangleup ABC} = S$，$S_{\\bigtriangleup ABC} = S_{1}$，$S_{\\bigtriangleup ECF} = S_{2}$，请验证$\\frac{\\sqrt{S_{1}}}{\\sqrt{S}} + \\frac{\\sqrt{S_{2}}}{\\sqrt{S}} = 1$。\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-AX-0037",
+    "source": "0c417a41-ace8-4c_Simplified Chinese",
+    "point": "KP-055",
+    "difficulty": 8,
+    "stem_zh": "如图所示，已知△ABC 是面积为$\\sqrt{3}$ 的等边三角形，△ABC 与△ADE\n    相似，且△BAD=45°，AC 与 DE 相交于点 F，则△AEF\n    的面积等于＿（结果保留根号）。\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-BJ-0023",
+    "source": "2025年北京市中考数学试卷",
+    "point": "KP-095",
+    "difficulty": 5,
+    "stem_zh": "校田径队教练选出甲、乙、丙、丁四名运动员参加100米比赛．对这四名运动员最近10次100米跑测试成绩（单位：*s*）的数据进行整理、描述和分析．下面给出了部分信息．\n\n> *a*．甲、乙两名运动员10次测试成绩的折线图：\n>\n> [[IMG:0]]\n>\n> *b*．丙运动员10次测试成绩：\n>",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-BJ-0052",
+    "source": "2025年北京市中考数学试卷",
+    "point": "KP-095",
+    "difficulty": 5,
+    "stem_zh": "校田径队教练选出甲、乙、丙、丁四名运动员参加100米比赛．对这四名运动员最近10次100米跑测试成绩（单位：*s*）的数据进行整理、描述和分析．下面给出了部分信息．\n\n> *a*．甲、乙两名运动员10次测试成绩的折线图：\n>\n> [[IMG:0]]\n>\n> *b*．丙运动员10次测试成绩：\n>",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-CQ-0013",
+    "source": "2025年重庆市中考数学试卷",
+    "point": "KP-001",
+    "difficulty": 4,
+    "stem_zh": "若*n*为正整数，且满足*n*$＜\\sqrt{26}＜$*n*+1，则*n*＝[　\n　]{.underline} ．",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-CQ-0035",
+    "source": "2025年重庆市中考数学试卷",
+    "point": "KP-001",
+    "difficulty": 5,
+    "stem_zh": "28×10^9^＝6280000000，\n>\n> 且618000000＜628000000＜618000000＜6280000000，\n>\n> ∴6.18×10^8^＜6.28×10^8^＜6.18×10^9^＜6.28×10^9^，\n>\n> ∴四个数中，最大的是6.28×10^9^，\n>\n> 故选：*D*．\n>\n> 【点评】此题考查了科学记数法的应用能力，关键是能准确理解并运用以上知识．",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-GX-0014",
+    "source": "2025年广西中考数学试卷",
+    "point": "KP-004",
+    "difficulty": 4,
+    "stem_zh": "写出一个使分式$\\frac{1}{x + 3}$有意义的*x*的值，可以是[　\n　]{.underline} ．",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-GX-0045",
+    "source": "2025年广西中考数学试卷",
+    "point": "KP-009",
+    "difficulty": 5,
+    "stem_zh": "95x + 0.95y = 95.95\n> \\end{matrix} \\right.\\$，\n>\n> 解得：$\\left\\{ \\begin{matrix}\n> x = 45.9 \\\\\n> y = 55.1\n> \\end{matrix} \\right.\\$，\n>\n> 故此行程中*A*市与*K*市间广西境内特定路段和其他路段的单程高速费原价分别是45.9元和55.1元．\n>\n> 【点评】本题考查了代数式、二元一次方程组，掌握二元一次方程是解题的关键．",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-HEB-0013",
+    "source": "2025年河北省中考数学试卷",
+    "point": "KP-004",
+    "difficulty": 4,
+    "stem_zh": "计算：2*a*^2^+4*a*^2^＝[　 　]{.underline} ．",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-HEB-0047",
+    "source": "2025年河北省中考数学试卷",
+    "point": "KP-001",
+    "difficulty": 5,
+    "stem_zh": "8×10^﹣4^÷（1.2×10^﹣5^×1）＝40（℃），\n>\n> 即该铁棒温度的增加量为40℃；\n>\n> （3）设铜棒增加的温度为*x*℃，则铁棒增加的温度为（*x*+20）℃，设它们的长度均为*l*，\n>\n> 由题意得1.7×10^﹣5^*lx*＝1.2×10^﹣5^*l*（*x*+20），\n>\n> 整理得：17*x*＝12*x*+240，\n>\n> 解得：*x*＝48，\n>\n> 则*x*+20＝48+20＝68，\n>\n> 即该铁棒温度的增加量为68℃．\n>\n> 【点评】本题考查有理数的混合运算，科学记数法表示较小的数，理解题意并列得正确的算式及方程是解题的关键．",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MM-0011",
+    "source": "2025-2026中考真题全真采集",
+    "point": "KP-011",
+    "difficulty": 2,
+    "stem_zh": "因式分解：$a^2b + ab^2 = $ ______．",
+    "options_json": null,
+    "old_answer": "$ab(a+b)$",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MM-0014",
+    "source": "2025-2026中考真题全真采集",
+    "point": "KP-088",
+    "difficulty": 2,
+    "stem_zh": "计算 $2^0 - 2\\sin 30^\\circ$ 的结果是 ______．",
+    "options_json": null,
+    "old_answer": "0",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ01-0003",
+    "source": "2025年中考数学总复习01 微专题  实  数",
+    "point": "KP-004",
+    "difficulty": 3,
+    "stem_zh": "若零上6 ℃记作＋6 ℃，那么零下4 ℃记作[　　　　]{.underline}.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ01-0004",
+    "source": "2025年中考数学总复习01 微专题  实  数",
+    "point": "KP-002",
+    "difficulty": 3,
+    "stem_zh": "如图，数轴上点*P*表示的数是[　　　　]{.underline}.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ01-0005",
+    "source": "2025年中考数学总复习01 微专题  实  数",
+    "point": "KP-003",
+    "difficulty": 3,
+    "stem_zh": "填空：\n\n－5的相反数是[　　　]{.underline}，绝对值是[　\n　　]{.underline}，倒数是[　 　]{.underline}.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ01-0006",
+    "source": "2025年中考数学总复习01 微专题  实  数",
+    "point": "KP-001",
+    "difficulty": 3,
+    "stem_zh": "将下列数据用科学记数法表示：\n\n(1)85 000 000＝[　　　　　　　]{.underline}；\n\n(2)0.000 004＝[　　　　　　　]{.underline}；\n\n(3)396万＝[　　　　　　　]{.underline}.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ01-0007",
+    "source": "2025年中考数学总复习01 微专题  实  数",
+    "point": "KP-004",
+    "difficulty": 3,
+    "stem_zh": "将数据566.632精确到个位得到近似数是[　　　　]{.underline}.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ01-0008",
+    "source": "2025年中考数学总复习01 微专题  实  数",
+    "point": "KP-006",
+    "difficulty": 3,
+    "stem_zh": "64的平方根为[　　　　]{.underline}；算术平方根为[　　　　]{.underline}；立方根为[　　　　]{.underline}.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ01-0009",
+    "source": "2025年中考数学总复习01 微专题  实  数",
+    "point": "KP-008",
+    "difficulty": 3,
+    "stem_zh": "在2，－$\\frac{5}{2}$，0，－3，$\\sqrt{6}$这组数中，最小的数是[　　　　]{.underline}；最大的数是[　　　　]{.underline}；比0小的数是[　　　　]{.underline}.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ01-0010",
+    "source": "2025年中考数学总复习01 微专题  实  数",
+    "point": "KP-004",
+    "difficulty": 3,
+    "stem_zh": "计算：\n\n(1)(－2)^2^＝[　　　　]{.underline}，\n\n－2^2^＝[　　　　]{.underline}；\n\n(2)(－1)^2025^＝[　　　　]{.underline}；\n\n(3)(－3.14)^0^＝[　　　　]{.underline}；\n\n(4)(3)^－1^＝[　　　　]{.underline}，($\\frac{1}{3}$)^－2^＝[　　　　]{.underline}；\n\n(5)｜1－$\\sqrt{3}$｜＝[　　　　]{.underline}.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ02-0003",
+    "source": "2025年中考数学总复习02 微专题  二次根式",
+    "point": "KP-015",
+    "difficulty": 3,
+    "stem_zh": "若$\\sqrt{5－x}$在实数范围内有意义，则*x*的取值范围是[　　　　]{.underline}.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ02-0004",
+    "source": "2025年中考数学总复习02 微专题  二次根式",
+    "point": "KP-015",
+    "difficulty": 3,
+    "stem_zh": "计算：\n\n(1)(－$\\sqrt{0\\text{.}3}$)^2^＝[　　　　]{.underline}；\n\n(2)$\\sqrt{( - 3\\text{)}^{2}}$＝[　　　　]{.underline}；\n\n(3)$\\sqrt{48}$＝[　　　　]{.underline}；\n\n(4)$\\sqrt{\\frac{4}{3}}$＝[　　　　]{.underline}.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ02-0005",
+    "source": "2025年中考数学总复习02 微专题  二次根式",
+    "point": "KP-015",
+    "difficulty": 3,
+    "stem_zh": "计算：\n\n(1)$\\sqrt{6}$＋$\\sqrt{24}$＝[　　　　]{.underline}；\n\n(2)$\\sqrt{12}$－$\\sqrt{3}$＝[　　　　]{.underline}；\n\n(3)$\\sqrt{25}$×$\\sqrt{\\frac{1}{5}}$＝[　　　　]{.underline}；\n\n(4)$\\sqrt{8}$÷$\\sqrt{2}$＝[　　　　]{.underline}.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ03-0002",
+    "source": "2025年中考数学总复习03 微专题  代数式、整式与因式分解",
+    "point": "KP-009",
+    "difficulty": 3,
+    "stem_zh": "(1)已知*x*＝－1，则*x*^2^＋2*x*＝[　　　　]{.underline}；\n\n(2)已知2*a*－*b*＝1，则代数式8*a*－4*b*＋2的值为[　　　　]{.underline}.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ03-0004",
+    "source": "2025年中考数学总复习03 微专题  代数式、整式与因式分解",
+    "point": "KP-009",
+    "difficulty": 3,
+    "stem_zh": "$\\frac{1}{3}$*x*^3^*y*^2^是[　　　　]{.underline}次单项式.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ03-0005",
+    "source": "2025年中考数学总复习03 微专题  代数式、整式与因式分解",
+    "point": "KP-009",
+    "difficulty": 3,
+    "stem_zh": "计算：\n\n(1)－2*x*＋*x*＝[　　　　]{.underline}；\n\n2*x*^3^－*x*^3^＝[　　　　]{.underline}；\n\n(2)*x*·*x*^3^＝[　　　　]{.underline}；\n\n*x*^8^÷*x*^2^＝[　　　　]{.underline}；\n\n(3)(－2*x*^2^)^3^＝[　　　　]{.underline}；\n\n(4)2*x*^2^·(*x*－1)＝[　　　　]{.underline}；\n\n(5)(*x*－1)(2*x*＋1)＝[　　　　　　　]{.underline}；\n\n(6)(*x*＋2)^2^＝[　　　　]{.underline}；\n\n(*x*＋2)(*x*－2)＝[　　　　　　　]{.underline}.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ03-0006",
+    "source": "2025年中考数学总复习03 微专题  代数式、整式与因式分解",
+    "point": "KP-014",
+    "difficulty": 3,
+    "stem_zh": "分解因式：\n\n(1)*x*^2^－*xy*＝[　　　　]{.underline}；\n\n(2)2*x*^2^－8＝[　　　　]{.underline}；\n\n(3)*x*^2^＋4*x*＋4＝[　　　　]{.underline}.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ03-0007",
+    "source": "2025年中考数学总复习03 微专题  代数式、整式与因式分解",
+    "point": "KP-009",
+    "difficulty": 3,
+    "stem_zh": "(1)若｜*x*－1｜＋$\\sqrt{y－1}$＝0，则*x*＋2*y*的值为[　　　　]{.underline}；\n\n(2)若*x*^2^＋1＋$\\sqrt{y + 2}$＝1，则*xy*的值为[　　　　]{.underline}；\n\n(3)$\\sqrt{2－x}$＋$\\sqrt{x－2}$＝0，则*x*的值为[　　　　]{.underline}.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ04-0002",
+    "source": "2025年中考数学总复习04 微专题  分  式",
+    "point": "KP-016",
+    "difficulty": 3,
+    "stem_zh": "已知分式$\\frac{x + 1}{x－1}$.\n\n(1)要使该分式有意义，则*x*的取值范围为[　　　　]{.underline}；\n\n(2)要使该分式的值为0，则*x*的值为[　　　　]{.underline}.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ04-0004",
+    "source": "2025年中考数学总复习04 微专题  分  式",
+    "point": "KP-004",
+    "difficulty": 3,
+    "stem_zh": "计算：\n\n(1)$\\frac{3}{a}$＋$\\frac{2}{a}$＝[　　　　]{.underline}；\n\n(2)1＋$\\frac{2}{x－1}$＝[　　　　]{.underline}；\n\n(3)$\\frac{x}{2－x}$＋$\\frac{2}{x－2}$＝[　　　　]{.underline}；\n\n(4)$\\frac{1}{x^{2}－x}$·$\\frac{x－1}{x}$＝[　　　　]{.underline}；",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ05-0002",
+    "source": "2025年中考数学总复习05 微专题  一次方程(组)及其应用",
+    "point": "KP-021",
+    "difficulty": 3,
+    "stem_zh": "解方程：2(*x*－1)－3＝*x*.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ05-0004",
+    "source": "2025年中考数学总复习05 微专题  一次方程(组)及其应用",
+    "point": "KP-021",
+    "difficulty": 3,
+    "stem_zh": "若共有*x*名学生，分成*y*个学习小组.若每组10人，则还差5人；若每组9人，还余下3人.若求冬令营学生的人数，所列的方程组为[　　　　]{.underline}.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ05-0006",
+    "source": "2025年中考数学总复习05 微专题  一次方程(组)及其应用",
+    "point": "KP-021",
+    "difficulty": 3,
+    "stem_zh": "方法一：代入消元法\n\n解：令$\\left\\{ \\begin{matrix}\nx＋y = 4\\text{①} \\\\\n2x－y = 5\\text{②}\n\\end{matrix} \\right.\\$，\n\n由①得*x*＝4－*y*③，\n\n将③代入②中，得2(4－*y*)－*y*＝5，\n\n化简得8－3*y*＝5，\n\n解得*y*＝1，\n\n将*y*＝1代入③中，得*x*＝3，\n\n∴方程组的解为$\\left\\{ \\begin{matrix}\nx = 3 \\\\\ny = 1\n\\end{matrix} \\right.\\$.\n\n一题多解法\n\n方法二：加减消元法\n\n解：令$\\left\\{ \\begin{matrix}\nx＋y = 4\\text{①} \\\\\n2x－y = 5\\text{②}\n\\end{matrix} \\right.\\$，\n\n①＋②得3*x*＋*y*－*y*＝9，\n\n解得*x*＝3，\n\n将*x*＝3代入①中，解得*y*＝1，\n\n∴方程组的解为$\\left\\{ \\begin{matrix}\nx = 3 \\\\\ny = 1\n\\end{matrix} \\right.\\$.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ06-0002",
+    "source": "2025年中考数学总复习06 微专题   分式方程及其应用",
+    "point": "KP-018",
+    "difficulty": 3,
+    "stem_zh": "解下列方程：\n\n(1)$\\frac{2}{x + 1}$＝$\\frac{3}{x}$；\n\n(2)$\\frac{3}{2－x}$－$\\frac{1}{x－2}$＝1.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ06-0003",
+    "source": "2025年中考数学总复习06 微专题   分式方程及其应用",
+    "point": "KP-018",
+    "difficulty": 3,
+    "stem_zh": "小明在一家便利店买了若干瓶酸奶，结账时共计48元，收银员告诉他满50元打八折，于是小明又拿了一瓶相同的酸奶，共花费了44.8元.设该酸奶单价为*x*元*/*瓶，则可列方程为[　　　　]{.underline}.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ07-0001",
+    "source": "2025年中考数学总复习07  一元二次方程及其应用",
+    "point": "KP-021",
+    "difficulty": 3,
+    "stem_zh": "若关于*x*的方程(*k*－3)*x*^2^－8*x*－10＝0是一元二次方程，则*k*的取值范围是[　　　　]{.underline}.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ07-0002",
+    "source": "2025年中考数学总复习07  一元二次方程及其应用",
+    "point": "KP-021",
+    "difficulty": 3,
+    "stem_zh": "解方程：*x*^2^－3*x*＋2＝0.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ07-0004",
+    "source": "2025年中考数学总复习07  一元二次方程及其应用",
+    "point": "KP-021",
+    "difficulty": 3,
+    "stem_zh": "关于*x*的一元二次方程*x*^2^－*mx*＋3＝0的一个根是1，则该方程的另一个根为[　　　　　　　]{.underline}.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ07-0005",
+    "source": "2025年中考数学总复习07  一元二次方程及其应用",
+    "point": "KP-004",
+    "difficulty": 3,
+    "stem_zh": "为了满足师生的阅读需求，某校园图书馆的藏书从2022年至2024年两年内由5万册增加到7.2万册，则这两年藏书的年平均增长率为[　　　　]{.underline}.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ07-0006",
+    "source": "2025年中考数学总复习07  一元二次方程及其应用",
+    "point": "KP-021",
+    "difficulty": 3,
+    "stem_zh": "某商场销售某种冰箱，每台进货价为2 500元.调查发现，当销售价为2\n900元时，平均每天能售出8台.调查发现，若销售价每降低50元，则平均每天能多售出4台.\n\n(1)若销售价降低1元，则平均每天能多售出[　　　]{.underline}台；\n\n(2)已知商场要想使这种冰箱的销售利润平均每天达到5\n000元，设每台冰箱降价*x*元，可列方程为[　　　　]{.underline}.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ08-0002",
+    "source": "2025年中考数学总复习08  一次不等式(组)及不等式的应用",
+    "point": "KP-028",
+    "difficulty": 3,
+    "stem_zh": "解不等式$\\frac{x－1}{3}$＜*x*－2.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ08-0003",
+    "source": "2025年中考数学总复习08  一次不等式(组)及不等式的应用",
+    "point": "KP-002",
+    "difficulty": 3,
+    "stem_zh": "解不等式组：$\\left\\{ \\begin{matrix}\nx－1 < 2 \\\\\n－3x－1 \\leq 2\n\\end{matrix} \\right.\\$，并将解集在数轴上表示出来.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ08-0004",
+    "source": "2025年中考数学总复习08  一次不等式(组)及不等式的应用",
+    "point": "KP-064",
+    "difficulty": 3,
+    "stem_zh": "品茗茶园要划分一片长方形土地种植龙井茶，若要给这块地围一圈栅栏，且栅栏的总长度不超过10\nkm，已知此长方形土地宽比长少1 km，设宽为*x*\nkm，则可列不等式为[　　　　]{.underline}.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ08-0005",
+    "source": "2025年中考数学总复习08  一次不等式(组)及不等式的应用",
+    "point": "KP-004",
+    "difficulty": 3,
+    "stem_zh": "小真用100元钱去购买笔记本和钢笔共20件.已知每本笔记本3元，每支钢笔8元.则小真最多能买[　　　　]{.underline}支钢笔.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ09-0001",
+    "source": "2025年中考数学总复习09  平面直角坐标系与函数",
+    "point": "KP-031",
+    "difficulty": 3,
+    "stem_zh": "在平面直角坐标系中，已知点*P*的坐标是(－3，－1)，填空：\n\n(1)点*P*在第[　　　]{.underline}象限；\n\n(2)点*P*关于*x*轴的对称点*P*~1~的坐标为[　　　　]{.underline}，关于*y*轴的对称点*P*~2~的坐标为[　　　　]{.underline}；\n\n(3)将点*P*向上平移2个单位长度得到点*P*~3~的坐标为[　　　]{.underline}.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ09-0002",
+    "source": "2025年中考数学总复习09  平面直角坐标系与函数",
+    "point": "KP-031",
+    "difficulty": 3,
+    "stem_zh": "在平面直角坐标系中，已知点*A*(－3，4)，\n\n(1)点*A*到*x*轴的距离是[　　　　]{.underline}，点*A*到*y*轴的距离是[　　　　]{.underline}，点*A*到原点的距离是[　　　　]{.underline}；\n\n(2)线段*AB*与*x*轴平行，且*AB*＝3，点*B*的坐标为[　　　　]{.underline}.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ09-0003",
+    "source": "2025年中考数学总复习09  平面直角坐标系与函数",
+    "point": "KP-031",
+    "difficulty": 3,
+    "stem_zh": "下列各曲线中表示*y*是*x*的函数的是[　　　　]{.underline}.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ09-0004",
+    "source": "2025年中考数学总复习09  平面直角坐标系与函数",
+    "point": "KP-030",
+    "difficulty": 3,
+    "stem_zh": "函数*y*＝$\\frac{2}{x + 3}$的自变量*x*的取值范围为[　　　　]{.underline}.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ10-0001",
+    "source": "2025年中考数学总复习10  一次函数的图象与性质",
+    "point": "KP-034",
+    "difficulty": 3,
+    "stem_zh": "已知一次函数*y*＝2*x*－1.\n\n(1)该函数的图象经过[　　]{.underline}象限；\n\n(2)该函数的图象与*x*轴的交点坐标为[　　　　]{.underline}，与*y*轴的交点坐标为[　　　　]{.underline}；\n\n(3)已知点*A*(－1，*y*~1~)，*B*(3，*y*~2~)在该函数的图象上，则*y*~1~[　　]{.underline}*y*~2~.(填\"＞\"\"＝\"或\"＜\")",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ10-0002",
+    "source": "2025年中考数学总复习10  一次函数的图象与性质",
+    "point": "KP-034",
+    "difficulty": 3,
+    "stem_zh": "已知直线*y*＝*kx*(*k*≠0)经过点(3，6)，则该直线的解析式为[　　　　]{.underline}.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ10-0003",
+    "source": "2025年中考数学总复习10  一次函数的图象与性质",
+    "point": "KP-034",
+    "difficulty": 3,
+    "stem_zh": "已知一次函数*y*＝2*x*－5，将该函数的图象向左平移3个单位长度，得到的函数表达式为[　　　　]{.underline}.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ10-0004",
+    "source": "2025年中考数学总复习10  一次函数的图象与性质",
+    "point": "KP-034",
+    "difficulty": 3,
+    "stem_zh": "如图，已知一次函数*y*＝$\\frac{1}{2}$*x*＋1的图象分别与*x*，*y*轴交于*A*，*B*两点.\n\n(1)方程$\\frac{1}{2}$*x*＋1＝0的解为[　　　　]{.underline}；\n\n(2)关于*x*的不等式0＜$\\frac{1}{2}$*x*＋1的解为[　　　　]{.underline}.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ11-0002",
+    "source": "2025年中考数学总复习11  反比例函数的图象与性质",
+    "point": "KP-036",
+    "difficulty": 3,
+    "stem_zh": "已知反比例函数*y*＝$\\frac{k}{x}$(*k*≠0)，请回答下列问题：\n\n(1)若点(2，4)在该反比例函数的图象上，则该函数解析式为[　　　　]{.underline}；\n\n[[IMG:0]]\n\n(2)如图，在平面直角坐标系中，点*P*是反比例函数*y*＝$\\frac{k}{x}$(*x*＜0)图象上的一点，分别过点*P*作*PA*⊥*x*轴于点*A*，*PB*⊥*y*轴于点*B*，若四边形*PAOB*的面积为6，则*k*的值为[　　　　]{.underline}.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ13-0001",
+    "source": "2025年中考数学总复习13  二次函数的图象与性质",
+    "point": "KP-039",
+    "difficulty": 3,
+    "stem_zh": "已知二次函数*y*＝2(*x*－2)^2^＋5.\n\n(1)二次函数图象的对称轴为直线[　　　　]{.underline}；顶点坐标为[　　　　]{.underline}；\n\n(2)二次函数的图象经过点(3，*y*~1~)，(5，*y*~2~)，则*y*~1~[　　]{.underline}*y*~2~.(填\"＞\"\"＝\"或\"＜\")",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ13-0002",
+    "source": "2025年中考数学总复习13  二次函数的图象与性质",
+    "point": "KP-031",
+    "difficulty": 3,
+    "stem_zh": "已知函数*y*＝*x*^2^－4*x*＋3.\n\n(1)函数图象的开口向[　　]{.underline}，与*y*轴的交点坐标为[　　　　　　　]{.underline}；\n\n(2)函数的图象与*x*轴有[　　]{.underline}个交点，交点的坐标为[　　　　]{.underline}.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ13-0003",
+    "source": "2025年中考数学总复习13  二次函数的图象与性质",
+    "point": "KP-034",
+    "difficulty": 3,
+    "stem_zh": "(1)已知抛物线*y*＝*x*^2^＋*bx*＋*c*过点(0，1)和(1，0)，则抛物线的解析式为[　　　　]{.underline}；\n\n(2)已知二次函数的图象经过点(1，0)，(3，0)和(2，3)，则这个二次函数的解析式为[　　　　　　　]{.underline}.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ13-0004",
+    "source": "2025年中考数学总复习13  二次函数的图象与性质",
+    "point": "KP-080",
+    "difficulty": 3,
+    "stem_zh": "已知抛物线*y*＝*x*^2^－2*x*－3.\n\n(1)将此二次函数的图象先向上平移3个单位长度，得到的二次函数*C*~1~的解析式为[　　　　]{.underline}，再向右平移1个单位长度，得到的二次函数*C*~2~的解析式为[　　　　]{.underline}；\n\n(2)若将抛物线经过平移后得到抛物线*y*＝*x*^2^，则平移的方式是[　　　　]{.underline}.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ13-0005",
+    "source": "2025年中考数学总复习13  二次函数的图象与性质",
+    "point": "KP-021",
+    "difficulty": 3,
+    "stem_zh": "已知抛物线*y*＝*x*^2^＋*x*－2，则一元二次方程*x*^2^＋*x*－2＝0与*x*轴有[　　　　]{.underline}个交点，该一元二次方程的解为[　　　　　　　]{.underline}.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ14-0002",
+    "source": "2025年中考数学总复习14  函数的实际应用",
+    "point": "KP-043",
+    "difficulty": 3,
+    "stem_zh": "阿基米德说：\"给我一个支点，我就能撬动整个地球\"，这句话精辟地阐明了一个重要的物理学知识杠杆原理，即\"阻力×阻力臂＝动力×动力臂\".若某杠杆的阻力和阻力臂分别为1000\nN和0.6 m，则它的动力*F*和动力臂*l*之间的函数图象大致是(　　)\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ14-0003",
+    "source": "2025年中考数学总复习14  函数的实际应用",
+    "point": "KP-041",
+    "difficulty": 3,
+    "stem_zh": "如图，小明的父亲想用长为60米的栅栏，再借助房屋的外墙围一块矩形的地.已知房屋外墙长40米，则可围成的地的最大面积是[　　　　]{.underline}平方米.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ15-0004",
+    "source": "2025年中考数学总复习15  二次函数综合题",
+    "point": "KP-039",
+    "difficulty": 3,
+    "stem_zh": "利用对称性质求线段和最值及点坐标，即\"将军饮马\"问题(求*PA*＋*PB*的最小值及点*P*的坐标)；\n\n(1)求点*B*关于对称轴*l*对称的点*C*的坐标；\n\n(2)连接*AC*交直线*l*于点*P*，此时点*P*满足要求，从而可求出*PA*＋*PB*的最小值；\n\n(3)用待定系数法求直线*AC*的函数表达式；\n\n(4)将*l*对应的*x*的值代入*AC*的函数表达式可得点*P*的坐标.\n\n[[IMG:0]]\n\n例1　\n如图①，已知二次函数*y*＝－*x*^2^－2*x*＋3的图象与*x*轴相交于*A*，*B*两点(*A*点在*B*点左侧)，与*y*轴相交于点\n*C.*点*P*是直线*AC*上方的抛物线上的一个动点，过点*P*作*PD*⊥*x*轴，垂足为点*D*，交直线*AC*于点*Q*.设点*P*的横坐标为*m*.\n\n[[IMG:1]]\n\n　例1题图①\n\n一、表示点坐标\n\n(1)点*P*的坐标为[　　　　]{.underline}，点*D*的坐标为[　　　]{.underline}，点*Q*的坐标为[　　　　]{.underline}；\n\n二、表示线段长\n\n(2)*PD*的长为[　　　　]{.underline}，*QD*的长为[　　　　]{.underline}，*PQ*的长为[　　　　]{.underline}；\n\n(3)点*P*到对称轴的距离为[　　　]{.underline}，*CQ*的长为[　　　　]{.underline}；\n\n三、与线段数量关系有关的计算\n\n(4)如图②，若*PQ*＝*DQ*，求点*P*的坐标；\n\n[[IMG:2]]\n\n例1题图②\n\n(5)如图③，若*AQ*＝2*CQ*，求点*P*的坐标；\\[2020广东25(2)题考查\\]\n\n[[IMG:3]]\n\n例1题图③\n\n四、线段最值\n\n(6)如图④，过点*P*作*x*轴的平行线，交直线*AC*于*M*点，求*MQ*的最大值；\n\n[[IMG:4]]\n\n例1题图④\n\n(7)如图⑤，点*G*是抛物线的对称轴*l*上的一个动点，当△*GBC*的周长最小时，求$\\frac{GC}{GB}$的值.\n\n[[IMG:5]]\n\n例1题图⑤\n\n二阶　综合训练",
+    "options_json": null,
+    "old_answer": "2\\sqrt{3}",
+    "old_solutions": "[{\"method\": \"解法一 (几何垂线段法)\", \"text\": \"根据'垂线段最短'与轴对称'两点之间线段最短'，构造对称点或垂线段得出几何极小值。\"}, {\"method\": \"解法二 (函数解析模型法)\", \"text\": \"设动点参数建立二次函数或直角坐标解析式模型，利用二次函数对称轴顶点公式求出最值。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ17-0001",
+    "source": "2025年中考数学总复习17 微专题  一般三角形及其性质 学案（含答案）",
+    "point": "KP-046",
+    "difficulty": 3,
+    "stem_zh": "已知三角形的两个内角都小于40°，则这个三角形是*[　　]{.underline}*三角形.(填\"锐角\"\"直角\"或\"钝角\")",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ17-0002",
+    "source": "2025年中考数学总复习17 微专题  一般三角形及其性质 学案（含答案）",
+    "point": "KP-046",
+    "difficulty": 3,
+    "stem_zh": "若某三角形的三边长分别为3，4，*m*，则*m*的值可以是*[　　　　]{.underline}*.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ17-0003",
+    "source": "2025年中考数学总复习17 微专题  一般三角形及其性质 学案（含答案）",
+    "point": "KP-004",
+    "difficulty": 3,
+    "stem_zh": "如图，在△*ABC*中，∠*A*＝60°，∠*B*＝80°，则∠*ACD*＝*[　　　　]{.underline}*°.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ18-0001",
+    "source": "2025年中考数学总复习18 微专题  等腰三角形与直角三角形 学案（含答案）",
+    "point": "KP-046",
+    "difficulty": 3,
+    "stem_zh": "在△*ABC*中，*AB*＝*AC.*\n\n(1)若△*ABC*的周长为12，一边长为5，则*BC*＝*[　　　　]{.underline}*；\n\n(2)若△*ABC*的一个内角为80°，则∠*B*＝*[　　　　]{.underline}*°；\n\n(3)如图，延长*BC*至点*D*，使得*CD*＝*AC*，*CE*平分∠*ACD*交*AD*于点*E*，若*AB*＝5，*AD*＝8，则*CE*＝*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ18-0002",
+    "source": "2025年中考数学总复习18 微专题  等腰三角形与直角三角形 学案（含答案）",
+    "point": "KP-056",
+    "difficulty": 3,
+    "stem_zh": "如图，在Rt△*ABC*中，∠*BAC*＝90°，*AD*是*BC*边上的中线.\n\n[[IMG:0]]\n\n(1)若∠*B*＝2∠*C*，则∠*B*＝*[　　　　]{.underline}*；\n\n(2)在(1)的条件下，若*AB*＝4，则*AD*＝*[　　　　]{.underline}*，∠*ADB*＝*[　　　　]{.underline}*°；\n\n(3)若△*ABC*中两边长分别为3，4，则△*ABC*的周长为*[　　　　]{.underline}*.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ19-0001",
+    "source": "2025年中考数学总复习19 微专题  遇到中点如何添加辅助线 学案（含答案）",
+    "point": "KP-046",
+    "difficulty": 3,
+    "stem_zh": "如图②，倍长另一边构造中位线\n\n[[IMG:0]]\n\n图①\n\n[[IMG:1]]\n\n图②\n\n结论：*DE*∥*BC*，*DE*＝$\\frac{1}{2}$*BC*\n\n情形二*　*已知三角形一边中点\n\n原理：1.等腰三角形的顶角平分线、底边上的中线、底边上的高相互重合(简写成\"三线合一\")；",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ19-0005",
+    "source": "2025年中考数学总复习19 微专题  遇到中点如何添加辅助线 学案（含答案）",
+    "point": "KP-065",
+    "difficulty": 3,
+    "stem_zh": "如图，在菱形*ABCD*中，∠*B*＝60°，*E*，*F*分别是边*AB*，*BC*的中点，连接*EF*，*DF*，若*EF*＝2，则*DF*的长为*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ19-0006",
+    "source": "2025年中考数学总复习19 微专题  遇到中点如何添加辅助线 学案（含答案）",
+    "point": "KP-056",
+    "difficulty": 3,
+    "stem_zh": "如图，在Rt△*ABC*中，∠*B*＝90°，*AB*＝6，*BC*＝8，*D*是*AC*的中点，点*E*在边*BC*上，连接*ED*，若∠*A*＝∠*BED*，则*ED*的长为*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ20-0001",
+    "source": "2025年中考数学总复习20 微专题  遇到角平分线如何添加辅助线 学案（含答案）",
+    "point": "KP-046",
+    "difficulty": 3,
+    "stem_zh": "两角和其中一个角的对边分别相等的两个三角形全等.\n\n作法：如图，过点*P*作*PB*⊥*ON*于点 *B.*\n\n[[IMG:0]]\n\n结论：*AP*＝*BP*；Rt△*AOP*≌Rt△*BOP*\n\n情形二*　*过角平分线上的点作角平分线的垂线\n\n原理：1.两角和它们的夹边分别相等的两个三角形全等；",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ20-0002",
+    "source": "2025年中考数学总复习20 微专题  遇到角平分线如何添加辅助线 学案（含答案）",
+    "point": "KP-046",
+    "difficulty": 3,
+    "stem_zh": "等腰三角形的顶角平分线、底边上的中线、底边上的高相互重合(简写成\"三线合一\")\n\n作法：如图，过点*P*作*PB*⊥*OP*，交*ON*于点 *B.*\n\n[[IMG:0]]\n\n结论：△*OAB*是等腰三角形\n\n情形三*　*1.过角平分线上的点作边的平行线；",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ20-0003",
+    "source": "2025年中考数学总复习20 微专题  遇到角平分线如何添加辅助线 学案（含答案）",
+    "point": "KP-046",
+    "difficulty": 3,
+    "stem_zh": "过边上的点作角平分线的平行线\n\n原理：(1)两直线平行，内错角相等；\n\n(2)两直线平行，同位角相等；\n\n(3)等角对等边.\n\n作法：(1)过点*P*作*PQ*∥*ON*，交*OM*于点*Q*；\n\n[[IMG:0]]\n\n(2)过点*P*作*PQ*∥*OB*，交*NO*的延长线于点*Q*.\n\n[[IMG:1]]\n\n结论：△*OPQ*为等腰三角形\n\n情形四*　*1.在被平分的角的长边上截取与短边相等的线段；",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ20-0004",
+    "source": "2025年中考数学总复习20 微专题  遇到角平分线如何添加辅助线 学案（含答案）",
+    "point": "KP-046",
+    "difficulty": 3,
+    "stem_zh": "延长被平分的角的短边至与长边相等\n\n原理：两边和它们的夹角分别相等的两个三角形全等.\n\n作法一：截长法\n\n在*AC*上截取*AE*＝*AB*，连接*DE*，\n\n[[IMG:0]]\n\n结论：△*ABD*≌△*AED*；\n\n作法二：补短法\n\n延长*AB*至点*F*，使*AF*＝*AC*，连接*DF*，\n\n[[IMG:1]]\n\n结论：△*AFD*≌△*ACD*\n\n方法一*　*遇角一边的垂线，考虑运用角平分线定理\n\n\\[6年3考：2024.17(3)，2021.7，2020.22\\]\n\n**例**1*　*(北师八下例题改编)如图，在Rt△*ABC*中，∠*A*＝90°，*CD*平分∠*ACB*交*AB*于点\n*D.*若*AD*＝3，*S*~△*BCD*~＝15，则*BC*＝*[　　　　]{.underline}*.\n\n[[IMG:2]]\n\n例1题图\n\n**例**2*　*(人教八上习题改编)如图，∠*AOB*＝45°，*OC*平分∠*AOB*，点*D*是*OC*上一点，过点*D*作*OA*的垂线，交*OA*于点*E*，交*OB*于点*F*，若*DE*＝1，则*DF*的长为*[　　　　]{.underline}*.\n\n[[IMG:3]]\n\n例2题图\n\n方法二*　*遇角平分线的垂线，考虑构造等腰三角形\n\n**例**3*　*(人教八上习题改编)如图，△*ABC*的面积为16，*AD*平分∠*BAC*，且*AD*⊥*BD*于点*D*，则△*ACD*的面积为*[　　　　]{.underline}*.\n\n[[IMG:4]]\n\n例3题图\n\n**例**4*　*如图，在△*ABC*中，∠*C*＝90°，*AC*＝*BC*，*AD*平分∠*BAC*交*BC*于点*E*，*BD*⊥*AD*，若*BD*＝2，则*AE*的长为*[　　　　]{.underline}*.\n\n[[IMG:5]]\n\n例4题图\n\n方法三*　*遇角平分线(或边)上一点，考虑作平行线构造等腰三角形\n\n**例**5*　*如图，在△*ABC*中，*AB*＝3，*BC*＝6，点*D*在*AC*边上，且*BD*平分∠*ABC*，则$\\frac{CD}{AD}$的值为*[　　　　]{.underline}*.\n\n[[IMG:6]]\n\n例5题图\n\n**例**6*　*如图，在△*ABC*中，∠*ABC*＝30°，*BD*平分∠*ABC*交*AC*于点*D*，过点*D*作*BC*的垂线，垂足为点*E*，若*DE*＝2，则*BE*的长为*[　　　　]{.underline}*.\n\n[[IMG:7]]\n\n例6题图\n\n方法四*　*截长补短构造轴对称图形\n\n**例**7*　* 如图，在四边形*ABCD*中，*AD*＝*CD*，∠*A*＝120°，*BD*平分∠*AB\nC.*若*AB*＋*AD*＝8，则*BC*的长为*[　　　　]{.underline}*.\n\n[[IMG:8]]\n\n例7题图\n\n**例**8*　*(人教八上习题改编)如图，在△*ABC*中，*BD*平分∠*ABC*交*AC*于点*D*，点*E*是*BD*的中点，若*AB*＝2*BC*，*AD*＝5，求*CE*的长.\n\n解法一(截长法)：\n\n[[IMG:9]]\n\n例8题图\n\n解法二(补短法)：\n\n二阶*　*综合应用",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ20-0005",
+    "source": "2025年中考数学总复习20 微专题  遇到角平分线如何添加辅助线 学案（含答案）",
+    "point": "KP-056",
+    "difficulty": 3,
+    "stem_zh": "如图，在Rt△*ABC*中，∠*C*＝90°，*BD*平分∠*ABC*交*AC*于点*D*，若*AD*＝4，∠*CBD*＝15°，则*AB*的长为*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ20-0006",
+    "source": "2025年中考数学总复习20 微专题  遇到角平分线如何添加辅助线 学案（含答案）",
+    "point": "KP-046",
+    "difficulty": 3,
+    "stem_zh": "如图，在△*ABC*中，*BD*平分∠*ABC*交*AC*于点*D*，点*E*为*AB*上一点，∠*AED*＝∠*C*，若*AD*＝4，*AE*＝5，*DE*＝6，则*BC*的长为*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ20-0007",
+    "source": "2025年中考数学总复习20 微专题  遇到角平分线如何添加辅助线 学案（含答案）",
+    "point": "KP-046",
+    "difficulty": 3,
+    "stem_zh": "在Rt△*ABC*中，∠*ACB*＝90°，*AD*平分∠*BAC*交*BC*于点 *D.*\n\n(1)如图①，*E*为*AC*边上一点，连接*ED*，已知∠*AED*＋∠*B*＝180°.求证：*DB*＝*DE*；\n\n(2)如图②，△*ABC*的外角∠*CBP*的平分线*BF*与*AD*延长线交于点*F*，连接*CF*，求∠*BCF*的度数.\n\n[[IMG:0]]\n\n[\\]{.underline}\n\n一阶*　*方法训练\n\n**例**1*　*10*　*",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"如解图，过点*D*作*DE*⊥*BC*于点*E*.∵*CD*平分∠*ACB*，*DE*⊥*BC*，∠*A*＝90°，∴*DE*＝*AD*＝3.∵*S*~△*BCD*~＝15，∴$\\\\frac{1}{2}$*BC*·*DE*＝15，即$\\\\frac{3}{2}$*BC*＝15，解得*BC*＝10.\\n\\n[[IMG:1]]\\n\\n例1题解图\\n\\n**例**2*　*$\\\\sqrt{2}$*　*【解析】如解图，过点*D*作*DG*⊥*OB*于点*G*，∴∠*DGF*＝90°.∵*DE*⊥*OA*，*OC*平分∠*AOB*，∴*DG*＝*DE*＝1，∵∠*AOB*＝45°，*EF*⊥*OA*，∴△*EOF*是等腰直角三角形，∴∠*EFO*＝45°，∴△*DGF*是等腰直角三角形，∴*DF*＝$\\\\sqrt{2}$*DG*＝$\\\\sqrt{2}$.\\n\\n[[IMG:2]]\\n\\n例2题解图\\n\\n**例**3*　*8*　*【解析】如解图，延长*BD*交*AC*于点*E*，∵*AD*平分∠*BAE*，*AD*⊥*BD*，∴∠*BAD*＝∠*EAD*，∠*BDA*＝∠*EDA*＝90°，在△*BAD*和△*EAD*中，$\\\\left\\\\{ \\\\begin{matrix}\\n\\\\angle BAD＝\\\\angle EAD \\\\\\\\\\nAD＝AD \\\\\\\\\\n\\\\angle BDA＝\\\\angle EDA\\n\\\\end{matrix} \\\\right.\\\\$，∴△*BAD*≌△*EAD*(ASA)，∴*BD*＝*ED*，∴*S*~△*ABD*~＝*S*~△*AED*~，*S*~△*BDC*~＝*S*~△*CDE*~，∴*S*~△*ABD*~＋*S*~△*BDC*~＝*S*~△*AED*~＋*S*~△*CDE*~＝*S*~△*ACD*~，∴*S*~△*ACD*~＝$\\\\frac{1}{2}$*S*~△*ABC*~＝$\\\\frac{1}{2}$×16＝8.\\n\\n[[IMG:3]]\\n\\n例3题解图\\n\\n**例**4*　*4*　*【解析】如解图，延长*BD*，*AC*交于点*F*，∵*AD*平分∠*BAC*，*BD*⊥*AD*，∴△*ABF*为等腰三角形，∴*BD*＝*FD*，即*BF*＝2*BD*＝4.∵∠*ACB*＝90°，∴∠*BCF*＝90°，∠*AEC*＋∠*EAC*＝90°，∵*AD*⊥*BD*，∴∠*BED*＋∠*FBC*＝90°，∵∠*AEC*＝∠*BED*，∴∠*EAC*＝∠*FBC*.又∵*AC*＝*BC*，∠*ACE*＝∠*BCF*，∴△*ACE*≌△*BCF*(ASA)，∴*AE*＝*BF*＝4.\\n\\n[[IMG:4]]\\n\\n例4题解图\\n\\n**例**5*　*2*　*【解析】如解图①，过点*D*作*DE*∥*AB*交*BC*于点*E*，则∠*ABD*＝∠*BDE*，∵*BD*平分∠*ABC*，∴∠*ABD*＝∠*DBC*，∴∠*BDE*＝∠*DBE*，∴*DE*＝*BE*，设*DE*＝*BE*＝*x*，则*CE*＝6－*x*，∵*DE*∥*AB*，∴△*CDE*∽△*CAB*，∴$\\\\frac{DE}{AB}$＝$\\\\frac{CE}{CB}$，即$\\\\frac{x}{3}$＝$\\\\frac{6－x}{6}$，解得*x*＝2，∴*CE*＝4，∴$\\\\frac{CD}{AD}$＝$\\\\frac{CE}{BE}$＝$\\\\frac{4}{2}$＝2.\\n\\n[[IMG:5]]\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ21-0001",
+    "source": "2025年中考数学总复习21 微专题  全等三角形 学案（含答案）",
+    "point": "KP-052",
+    "difficulty": 3,
+    "stem_zh": "如图，已知△*ABC*≌△*DEF*，点*B*，*E*，*C*，*F*依次在同一条直线上.若*BC*＝8，*CE*＝5则*CF*的长为*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ22-0001",
+    "source": "2025年中考数学总复习22 微专题  相似三角形(含位似) 学案（含答案）",
+    "point": "KP-060",
+    "difficulty": 3,
+    "stem_zh": "已知$\\frac{a}{b}$＝$\\frac{c}{d}$＝$\\frac{e}{f}$＝$\\frac{2}{3}$，则$\\frac{a＋c＋e}{b＋d＋f}$＝*[　　　　]{.underline}*.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ22-0002",
+    "source": "2025年中考数学总复习22 微专题  相似三角形(含位似) 学案（含答案）",
+    "point": "KP-060",
+    "difficulty": 3,
+    "stem_zh": "如图是五条等距离的平行线，同一条直线上的三个点*A*，*B*，*C*都在横线上，若线段*AB*＝4，则线段*BC*的长为*[　　　　]{.underline}*.*　*\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ22-0003",
+    "source": "2025年中考数学总复习22 微专题  相似三角形(含位似) 学案（含答案）",
+    "point": "KP-060",
+    "difficulty": 3,
+    "stem_zh": "如图，若线段*AB*＝2，点*C*为*AB*的黄金分割点，且*AC*＞*BC*，则*AC*的长为*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ22-0004",
+    "source": "2025年中考数学总复习22 微专题  相似三角形(含位似) 学案（含答案）",
+    "point": "KP-060",
+    "difficulty": 3,
+    "stem_zh": "若两个相似三角形的边长之比为1∶2，则它们的面积比是*[　　　　]{.underline}*.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ22-0005",
+    "source": "2025年中考数学总复习22 微专题  相似三角形(含位似) 学案（含答案）",
+    "point": "KP-060",
+    "difficulty": 3,
+    "stem_zh": "如图，*AB*与*CD*交于点*O*.若$\\frac{OA}{OB}$＝$\\frac{OC}{OD}$＝$\\frac{1}{2}$，则$\\frac{AC}{BD}$＝*[　　　　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ22-0006",
+    "source": "2025年中考数学总复习22 微专题  相似三角形(含位似) 学案（含答案）",
+    "point": "KP-060",
+    "difficulty": 3,
+    "stem_zh": "如图，△*ABC*与△*DEF*是位似图形，且位似中心为*O*，*OB*∶*OE*＝2∶3，若△*ABC*的周长为4，则△*DEF*的周长为*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ23-0001",
+    "source": "2025年中考数学总复习23 微专题  锐角三角函数及其应用  学案（含答案）",
+    "point": "KP-056",
+    "difficulty": 3,
+    "stem_zh": "如图，在Rt△*ABC*中，∠*C*＝90°，*AC*＝1，*BC*＝2，则cos\n*B*的值为*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ23-0002",
+    "source": "2025年中考数学总复习23 微专题  锐角三角函数及其应用  学案（含答案）",
+    "point": "KP-091",
+    "difficulty": 3,
+    "stem_zh": "如图，*AD*是△*ABC*的高，*AB*＝4，∠*BAD*＝60°，tan\n∠*CAD*＝$\\frac{1}{2}$，则*BC*的长为*[　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ23-0003",
+    "source": "2025年中考数学总复习23 微专题  锐角三角函数及其应用  学案（含答案）",
+    "point": "KP-056",
+    "difficulty": 3,
+    "stem_zh": "在Rt△*ABC*中，∠*C*＝90°.\n\n(1)若∠*A*＝60°，则sin *A*＝*[　　　　]{.underline}*，cos\n*A*＝*[　　　　]{.underline}*；\n\n(2)若tan *A*＝1，则∠*A*＝*[　　　　　　　]{.underline}*°.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ23-0004",
+    "source": "2025年中考数学总复习23 微专题  锐角三角函数及其应用  学案（含答案）",
+    "point": "KP-090",
+    "difficulty": 3,
+    "stem_zh": "如图，从热气球*P*看一面墙底部*B*的俯角是*[　　　　]{.underline}*.(用字母表示)\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ24-0001",
+    "source": "2025年中考数学总复习24 微专题  平行四边形与多边形  学案（含答案）",
+    "point": "KP-046",
+    "difficulty": 3,
+    "stem_zh": "如图，在▱*ABCD*中，对角线*AC*，*BD*相交于点*O*.\n\n[[IMG:0]]\n\n(1)若∠*BCD*－∠*ADC*＝60°，则∠*ADC*＝*[　　　　]{.underline}*°；\n\n(2)若▱*ABCD*的周长为42，*AB*∶*BC*＝3∶4，则*AB*＝*[　　]{.underline}*，*AD*＝*[　　　]{.underline}*；\n\n(3)若*AC*＋*BD*＝26，*AB*＝11，则△*OCD*的周长为*[　　　　　　　]{.underline}*.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ24-0004",
+    "source": "2025年中考数学总复习24 微专题  平行四边形与多边形  学案（含答案）",
+    "point": "KP-046",
+    "difficulty": 3,
+    "stem_zh": "九边形的内角和为*[　　　　]{.underline}*.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ24-0005",
+    "source": "2025年中考数学总复习24 微专题  平行四边形与多边形  学案（含答案）",
+    "point": "KP-061",
+    "difficulty": 3,
+    "stem_zh": "若正多边形的一个内角是120°，则这个正多边形的边数为*[　　　　]{.underline}*.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ25-0001",
+    "source": "2025年中考数学总复习25 微专题  矩  形  学案（含答案）",
+    "point": "KP-064",
+    "difficulty": 3,
+    "stem_zh": "如图，在矩形*ABCD*中，*O*为对角线*AC*，*BD*的交点，*AE*⊥*BD*于点*E*.\n\n(1)若对角线*BD*长为4，∠*AOB*＝60°，则*AB*的长为*[　　　]{.underline}*，*BC*的长为*[　　　]{.underline}*；\n\n(2)若∠*DAE*＝2∠*BAE*，则∠*EAC*的度数为*[　　　　]{.underline}*；\n\n(3)若*BE*∶*ED*＝1∶3，*AB*＝2，则*AD*的长为*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ25-0003",
+    "source": "2025年中考数学总复习25 微专题  矩  形  学案（含答案）",
+    "point": "KP-064",
+    "difficulty": 3,
+    "stem_zh": "已知矩形的一边长为6 cm，一条对角线的长为10\ncm，则矩形的面积为*[　　　　]{.underline}*cm^2^.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ26-0001",
+    "source": "2025年中考数学总复习26 微专题  菱  形  学案（含答案）",
+    "point": "KP-065",
+    "difficulty": 3,
+    "stem_zh": "如图，在菱形*ABCD*中，∠*ABC*＝60°，对角线*AC*与*BD*交于点*O*，*E*为*BC*的中点，连接*OE*，已知*OE*＝1.\n\n[[IMG:0]]\n\n(1)∠*ABD*＝*[　　　　]{.underline}*°，∠*BAD*＝*[　　　　]{.underline}*°；\n\n(2)菱形*ABCD*的周长为*[　　　　　　　]{.underline}*；\n\n(3)△*BOE*的形状为*[　　　　　　　]{.underline}*；\n\n(4)*AC*＝*[　　]{.underline}*，*BD*＝*[　　]{.underline}*；\n\n(5)菱形*ABCD*的面积为*[　　　　　　　]{.underline}*.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ26-0003",
+    "source": "2025年中考数学总复习26 微专题  菱  形  学案（含答案）",
+    "point": "KP-046",
+    "difficulty": 3,
+    "stem_zh": "(1)30，120*　*(2)8*　*(3)等腰三角形*　*(4)2，2$\\sqrt{3}$*　*(5)2$\\sqrt{3}$",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ27-0001",
+    "source": "2025年中考数学总复习27 微专题  正方形  学案（含答案）",
+    "point": "KP-066",
+    "difficulty": 3,
+    "stem_zh": "如图，在正方形*ABCD*中，对角线*AC*与*BD*交于点*O*，且*BD*＝4$\\sqrt{2}$，*E*是对角线*AC*上一点，连接*BE*.\n\n[[IMG:0]]\n\n(1)∠*ACB*的度数为*[　　　]{.underline}*；\n\n(2)*AO*的长为*[　　　　]{.underline}*；\n\n(3)正方形*ABCD*的周长为*[　　　]{.underline}*，面积为*[　　　]{.underline}*；\n\n(4)若∠*ABE*＝15°，则*BE*的长为*[　　　　]{.underline}*.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ27-0003",
+    "source": "2025年中考数学总复习27 微专题  正方形  学案（含答案）",
+    "point": "KP-066",
+    "difficulty": 3,
+    "stem_zh": "如图，*E*，*F*，*G*，*H*分别是四边形*ABCD*四条边的中点，则四边形*EFGH*一定是*[　　　]{.underline}*.(填\"平行四边形\"\"矩形\"\"菱形\"或\"正方形\")\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ28-0002",
+    "source": "2025年中考数学总复习28 微专题  圆的基本性质  学案（含答案）",
+    "point": "KP-069",
+    "difficulty": 3,
+    "stem_zh": "如图，已知*AB*是☉*O*的直径，*CD*是☉*O*的弦，*AB*⊥*CD*，垂足为*E*，连接*O\nC.*\n\n(1)若*AB*＝10，*CD*＝8，则cos ∠*OCE*＝*[　　　　]{.underline}*；\n\n(2)若*CD*＝4，*AE*＝6，则☉*O*的半径为*[　　　　]{.underline}*；\n\n(3)若☉*O*的半径为7，*P*是*CD*上一点，且*PC*＝4，*PD*＝6，则*OP*＝*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ28-0003",
+    "source": "2025年中考数学总复习28 微专题  圆的基本性质  学案（含答案）",
+    "point": "KP-069",
+    "difficulty": 3,
+    "stem_zh": "如图，在☉*O*中，*AB*和*CD*是两条弦，*OE*⊥*AB*于点*E*，*OF*⊥*CD*于点*F*.\n\n对于下列命题：\n\n[[IMG:0]]\n\n①如果*OE*＝*OF*，那么∠*AOB*＝∠*COD*；\n\n②如果$\\overset{⏜}{AB}$＝$\\overset{⏜}{CD}$，那么*OE*＝*OF*；\n\n③如果*OE*＝*OF*，那么*AB*＝*CD*；\n\n④如果*OE*＝*OF*，那么*OB*＝*CD*，\n\n其中真命题是*[　　　　　　　]{.underline}*.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ28-0004",
+    "source": "2025年中考数学总复习28 微专题  圆的基本性质  学案（含答案）",
+    "point": "KP-069",
+    "difficulty": 3,
+    "stem_zh": "如图，若*AB*是☉*O*的直径，点*C*在☉*O*上(不与*A*，*B*重合)，则∠*ACB*的度数为*[　　　　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ28-0005",
+    "source": "2025年中考数学总复习28 微专题  圆的基本性质  学案（含答案）",
+    "point": "KP-004",
+    "difficulty": 3,
+    "stem_zh": "如图，四边形*ABCD*是☉*O*的内接四边形，∠*BOD*＝100°，则∠*BAD*＝*[　　　　]{.underline}*，∠*BCD*＝*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ29-0001",
+    "source": "2025年中考数学总复习29 微专题  与圆有关的位置关系  学案（含答案）",
+    "point": "KP-069",
+    "difficulty": 3,
+    "stem_zh": "已知☉*O*的半径为3，*P*为平面内一点，*OP*＝4，则点*P*在☉*O[　　　　]{.underline}*.(填\"内\"\"上\"或\"外\")",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ29-0002",
+    "source": "2025年中考数学总复习29 微专题  与圆有关的位置关系  学案（含答案）",
+    "point": "KP-069",
+    "difficulty": 3,
+    "stem_zh": "已知圆的半径为3，圆心到某直线的距离为2，则此直线与圆的位置关系为*[　　　　]{.underline}*.(填\"相交\"\"相切\"或\"相离\")",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ29-0003",
+    "source": "2025年中考数学总复习29 微专题  与圆有关的位置关系  学案（含答案）",
+    "point": "KP-069",
+    "difficulty": 3,
+    "stem_zh": "如图，*AC*是☉*O*的直径.\n\n(1)若*BC*是☉*O*的切线，则∠*ACB*＝*[　　　　]{.underline}*°；\n\n(2)若*AB*＝5，*BC*＝4，*AC*＝3，则*BC*与☉*O[　　　　]{.underline}*.(填\"相交\"\"相切\"或\"相离\")\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ29-0004",
+    "source": "2025年中考数学总复习29 微专题  与圆有关的位置关系  学案（含答案）",
+    "point": "KP-072",
+    "difficulty": 3,
+    "stem_zh": "如图，*PA*，*PB*是☉*O*的切线，*A*，*B*为切点，连接*AB*，*OA*，*OB*，*PO*，*PO*交☉*O*于点*C*，交*AB*于点*D*，∠*OAB*＝30°.\n\n[[IMG:0]]\n\n(1)∠*APB*的度数为[*　* *　　*]{.underline}；\n\n(2)若*OA*＝4，则*OP*的长为*[　　　　]{.underline}*.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ29-0005",
+    "source": "2025年中考数学总复习29 微专题  与圆有关的位置关系  学案（含答案）",
+    "point": "KP-069",
+    "difficulty": 3,
+    "stem_zh": "如图，在△*ABC*中，∠*C*＝90°，*AC*＝3，*BC*＝4，则△*ABC*的内切圆半径*r*＝*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ29-0006",
+    "source": "2025年中考数学总复习29 微专题  与圆有关的位置关系  学案（含答案）",
+    "point": "KP-069",
+    "difficulty": 3,
+    "stem_zh": "如图，△*ABC*的外接圆半径为5，其圆心*O*恰好在中线*CD*上，若*AB*＝*CD*，则△*ABC*的面积为*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ30-0001",
+    "source": "2025年中考数学总复习30 微专题  与圆有关的计算  学案（含答案）",
+    "point": "KP-069",
+    "difficulty": 3,
+    "stem_zh": "已知扇形*AOB*的半径为4，圆心角为60°，则该扇形的弧长＝*[　　　]{.underline}*，面积＝*[　　　]{.underline}*.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ30-0002",
+    "source": "2025年中考数学总复习30 微专题  与圆有关的计算  学案（含答案）",
+    "point": "KP-069",
+    "difficulty": 3,
+    "stem_zh": "如图，扇形的半径为6，圆心角为120°，用这个扇形围成一个圆锥的侧面，则所得圆锥的底面半径为*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ30-0003",
+    "source": "2025年中考数学总复习30 微专题  与圆有关的计算  学案（含答案）",
+    "point": "KP-069",
+    "difficulty": 3,
+    "stem_zh": "如图，☉*O*是正六边形*ABCDEF*的外接圆.\n\n(1)∠*FAO*的度数为*[　　　　　　　]{.underline}*；\n\n(2)若☉*O*的半径*OA*为6，则圆心到边*AB*的距离为*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ31-0001",
+    "source": "2025年中考数学总复习31 微专题  三种方法求阴影部分面积  学案（含答案）",
+    "point": "KP-077",
+    "difficulty": 3,
+    "stem_zh": "公式法\n\n所求阴影部分的面积是规则图形，例如三角形、特殊四边形、扇形时，直接用面积公式计算.\n\n[[IMG:0]]\n\n*S*~阴影~＝*S*~△*ABE*~\n\n[[IMG:1]]\n\n*S*~阴影~＝*S*~正方形*ABCO*~\n\n[[IMG:2]]\n\n*S*~阴影~＝*S*~扇形*MEN*~\n\n方法一*　*公式法\\[6年2考：2023.15、22(2)②，2022.15\\]\n\n**例**1*　*如图，在▱*ABCD*中，*BC*＝8，点*E*在*AD*边上，连接*BE*，*CE*，若点*A*到直线*BC*的距离为4，则图中阴影部分的面积为*[　　　　]{.underline}*.\n\n[[IMG:3]]\n\n例1题图\n\n**变式**1*　*如图，在矩形*ABCD*中，*AB*＝2，*BC*＝$\\sqrt{3}$，以点*B*为圆心，*BA*长为半径画弧，交*CD*于点*E*，连接*BE*，则扇形*ABE*的面积为*[　　　　]{.underline}*.\n\n[[IMG:4]]\n\n变式1题图\n\n**变式**2*　*如图，在△*ABC*中，*AB*＝*AC*，∠*C*＝30°，*AC*＝4，以*AB*为直径的☉*O*交*BC*于点*D*，连接*OD*，则图中阴影部分的面积为*[　　　　]{.underline}*.\n\n[[IMG:5]]\n\n变式2题图\n\n方法解读",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ31-0002",
+    "source": "2025年中考数学总复习31 微专题  三种方法求阴影部分面积  学案（含答案）",
+    "point": "KP-077",
+    "difficulty": 3,
+    "stem_zh": "和差法\n\n(1)直接和差法\n\n所求不规则阴影部分的面积若可以看成几个规则图形，则面积直接相加减.\n\n[[IMG:0]]\n\n*S*~阴影~＝*S*~▱*ABCD*~－*S*~△*AEF*~－*S*~△*BCE*~－*S*~△*CDF*~\n\n[[IMG:1]]\n\n*S*~阴影~＝*S*~扇形*AOB*~－*S*~△*AOB*~\n\n[[IMG:2]]\n\n*S*~阴影~＝*S*~△*ABC*~－*S*~扇形*CAD*~\n\n(2)构造和差法\n\n所求不规则阴影部分的面积需要添加辅助线构造规则图形，然后进行相加减.\n\n[[IMG:3]]\n\n*S*~阴影~＝*S*~△*ACE*~＋*S*~△*ACF*~\n\n[[IMG:4]]\n\n*S*~阴影~＝*S*~△*OBD*~＋*S*~扇形*DOC*~\n\n[[IMG:5]]\n\n*S*~阴影~＝*S*~△*ABC*~－*S*~△*BOD*~－*S*~扇形*DOC*~\n\n方法二*　*和差法\\[6年2考：2021.13，2019.22(2)\\]\n\n一、直接和差法\n\n**例**2*　*如图，在矩形*ABCD*中，*AB*＝6，*BC*＝8，点*E*，*F*分别在边*AB*，*AD*上，连接*CE*，*CF*，*EF*.若*AE*＝2*BE*，*AF*＝*DF*，则图中阴影部分的面积为*[　　　　]{.underline}*.\n\n[[IMG:6]]\n\n例2题图\n\n**变式**3*　*如图，△*ABC*内接于☉*O*，连接*OA*，*OB*，若*OA*＝10，∠*ACB*＝45°，则图中阴影部分的面积为*[　　　　]{.underline}*.\n\n[[IMG:7]]\n\n变式3题图\n\n**变式**4*　*如图，四边形*AOBC*是边长为1的正方形，以*O*为圆心的$\\overset{⏜}{CD}$交*OA*的延长线于点*D*，则图中阴影部分的面积等于*[　　　　]{.underline}*.\n\n[[IMG:8]]\n\n变式4题图\n\n二、构造和差法\n\n**例**3*　*如图，四边形*ABCD*，*CEFG*均为正方形，点*D*在*CE*上，其中正方形*ABCD*的面积为16\ncm^2^，正方形*CEFG*的面积为36\ncm^2^，则图中阴影部分的面积为*[　　　　]{.underline}*cm^2^.\n\n[[IMG:9]]\n\n例3题图\n\n**变式**5*　*如图，*AB*为☉*O*的直径，*BC*与☉*O*相切，连接*AC*，与☉*O*交于点*D*，☉*O*的半径为2.若点*D*是$\\overset{⏜}{AB}$的中点，则图中阴影部分的面积为*[　　　　]{.underline}*.\n\n[[IMG:10]]\n\n变式5题图\n\n**变式**6*　*如图，在矩形*ABCD*中，*AB*＝4，*BC*＝4$\\sqrt{2}$，以点*B*为圆心，分别以*AB*，*BC*的长为半径画弧，与*BC*，*AD*分别交于点*E*，*F*，则图中阴影部分的面积为*[　　　　]{.underline}*.\n\n[[IMG:11]]\n\n变式6题图\n\n方法解读",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ31-0003",
+    "source": "2025年中考数学总复习31 微专题  三种方法求阴影部分面积  学案（含答案）",
+    "point": "KP-077",
+    "difficulty": 3,
+    "stem_zh": "等积转化法\n\n所求阴影部分的面积无法直接计算时，可利用等积转化法将所求阴影部分的面积转化为规则图形的面积或规则图形面积的和差.\n\n(1)直接等面积转化(*AB*∥*CD*)\n\n[[IMG:0]]\n\n*S*~阴影~＝*S*~△*ABC*~\n\n[[IMG:1]]\n\n*S*~阴影~＝*S*~扇形*COD*~\n\n(2)全等转化\n\n[[IMG:2]]\n\n*S*~阴影~＝*S*~△*AOB*~(▱*ABCD*)\n\n[[IMG:3]]\n\n*S*~阴影~＝*S*~△*ACD*~(*D*为*AB*的中点)\n\n方法三*　*等积转化法\n\n**例**4*　*如图，在▱*ABCD*中，点*E*在*AD*边上，连接*BE*，*CE*，若*S*~▱*ABCD*~＝20，则图中阴影部分的面积为*[　　　　]{.underline}*.\n\n[[IMG:4]]\n\n例4题图\n\n**变式**7*　*如图，已知点*C*，*D*是以*AB*为直径的半圆*O*的三等分点，$\\overset{⏜}{CD}$的长为$\\frac{\\pi}{3}$，则图中阴影部分的面积为*[　　　　]{.underline}*.\n\n[[IMG:5]]\n\n变式7题图\n\n**变式**8*　*如图，*AB*为☉*O*的直径，*BC*与☉*O*相切，连接*AC*，与☉*O*交于点*D*，☉*O*的半径为2，若∠*C*＝45°，则图中阴影部分的面积为*[　　　　]{.underline}*.\n\n[[IMG:6]]\n\n变式8题图\n\n二阶*　*综合应用",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ31-0004",
+    "source": "2025年中考数学总复习31 微专题  三种方法求阴影部分面积  学案（含答案）",
+    "point": "KP-077",
+    "difficulty": 3,
+    "stem_zh": "如图，*AB*是☉*O*的直径，*OC*＝6，∠*BAC*＝40°，则图中阴影部分的面积为*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ31-0005",
+    "source": "2025年中考数学总复习31 微专题  三种方法求阴影部分面积  学案（含答案）",
+    "point": "KP-077",
+    "difficulty": 3,
+    "stem_zh": "如图，*E*，*F*分别是矩形*ABCD*的边*AB*，*CD*上的一点，连接*DE*，*AF*交于点*P*，连接*CE*，*BF*交于点*Q*，若四边形*EPFQ*的面积为15，则图中阴影部分的面积为*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ31-0006",
+    "source": "2025年中考数学总复习31 微专题  三种方法求阴影部分面积  学案（含答案）",
+    "point": "KP-077",
+    "difficulty": 3,
+    "stem_zh": "如图，在矩形*ABCD*中，*BC*＝4，*CD*＝2，以*AD*为直径的半圆*O*与*BC*相切于点*E*，连接*BD*，则图中阴影部分的面积为*[　　　　]{.underline}*.(结果保留π)\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ31-0007",
+    "source": "2025年中考数学总复习31 微专题  三种方法求阴影部分面积  学案（含答案）",
+    "point": "KP-077",
+    "difficulty": 3,
+    "stem_zh": "如图，将边长为$\\sqrt{3}$的正方形*ABCD*绕点*B*逆时针旋转30°，得到正方形*A\\'BC\\'D\\'*，点*A*，*C*，*D*分别对应点*A\\'*，*C\\'*，*D\\'*，则图中阴影部分的面积为*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ31-0008",
+    "source": "2025年中考数学总复习31 微专题  三种方法求阴影部分面积  学案（含答案）",
+    "point": "KP-077",
+    "difficulty": 3,
+    "stem_zh": "如图，在正方形*ABCD*中，*AB*＝4，点*E*，*F*分别是*AD*，*BC*的中点，分别以点*A*，*B*为圆心，*AE*长为半径作弧，两弧交*AB*于点*G*，以*EF*为直径在*EF*的右侧作半圆，则图中阴影部分的面积为*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ31-0009",
+    "source": "2025年中考数学总复习31 微专题  三种方法求阴影部分面积  学案（含答案）",
+    "point": "KP-077",
+    "difficulty": 3,
+    "stem_zh": "如图，*E*为正方形*ABCD*内的一点，*BE*⊥*CE*，*CE*＝$\\sqrt{7}$，则图中阴影部分的面积为*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ31-0010",
+    "source": "2025年中考数学总复习31 微专题  三种方法求阴影部分面积  学案（含答案）",
+    "point": "KP-077",
+    "difficulty": 3,
+    "stem_zh": "如图，在矩形*ABCD*中，*AB*＝6，*BC*＝10，点*E*，*F*在*AD*边上，点*G*，*H*分别是*AB*，*CD*的中点，*GF*和*EH*交于点*M*，若*EF*＝$\\frac{1}{2}$*AD*，则图中阴影部分的面积为*[　　　　]{.underline}*.\n\n[[IMG:0]]\n\n[\\]{.underline}\n\n一阶*　*方法训练\n\n**例**1*　*16*　*",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"∵*AD*∥*BC*，点*A*到直线*BC*的距离为4，∴点*E*到直线*BC*的距离为4，∴*S*~阴影~＝$\\\\frac{1}{2}$×8×4＝16.\\n\\n**变式**1*　*$\\\\frac{2\\\\pi}{3}$*　*【解析】∵四边形*ABCD*是矩形，∴∠*ABC*＝∠*C*＝90°，∵*BA*＝*BE*＝2，*BC*＝$\\\\sqrt{3}$，∴cos∠*CBE*＝$\\\\frac{CB}{BE}$＝$\\\\frac{\\\\sqrt{3}}{2}$，∴∠*CBE*＝30°，∴∠*ABE*＝90°－30°＝60°，∴*S*~扇形*ABE*~＝$\\\\frac{60\\\\pi \\\\times 2^{2}}{360}$＝$\\\\frac{2\\\\pi}{3}$.\\n\\n**变式**2*　*$\\\\frac{2\\\\pi}{3}$*　*【解析】∵*AB*＝*AC*＝4，∠*C*＝30°，*AB*为☉*O*的直径，∴∠*B*＝∠*C*＝30°，*OA*＝*OB*＝$\\\\frac{1}{2}$*AB*＝2，∴∠*AOD*＝2∠*B*＝60°，∴*S*~阴影~＝$\\\\frac{60\\\\pi \\\\times 2^{2}}{360}$＝$\\\\frac{2\\\\pi}{3}$.\\n\\n**例**2*　*20*　*【解析】∵*AE*＝2*BE*，*AF*＝*DF*，*AB*＝6，*BC*＝8，∴*AE*＝$\\\\frac{2}{3}$*AB*＝4，*BE*＝$\\\\frac{1}{3}$*AB*＝2，*AF*＝*DF*＝$\\\\frac{1}{2}$*AD*＝$\\\\frac{1}{2}$*BC*＝4，∴*S*~阴影~＝*S*~矩形*ABCD*~－*S*~△*AEF*~－*S*~△*BCE*~－*S*~△*CDF*~＝6×8－$\\\\frac{1}{2}$×4×4－$\\\\frac{1}{2}$×8×2－$\\\\frac{1}{2}$×6×4＝20.\\n\\n**变式**3*　*25π－50*　*【解析】∵∠*ACB*＝45°，∴∠*AOB*＝2∠*ACB*＝90°，又∵*OA*＝*OB*＝10，∴*S*~阴影~＝*S*~扇形*AOB*~－*S*~△*AOB*~＝$\\\\frac{n\\\\pi r^{2}}{360}$－$\\\\frac{1}{2}$*OA*·*OB*＝$\\\\frac{90\\\\pi \\\\times 10^{2}}{360}$－$\\\\frac{1}{2}$×10×10＝25π－50.\\n\\n**变式**4*　*$\\\\frac{\\\\pi}{4}$－$\\\\frac{1}{2}$*　*【解析】∵四边形*AOBC*是边长为1的正方形，∴*AC*＝*AO*＝1，∠*OAC*＝90°，∴*OC*＝$\\\\sqrt{2}$，∠*AOC*＝45°，∴*S*~阴影~＝*S*~扇形*COD*~－*S*~△*AOC*~＝$\\\\frac{45\\\\pi \\\\times \\\\text{(}\\\\sqrt{2}\\\\text{)}^{2}}{360}$－$\\\\frac{1}{2}$×1×1＝$\\\\frac{\\\\pi}{4}$－$\\\\frac{1}{2}$.\\n\\n**例**3*　*10*　*【解析】∵四边形*ABCD*，*CEFG*均为正方形，且面积分别为16\\ncm^2^，36 cm^2^，∴*BC*＝*CD*＝4 cm，*CG*＝*CE*＝6\\ncm，∴*S*~阴影~＝*S*~△*BEG*~－*S*~△*BDG*~＝$\\\\frac{1}{2}$×(4＋6)×6－$\\\\frac{1}{2}$×(4＋6)×4＝10\\ncm^2^.\\n\\n**变式**5*　*2＋π*　*【解析】如解图，连接*OD*，∵点*D*是$\\\\overset{⏜}{AB}$的中点，∴∠*AOD*＝∠*DOB*＝90°，△*AOD*是等腰直角三角形，∵☉*O*的半径为2，∴*S*~阴影~＝*S*~△*AOD*~＋*S*~扇形*DOB*~＝$\\\\frac{1}{2}$×2×2＋$\\\\frac{90\\\\pi \\\\times 2^{2}}{360}$＝2＋π.\\n\\n[[IMG:1]]\\n\\n变式5题解图\\n\\n**变式**6*　*8*　*【解析】如解图，连接*BF*，∵四边形*ABCD*为矩形，∴∠*ABC*＝∠*BAD*＝90°，∵*AB*＝4，*BF*＝*BC*＝4$\\\\sqrt{2}$，∴*AF*＝$\\\\sqrt{BF^{2}－AB^{2}}$＝4，∴△*ABF*是等腰直角三角形，∠*ABF*＝∠*CBF*＝45°，∴*S*~阴影~＝*S*~扇形*CBF*~＋*S*~△*ABF*~－*S*~扇形*ABE*~＝$\\\\frac{45\\\\pi \\\\t\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ32-0002",
+    "source": "2025年中考数学总复习32 微专题  尺规作图  学案（含答案）",
+    "point": "KP-069",
+    "difficulty": 3,
+    "stem_zh": "在∠*α*上以点*O*为圆心，适当长为半径作弧，交∠*α*的两边于点*P*，*Q*；",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ32-0003",
+    "source": "2025年中考数学总复习32 微专题  尺规作图  学案（含答案）",
+    "point": "KP-069",
+    "difficulty": 3,
+    "stem_zh": "以点*O\\'*为圆心，*OP*(或*OQ*)长为半径作弧，交*O\\'A*于点*M*；",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ32-0006",
+    "source": "2025年中考数学总复习32 微专题  尺规作图  学案（含答案）",
+    "point": "KP-069",
+    "difficulty": 3,
+    "stem_zh": "以点*O*为圆心，适当长为半径作弧，分别交*OA*，*OB*于点*N*，*M*；",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ32-0007",
+    "source": "2025年中考数学总复习32 微专题  尺规作图  学案（含答案）",
+    "point": "KP-069",
+    "difficulty": 3,
+    "stem_zh": "分别以点*M*，*N*为圆心，以大于$\\frac{1}{2}$*MN*长为半径作弧，两弧在∠*AOB*的内部相交于点*P*；",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ32-0008",
+    "source": "2025年中考数学总复习32 微专题  尺规作图  学案（含答案）",
+    "point": "KP-052",
+    "difficulty": 3,
+    "stem_zh": "作射线*OP*，*OP*即为∠*AOB*的平分线\n\n[[IMG:0]]\n\n原理：三边分别相等的两个三角形全等；全等三角形的对应角相等；两点确定一条直线\n\n四、作线段的垂直平分线",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ32-0009",
+    "source": "2025年中考数学总复习32 微专题  尺规作图  学案（含答案）",
+    "point": "KP-069",
+    "difficulty": 3,
+    "stem_zh": "分别以点*A*，*B*为圆心，以大于$\\frac{1}{2}$*AB*长为半径，在*AB*两侧作弧，两弧分别交于点*M*，*N*；",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ32-0011",
+    "source": "2025年中考数学总复习32 微专题  尺规作图  学案（含答案）",
+    "point": "KP-065",
+    "difficulty": 3,
+    "stem_zh": "如图，在菱形*ABCD*中，∠*A*＝30°，取大于$\\frac{1}{2}$*AB*的长为半径，分别以点*A*，*B*为圆心作弧相交于两点，过此两点的直线交*AD*边于点*E*(作图痕迹如图所示)，连接*BE*，*B\nD.*则∠*EBD*的度数为*[　　　　]{.underline}*.\n\n[[IMG:0]]\n\n*　*第1题图\n\n命题点2*　*尺规作图 (6年3考) *　*",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ34-0001",
+    "source": "2025年中考数学总复习34 微专题  图形的对称、平移和旋转 学案（含答案）",
+    "point": "KP-079",
+    "difficulty": 3,
+    "stem_zh": "下列消防安全标识图，既是轴对称图形又是中心对称图形的是(*　　*)\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ34-0003",
+    "source": "2025年中考数学总复习34 微专题  图形的对称、平移和旋转 学案（含答案）",
+    "point": "KP-079",
+    "difficulty": 3,
+    "stem_zh": "如图，在△*ABC*中，*AB*＝8，*BC*＝6，沿过点*B*的直线将△*ABC*折叠，使点*C*的对应点*E*落在*AB*上，则*AE*的长为*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ34-0004",
+    "source": "2025年中考数学总复习34 微专题  图形的对称、平移和旋转 学案（含答案）",
+    "point": "KP-080",
+    "difficulty": 3,
+    "stem_zh": "如图，△*ABC*沿*BC*方向平移到△*DEF*的位置，若*BE*＝1，则*CF*的长为*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ34-0005",
+    "source": "2025年中考数学总复习34 微专题  图形的对称、平移和旋转 学案（含答案）",
+    "point": "KP-081",
+    "difficulty": 3,
+    "stem_zh": "如图，在三角形*ABC*中，∠*BAC*＝40°，将三角形*ABC*绕点*A*按逆时针方向旋转60°得到三角形*ADE*，则∠*CAD*的度数是*[　　　]{.underline}*°.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ35-0002",
+    "source": "2025年中考数学总复习35 微专题  几何图形的折叠问题  学案（含答案）",
+    "point": "KP-079",
+    "difficulty": 3,
+    "stem_zh": "与折叠有关的计算常用性质\n\n(1)折叠问题的本质是全等变换，折叠前的部分与折叠后的部分是全等图形.\n\n[[IMG:0]]\n\n①线段相等：*C\\'D*＝*[　　　　]{.underline}*，*BC*＝*[　　　　]{.underline}*；\n\n②角度相等：∠1＝*[　　　　]{.underline}*，∠3＝*[　　　　]{.underline}*；\n\n③全等关系：△*BC\\'D*≌*[　　　　]{.underline}*.\n\n(2)折痕可看作垂直平分线(对应的两点之间的连线被折痕垂直平分，即*BD*垂直平分*CC\\'*)；\n\n(3)折痕可看作角平分线.\n\n二阶*　*方法训练\n\n方法解读",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ35-0003",
+    "source": "2025年中考数学总复习35 微专题  几何图形的折叠问题  学案（含答案）",
+    "point": "KP-079",
+    "difficulty": 3,
+    "stem_zh": "利用折叠出现的直角三角形求解\n\n情形：折叠中顶点落在边上得到直角三角形\n\n[[IMG:0]]\n\n结论：在Rt△*CFB\\'*中，利用勾股定理，得*x*^2^＝*a*^2^＋(*b*－*x*)^2^\n\n方法总结：由于矩形的四个内角均为直角，故折叠后易出现与设问相关联的直角三角形，可利用勾股定理或三角函数列方程求解\n\n方法一*　*利用折叠出现的直角三角形求解(2020.9)\n\n**例**1*　*如图，在矩形*ABCD*中，*AB*＝6，*BC*＝9，点*E*，*F*分别在边*AD*，*BC*上，将四边形*ABFE*沿*EF*折叠，点*B*的对应点*B\\'*恰好落在*CD*边的中点处，则*BF*的长为*[　　　　]{.underline}*.\n\n[[IMG:1]]\n\n例1题图\n\n**变式**1*　*\n如图，在Rt△*ABC*中，∠*C*＝90°，*AC*＝6，*AB*＝10，*D*，*E*分别是*AB*，*BC*上的点.将△*ACE*沿*AE*折叠，使点*C*的对应点落在点*D*处，则△*BDE*的面积为*[　　　　]{.underline}*.\n\n[[IMG:2]]\n\n变式1题图\n\n方法解读",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ35-0004",
+    "source": "2025年中考数学总复习35 微专题  几何图形的折叠问题  学案（含答案）",
+    "point": "KP-079",
+    "difficulty": 3,
+    "stem_zh": "利用折叠出现的等腰三角形求解\n\n情形：折叠中利用角平分线(折痕)性质得到等腰三角形\n\n[[IMG:0]]\n\n结论：△*BFD*为等腰三角形，*DF*＝*BF*＝*x*，*AF*＝*b*－*x*\n\n方法总结：当折痕过特殊四边形对边或对角线时，可利用角平分线(折痕)与平行线(特殊四边形的对边)的性质得到等腰三角形，再利用等腰三角形的性质求解\n\n方法二*　*利用折叠出现的等腰三角形求解\n\n**例**2*　*如图，在矩形*ABCD*中，*CD*＝4，*BC*＝8，将△*BCD*沿*BD*翻折得到△*BED*，*BE*交*AD*于点*F*，则*AF*＝*[　　　　]{.underline}*.\n\n[[IMG:1]]\n\n例2题图\n\n**变式**2*　*如图，已知矩形纸片的宽为2，将矩形纸片沿*MN*折叠，得到重合部分△*AMN*，若∠*MAN*＝45°，则△*AMN*的面积为*[　　　　]{.underline}*.\n\n[[IMG:2]]\n\n变式2题图\n\n方法解读",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ35-0005",
+    "source": "2025年中考数学总复习35 微专题  几何图形的折叠问题  学案（含答案）",
+    "point": "KP-079",
+    "difficulty": 3,
+    "stem_zh": "利用折叠出现的全等、相似求解\n\n情形：折叠中常出现的全等、相似模型\n\n(1)如图①，正8字、斜*A*字模型\n\n[[IMG:0]]\n\n图①\n\n结论：①\"正8字\"：△*AFE*∽△*CFD*；②\"斜*A*字\"：△*AFE*∽△*ABC*\n\n(2)如图②，一线三垂直模型\n\n[[IMG:1]]\n\n图②\n\n结论：①△*BEF*∽△*CFD*；\n\n②△*AED*≌△*FED*\n\n方法总结：结合折叠的性质，找出与设问相关联的全等三角形或相似三角形，再利用全等、相似三角形的性质求解\n\n方法三*　*利用折叠出现的全等、相似求解\\[6年2考：2024.23(3)，2021.23\\]\n\n**例**3*　*如图是一张矩形纸片，点*E*在*AB*边上，把△*BCE*沿直线*CE*折叠，使点*B*落在对角线*AC*上的点*F*处，连接*DF*.若点*E*，*F*，*D*在同一条直线上，*AE*＝2.\n\n(1)*DF*＝*[　　　　]{.underline}*；\n\n(2)*BE*＝*[　　　　]{.underline}*.\n\n[[IMG:2]]\n\n例3题图\n\n**例**4*　*如图，*E*是矩形*ABCD*中*CD*边上一点，将△*BCE*沿*BE*折叠得到△*BFE*，点*C*的对应点*F*恰好落在*AD*上.若sin\n∠*DFE*＝$\\frac{2}{3}$，则tan ∠*EBC*的值为*[　　　　]{.underline}*.\n\n[[IMG:3]]\n\n例4题图\n\n**变式**3*　*(2024河南)如图，在平面直角坐标系中，正方形*ABCD*的边*AB*在*x*轴上，点*A*的坐标为(－2，0)，\n点*E*在边*CD*上.将△*BCE*沿*BE*折叠，点*C*落在点*F*处.若点*F*\n的坐标为(0，6)，则点*E*的坐标为*[　　　　]{.underline}*.\n\n[[IMG:4]]\n\n变式3题图\n\n三阶*　*综合应用",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ35-0007",
+    "source": "2025年中考数学总复习35 微专题  几何图形的折叠问题  学案（含答案）",
+    "point": "KP-079",
+    "difficulty": 3,
+    "stem_zh": "在如图所示的矩形*ABCD*中，*M*为*CD*中点，将△*MBC*沿*BM*翻折至△*MBE*，若∠*AME*＝15°，则∠*ABE*＝*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ36-0001",
+    "source": "2025年中考数学总复习36 微专题  统  计  学案（含答案）",
+    "point": "KP-092",
+    "difficulty": 3,
+    "stem_zh": "要调查下列问题：①调查某种灯泡的使用寿命；②了解我们班同学的视力情况；③调查同一批插线板的合格率；④发射前对\"神舟十七号\"载人飞船零部件的检测.其中适合抽样调查的是*[　　　　]{.underline}*，适合全面调查的是*[　　　　]{.underline}*.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ36-0002",
+    "source": "2025年中考数学总复习36 微专题  统  计  学案（含答案）",
+    "point": "KP-092",
+    "difficulty": 3,
+    "stem_zh": "为了解某校2\n000名学生对校园环境的满意度，从中随机抽取100名学生进行调查.在此数据分析中，总体是*[　　　　　　　　　]{.underline}*，个体是*[　　　　　　　]{.underline}*，样本是*[　　　　　　　　]{.underline}*，样本容量是*[　　　　　]{.underline}*.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ36-0003",
+    "source": "2025年中考数学总复习36 微专题  统  计  学案（含答案）",
+    "point": "KP-097",
+    "difficulty": 3,
+    "stem_zh": "射击比赛中，某队员的10次射击成绩(单位：环)如下：\n\n9，5，7，8，7，6，8，6，7，7\n\n则这10次射击成绩的平均数是[*　* *　*]{.underline}；中位数是[*　*\n*　*]{.underline}；众数是*[　　　　　]{.underline}*；方差是*[　　　　]{.underline}*.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ36-0004",
+    "source": "2025年中考数学总复习36 微专题  统  计  学案（含答案）",
+    "point": "KP-093",
+    "difficulty": 3,
+    "stem_zh": "抛一枚硬币100次，其中正面朝上的次数是52，在此过程中正面朝上的频数是*[　　]{.underline}*，频率是*[　　　　]{.underline}*.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ36-0006",
+    "source": "2025年中考数学总复习36 微专题  统  计  学案（含答案）",
+    "point": "KP-046",
+    "difficulty": 3,
+    "stem_zh": "2\n000名学生对校园环境的满意度；每名学生对校园环境的满意度；抽取的100名学生对校园环境的满意度；100",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ37-0001",
+    "source": "2025年中考数学总复习37 微专题  第二节  概  率  学案（含答案）",
+    "point": "KP-103",
+    "difficulty": 3,
+    "stem_zh": "下列事件中：①车辆随机到达一个路口，遇到绿灯；②三角形两边之和小于第三边；③30人中有两人的生日在同一月；④对某一目标射击10次，命中10次；⑤下个月有31天；⑥没有水分，水稻种子发芽.\n\n其中是必然事件的有*[　　　]{.underline}*，不可能事件有*[　　　　]{.underline}*，随机事件有*[　　　　]{.underline}*.(填序号)",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ37-0002",
+    "source": "2025年中考数学总复习37 微专题  第二节  概  率  学案（含答案）",
+    "point": "KP-004",
+    "difficulty": 3,
+    "stem_zh": "袋子中装有4个黑球、2个白球，这些球除颜色外无其他差别.\n\n(1)随机从袋子摸出一个球，摸出的球是黑球的概率为*[　　　　]{.underline}*；\n\n(2)随机从袋子一次性摸出两个球，则摸出的两个球颜色相同的概率为*[　　　　]{.underline}*.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ39-0001",
+    "source": "2025年中考数学总复习39 微专题 实际应用题  学案（含答案）",
+    "point": "KP-046",
+    "difficulty": 3,
+    "stem_zh": "《孙子算经》是中国古代重要的数学著作，成书大约在一千五百年前.书中记载了这样一个问题：今有木，不知长短，引绳度之，余绳四尺五，屈绳量之，不足一尺，问木长几何？其大意是：用一根绳子去量一根木条，绳子剩余4.5尺，将绳子对折再量木条，木条剩余1尺，问木条长多少尺？请解答上述问题.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ39-0005",
+    "source": "2025年中考数学总复习39 微专题 实际应用题  学案（含答案）",
+    "point": "KP-004",
+    "difficulty": 3,
+    "stem_zh": "为增强学生的劳动意识，养成劳动的习惯和品质，某校组织学生参加劳动实践.经学校与劳动基地联系，计划组织学生种植甲、乙两种作物.如果种植3亩甲作物和2亩乙作物需要27名学生，种植2亩甲作物和2亩乙作物需要22名学生.\n\n根据以上信息，解答下列问题：\n\n（1）种植1亩甲作物和1亩乙作物分别需要多少名学生？\n\n（2）种植甲、乙两种作物共10亩，所需学生人数不超过55人，至少种植甲作物多少亩？",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ41-0001",
+    "source": "2025年中考数学总复习41 微专题  综合与实践  学案（含答案）",
+    "point": "KP-069",
+    "difficulty": 3,
+    "stem_zh": "综合与实践\n\n【主题】网格中的路线\n\n【素材】如图①所示：\n\n①在4×3的网格中，记*A*，*B*，*C*三点；\n\n②沿网格线从*A*点出发到*B*点，规定必须向北走，或向东走.\n\n【实践操作】\n\n①如图②，除点*A*外其余交点用空圆代替；\n\n②按图示方式在空圆中，填写出从*A*点出发到部分交点的路线数量；\n\n③从点*A*出发到点*C*共有3条路线.\n\n【实践探索】\n\n（1）从*A*点出发到*B*点共有多少条路线？并补全图②中的空圆；\n\n（2）从*A*点出发到*B*点，且不经过点*C*，此时共有多少条路线，并画图说明.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ41-0002",
+    "source": "2025年中考数学总复习41 微专题  综合与实践  学案（含答案）",
+    "point": "KP-001",
+    "difficulty": 3,
+    "stem_zh": "（人教七上实验与探究改编）综合与实践\n\n【主题】幻方\n\n【素材】幻方最早源于我国，古人称之为纵横图，如图①是一个三阶幻方.\n\n[[IMG:0]]\n\n【实践操作】\n\n步骤1：计算每一横行点数的和；\n\n步骤2：计算每一竖列点数的和；\n\n步骤3：计算两条斜对角线上的点数的和.\n\n【实践探索】\n\n（1）每一横行、每一竖列以及两条斜对角线上的点数的和均为*[　　　　]{.underline}*；\n\n（2）将－6，－3，0，3，6，9，12，15，18填入图②，使其构成一个三阶幻方；\n\n【拓展延伸】\n\n（3）如图③，在一个由6个圆圈组成的三角形里，将－7到－2这6个连续整数分别填入圆圈中，使得三角形的每条边上的三个数的和*S*均相等，且求出*S*的最大值.\n\n[[IMG:1]]\n\n二、方程（组）与不等式（组）",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ41-0003",
+    "source": "2025年中考数学总复习41 微专题  综合与实践  学案（含答案）",
+    "point": "KP-004",
+    "difficulty": 3,
+    "stem_zh": "（人教七上习题改编）综合与实践\n\n【主题】利用天平称1个乒乓球和1个纸杯的质量\n\n【问题情境】在综合实践课上，老师让同学们利用天平和一些物品探究等式的基本性质，现有一架天平和一个10克的砝码，如何称出1个乒乓球和1个纸杯的质量？\n\n【操作探究】下面是\"智慧小组\"的探究过程.\n\n准备物品：①若干个大小相同的乒乓球（质量相同）；\n\n②若干个大小相同的纸杯（质量相同）.\n\n探究过程：设每个乒乓球的质量是*x*克.\n\n+:-----:+-----------------+-----------------+----------+----------+------------+\n|       | 天平左边        | 天平右边        | 天平状态 | 乒乓球的 | 一次性纸   |\n|       |                 |                 |          |          |            |\n|       |                 |                 |          | 总质量   | 杯的总质量 |\n+-------+-----------------+-----------------+----------+----------+------------+\n| 记录1 | 8个乒乓球和     | 10个一次性纸杯  | 平衡     | 8*x*     |            |\n|       |                 |                 |          |          |            |\n|       | 1个10克的砝码   |                 |          |          |            |\n+-------+-----------------+-----------------+----------+----------+------------+\n| 记录2 | 16个乒乓球      | 10个一次性纸杯  | 平衡     | 16*x*    |            |\n|       |                 |                 |          |          |            |\n|       |                 | 和1个10克的砝码 |          |          |            |\n+-------+-----------------+-----------------+----------+----------+------------+\n\n【解决问题】\n\n（1）①将表格中的空白部分用含*x*的式子表示；\n\n②分别求1个乒乓球的质量和1个一次性纸杯的质量.\n\n【拓展设计】\n\n（2）\"创新小组\"根据\"智慧小组\"的探究过程提出这样一个问题：\n\n请你设计一个方案，使得乒乓球的个数为一次性纸杯个数的2倍，并填入下表：\n\n  ------- ---------------------------------- ----------------------------------------------------- -------------\n          天平左边                           天平右边                                              天平状态\n\n   记录3  乒乓球*[　　　　]{.underline}*个   一次性纸杯*[　　　　]{.underline}*个＋1个10克的砝码   平衡\n  ------- ---------------------------------- ----------------------------------------------------- -------------",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ41-0005",
+    "source": "2025年中考数学总复习41 微专题  综合与实践  学案（含答案）",
+    "point": "KP-031",
+    "difficulty": 3,
+    "stem_zh": "（人教八下习题改编） 【综合与实践】\n\n【主题】探究弹簧的伸长量\n\n【素材】某数学实验小组在学习了力的知识后，计划通过实验探究弹簧在不同伸长量下对外界的弹力大小，具体过程如下（实验均在弹簧弹性范围内进行）：\n\n【实践操作】\n\n步骤1：记录实验数据如下表：\n\n  ---------------- ------ ------ ------ ------ ------ ------ ------ ------\n   弹簧长度*L/*cm  22     23     24     25     26     27     28     29\n\n     弹力*F/*N     0      0.5    1.0    1.5    2.0    2.5    3.0    3.5\n  ---------------- ------ ------ ------ ------ ------ ------ ------ ------\n\n步骤2：通过表中的数值，在图②的平面直角坐标系中描点、连线，画出弹簧长度*L*与弹簧对外界的弹力大小*F*的图象.\n\n[[IMG:0]]\n\n【实践探索】\n\n（1）观察所画的图象，猜测*F*与*L*之间的函数关系，并求出函数关系式；\n\n（2）若弹簧的劲度系数*k*＝$\\frac{F}{\\Delta L}$（*F*为弹簧受到的拉力，*F*~拉~＝*F*~弹~，*ΔL*为弹簧伸长的长度），求*k*的值；\n\n（3）在（2）的条件下，如图③，是两根劲度系数不同的弹簧甲、乙（两根弹簧起始长度相同），分别挂上*M*，*N*两物块，且物块*M*的质量大于物块*N*的质量（质量越大，悬挂时对弹簧的拉力越大，弹簧对外界的弹力也越大），观察图象，则*k*~甲~*[　　　]{.underline}k*~乙~（填\"＞\"\"＜\"或\"＝\"）.\n\n[[IMG:1]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ41-0006",
+    "source": "2025年中考数学总复习41 微专题  综合与实践  学案（含答案）",
+    "point": "KP-034",
+    "difficulty": 3,
+    "stem_zh": "项目化学习\n\n【主题】优化大豆种植密度\n\n【项目背景】大豆，俗称黄豆，属一年生草本，是我国重要粮食作物之一，已有五千年栽培历史，古称\"菽\"，某校综合实践小组以探究\"大豆种植密度优化方案\"为主题展开项目学习\n\n[[IMG:0]]\n\n*　*第6题图\n\n【驱动任务】探究大豆产量与种植密度的关系\n\n【研究步骤】（1）在劳动实践基地中选定6块单位面积（1平方米）的地块作为试验田，并选定适宜的大豆品种；\n\n（2）在不同试验田中种植株数不同的大豆，严格控制影响大豆生长的其它变量，在大豆成熟期，对每株大豆的产量进行统计；\n\n（3）数据分析，形成结论.\n\n【试验数据】\n\n  --------------------------------- ------ ------ ------ ------ ------ ------\n             试验田编号             1      2      3      4      5      6\n\n   单位面积试验田种植株数*x*（株）  30     40     50     60     70     80\n\n       单株的平均产量*y*（粒）      51     46     41     36     31     26\n  --------------------------------- ------ ------ ------ ------ ------ ------\n\n【问题解决】请根据此项目实施的相关材料完成下列任务：\n\n（1）根据表中信息可知，单位面积试验田中大豆单株的平均产量*y*（粒）是种植株数*x*（株）的\n*[　　　　]{.underline}*函数（选填\"一次\"\"二次\"\"反比例\"），*y* 与 *x*\n的函数关系式为 *[　　　　]{.underline}*（30≤*x*≤80）；\n\n（2）若要使单位面积试验田中大豆的总产量（单位：粒）最大，请通过计算说明单位面积试验田中大豆植株种植数量的方案.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ41-0010",
+    "source": "2025年中考数学总复习41 微专题  综合与实践  学案（含答案）",
+    "point": "KP-069",
+    "difficulty": 3,
+    "stem_zh": "（人教八上课题学习改编）综合与实践\n\n【主题】研究几何体的最短路线问题\n\n\"转化\"是一种重要的数学思想，将空间问题转化为平面问题是转化思想的一个重要方面.为了让同学们探究\"转化\"思想在数学中的应用，在数学活动课上，老师带领学生研究几何体的最短路线问题.\n\n【实践操作】\n\n如图①，一只蚂蚁从点*A*出发沿圆柱侧面爬行到点*C*，其最短路线正是侧面展开图中的线段*AC*，若圆柱的高*AB*为2\ncm，底面直径*BC*为8 cm.\n\n【问题解决】\n\n（1）判断最短路线的依据是*[　　　　　　　　　　　]{.underline}*；\n\n（2）求出蚂蚁沿圆柱侧面爬行的最短路线*AC*的长（结果保留根号和π）；\n\n【拓展迁移】\n\n如图②，*O*为圆锥的顶点，*M*为底面圆周上一点，点*P*是*OM*的中点，母线*OM*＝8\ncm，底面圆半径为2\ncm，粗线为蚂蚁从点*P*出发绕圆锥侧面爬行回到点*P*时所经过的路径的痕迹.\n\n（3）请求出蚂蚁爬行的最短距离.\n\n[[IMG:0]]\n\n图①\n\n[[IMG:1]]\n\n图②",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ41-0011",
+    "source": "2025年中考数学总复习41 微专题  综合与实践  学案（含答案）",
+    "point": "KP-069",
+    "difficulty": 3,
+    "stem_zh": "（北师九下习题改编） 综合与实践\n\n【主题】配置圆形玻璃材料\n\n【素材】有一块被不小心打碎的圆形玻璃材料的残片，如图①，现需重新配置一片与原材料大小相同的圆形玻璃材料.\n\n【实践操作】\n\n利用尺规作出该玻璃残片的圆心，小明的作图过程如下：\n\n步骤1：在圆形玻璃残片上任取两点*A*，*B*，如图②；\n\n步骤2：过点*A*作一条直线*l*，使得直线*l*与圆只有一个交点*A*；\n\n步骤3：以点*A*为圆心，任意长为半径向点*A*两侧作弧，分别交直线*l*于*M*，*N*两点；\n\n步骤4：分别以点*M*，*N*为圆心，大于$\\frac{1}{2}$*MN*的长为半径作弧，两弧分别交于*P*，*Q*两点，作直线*PQ*；\n\n步骤5：过点*B*作...，\n\n...\n\n【实践探索】\n\n（1）在图②的基础上补全尺规作图，求作圆心*O*（不写作法，保留作图痕迹）；\n\n（2）在小明作图过程中的\"步骤4\"中，尺规作图内容是*[　　　　　　　　　　]{.underline}*；\n\n（3）除了上述方法外，小明想到还可以利用垂径定理求出该圆形玻璃残片的圆心，如图③，在圆形玻璃残片上分别取点*A*，点*B*和点*C*，令*AC*＝*BC*＝*a*，∠*ACB*＝*α*.请你结合垂径定理的知识，利用尺规作出该圆形玻璃残片的圆心*O*，并求出直径（用含*a*和*α*的式子表示）.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ42-0001",
+    "source": "2025年中考数学总复习42 微专题  几何最值问题  学案（含答案）",
+    "point": "KP-004",
+    "difficulty": 3,
+    "stem_zh": "如图，在等边△*ABC*中，*AB*＝4，点*D*是*BC*边上的动点，则线段*AD*的最小值是*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ42-0002",
+    "source": "2025年中考数学总复习42 微专题  几何最值问题  学案（含答案）",
+    "point": "KP-081",
+    "difficulty": 3,
+    "stem_zh": "如图，在等边△*ABC*中，*AB*＝6，点*P*是边*BC*上的动点，将△*ABP*绕点*A*逆时针旋转60°得到△*ACQ*，点*D*是*AC*边的中点，连接*DQ*，则*DQ*的最小值是*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ42-0003",
+    "source": "2025年中考数学总复习42 微专题  几何最值问题  学案（含答案）",
+    "point": "KP-004",
+    "difficulty": 3,
+    "stem_zh": "如图，在△*ABC*中，∠*ABC*＝35°，*D*是边*AC*上一点，*E*，*F*分别是射线*BA*，*BC*上异于点*B*的动点，连接*DB*，*DE*，*EF*，若∠*CBD*＝10°，*BD*＝6，则*DE*＋*EF*的最小值为*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ42-0004",
+    "source": "2025年中考数学总复习42 微专题  几何最值问题  学案（含答案）",
+    "point": "KP-056",
+    "difficulty": 3,
+    "stem_zh": "如图，在Rt△*ABC*中，∠*A*＝90°，*M*为*BC*的中点，*H*为*AB*上一点，过点*C*作*CG*∥*AB*，交*HM*的延长线于点*G*，若*AC*＝8，*AB*＝6，则四边形*ACGH*周长的最小值是*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ42-0005",
+    "source": "2025年中考数学总复习42 微专题  几何最值问题  学案（含答案）",
+    "point": "KP-031",
+    "difficulty": 3,
+    "stem_zh": "如图，在平面直角坐标系中，一次函数*y*＝*x*＋6的图象与*x*轴交于点*A*，与*y*轴交于点*B*，点*P*在线段*AB*上，*PC*⊥*x*轴于点*C*，则△*PCO*周长的最小值为*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ42-0006",
+    "source": "2025年中考数学总复习42 微专题  几何最值问题  学案（含答案）",
+    "point": "KP-045",
+    "difficulty": 3,
+    "stem_zh": "如图，在等腰△*ABC*中，∠*BAC*＝45°，*AB*＝*AC*，点*P*，*Q*，*R*分别为边*BC*，*AB*，*AC*上（均不与端点重合）的动点，当△*PQR*的周长最小时，则∠*PQR*＋∠*PRQ*的度数为*[　　　　]{.underline}*.\n\n[[IMG:0]]\n\n类型二*　*利用\"两点之间线段最短\"解决最值问题\n\n方法解读\n\n+:----:+----------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+\n| 类型 | 两定点＋一动点型                                                                                                                                                     | 一定点＋两动点型                                                                  | 两定点＋定长型                                                                    |\n+------+----------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+\n| 条件 | 异侧                                                                             | 同侧                                                                              | *P*是∠*AOB*内部的定点，*M*，*N*分别是*OA*，*OB*上的动点                           | *A*，*B*是定点，*M*，*N*分别是*l*~1~，*l*~2~上的动点，且*MN*⊥*l*~1~               |\n|      +----------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+                                                                                   |                                                                                   |\n|      | *A*，*B*是定点，*P*是直线*l*上的动点                                                                                                                                 |                                                                                   |                                                                                   |\n+------+----------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+\n| 图示 | [[IMG:1]]                                                                                                        |\n+------+----------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+\n| 结论 | *PA*＋*PB*的最小值为*AB*的长                                                     | *PA*＋*PB*的最小值为*AB\\'*的长                                                    | △*PMN*周长的最小值为*P\\'P″*的长                                                   | *AM*＋*MN*＋*BN*的最小值为*A\\'B*＋*MN*的长                                        |\n+------+----------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+",
+    "options_json": null,
+    "old_answer": "2\\sqrt{3}",
+    "old_solutions": "[{\"method\": \"解法一 (几何垂线段法)\", \"text\": \"根据'垂线段最短'与轴对称'两点之间线段最短'，构造对称点或垂线段得出几何极小值。\"}, {\"method\": \"解法二 (函数解析模型法)\", \"text\": \"设动点参数建立二次函数或直角坐标解析式模型，利用二次函数对称轴顶点公式求出最值。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ42-0007",
+    "source": "2025年中考数学总复习42 微专题  几何最值问题  学案（含答案）",
+    "point": "KP-066",
+    "difficulty": 3,
+    "stem_zh": "如图，在边长为4的正方形*ABCD*中，*E*为边*AB*上一点，且*AE*＝1，*F*为对角线*BD*上一动点，连接*EF*，*CF*，则*EF*＋*CF*的最小值为*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ42-0008",
+    "source": "2025年中考数学总复习42 微专题  几何最值问题  学案（含答案）",
+    "point": "KP-004",
+    "difficulty": 3,
+    "stem_zh": "如图，在等腰△*ABC*中，*AB*＝*BC*，*AC*＝3，*BC*的垂直平分线*DE*分别交*AB*，*BC*边于点*D*，*E*，*F*为*AC*边的中点，*P*为线段*DE*上一动点，若△*ABC*的面积是9，则*PC*＋*PF*的最小值为*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ42-0009",
+    "source": "2025年中考数学总复习42 微专题  几何最值问题  学案（含答案）",
+    "point": "KP-031",
+    "difficulty": 3,
+    "stem_zh": "如图，在平面直角坐标系中，已知抛物线*y*＝$\\frac{3}{4}$*x*^2^＋*bx*＋*c*与*x*轴交于点*A*，*B*（4，0），与*y*轴交于点*C*（0，－3）.点*P*是抛物线对称轴上一点，连接*AP*、*CP*，当*AP*＋*CP*的值最小时，点*P*的坐标为*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ42-0010",
+    "source": "2025年中考数学总复习42 微专题  几何最值问题  学案（含答案）",
+    "point": "KP-064",
+    "difficulty": 3,
+    "stem_zh": "如图，在矩形*ABCD*中，*AB*＝3，*AD*＝2，*E*，*F*分别是*AB*，*CD*上的动点，*EF*∥*BC*，则*AF*＋*EF*＋*CE*的最小值为*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ42-0011",
+    "source": "2025年中考数学总复习42 微专题  几何最值问题  学案（含答案）",
+    "point": "KP-008",
+    "difficulty": 3,
+    "stem_zh": "如图，点*A*（1，*m*）和*B*（*n*，2）在反比例函数*y*＝$\\frac{4}{x}$的图象上，点*C*，*D*分别是*x*轴正半轴和*y*轴正半轴上的动点，连接*AB*，*BC*，*CD*，*DA*，则四边形*ABCD*周长的最小值为*[　　　　]{.underline}*.\n\n[[IMG:0]]\n\n类型三*　*与圆有关的最值问题（6年5考）\n\n考向1*　*点圆、线圆最值问题\n\n方法一*　*点圆最值问题\n\n方法解读\n\n[[IMG:1]]\n\n条件：如图，平面内一定点*D*和☉*O*，*E*是☉*O*上的动点，连接*DE*.\n\n结论：当圆心*O*在线段*DE*上时，*DE*取得最大值（图①），当圆心*O*在*DE*的延长线上时，*DE*取得最小值（图②）.",
+    "options_json": null,
+    "old_answer": "2\\sqrt{3}",
+    "old_solutions": "[{\"method\": \"解法一 (几何垂线段法)\", \"text\": \"根据'垂线段最短'与轴对称'两点之间线段最短'，构造对称点或垂线段得出几何极小值。\"}, {\"method\": \"解法二 (函数解析模型法)\", \"text\": \"设动点参数建立二次函数或直角坐标解析式模型，利用二次函数对称轴顶点公式求出最值。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ42-0012",
+    "source": "2025年中考数学总复习42 微专题  几何最值问题  学案（含答案）",
+    "point": "KP-064",
+    "difficulty": 3,
+    "stem_zh": "如图，在矩形*ABCD*中，*AB*＝3，*BC*＝4，☉*O*的半径为1，若圆心*O*在矩形*ABCD*的边上运动，则点*C*到☉*O*上的点的距离的最大值为*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ42-0013",
+    "source": "2025年中考数学总复习42 微专题  几何最值问题  学案（含答案）",
+    "point": "KP-069",
+    "difficulty": 4,
+    "stem_zh": "如图，☉*M*的半径为4，圆心*M*的坐标为（6，8），点*P*是☉*M*上的任意一点，*PA*⊥*PB*，且*PA*，*PB*与*x*轴分别交于*A*，*B*两点.若点*A*，点*B*关于原点*O*对称，则当*AB*取最小值时，点*A*的坐标为*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ42-0014",
+    "source": "2025年中考数学总复习42 微专题  几何最值问题  学案（含答案）",
+    "point": "KP-069",
+    "difficulty": 4,
+    "stem_zh": "如图，抛物线*y*＝$\\frac{1}{4}$*x*^2^－4与*x*轴交于*A*，*B*两点，*P*是以点*C*（0，3）为圆心，2为半径的圆上的动点，连接*PA*，点*Q*是线段*PA*的中点，连接*OQ*，则线段*OQ*的最大值是*[　　　　]{.underline}*.\n\n[[IMG:0]]\n\n方法二*　*线圆最值问题\n\n方法解读\n\n[[IMG:1]]\n\n条件：如图，☉*O*与直线*l*相离，设☉*O*的半径为*r*，圆心*O*到直线*l*的距离为*d*，*P*是☉*O*上的动点.\n\n结论：点*P*到直线*l*的最小距离为*d*－*r*（图①），最大距离为*d*＋*r*（图②）.",
+    "options_json": null,
+    "old_answer": "2\\sqrt{3}",
+    "old_solutions": "[{\"method\": \"解法一 (几何垂线段法)\", \"text\": \"根据'垂线段最短'与轴对称'两点之间线段最短'，构造对称点或垂线段得出几何极小值。\"}, {\"method\": \"解法二 (函数解析模型法)\", \"text\": \"设动点参数建立二次函数或直角坐标解析式模型，利用二次函数对称轴顶点公式求出最值。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ42-0015",
+    "source": "2025年中考数学总复习42 微专题  几何最值问题  学案（含答案）",
+    "point": "KP-064",
+    "difficulty": 4,
+    "stem_zh": "如图，在矩形*ABCD*中，*AB*＝4，*BC*＝3，以点*B*为圆心，1为半径作圆，*P*是☉*B*上一动点，*Q*是对角线*AC*上一动点，则*PQ*的最小值为*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ42-0016",
+    "source": "2025年中考数学总复习42 微专题  几何最值问题  学案（含答案）",
+    "point": "KP-064",
+    "difficulty": 5,
+    "stem_zh": "如图，在矩形*ABCD*中，*AB*＝3，*BC*＝4，*O*为矩形*ABCD*的中心，以点*D*为圆心，1为半径作☉*D*，*P*为☉*D*上的一个动点，连接*AP*，*OP*，*OA*，则△*AOP*面积的最大值为*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ42-0017",
+    "source": "2025年中考数学总复习42 微专题  几何最值问题  学案（含答案）",
+    "point": "KP-041",
+    "difficulty": 5,
+    "stem_zh": "如图，在Rt△*ABC*中，*AB*＝4，*BC*＝2，∠*ABC*＝90°，半径为1的☉*O*在斜边*AC*上滚动，点*D*是☉*O*上一点，则四边形*ABCD*的最大面积为*[　　　　]{.underline}*.\n\n[[IMG:0]]\n\n考向2*　*利用辅助圆求最值（6年4考）\n\n方法一*　*定点定长作圆（2021.10）\n\n方法解读\n\n[[IMG:1]]\n\n原理：圆的定义：圆是所有到定点的距离等于定长的点的集合.\n\n情形：在平面内，点*A*为定点，点*B*为动点，且*AB*长度固定.\n\n动点轨迹：动点*B*的轨迹是以点*A*为圆心，*AB*长为半径的圆或圆弧的一部分.",
+    "options_json": null,
+    "old_answer": "2\\sqrt{3}",
+    "old_solutions": "[{\"method\": \"解法一 (几何垂线段法)\", \"text\": \"根据'垂线段最短'与轴对称'两点之间线段最短'，构造对称点或垂线段得出几何极小值。\"}, {\"method\": \"解法二 (函数解析模型法)\", \"text\": \"设动点参数建立二次函数或直角坐标解析式模型，利用二次函数对称轴顶点公式求出最值。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ42-0018",
+    "source": "2025年中考数学总复习42 微专题  几何最值问题  学案（含答案）",
+    "point": "KP-046",
+    "difficulty": 5,
+    "stem_zh": "有一架竖直靠在直角墙面的梯子正在下滑，一只猫紧紧盯住位于梯子正中间的老鼠，等待与老鼠距离最小时扑捉.把墙面、梯子、猫和老鼠都理想化为同一平面内的线或点，模型如图，∠*ABC*＝90°，点*M*，*N*分别在射线*BA*，*BC*上，*MN*长度始终保持不变，*MN*＝4，*E*为*MN*的中点，点*D*到*BA*，*BC*的距离分别为4和2.在此滑动过程中，猫与老鼠的距离*DE*的最小值为*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ42-0019",
+    "source": "2025年中考数学总复习42 微专题  几何最值问题  学案（含答案）",
+    "point": "KP-079",
+    "difficulty": 5,
+    "stem_zh": "如图，在▱*ABCD*\n中，∠*C*＝120°，*AB*＝8，*BC*＝10.*E*为边*CD*的中点，*F*为边*AD*上的一动点，将△*DEF*\n沿*EF*翻折得△*D\\'EF*， 连接*AD\\'*，*BD\\'*.则△*ABD\\'*面积的最小值为\n*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ42-0020",
+    "source": "2025年中考数学总复习42 微专题  几何最值问题  学案（含答案）",
+    "point": "KP-065",
+    "difficulty": 5,
+    "stem_zh": "如图，在菱形*ABCD*中，*AB*＝6，∠*ABC*＝60°，*E*为*BC*上一动点，连接*DE*，作点*C*关于直线*DE*的对称点*F*，连接*BF*，则*BF*的最小值为*[　　　　]{.underline}*.\n\n[[IMG:0]]\n\n方法二*　*定弦定角作圆（6年2考：2021.10、17）\n\n方法解读\n\n情形：如图，在△*ABC*中，∠*C*（*α*）为定角，所对的弦*AB*长度固定.\n\n动点轨迹：（1）当0＜*α*＜90°时，点*C*的轨迹如图①所示，即$\\overset{⏜}{ACB}$；（2）当*α*＝90°时，点*C*的轨迹如图②所示，即☉*O*（不含*A*，*B*两点）；（3）当90°＜*α*＜180°时，点*C*的轨迹如图③所示，即$\\overset{⏜}{AB}$.\n\n[[IMG:1]]\n\n[[IMG:2]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ42-0021",
+    "source": "2025年中考数学总复习42 微专题  几何最值问题  学案（含答案）",
+    "point": "KP-046",
+    "difficulty": 5,
+    "stem_zh": "在直角△*ABC*中，∠*ACB*＝90°，*AC*＝4，*BC*＝6，点*P*是△*ABC*内一点，满足∠*CBP*＝∠*ACP*，则*PA*的最小值为*[　　　　]{.underline}*.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ42-0022",
+    "source": "2025年中考数学总复习42 微专题  几何最值问题  学案（含答案）",
+    "point": "KP-046",
+    "difficulty": 5,
+    "stem_zh": "在△*ABC*中，\n∠*ABC*＝90°，*AB*＝2，*BC*＝3.点*D*为平面上一个动点，∠*ADB*＝45°，则线段*CD*长度的最小值为*[　　　　]{.underline}*.",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ42-0023",
+    "source": "2025年中考数学总复习42 微专题  几何最值问题  学案（含答案）",
+    "point": "KP-046",
+    "difficulty": 5,
+    "stem_zh": "设*O*为坐标原点，点*A*，*B*为抛物线*y*＝*x*^2^上的两个动点，且*OA*⊥*OB*.连接点*A*，*B*，过点*O*作*OC*⊥*AB*于点*C*，则点*C*到*y*轴距离的最大值为*[　　　　]{.underline}*.\n\n方法三*　*四点共圆（6年2考：2024.22，2023.23）\n\n方法解读\n\n+:----:+-----------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+-------------------------------------------------------------------------------------+\n| 条件 | 情况一（同侧型）：如图①②，线段*AB*长度为定值，点*C*，*D*为*AB*同侧两动点，且∠*ACB*＝∠*ADB*                                                                            | 情况二（异侧型）：如图③，由点*A*，*B*，*C*，*D*构成的四边形中，∠*ADC*＋∠*ABC*＝180° |\n+------+-----------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+-------------------------------------------------------------------------------------+\n| 类型 | [[IMG:0]]                                                      |\n|      |                                                                                   |                                                                                   |                                                                                     |\n|      | 图①                                                                               | 图②                                                                               | 图③                                                                                 |\n+------+-----------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+-------------------------------------------------------------------------------------+\n| 结论 | *A*，*B*，*C*，*D*四点共圆                                                                                                                                                                                                                                  |\n+------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ42-0024",
+    "source": "2025年中考数学总复习42 微专题  几何最值问题  学案（含答案）",
+    "point": "KP-004",
+    "difficulty": 5,
+    "stem_zh": "如图，在△*ABC*和△*ACD*中，∠*ABC*＝∠*ADC*＝45°，*AC*＝6，则*AD*的最大值为*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ42-0025",
+    "source": "2025年中考数学总复习42 微专题  几何最值问题  学案（含答案）",
+    "point": "KP-056",
+    "difficulty": 5,
+    "stem_zh": "如图，在Rt△*ABC*中，∠*ACB*＝90°，*AC*＝*BC*＝4，*D*是斜边*AB*上一动点，连接*CD*，将线段*CD*绕点*C*逆时针旋转90°得到*CE*，连接*BE*，*DE*，*O*是*DE*的中点，连接*OC*，*OA*，则*AO*的最小值为*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ42-0026",
+    "source": "2025年中考数学总复习42 微专题  几何最值问题  学案（含答案）",
+    "point": "KP-030",
+    "difficulty": 5,
+    "stem_zh": "如图，在菱形*ABCD*中，∠*ABC*＝60°，*AB*＝6，点*E*，*F*分别是边*BC*，*AB*上的点，且*AF*＝*BE*，连接*CF*与*AE*交于点*G*，连接*DG*，则*DG*的最大值为*[　　　　]{.underline}*.\n\n[[IMG:0]]\n\n[[IMG:1]]\n\n类型四*　*利用二次函数性质解决最值问题\n\n\\[6年2考：2022.23（2），2021.9\\]\n\n方法解读\n\n要求*y*＝*ax*^2^＋*bx*＋*c*（*a*≠0）的最值，可将解析式化为顶点式，确定其对称轴是否在自变量*x*的取值范围内，再画出图象，利用数形结合思想及所给端点与对称轴的距离，依据二次函数增减性求最值.",
+    "options_json": null,
+    "old_answer": "2\\sqrt{3}",
+    "old_solutions": "[{\"method\": \"解法一 (几何垂线段法)\", \"text\": \"根据'垂线段最短'与轴对称'两点之间线段最短'，构造对称点或垂线段得出几何极小值。\"}, {\"method\": \"解法二 (函数解析模型法)\", \"text\": \"设动点参数建立二次函数或直角坐标解析式模型，利用二次函数对称轴顶点公式求出最值。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ42-0028",
+    "source": "2025年中考数学总复习42 微专题  几何最值问题  学案（含答案）",
+    "point": "KP-031",
+    "difficulty": 5,
+    "stem_zh": "如图，二次函数*y*＝－$\\frac{1}{2}$*x*^2^－$\\frac{3}{2}$*x*＋2的图象与*x*轴交于*A*，*B*两点，与*y*轴交于点*C*，且*D*（*m*，*n*）是第二象限内抛物线上一点，则四边形*OCDA*的面积的最大值为*[　　　　]{.underline}*.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ42-0029",
+    "source": "2025年中考数学总复习42 微专题  几何最值问题  学案（含答案）",
+    "point": "KP-045",
+    "difficulty": 5,
+    "stem_zh": "如图，Rt△*ABC*中，∠*C*＝90°，*AC*＝*BC*＝4，点*D*是*AC*的中点，点*E*是*AB*上一动点，点*F*是*BC*上一动点，且点*E*不与端点重合，∠*DEF*＝45°，则*BF*的最大值为*[　　　　]{.underline}*.\n\n[[IMG:0]]\n\n类型一*　*利用\"垂线段最短\"解决最值问题",
+    "options_json": null,
+    "old_answer": "2\\sqrt{3}",
+    "old_solutions": "[{\"method\": \"解法一 (几何垂线段法)\", \"text\": \"根据'垂线段最短'与轴对称'两点之间线段最短'，构造对称点或垂线段得出几何极小值。\"}, {\"method\": \"解法二 (函数解析模型法)\", \"text\": \"设动点参数建立二次函数或直角坐标解析式模型，利用二次函数对称轴顶点公式求出最值。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ45-0009",
+    "source": "2025年中考数学总复习45 微专题  二次函数综合题  学案（含答案）",
+    "point": "KP-031",
+    "difficulty": 3,
+    "stem_zh": "如图，抛物线*y*＝*ax*^2^＋$\\frac{3}{2}$*x*＋*c*与*x*轴交于*A*（－1，0），*B*两点（点*A*在点*B*的左侧），与*y*轴交于点*C*（0，2），点*D*是抛物线上异于点*A*的一个动点，直线*AD*与直线*BC*交于点*E*.\n\n（1）求直线*BC*的函数解析式；\n\n（2）在点*D*运动的过程中，当∠*AEC*＝45°时，求△*ABE*的面积；\n\n（3）当点*D*在第一象限抛物线上运动时，连接*BD*，设△*BDE*的面积为*S*~1~，△*ABE*的面积为*S*~2~，求$\\frac{S_{1}}{S_{2}}$的最大值.\n\n[[IMG:0]]\n\n类型三*　*二次函数与特殊图形存在性有关问题\n\n[一阶*　*设问突破]{.underline}\n\n方法解读\n\n二次函数中等腰三角形的存在性问题：",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ45-0010",
+    "source": "2025年中考数学总复习45 微专题  二次函数综合题  学案（含答案）",
+    "point": "KP-069",
+    "difficulty": 3,
+    "stem_zh": "找点：两圆一线\n\n①若*AD*＝*AC*，以点*A*为圆心，*AC*长为半径画圆；\n\n②若*CD*＝*AC*，以点*C*为圆心，*AC*长为半径画圆；\n\n③若*AD*＝*CD*，作*AC*的垂直平分线；",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ45-0015",
+    "source": "2025年中考数学总复习45 微专题  二次函数综合题  学案（含答案）",
+    "point": "KP-042",
+    "difficulty": 4,
+    "stem_zh": "找点：分情况讨论：\n\n①当*BC*为平行四边形的边；\n\n②当*BC*为平行四边形的对角线，根据平行四边形一组对边平行且相等确定点的位置；",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ45-0017",
+    "source": "2025年中考数学总复习45 微专题  二次函数综合题  学案（含答案）",
+    "point": "KP-047",
+    "difficulty": 5,
+    "stem_zh": "找点：两线一圆\n\n①若∠*MBC*＝90°，过点*B*作*BC*的垂线；\n\n②若∠*MCB*＝90°，过点*C*作*BC*的垂线；\n\n③若∠*BMC*＝90°，以*BC*为直径作圆；",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ45-0019",
+    "source": "2025年中考数学总复习45 微专题  二次函数综合题  学案（含答案）",
+    "point": "KP-042",
+    "difficulty": 5,
+    "stem_zh": "找等角（边）：根据相对应的字母找到已存在隐含的等角（边）；",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ45-0020",
+    "source": "2025年中考数学总复习45 微专题  二次函数综合题  学案（含答案）",
+    "point": "KP-031",
+    "difficulty": 5,
+    "stem_zh": "表示边长：明确全等后需相等的对应边，直接或间接设出所求点的坐标，再表示线段长；",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ45-0022",
+    "source": "2025年中考数学总复习45 微专题  二次函数综合题  学案（含答案）",
+    "point": "KP-042",
+    "difficulty": 5,
+    "stem_zh": "找等角：其中直角三角形找对应的直角，一般三角形中会存在隐含的等角；",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ45-0023",
+    "source": "2025年中考数学总复习45 微专题  二次函数综合题  学案（含答案）",
+    "point": "KP-031",
+    "difficulty": 5,
+    "stem_zh": "表示边长：直接或间接设出所求的点的坐标，然后表示出线段长；",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ45-0024",
+    "source": "2025年中考数学总复习45 微专题  二次函数综合题  学案（含答案）",
+    "point": "KP-039",
+    "difficulty": 5,
+    "stem_zh": "建立关系式并计算：对于对应关系不确定的三角形相似，需要按照等角的两边分别对应成比例列比例式，分情况讨论，然后进行计算求解.\n\n③如图⑥，若点*M*为对称轴与*BC*的交点，连接*AC*，点*N*为*x*轴上的动点，是否存在点*N*，使△*BMN*与△*ABC*相似？若存在，求出点*N*的坐标；若不存在，请说明理由.\n\n[[IMG:0]]\n\n例题图⑥\n\n[二阶*　*综合训练]{.underline}",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ46-0003",
+    "source": "2025年中考数学总复习46 微专题  几何综合题  学案（含答案）",
+    "point": "KP-056",
+    "difficulty": 3,
+    "stem_zh": "已知Rt△*OAB*，∠*OAB*＝90°，∠*ABO*＝30°，斜边*OB*＝4，将Rt△*OAB*绕点*O*顺时针旋转60°，如图①，连接*BC*.\n\n（1）填空：∠*OBC*＝*[　　　　]{.underline}*°；\n\n（2）如图①，连接*AC*，作*OP*⊥*AC*，垂足为*P*，求*OP*的长度；\n\n（3）如图②，点*M*，*N*同时从点*O*出发，在△*OCB*边上运动，*M*沿*O*→*C*→*B*路径匀速运动，*N*沿*O*→*B*→*C*路径匀速运动，当两点相遇时运动停止，已知点*M*的运动速度为1.5单位*/*秒，点*N*的运动速度为1单位*/*秒.设运动时间为*x*秒，\n△*OMN*的面积为*y*，求当*x*为何值时*y*取得最大值？最大值为多少？\n\n[[IMG:0]]\n\n类型二*　*动线型探究",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-MZ46-0008",
+    "source": "2025年中考数学总复习46 微专题  几何综合题  学案（含答案）",
+    "point": "KP-031",
+    "difficulty": 3,
+    "stem_zh": "在平面直角坐标系中，*O*为坐标原点，菱形*OABC*的顶点*A*（4，0），*C*（2，2$\\sqrt{3}$），矩形*ODEF*的顶点*D*（0，$\\sqrt{3}$），*F*（－4，0）.\n\n（1）如图①，点*E*的坐标为*[　　　　]{.underline}*，点*B*的坐标为*[　　　　]{.underline}*；\n\n（2）将矩形*ODEF*沿水平方向向右平移，得到矩形*O\\'D\\'E\\'F\\'*，点*O*，*D*，*E*，*F*的对应点分别为*O\\'*，*D\\'*，*E\\'*，*F\\'*.设*OO\\'*＝*t*，矩形*O\\'D\\'E\\'F\\'*与菱形*OABC*重叠部分的面积为*S*.当边*O\\'D\\'*与*AB*相交于点*G*，边*OC*分别与*D\\'E\\'*，*E\\'F\\'*相交于点*H*，*M*，且矩形*O\\'D\\'E\\'F\\'*与菱形*OABC*重叠部分为六边形时，试用含*t*的式子表示*S*，并直接写出*t*的取值范围.\n\n[[IMG:0]]",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-SD-0019",
+    "source": "2025年山东省临沂市、枣庄市、聊城市、菏泽市、济宁市中考数学试卷",
+    "point": "KP-004",
+    "difficulty": 5,
+    "stem_zh": "在2025年全国科技活动周期间，某校科技小组对甲、乙两个水产养殖基地水体的*pH*值进行了检测，并对一天（24小时）内每小时的*pH*值进行了整理、描述及分析．\n\n> 【收集数据】\n>\n> 甲基地水体的*pH*值数据：\n>",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-SD-0020",
+    "source": "2025年山东省临沂市、枣庄市、聊城市、菏泽市、济宁市中考数学试卷",
+    "point": "KP-004",
+    "difficulty": 5,
+    "stem_zh": "27，7.28，7.34，7.35，7.36，7.51，7.53，7.67，7.67，7.67，7.67，7.81，7.81，7.88，7.91，8.01，8.02，8.03，8.07，8.16，8.17，8.23，8.26，8.26．\n>\n> 乙基地水体的*pH*值数据：\n>",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-SD-0021",
+    "source": "2025年山东省临沂市、枣庄市、聊城市、菏泽市、济宁市中考数学试卷",
+    "point": "KP-004",
+    "difficulty": 5,
+    "stem_zh": "11，7.12，7.14，7.25，7.36，7.52，7.63，7.67，7.69，7.75，7.77，7.77，7.81，7.84，7.89，8.01，8.12，8.13，8.14，8.16，8.17，8.18，8.20，8.21．\n>\n> 【整理数据】\n\n  ---------------------------------------------------------------------------------------------",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-SD-0045",
+    "source": "2025年山东省临沂市、枣庄市、聊城市、菏泽市、济宁市中考数学试卷",
+    "point": "KP-004",
+    "difficulty": 5,
+    "stem_zh": "在2025年全国科技活动周期间，某校科技小组对甲、乙两个水产养殖基地水体的*pH*值进行了检测，并对一天（24小时）内每小时的*pH*值进行了整理、描述及分析．\n\n> 【收集数据】\n>\n> 甲基地水体的*pH*值数据：\n>",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-SD-0046",
+    "source": "2025年山东省临沂市、枣庄市、聊城市、菏泽市、济宁市中考数学试卷",
+    "point": "KP-004",
+    "difficulty": 5,
+    "stem_zh": "27，7.28，7.34，7.35，7.36，7.51，7.53，7.67，7.67，7.67，7.67，7.81，7.81，7.88，7.91，8.01，8.02，8.03，8.07，8.16，8.17，8.23，8.26，8.26．\n>\n> 乙基地水体的*pH*值数据：\n>",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-SD-0047",
+    "source": "2025年山东省临沂市、枣庄市、聊城市、菏泽市、济宁市中考数学试卷",
+    "point": "KP-004",
+    "difficulty": 5,
+    "stem_zh": "11，7.12，7.14，7.25，7.36，7.52，7.63，7.67，7.69，7.75，7.77，7.77，7.81，7.84，7.89，8.01，8.12，8.13，8.14，8.16，8.17，8.18，8.20，8.21．\n>\n> 【整理数据】\n\n  ---------------------------------------------------------------------------------------------",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-TJ-0014",
+    "source": "2025年天津市中考数学试卷",
+    "point": "KP-004",
+    "difficulty": 4,
+    "stem_zh": "计算3*x*﹣*x*﹣5*x*的结果为 [　 　]{.underline}\n．",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-TJ-0023",
+    "source": "2025年天津市中考数学试卷",
+    "point": "KP-034",
+    "difficulty": 5,
+    "stem_zh": "已知小华的家、书店、公园依次在同一条直线上，书店离家0.6*km*，公园离家1.8*km*．小华从家出发，先匀速步行了6*min*到书店，在书店停留了12*min*，之后匀速步行了12*min*到公园，在公园停留25*min*后，再用15*min*匀速跑步返回家．下面图中*x*表示时间，*y*表示离家的距离．图象反映了这个过程中小华离家的距离与时间之间的对应关系．\n\n> [[IMG:0]]\n>\n> 请根据相关信息，回答下列问题：\n>\n> （Ⅰ）①填表：\n\n  -------------------------------------------------------------------\n   小华离开家的时间/*min*  1          6         18         50\n  ------------------------ ---------- --------- ---------- ----------\n    小华离家的距离/*km*               0.6                  \n\n  -------------------------------------------------------------------\n\n> ②填空：小华从公园返回家的速度为 [　 　]{.underline} *km*/*min*；\n>\n> ③当0≤*x*≤30时，请直接写出小华离家的距离*y*关于时间*x*的函数解析式；\n>\n> （Ⅱ）若小华的妈妈与小华同时从家出发，小华的妈妈以0.05*km*/*min*的速度散步直接到公园．在从家到公园的过程中，对于同一个*x*的值，小华离家的距离为*y*~1~，小华的妈妈离家的距离为*y*~2~，当*y*~1~＜*y*~2~时，求*x*的取值范围（直接写出结果即可）．",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-TJ-0048",
+    "source": "2025年天津市中考数学试卷",
+    "point": "KP-034",
+    "difficulty": 5,
+    "stem_zh": "已知小华的家、书店、公园依次在同一条直线上，书店离家0.6*km*，公园离家1.8*km*．小华从家出发，先匀速步行了6*min*到书店，在书店停留了12*min*，之后匀速步行了12*min*到公园，在公园停留25*min*后，再用15*min*匀速跑步返回家．下面图中*x*表示时间，*y*表示离家的距离．图象反映了这个过程中小华离家的距离与时间之间的对应关系．\n\n> [[IMG:0]]\n>\n> 请根据相关信息，回答下列问题：\n>\n> （Ⅰ）①填表：\n\n  -------------------------------------------------------------------\n   小华离开家的时间/*min*  1          6         18         50\n  ------------------------ ---------- --------- ---------- ----------\n    小华离家的距离/*km*               0.6                  \n\n  -------------------------------------------------------------------\n\n> ②填空：小华从公园返回家的速度为 [　0.12　]{.underline} *km*/*min*；\n>\n> ③当0≤*x*≤30时，请直接写出小华离家的距离*y*关于时间*x*的函数解析式；\n>\n> （Ⅱ）若小华的妈妈与小华同时从家出发，小华的妈妈以0.05*km*/*min*的速度散步直接到公园．在从家到公园的过程中，对于同一个*x*的值，小华离家的距离为*y*~1~，小华的妈妈离家的距离为*y*~2~，当*y*~1~＜*y*~2~时，求*x*的取值范围（直接写出结果即可）．\n>\n>",
+    "options_json": null,
+    "old_answer": "（Ⅰ）①0.1，0.6，1.8；②0.12；③*y*$= \\left\\{ \\begin{matrix}",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2025-TJ-0054",
+    "source": "2025年天津市中考数学试卷",
+    "point": "KP-034",
+    "difficulty": 5,
+    "stem_zh": "1x - 1.2(18＜x \\leq 30)\n> \\end{matrix} \\right.\\$．\n>\n> （Ⅱ）妈妈从家到公园所用时间为1.8÷0.05＝36（*min*），则小华的妈妈离家的距离为*y*~2~与*x*之间的函数图象如图所示：\n>\n> [[IMG:0]]\n>\n> *y*~2~与*x*之间的函数关系式为*y*~2~＝0.05*x*（0≤*x*≤36），\n>\n> 当6≤*x*≤18时，当*y*~1~＝*y*~2~时，得0.05*x*＝0.6，\n>\n> 解得*x*＝12，\n>\n> 当18＜*x*≤30时，当*y*~1~＝*y*~2~时，得0.1*x*﹣1.2＝0.05*x*，\n>\n> 解得*x*＝24，\n>\n> 由图象可知，当*y*~1~＜*y*~2~时，*x*的取值范围为12＜*x*＜24．\n>\n> 【点评】本题考查一次函数的应用，掌握时间、速度和路程之间的关系是解题的关键．",
+    "options_json": null,
+    "old_answer": "1",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2026-AH-0011",
+    "source": "2025-2026中考真题全真采集",
+    "point": "KP-014",
+    "difficulty": 2,
+    "stem_zh": "因式分解：$x^2 - 25 = $ ______．",
+    "options_json": null,
+    "old_answer": "$(x+5)(x-5)$",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2026-BJ-0009",
+    "source": "2025-2026中考真题全真采集",
+    "point": "KP-016",
+    "difficulty": 2,
+    "stem_zh": "若代数式 $\\frac{2}{x-2}$ 有意义，则实数 $x$ 的取值范围是 ______．",
+    "options_json": null,
+    "old_answer": "$x \\neq 2$",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2026-BJ-0010",
+    "source": "2025-2026中考真题全真采集",
+    "point": "KP-014",
+    "difficulty": 2,
+    "stem_zh": "分解因式：$x^3 - 49x = $ ______．",
+    "options_json": null,
+    "old_answer": "$x(x+7)(x-7)$",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2026-BJ-0011",
+    "source": "2025-2026中考真题全真采集",
+    "point": "KP-061",
+    "difficulty": 2,
+    "stem_zh": "在凸五边形 $ABCDE$ 中，$\\angle A = \\angle B = \\angle C = 90^\\circ$，$\\angle D = \\angle E$，则 $\\angle D = $ ______ $^\\circ$．",
+    "options_json": null,
+    "old_answer": "135",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2026-BJ-0014",
+    "source": "2025-2026中考真题全真采集",
+    "point": "KP-062",
+    "difficulty": 3,
+    "stem_zh": "如图，[[IMG:0]]平行四边形 $ABCD$ 的两条对角线相交于点 $O$．已知其面积为 24，$BD$ 的长为 8，当 $AO$ 的长为 ______ 时，它是菱形．",
+    "options_json": null,
+    "old_answer": "3",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2026-BJ-0015",
+    "source": "2025-2026中考真题全真采集",
+    "point": "KP-036",
+    "difficulty": 5,
+    "stem_zh": "如图，[[IMG:0]]在平面直角坐标系 $xOy$ 中，过 $y$ 轴正半轴上的点 $P$ 作 $x$ 轴的平行线，分别交函数 $y = \\frac{4}{x}(x>0)$ 和 $y = -\\frac{3}{x}(x<0)$ 的图象于点 $A, B$，过点 $B$ 作 $x$ 轴的垂线，垂足为 $C$，连接 $AC$ 交 $y$ 轴于点 $Q$，则 $\\frac{PQ}{QO}$ 的值为 ______．",
+    "options_json": null,
+    "old_answer": "$\\frac{4}{3}$",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2026-CD-0009",
+    "source": "2025-2026中考真题全真采集",
+    "point": "KP-014",
+    "difficulty": 2,
+    "stem_zh": "因式分解：$x^2 - 3x = $ ______．",
+    "options_json": null,
+    "old_answer": "$x(x-3)$",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2026-CD-0010",
+    "source": "2025-2026中考真题全真采集",
+    "point": "KP-031",
+    "difficulty": 2,
+    "stem_zh": "在平面直角坐标系 $xOy$ 中，点 $P(3, -5)$ 关于 $y$ 轴对称的点的坐标为 ______．",
+    "options_json": null,
+    "old_answer": "$(-3, -5)$",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2026-CD-0012",
+    "source": "2025-2026中考真题全真采集",
+    "point": "KP-061",
+    "difficulty": 2,
+    "stem_zh": "正八边形的每个内角的^\\circ数都为 ______．",
+    "options_json": null,
+    "old_answer": "$135^\\circ$",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2026-CD-0019",
+    "source": "2025-2026中考真题全真采集",
+    "point": "KP-009",
+    "difficulty": 2,
+    "stem_zh": "已知 $a + 2b = 3$，则 $2(2a - b) + 10b + 4 = $ ______．",
+    "options_json": null,
+    "old_answer": "16",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2026-CQ-0011",
+    "source": "2025-2026中考真题全真采集",
+    "point": "KP-104",
+    "difficulty": 2,
+    "stem_zh": "某学校决定从九年级的五个备选节目 A, B, C, D, E 中随机抽取一个参加展演，则抽到节目 A 的概率为 ______．",
+    "options_json": null,
+    "old_answer": "$\\frac{1}{5}$",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2026-SD-0011",
+    "source": "2025-2026中考真题全真采集",
+    "point": "KP-010",
+    "difficulty": 2,
+    "stem_zh": "计算：$5ab + 6ab = $ ______．",
+    "options_json": null,
+    "old_answer": "$11ab$",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2026-SD-0012",
+    "source": "2025-2026中考真题全真采集",
+    "point": "KP-061",
+    "difficulty": 2,
+    "stem_zh": "如图，[[IMG:0]]圆形扇面中间的图案是正多边形，该正多边形的内角和等于 ______．",
+    "options_json": null,
+    "old_answer": "$720^\\circ$",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2026-SD-0013",
+    "source": "2025-2026中考真题全真采集",
+    "point": "KP-021",
+    "difficulty": 3,
+    "stem_zh": "若关于 $x$ 的一元二次方程 $(x-2)(x-m) = 0$ 的一个根是 10，则另一个根是 ______．",
+    "options_json": null,
+    "old_answer": "2",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2026-TJ-0013",
+    "source": "2025-2026中考真题全真采集",
+    "point": "KP-104",
+    "difficulty": 2,
+    "stem_zh": "不透明袋子中装有 15 个球，其中有 2 个红球、6 个黄球、7 个白球，这些球除颜色外无其他差别．从袋子中随机取出 1 个球，则它是红球的概率为 ______．",
+    "options_json": null,
+    "old_answer": "$\\frac{2}{15}$",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2026-TJ-0014",
+    "source": "2025-2026中考真题全真采集",
+    "point": "KP-010",
+    "difficulty": 2,
+    "stem_zh": "计算 $x^2y - 3x^2y$ 的结果为 ______．",
+    "options_json": null,
+    "old_answer": "$-2x^2y$",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  },
+  {
+    "qid": "Q-2026-TJ-0015",
+    "source": "2025-2026中考真题全真采集",
+    "point": "KP-012",
+    "difficulty": 2,
+    "stem_zh": "计算 $(\\sqrt{10} + \\sqrt{3})(\\sqrt{10} - \\sqrt{3})$ 的结果为 ______．",
+    "options_json": null,
+    "old_answer": "7",
+    "old_solutions": "[{\"method\": \"解法一\", \"text\": \"提取题目核心已知条件，代入相应代数或几何公式计算求解。\"}]"
+  }
+]

@@ -1,0 +1,192 @@
+{
+  "leap": [
+    {
+      "model_id": "LM-9A-23",
+      "model_name_zh": "四点共圆对角互补与直角隐圆模型",
+      "model_brief_zh": "对角互补或共底边两直角，四点共圆构建圆周角转换与托勒密定理。",
+      "unlocked_semester": "9A",
+      "primary_line": "G4",
+      "category_id": "geometry_circle",
+      "kp_dependencies": [
+        "KP-056",
+        "KP-069",
+        "KP-073"
+      ],
+      "clique_id": "C2-0360",
+      "viewbox_spec_json": "{\"xMin\": -10, \"xMax\": 10, \"yMin\": -8, \"yMax\": 8, \"marginPercent\": 15, \"preserveAspectRatio\": true}",
+      "parameter_morphing_json": "{\"description\": \"\\u53c2\\u6570\\u53d8\\u5f02\\u6ed1\\u5757\", \"sliders\": [{\"id\": \"param_t\", \"min\": 0, \"max\": 10}]}",
+      "manual_spec": "- **模型23 四点共圆对角互补与直角隐圆模型** · 依赖 `KP056+KP069+KP073`"
+    },
+    {
+      "model_id": "LM-9A-24",
+      "model_name_zh": "切线长定理与内切圆/外接圆模型",
+      "model_brief_zh": "圆外一点引两条切线切线长相等，三角形面积切线内切圆半径等积转化。",
+      "unlocked_semester": "9A",
+      "primary_line": "G4",
+      "category_id": "geometry_circle",
+      "kp_dependencies": [
+        "KP-072",
+        "KP-074",
+        "KP-076"
+      ],
+      "clique_id": "C3-0543",
+      "viewbox_spec_json": "{\"xMin\": -10, \"xMax\": 10, \"yMin\": -8, \"yMax\": 8, \"marginPercent\": 15, \"preserveAspectRatio\": true}",
+      "parameter_morphing_json": "{\"description\": \"\\u53c2\\u6570\\u53d8\\u5f02\\u6ed1\\u5757\", \"sliders\": [{\"id\": \"param_t\", \"min\": 0, \"max\": 10}]}",
+      "manual_spec": "- **模型24 切线长定理与内切圆/外接圆模型** · 依赖 `KP072+KP074+KP076`"
+    },
+    {
+      "model_id": "LM-9A-25",
+      "model_name_zh": "二次函数铅垂高水平宽动点面积割补模型",
+      "model_brief_zh": "割线三角形面积等于铅垂高乘水平宽之半，转化为关于横坐标 t 的二次函数求最值。",
+      "unlocked_semester": "9A",
+      "primary_line": "A4",
+      "category_id": "algebra_function",
+      "kp_dependencies": [
+        "KP-031",
+        "KP-038",
+        "KP-041",
+        "KP-043"
+      ],
+      "clique_id": "C4-0209",
+      "viewbox_spec_json": "{\"xMin\": -10, \"xMax\": 10, \"yMin\": -8, \"yMax\": 8, \"marginPercent\": 15, \"preserveAspectRatio\": true}",
+      "parameter_morphing_json": "{\"description\": \"\\u53c2\\u6570\\u53d8\\u5f02\\u6ed1\\u5757\", \"sliders\": [{\"id\": \"param_t\", \"min\": 0, \"max\": 10}]}",
+      "manual_spec": "- **模型25 二次函数铅垂高水平宽动点面积割补模型** · 依赖 `KP031+KP038+KP041+KP043`"
+    },
+    {
+      "model_id": "LM-9A-26",
+      "model_name_zh": "二次函数特殊四边形存在性模型",
+      "model_brief_zh": "平行四边形对角线中点重合横纵坐标方程，菱形矩形对角线垂直与相等判别。",
+      "unlocked_semester": "9A",
+      "primary_line": "A4",
+      "category_id": "algebra_function",
+      "kp_dependencies": [
+        "KP-031",
+        "KP-038",
+        "KP-042",
+        "KP-062",
+        "KP-063",
+        "KP-064",
+        "KP-065",
+        "KP-066"
+      ],
+      "clique_id": "C5-0183",
+      "viewbox_spec_json": "{\"xMin\": -10, \"xMax\": 10, \"yMin\": -8, \"yMax\": 8, \"marginPercent\": 15, \"preserveAspectRatio\": true}",
+      "parameter_morphing_json": "{\"description\": \"\\u53c2\\u6570\\u53d8\\u5f02\\u6ed1\\u5757\", \"sliders\": [{\"id\": \"param_t\", \"min\": 0, \"max\": 10}]}",
+      "manual_spec": "- **模型26 二次函数特殊四边形存在性模型** · 依赖 `KP031+KP038+KP042+KP062~KP066`"
+    },
+    {
+      "model_id": "LM-9A-27",
+      "model_name_zh": "二次函数特殊三角形存在性模型",
+      "model_brief_zh": "直角三角形两线垂直斜率积为负一或两点距离勾股，等腰两圆一线分类讨论。",
+      "unlocked_semester": "9A",
+      "primary_line": "A4",
+      "category_id": "algebra_function",
+      "kp_dependencies": [
+        "KP-031",
+        "KP-038",
+        "KP-040",
+        "KP-056",
+        "KP-057"
+      ],
+      "clique_id": "C3-0262",
+      "viewbox_spec_json": "{\"xMin\": -10, \"xMax\": 10, \"yMin\": -8, \"yMax\": 8, \"marginPercent\": 15, \"preserveAspectRatio\": true}",
+      "parameter_morphing_json": "{\"description\": \"\\u53c2\\u6570\\u53d8\\u5f02\\u6ed1\\u5757\", \"sliders\": [{\"id\": \"param_t\", \"min\": 0, \"max\": 10}]}",
+      "manual_spec": "- **模型27 二次函数特殊三角形存在性模型** · 依赖 `KP031+KP038+KP040+KP056+KP057`"
+    },
+    {
+      "model_id": "LM-9A-28",
+      "model_name_zh": "二次函数与直角坐标系综合最值模型",
+      "model_brief_zh": "中考代数压轴母题，动轴定区间、直线相切判别式、翻折绝对值与和差极值。",
+      "unlocked_semester": "9A",
+      "primary_line": "A4",
+      "category_id": "algebra_function",
+      "kp_dependencies": [
+        "KP-030",
+        "KP-031",
+        "KP-038",
+        "KP-039",
+        "KP-040",
+        "KP-041",
+        "KP-042",
+        "KP-043"
+      ],
+      "clique_id": "C8-0001",
+      "viewbox_spec_json": "{\"xMin\": -10, \"xMax\": 10, \"yMin\": -8, \"yMax\": 8, \"marginPercent\": 15, \"preserveAspectRatio\": true}",
+      "parameter_morphing_json": "{\"description\": \"\\u53c2\\u6570\\u53d8\\u5f02\\u6ed1\\u5757\", \"sliders\": [{\"id\": \"param_t\", \"min\": 0, \"max\": 10}]}",
+      "manual_spec": "- **模型28 二次函数与直角坐标系综合最值模型** · 依赖 `KP030+KP031+KP038~KP043`（中考代数压轴母题）"
+    },
+    {
+      "model_id": "LM-9B-29",
+      "model_name_zh": "一线三等角(K字型相似)模型",
+      "model_brief_zh": "同一直线上三个等角诱导互余角互补，构建两组相似三角形线段比例式。",
+      "unlocked_semester": "9B",
+      "primary_line": "G6",
+      "category_id": "geometry_similarity",
+      "kp_dependencies": [
+        "KP-031",
+        "KP-058",
+        "KP-059"
+      ],
+      "clique_id": "C2-0175",
+      "viewbox_spec_json": "{\"xMin\": -10, \"xMax\": 10, \"yMin\": -8, \"yMax\": 8, \"marginPercent\": 15, \"preserveAspectRatio\": true}",
+      "parameter_morphing_json": "{\"description\": \"\\u53c2\\u6570\\u53d8\\u5f02\\u6ed1\\u5757\", \"sliders\": [{\"id\": \"param_t\", \"min\": 0, \"max\": 10}]}",
+      "manual_spec": "- **模型29 一线三等角(K字型相似)模型** · 依赖 `KP031+KP058+KP059`"
+    }
+  ],
+  "concept": [
+    {
+      "sandbox_id": "SB-KP058",
+      "point_id": "KP-058",
+      "category_id": "geometry",
+      "inquiry_guide_zh": "调节相似比 k，观察相似三角形对应角相等、边成比例。"
+    },
+    {
+      "sandbox_id": "SB-KP060",
+      "point_id": "KP-060",
+      "category_id": "geometry",
+      "inquiry_guide_zh": "拖动位似中心，观察图形位似缩放与坐标倍率变化。"
+    },
+    {
+      "sandbox_id": "SB-KP062",
+      "point_id": "KP-062",
+      "category_id": "geometry",
+      "inquiry_guide_zh": "拖动顶点，探究平行四边形对边对角相等与对角线互相平分。"
+    },
+    {
+      "sandbox_id": "SB-KP064",
+      "point_id": "KP-064",
+      "category_id": "geometry",
+      "inquiry_guide_zh": "旋转相邻边至直角，观察对角线相等与矩形四直角。"
+    },
+    {
+      "sandbox_id": "SB-KP065",
+      "point_id": "KP-065",
+      "category_id": "geometry",
+      "inquiry_guide_zh": "调整相邻边至等长，观察菱形对角线互相垂直平分与轴对称。"
+    },
+    {
+      "sandbox_id": "SB-KP066",
+      "point_id": "KP-066",
+      "category_id": "geometry",
+      "inquiry_guide_zh": "综合矩形与菱形约束，验证正方形完全对称性。"
+    },
+    {
+      "sandbox_id": "SB-KP068",
+      "point_id": "KP-068",
+      "category_id": "geometry",
+      "inquiry_guide_zh": "任意拖动四边形四个顶点，探究其中点四边形恒为平行四边形。"
+    },
+    {
+      "sandbox_id": "SB-KP069",
+      "point_id": "KP-069",
+      "category_id": "geometry",
+      "inquiry_guide_zh": "拖动半径端点，观察圆上所有点到定点距离等于定长。"
+    },
+    {
+      "sandbox_id": "SB-KP071",
+      "point_id": "KP-071",
+      "category_id": "geometry",
+      "inquiry_guide_zh": "滑动直线与圆心距离 d，探究相交、相切、相离三种临界位置。"
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { KnowledgePointRecord } from "./modules/concept/types";
 import { mockKnowledgePointRecords } from "./modules/concept/mockPoints";
 import { ConceptFourStages } from "./modules/concept/ConceptFourStages";
@@ -7,10 +7,11 @@ import { PointMasterExample, MasterExampleItem } from "./modules/concept/PointMa
 import { QuickPractice } from "./modules/concept/QuickPractice";
 import { pythagoreanConfig, handInHandConfig, quadraticVerticalHeightConfig, apolloniusConfig } from "./modules/sandbox/configs";
 import { SandboxConfig } from "./modules/sandbox/SandboxRenderer";
-import { QuickPracticeQuestion } from "./modules/concept/quickPractice.machine";
+import { QuickPracticeQuestion, mapRawRowsToQuestions } from "./modules/concept/quickPractice.machine";
 import { t } from "./engine/i18n/i18n";
 import { useSessionStore } from "./store/sessionStore";
 import { Icon } from "./components/common/Icon";
+import { dbClient } from "./engine/db/dbClient";
 
 export interface ConceptNavProps {
   knowledgePoints?: KnowledgePointRecord[];
@@ -125,12 +126,47 @@ function getPracticeQuestionsForPoint(point: KnowledgePointRecord): QuickPractic
  * 数据从 mockKnowledgePointRecords (同步 core.db) 动态派生
  */
 export const ConceptNav: React.FC<ConceptNavProps> = ({
-  knowledgePoints = mockKnowledgePointRecords,
+  knowledgePoints: propKnowledgePoints,
   initialPointId = "KP-023",
   onSelectPoint,
   className = "",
 }) => {
   const locale = useSessionStore((state) => state.locale);
+
+  // 异步从 core.db 读真实 107 考点四段
+  const [dbKnowledgePoints, setDbKnowledgePoints] = useState<KnowledgePointRecord[] | null>(null);
+  const [dbMasterExample, setDbMasterExample] = useState<MasterExampleItem | null>(null);
+  const [dbSandboxConfig, setDbSandboxConfig] = useState<SandboxConfig | null>(null);
+  const [dbPracticeQuestions, setDbPracticeQuestions] = useState<QuickPracticeQuestion[] | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    async function loadCorePoints() {
+      try {
+        const rows = await dbClient.query<KnowledgePointRecord>(
+          'core',
+          'SELECT * FROM knowledge_points ORDER BY point_id ASC'
+        );
+        if (active && rows && rows.length > 0) {
+          setDbKnowledgePoints(rows);
+        }
+      } catch (err) {
+        console.warn('[ConceptNav] Failed to load knowledge_points from core.db, fallback to mock:', err);
+      }
+    }
+    loadCorePoints();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // 优先级：传入的非默认 prop > 真库 107 考点 > mock 兜底
+  const knowledgePoints = useMemo(() => {
+    if (propKnowledgePoints && propKnowledgePoints.length > 0 && propKnowledgePoints !== mockKnowledgePointRecords) {
+      return propKnowledgePoints;
+    }
+    return dbKnowledgePoints || propKnowledgePoints || mockKnowledgePointRecords;
+  }, [propKnowledgePoints, dbKnowledgePoints]);
 
   // 当前选中的考点 ID
   const [selectedPointId, setSelectedPointId] = useState<string>(initialPointId);
@@ -195,17 +231,119 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
     }
   };
 
+  // 异步从 master.db 加载真实母题 (119 母题 dim1/2/3/4)
+  useEffect(() => {
+    let active = true;
+    async function loadMaster() {
+      try {
+        const row = await dbClient.queryOne<any>(
+          'master',
+          'SELECT * FROM master_examples WHERE bound_target_id = ? OR example_id = ? LIMIT 1',
+          [currentPoint.point_id, currentPoint.master_example_id || `ME-${currentPoint.point_id}`]
+        );
+        if (active && row) {
+          setDbMasterExample({
+            example_id: String(row.example_id),
+            example_type: row.example_type,
+            bound_target_id: row.bound_target_id,
+            source: row.source,
+            stem_zh: row.stem_zh,
+            stem_en: row.stem_en,
+            options_json: row.options_json,
+            correct_option: row.correct_option,
+            dim1_origin: row.dim1_origin,
+            dim2_essence: row.dim2_essence,
+            dim3_rigor: row.dim3_rigor,
+            dim4_traps: row.dim4_traps,
+            available_dimensions: 4,
+            image_paths_json: row.image_paths_json,
+          });
+        } else if (active) {
+          setDbMasterExample(null);
+        }
+      } catch {
+        if (active) setDbMasterExample(null);
+      }
+    }
+    loadMaster();
+    return () => {
+      active = false;
+    };
+  }, [currentPoint.point_id, currentPoint.master_example_id]);
+
+  // 异步从 sandbox.db 加载真实概念沙盒配置
+  useEffect(() => {
+    let active = true;
+    async function loadSandbox() {
+      if (!currentPoint.sandbox_id) {
+        setDbSandboxConfig(null);
+        return;
+      }
+      try {
+        const row = await dbClient.queryOne<any>(
+          'sandbox',
+          'SELECT * FROM concept_sandboxes WHERE sandbox_id = ? OR point_id = ? LIMIT 1',
+          [currentPoint.sandbox_id, currentPoint.point_id]
+        );
+        if (active && row) {
+          setDbSandboxConfig({
+            sandbox_id: row.sandbox_id,
+            canvas_template: row.canvas_template,
+            viewbox_spec_json: row.viewbox_spec_json,
+            drag_points_json: row.drag_points_json,
+            param_sliders_json: row.param_sliders_json,
+            invariants_display_json: row.invariants_display_json,
+            inquiry_guide_zh: row.inquiry_guide_zh,
+            inquiry_guide_en: row.inquiry_guide_en,
+          });
+        } else if (active) {
+          setDbSandboxConfig(null);
+        }
+      } catch {
+        if (active) setDbSandboxConfig(null);
+      }
+    }
+    loadSandbox();
+    return () => {
+      active = false;
+    };
+  }, [currentPoint.point_id, currentPoint.sandbox_id]);
+
+  // 异步从 questions.db 加载真实单点练习题
+  useEffect(() => {
+    let active = true;
+    async function loadPractice() {
+      try {
+        const rows = await dbClient.query<any>(
+          'questions',
+          'SELECT * FROM questions WHERE primary_point_id = ? AND question_type = "single_choice" ORDER BY difficulty_level ASC, question_id ASC',
+          [currentPoint.point_id]
+        );
+        if (active && rows) {
+          const mapped = mapRawRowsToQuestions(rows);
+          setDbPracticeQuestions(mapped);
+        }
+      } catch {
+        if (active) setDbPracticeQuestions(null);
+      }
+    }
+    loadPractice();
+    return () => {
+      active = false;
+    };
+  }, [currentPoint.point_id]);
+
   const sandboxConfig = useMemo(() => {
-    return getSandboxConfigForPoint(currentPoint.sandbox_id);
-  }, [currentPoint.sandbox_id]);
+    return dbSandboxConfig || getSandboxConfigForPoint(currentPoint.sandbox_id);
+  }, [dbSandboxConfig, currentPoint.sandbox_id]);
 
   const masterExample = useMemo(() => {
-    return getMasterExampleForPoint(currentPoint);
-  }, [currentPoint]);
+    return dbMasterExample || getMasterExampleForPoint(currentPoint);
+  }, [dbMasterExample, currentPoint]);
 
   const practiceQuestions = useMemo(() => {
-    return getPracticeQuestionsForPoint(currentPoint);
-  }, [currentPoint]);
+    return dbPracticeQuestions !== null ? dbPracticeQuestions : getPracticeQuestionsForPoint(currentPoint);
+  }, [dbPracticeQuestions, currentPoint]);
 
   return (
     <div

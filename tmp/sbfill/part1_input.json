@@ -1,0 +1,197 @@
+{
+  "leap": [
+    {
+      "model_id": "LM-7A-01",
+      "model_name_zh": "数轴动点与绝对值几何距离模型",
+      "model_brief_zh": "数轴动点折线距离和化归，奇数中位数取点极值，偶数区间恒值。",
+      "unlocked_semester": "7A",
+      "primary_line": "A1",
+      "category_id": "algebra_number",
+      "kp_dependencies": [
+        "KP-001",
+        "KP-002",
+        "KP-003",
+        "KP-019"
+      ],
+      "clique_id": "C3-0001",
+      "viewbox_spec_json": "{\"xMin\": -10, \"xMax\": 10, \"yMin\": -8, \"yMax\": 8, \"marginPercent\": 15, \"preserveAspectRatio\": true}",
+      "parameter_morphing_json": "{\"description\": \"\\u53c2\\u6570\\u53d8\\u5f02\\u6ed1\\u5757\", \"sliders\": [{\"id\": \"param_t\", \"min\": 0, \"max\": 10}]}",
+      "manual_spec": "- **模型01 数轴动点与绝对值几何距离模型** · 依赖 `KP001+KP002+KP003+KP019`\n  - 载体：数轴→折线数轴→平面直角坐标系曼哈顿距离\n  - 参数：两定点距离固定→双动点速度相遇追及极值\n  - 姿态：单动点折线距离和→含权系数折线和\n  - 干扰：物流选址/加油站应用题，X-Ray 还原为中位数取点"
+    },
+    {
+      "model_id": "LM-7A-02",
+      "model_name_zh": "线段双中点与角平分线和差模型",
+      "model_brief_zh": "双中点折半与邻补角内外角平分线垂直，对半公式直击不变量。",
+      "unlocked_semester": "7A",
+      "primary_line": "G1",
+      "category_id": "geometry_foundations",
+      "kp_dependencies": [
+        "KP-044",
+        "KP-045",
+        "KP-046",
+        "KP-019"
+      ],
+      "clique_id": "C3-0322",
+      "viewbox_spec_json": "{\"xMin\": -10, \"xMax\": 10, \"yMin\": -8, \"yMax\": 8, \"marginPercent\": 15, \"preserveAspectRatio\": true}",
+      "parameter_morphing_json": "{\"description\": \"\\u53c2\\u6570\\u53d8\\u5f02\\u6ed1\\u5757\", \"sliders\": [{\"id\": \"param_t\", \"min\": 0, \"max\": 10}]}",
+      "manual_spec": "- **模型02 线段双中点与角平分线和差模型** · 依赖 `KP044+KP045+KP046+KP019`\n  - 载体：单线段→带重叠外部分割；单角→共顶点多重交错角\n  - 参数：中点1:1→任意定比m:n\n  - 姿态：水平→任意倾斜；角平分线→邻补角内外角平分线垂直\n  - 干扰：钟表时针分针夹角，脱壳直击对半公式"
+    },
+    {
+      "model_id": "LM-7B-03",
+      "model_name_zh": "非负数之和为零模型",
+      "model_brief_zh": "绝对值、偶次幂、算术平方根非负和为零，各自为零构建方程组。",
+      "unlocked_semester": "7B",
+      "primary_line": "A1",
+      "category_id": "algebra_number",
+      "kp_dependencies": [
+        "KP-003",
+        "KP-006",
+        "KP-020"
+      ],
+      "clique_id": "C1-0003",
+      "viewbox_spec_json": "{\"xMin\": -10, \"xMax\": 10, \"yMin\": -8, \"yMax\": 8, \"marginPercent\": 15, \"preserveAspectRatio\": true}",
+      "parameter_morphing_json": "{\"description\": \"\\u53c2\\u6570\\u53d8\\u5f02\\u6ed1\\u5757\", \"sliders\": [{\"id\": \"param_t\", \"min\": 0, \"max\": 10}]}",
+      "manual_spec": "- **模型03 非负数之和为零模型** · 依赖 `KP003+KP006+KP020`\n  - 载体：纯代数式→坐标系距离/几何边长平方\n  - 参数：双非负→三非负或含参配平\n  - 姿态：显式加和→互为相反数 A=-B\n  - 干扰：三角形三边代数式求周长"
+    },
+    {
+      "model_id": "LM-7B-04",
+      "model_name_zh": "造桥选址平移最短路径模型",
+      "model_brief_zh": "利用向量平移扣除河宽常量，转化为两点之间线段最短化折为直。",
+      "unlocked_semester": "7B",
+      "primary_line": "G5",
+      "category_id": "geometry_transform",
+      "kp_dependencies": [
+        "KP-045",
+        "KP-048",
+        "KP-080"
+      ],
+      "clique_id": "C2-0229",
+      "viewbox_spec_json": "{\"xMin\": -10, \"xMax\": 10, \"yMin\": -8, \"yMax\": 8, \"marginPercent\": 15, \"preserveAspectRatio\": true}",
+      "parameter_morphing_json": "{\"description\": \"\\u53c2\\u6570\\u53d8\\u5f02\\u6ed1\\u5757\", \"sliders\": [{\"id\": \"param_t\", \"min\": 0, \"max\": 10}]}",
+      "manual_spec": "- **模型04 造桥选址平移最短路径模型** · 依赖 `KP045+KP048+KP080`\n  - 载体：单河岸→两平行河道/坐标系平行线\n  - 参数：河宽常量→随位置动态\n  - 姿态：垂直平移→任意角度造桥\n  - 干扰：城市管道铺设，X-Ray 扣除平移量拉直"
+    },
+    {
+      "model_id": "LM-7B-05",
+      "model_name_zh": "二元一次方程组与坐标系交点模型",
+      "model_brief_zh": "二元一次方程对应直线，方程组解对应坐标系两直线交点。",
+      "unlocked_semester": "7B",
+      "primary_line": "A3",
+      "category_id": "algebra_function",
+      "kp_dependencies": [
+        "KP-020",
+        "KP-029",
+        "KP-031"
+      ],
+      "clique_id": "C2-0110",
+      "viewbox_spec_json": "{\"xMin\": -10, \"xMax\": 10, \"yMin\": -8, \"yMax\": 8, \"marginPercent\": 15, \"preserveAspectRatio\": true}",
+      "parameter_morphing_json": "{\"description\": \"\\u53c2\\u6570\\u53d8\\u5f02\\u6ed1\\u5757\", \"sliders\": [{\"id\": \"param_t\", \"min\": 0, \"max\": 10}]}",
+      "manual_spec": "- **模型05 二元一次方程组与坐标系交点模型** · 依赖 `KP020+KP029+KP031`\n  - 载体：纯代数消元→动直线相交轨迹\n  - 参数：常系数→含参k直线族象限分布\n  - 姿态：斜交→平行(无解)/重合(无穷)/垂直\n  - 干扰：线性规划可行域面积"
+    },
+    {
+      "model_id": "LM-8A-06",
+      "model_name_zh": "乘法公式面积割补与配方恒等模型",
+      "model_brief_zh": "正方形与矩形面积割补证明完全平方与平方差公式，配方几何化。",
+      "unlocked_semester": "8A",
+      "primary_line": "A2",
+      "category_id": "algebra_expression",
+      "kp_dependencies": [
+        "KP-010",
+        "KP-012",
+        "KP-014"
+      ],
+      "clique_id": "C3-0094",
+      "viewbox_spec_json": "{\"xMin\": -10, \"xMax\": 10, \"yMin\": -8, \"yMax\": 8, \"marginPercent\": 15, \"preserveAspectRatio\": true}",
+      "parameter_morphing_json": "{\"description\": \"\\u53c2\\u6570\\u53d8\\u5f02\\u6ed1\\u5757\", \"sliders\": [{\"id\": \"param_t\", \"min\": 0, \"max\": 10}]}",
+      "manual_spec": "- **模型06 乘法公式面积割补与配方恒等模型** · 依赖 `KP010+KP012+KP014`"
+    },
+    {
+      "model_id": "LM-8A-07",
+      "model_name_zh": "因式分解十字相乘与分组分解模型",
+      "model_brief_zh": "双十字相乘与分组添项拆项，高阶代数式积化和差逆向工程。",
+      "unlocked_semester": "8A",
+      "primary_line": "A2",
+      "category_id": "algebra_expression",
+      "kp_dependencies": [
+        "KP-011",
+        "KP-014"
+      ],
+      "clique_id": "C2-0063",
+      "viewbox_spec_json": "{\"xMin\": -10, \"xMax\": 10, \"yMin\": -8, \"yMax\": 8, \"marginPercent\": 15, \"preserveAspectRatio\": true}",
+      "parameter_morphing_json": "{\"description\": \"\\u53c2\\u6570\\u53d8\\u5f02\\u6ed1\\u5757\", \"sliders\": [{\"id\": \"param_t\", \"min\": 0, \"max\": 10}]}",
+      "manual_spec": "- **模型07 因式分解十字相乘与分组分解模型** · 依赖 `KP011+KP014`"
+    },
+    {
+      "model_id": "LM-8A-08",
+      "model_name_zh": "分式方程增根与裂项相消模型",
+      "model_brief_zh": "分式去分母公分母为零判增根，裂项相消解决求和极限。",
+      "unlocked_semester": "8A",
+      "primary_line": "A3",
+      "category_id": "algebra_expression",
+      "kp_dependencies": [
+        "KP-016",
+        "KP-017",
+        "KP-018"
+      ],
+      "clique_id": "C3-0132",
+      "viewbox_spec_json": "{\"xMin\": -10, \"xMax\": 10, \"yMin\": -8, \"yMax\": 8, \"marginPercent\": 15, \"preserveAspectRatio\": true}",
+      "parameter_morphing_json": "{\"description\": \"\\u53c2\\u6570\\u53d8\\u5f02\\u6ed1\\u5757\", \"sliders\": [{\"id\": \"param_t\", \"min\": 0, \"max\": 10}]}",
+      "manual_spec": "- **模型08 分式方程增根与裂项相消模型** · 依赖 `KP016+KP017+KP018`"
+    }
+  ],
+  "concept": [
+    {
+      "sandbox_id": "SB-KP001",
+      "point_id": "KP-001",
+      "category_id": "number_axis",
+      "inquiry_guide_zh": "拖动数轴动点，观察有理数分类与正负数方向性。"
+    },
+    {
+      "sandbox_id": "SB-KP002",
+      "point_id": "KP-002",
+      "category_id": "number_axis",
+      "inquiry_guide_zh": "移动点P，直观探究数轴三要素与连续稠密性。"
+    },
+    {
+      "sandbox_id": "SB-KP003",
+      "point_id": "KP-003",
+      "category_id": "number_axis",
+      "inquiry_guide_zh": "拖动原点两侧动点，探究相反数对称性与绝对值距离本质。"
+    },
+    {
+      "sandbox_id": "SB-KP008",
+      "point_id": "KP-008",
+      "category_id": "number_axis",
+      "inquiry_guide_zh": "拖动无理数点，观察与相邻有理数区间的无限逼近夹逼。"
+    },
+    {
+      "sandbox_id": "SB-KP032",
+      "point_id": "KP-032",
+      "category_id": "function",
+      "inquiry_guide_zh": "调节斜率 k，观察正比例函数直线旋转与象限穿越。"
+    },
+    {
+      "sandbox_id": "SB-KP033",
+      "point_id": "KP-033",
+      "category_id": "function",
+      "inquiry_guide_zh": "拖动直线上两定点，观察待定系数法解析式动态重算。"
+    },
+    {
+      "sandbox_id": "SB-KP034",
+      "point_id": "KP-034",
+      "category_id": "function",
+      "inquiry_guide_zh": "调节截距 b 与斜率 k，探究一次函数单调增减性。"
+    },
+    {
+      "sandbox_id": "SB-KP035",
+      "point_id": "KP-035",
+      "category_id": "function",
+      "inquiry_guide_zh": "移动直线交点，探究一次函数与二元方程组同解几何化。"
+    },
+    {
+      "sandbox_id": "SB-KP036",
+      "point_id": "KP-036",
+      "category_id": "function",
+      "inquiry_guide_zh": "拖动双曲线动点，观察一三象限对称与无限渐近线。"
+    }
+  ]
+}

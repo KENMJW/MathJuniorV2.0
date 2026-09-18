@@ -13,6 +13,8 @@ export interface SandboxConfig {
   param_sliders_json: string;
   invariants_display_json: string;
   custom_behavior_id?: string;
+  inquiry_guide_zh?: string;
+  inquiry_guide_en?: string;
 }
 
 export interface SandboxRendererProps {

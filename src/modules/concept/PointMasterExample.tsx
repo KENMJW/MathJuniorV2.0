@@ -10,7 +10,11 @@
 
 import React, { useState } from 'react';
 import { MathRenderer } from '../../components/math/MathRenderer';
+import { QuestionContent } from '../../components/common/QuestionContent';
+import { QuestionImage } from '../../components/common/QuestionImage';
+import { SourceTag } from '../../components/common/SourceTag';
 import { Icon } from '../../components/common/Icon';
+import { normalizeOptionAnswer } from '../../engine/judge/normalizeOptionAnswer';
 
 export interface MasterExampleItem {
   example_id: string;
@@ -28,6 +32,7 @@ export interface MasterExampleItem {
   dim3_rigor: string; // 严谨证明：非空，必展示
   dim4_traps?: string | null;
   available_dimensions?: number; // 默认 4
+  image_paths_json?: string | null;
 }
 
 export interface PointMasterExampleProps {
@@ -85,7 +90,7 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
   };
 
   // 解析选择题选项 (如有)
-  let optionsMap: Record<string, { zh: string; en?: string }> = {};
+  let optionsMap: Record<string, { zh: string; en?: string; img?: string }> = {};
   try {
     if (example.options_json) {
       optionsMap = JSON.parse(example.options_json);
@@ -126,7 +131,7 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
         }}
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', minWidth: 0 }}>
             <span
               style={{
                 padding: '0.2rem 0.6rem',
@@ -136,20 +141,13 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
                 background: 'rgba(0, 113, 227, 0.1)',
                 color: 'var(--ios-blue)',
                 border: '1px solid rgba(0, 113, 227, 0.2)',
+                flexShrink: 0,
               }}
             >
               ME 考点母题 · {example.example_id}
             </span>
             {example.source && (
-              <span
-                style={{
-                  fontSize: '0.78rem',
-                  color: 'var(--text-secondary)',
-                  fontWeight: 500,
-                }}
-              >
-                {example.source}
-              </span>
+              <SourceTag source={example.source} maxWidth="220px" />
             )}
           </div>
           <h2
@@ -219,6 +217,7 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
         >
           母题题干
         </span>
+        {/* 母题题干 (支持图锚点混合渲染) */}
         <div
           style={{
             fontSize: '0.92rem',
@@ -226,7 +225,7 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
             lineHeight: 1.6,
           }}
         >
-          <MathRenderer content={example.stem_zh} />
+          <QuestionContent content={example.stem_zh} images={example.image_paths_json} />
         </div>
 
         {/* 若有备选选项 */}
@@ -242,7 +241,7 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
             {['A', 'B', 'C', 'D'].map((k) => {
               const opt = optionsMap[k];
               if (!opt) return null;
-              const isCorrect = (example.correct_option || example.answer_standard) === k;
+              const isCorrect = normalizeOptionAnswer(example.correct_option || example.answer_standard) === normalizeOptionAnswer(k);
               return (
                 <div
                   key={k}
@@ -263,8 +262,12 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
                   }}
                 >
                   <span style={{ fontWeight: 800, color: 'var(--ios-blue)' }}>{k}.</span>
-                  <div style={{ flex: 1, overflowX: 'auto' }}>
-                    <MathRenderer content={opt.zh} />
+                  <div style={{ flex: 1, overflowX: 'auto', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    {opt.img ? (
+                      <QuestionImage role="option" src={opt.img} alt={`选项 ${k}`} />
+                    ) : (
+                      <MathRenderer content={opt.zh} />
+                    )}
                   </div>
                   {isCorrect && (
                     <span
@@ -425,7 +428,7 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
                     lineHeight: 1.6,
                   }}
                 >
-                  <MathRenderer content={content} />
+                  <QuestionContent content={content} images={example.image_paths_json} role="solution" />
                 </div>
               </div>
             );

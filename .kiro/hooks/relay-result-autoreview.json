@@ -1,0 +1,14 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Relay Result Auto-Review",
+      "trigger": "PostFileCreate",
+      "matcher": ".kiro/relay/(frontend|datalayer)/outbox/RESULT-.*\\.md$",
+      "action": {
+        "type": "agent",
+        "prompt": "执行者已在 relay outbox 写入新的结果文件（RESULT-*.md）。请立即：1) 读取该结果文件对应的任务书（inbox/TASK-同号.md）与结果文件本身；2) 按任务书\"验收清单\"逐条做可量化审计（实测/查代码/查数据，不听自报）；3) 判定通过或退回：通过则把任务书归档到 archive/、更新 status=accepted、在对应线 NEXT.md 写下一任务号或 IDLE；退回则 status=rejected、附问题清单、attempt+1、NEXT.md 指回该任务，attempt 达 3 则置 WAIT-USER；4) 用简洁中文把验收结论告诉用户。遵守 .kiro/steering/collaboration-protocol.md。"
+      }
+    }
+  ]
+}

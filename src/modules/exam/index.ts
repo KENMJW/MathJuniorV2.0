@@ -12,3 +12,5 @@ export * from './MathKeyboard';
 export * from './RadarChart';
 export * from './ScorePanel';
 export * from './OnlineExam';
+export * from './parseSolutions';
+export * from './SolutionList';

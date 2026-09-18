@@ -136,4 +136,34 @@ describe('4D Morphing Controllers & X-Ray (Task 11.4 & 铁律 1/3 校验)', () =
     expect(leapLabCode).not.toContain('.innerHTML');
     expect(leapLabCode).not.toMatch(/from\s+['"]katex['"]/);
   });
+
+  it('7. TASK-FE-0004: compileMorphingSandboxConfig 空值与异常结构防御不崩溃', () => {
+    const emptyModel = {
+      model_id: 'LM-EMPTY',
+      model_name_zh: '空模型',
+      model_name_en: 'Empty Model',
+      unlocked_semester: '7-1',
+      primary_line: 'A1',
+      category_id: 'cat-1',
+      tier_level: 1,
+      canonical_state_count: 1,
+      kp_dependencies: [],
+      model_brief_zh: '',
+      model_brief_en: '',
+      viewbox_spec_json: '{}',
+      carrier_morphing_json: '{}',
+      parameter_morphing_json: '{}',
+      posture_morphing_json: '{}',
+      camouflage_xray_json: '{}',
+    };
+
+    const emptyState = createDefaultMorphingState(emptyModel);
+    expect(emptyState.carrierId).toBe('default');
+    expect(emptyState.postureId).toBe('standard');
+
+    const config = compileMorphingSandboxConfig(emptyModel, emptyState);
+    expect(config.sandbox_id).toContain('LEAP-LM-EMPTY');
+    expect(config.canvas_template).toBe('euclidean');
+    expect(config.drag_points_json).toBe('[]');
+  });
 });

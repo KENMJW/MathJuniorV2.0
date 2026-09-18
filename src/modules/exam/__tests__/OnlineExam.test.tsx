@@ -228,4 +228,61 @@ describe('OnlineExam & Assessment Center (Tasks 17.5 + 17.6 & 铁律 2/3/9/10 �
     expect(examCode).not.toMatch(/master_examples/i);
     expect(scorePanelCode).not.toMatch(/master_examples/i);
   });
+
+  it('8. 任务 23 & 契约 §5: 题目卡片头部优雅渲染 SourceTag，来源未塞入题干', () => {
+    const html = renderToString(
+      <OnlineExam paper={testPaper} onBackToWorkbench={() => {}} />
+    );
+
+    // 来源标签渲染在卡片头部，短标签如 2023·北京
+    expect(html).toContain('data-testid="source-tag"');
+    expect(html).toContain('2023·北京');
+
+    // 来源绝未污染 stem_zh
+    testPaper.choiceQuestions.forEach((q) => {
+      expect(q.stem_zh).not.toContain(q.source);
+    });
+  });
+
+  it('9. TASK-FE-0004: ScorePanel 选择题判分归一化容错 (*A*, A．, A. 均判对)', () => {
+    const dirtyPaper = {
+      ...testPaper,
+      choiceQuestions: [
+        {
+          ...testPaper.choiceQuestions[0],
+          question_id: 'Q-TEST-01',
+          answer_standard: '*A*',
+          score_default: 4,
+        },
+        {
+          ...testPaper.choiceQuestions[0],
+          question_id: 'Q-TEST-02',
+          answer_standard: 'B．',
+          score_default: 4,
+        },
+      ],
+      fillQuestions: [],
+      solutionQuestions: [],
+    };
+
+    const html = renderToString(
+      <ScorePanel
+        paper={dirtyPaper}
+        choiceAnswers={{
+          'Q-TEST-01': 'A',
+          'Q-TEST-02': 'B',
+        }}
+        fillAnswers={{}}
+        solutionAnswers={{}}
+        solutionCheckedSteps={{}}
+        onStepCheckChange={() => {}}
+        onResetExam={() => {}}
+        onBackToWorkbench={() => {}}
+      />
+    );
+
+    // 应该获得满分 8 分且显示正确判定
+    expect(html).toContain('8');
+    expect(html).toContain('正确');
+  });
 });

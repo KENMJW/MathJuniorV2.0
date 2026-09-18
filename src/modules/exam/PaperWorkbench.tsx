@@ -10,7 +10,7 @@
  * 6. [铁律 3] (全文本走 MathRenderer) + [铁律 10] (iOS 27 设计 tokens) + [铁律 11] (全单色 SVG Icon，零 emoji)
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   FullScoreSystem,
   FULL_SCORE_SYSTEMS,
@@ -23,12 +23,13 @@ import {
   verifyPaperInventoryFromPool,
   InventoryCheckResult,
 } from './verifyPaperInventory';
-import { drawQuestions, GeneratedPaper } from './drawQuestions';
+import { drawQuestions, drawQuestionsFromDb, GeneratedPaper, QuestionItem } from './drawQuestions';
 import { mockExamQuestions } from './mockExamQuestions';
 import { PrintLayout } from './PrintLayout';
 import { OnlineExam } from './OnlineExam';
 import { MathRenderer } from '../../components/math/MathRenderer';
 import { Icon } from '../../components/common/Icon';
+import { dbClient } from '../../engine/db/dbClient';
 
 // 考点元数据清单 (按学期组织)
 interface KpMeta {
@@ -93,6 +94,68 @@ export const PaperWorkbench: React.FC = () => {
   // 当前视图模式: 'workbench' | 'print' | 'online_exam'
   const [activeView, setActiveView] = useState<'workbench' | 'print' | 'online_exam'>('workbench');
 
+  // 真库 2064 题目池状态与 107 考点录 (默认 mock 兜底保证首屏即刻可用)
+  const [questionPool, setQuestionPool] = useState<QuestionItem[]>(mockExamQuestions);
+  const [dbKpDirectory, setDbKpDirectory] = useState<KpMeta[] | null>(null);
+  const [isGenerating, setIsGenerating] = useState<boolean>(false);
+
+  useEffect(() => {
+    let active = true;
+    async function loadWorkbenchData() {
+      try {
+        const [questions, kps] = await Promise.all([
+          dbClient.query<any>(
+            'questions',
+            'SELECT question_id, source, exam_year, region, exam_type, grade_level, semester, primary_point_id, combination_id, difficulty_level, question_type, score_default, stem_zh, stem_en, options_json, answer_standard, rubric_checklist_json, solutions_json, image_paths_json FROM questions'
+          ),
+          dbClient.query<any>(
+            'core',
+            'SELECT point_id as id, name_zh as nameZh, grade, semester, primary_line_id as line FROM knowledge_points ORDER BY point_id ASC'
+          ),
+        ]);
+
+        if (!active) return;
+
+        if (questions && questions.length > 0) {
+          const mappedQuestions: QuestionItem[] = questions.map((r: any) => ({
+            question_id: String(r.question_id),
+            source: String(r.source ?? ''),
+            exam_year: Number(r.exam_year ?? 0),
+            region: String(r.region ?? ''),
+            exam_type: String(r.exam_type ?? ''),
+            grade_level: Number(r.grade_level || 7),
+            semester: Number(r.semester || 1),
+            primary_point_id: String(r.primary_point_id ?? ''),
+            combination_id: r.combination_id ?? null,
+            difficulty_level: Number(r.difficulty_level ?? 1),
+            question_type: r.question_type,
+            score_default: Number(r.score_default ?? 3),
+            stem_zh: String(r.stem_zh ?? ''),
+            stem_en: String(r.stem_en ?? ''),
+            options_json: r.options_json ?? null,
+            answer_standard: String(r.answer_standard ?? ''),
+            rubric_checklist_json: r.rubric_checklist_json ?? null,
+            solutions_json: r.solutions_json ?? null,
+            image_paths_json: r.image_paths_json ?? null,
+          }));
+          setQuestionPool(mappedQuestions);
+        }
+
+        if (kps && kps.length > 0) {
+          setDbKpDirectory(kps);
+        }
+      } catch (err) {
+        console.warn('[PaperWorkbench] Failed to load questions/kps from DB, using fallback:', err);
+      }
+    }
+    loadWorkbenchData();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const effectiveKpDirectory = dbKpDirectory || KP_DIRECTORY;
+
   // 切换满分制时联动更新题量与分值
   const handleScoreSystemChange = (sys: FullScoreSystem) => {
     setScoreSystem(sys);
@@ -122,7 +185,7 @@ export const PaperWorkbench: React.FC = () => {
   const clearAllKps = () => setSelectedKpIds([]);
 
   const selectSemesterKps = (grade: number, sem: number) => {
-    const semKps = KP_DIRECTORY.filter((k) => k.grade === grade && k.semester === sem).map(
+    const semKps = effectiveKpDirectory.filter((k) => k.grade === grade && k.semester === sem).map(
       (k) => k.id
     );
     setSelectedKpIds((prev) => Array.from(new Set([...prev, ...semKps])));
@@ -139,10 +202,10 @@ export const PaperWorkbench: React.FC = () => {
     };
   }, [selectedKpIds, customChoiceCount, customFillCount, customSolutionCount, diffWeights]);
 
-  // 方案 A 实时库存校验 (Property 16)
+  // 方案 A 实时库存校验 (基于题库真实数据池)
   const inventoryResult: InventoryCheckResult = useMemo(() => {
-    return verifyPaperInventoryFromPool(mockExamQuestions, currentConfig);
-  }, [currentConfig]);
+    return verifyPaperInventoryFromPool(questionPool, currentConfig);
+  }, [questionPool, currentConfig]);
 
   // 筛选预设卷
   const filteredPresets = useMemo(() => {
@@ -150,32 +213,58 @@ export const PaperWorkbench: React.FC = () => {
     return PRESET_PAPERS.filter((p) => p.category === presetTab);
   }, [presetTab]);
 
-  // 点击生成试卷 (A4 打印预览)
-  const handleGeneratePaper = () => {
-    if (!inventoryResult.canGenerate) return;
+  // 点击生成试卷 (A4 打印预览，优先异步走 questions.db 真库)
+  const handleGeneratePaper = async () => {
+    if (!inventoryResult.canGenerate || isGenerating) return;
+    setIsGenerating(true);
 
     const spec = FULL_SCORE_SYSTEMS[scoreSystem];
-    const paper = drawQuestions(mockExamQuestions, currentConfig, {
-      titleZh: paperTitle,
-      fullScore: spec.totalScore,
-      timeLimitMinutes: spec.timeLimitMinutes,
-    });
-    setGeneratedPaper(paper);
-    setActiveView('print');
+    try {
+      const paper = await drawQuestionsFromDb(dbClient, currentConfig, {
+        titleZh: paperTitle,
+        fullScore: spec.totalScore,
+        timeLimitMinutes: spec.timeLimitMinutes,
+      });
+      setGeneratedPaper(paper);
+      setActiveView('print');
+    } catch {
+      const paper = drawQuestions(questionPool, currentConfig, {
+        titleZh: paperTitle,
+        fullScore: spec.totalScore,
+        timeLimitMinutes: spec.timeLimitMinutes,
+      });
+      setGeneratedPaper(paper);
+      setActiveView('print');
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
-  // 点击开启在线全真测评
-  const handleStartOnlineExam = () => {
-    if (!inventoryResult.canGenerate) return;
+  // 点击开启在线全真测评 (优先异步走 questions.db 真库)
+  const handleStartOnlineExam = async () => {
+    if (!inventoryResult.canGenerate || isGenerating) return;
+    setIsGenerating(true);
 
     const spec = FULL_SCORE_SYSTEMS[scoreSystem];
-    const paper = drawQuestions(mockExamQuestions, currentConfig, {
-      titleZh: paperTitle,
-      fullScore: spec.totalScore,
-      timeLimitMinutes: spec.timeLimitMinutes,
-    });
-    setGeneratedPaper(paper);
-    setActiveView('online_exam');
+    try {
+      const paper = await drawQuestionsFromDb(dbClient, currentConfig, {
+        titleZh: paperTitle,
+        fullScore: spec.totalScore,
+        timeLimitMinutes: spec.timeLimitMinutes,
+      });
+      setGeneratedPaper(paper);
+      setActiveView('online_exam');
+    } catch {
+      const paper = drawQuestions(questionPool, currentConfig, {
+        titleZh: paperTitle,
+        fullScore: spec.totalScore,
+        timeLimitMinutes: spec.timeLimitMinutes,
+      });
+      setGeneratedPaper(paper);
+      setActiveView('online_exam');
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   // 若已生成试卷，按视图模式渲染对应界面
@@ -673,7 +762,7 @@ export const PaperWorkbench: React.FC = () => {
               paddingRight: '0.25rem',
             }}
           >
-            {KP_DIRECTORY.map((kp) => {
+            {effectiveKpDirectory.map((kp) => {
               const checked = selectedKpIds.includes(kp.id);
               return (
                 <div

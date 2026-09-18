@@ -14,6 +14,9 @@
 import React, { useMemo } from 'react';
 import { GeneratedPaper, QuestionItem } from './drawQuestions';
 import { MathRenderer } from '../../components/math/MathRenderer';
+import { QuestionContent } from '../../components/common/QuestionContent';
+import { SourceTag } from '../../components/common/SourceTag';
+import { SolutionList } from './SolutionList';
 import { Icon } from '../../components/common/Icon';
 import { RadarChart, CognitiveRadarScores } from './RadarChart';
 import { isMathAnswerEquivalent } from '../../engine/judge/isMathAnswerEquivalent';
@@ -22,7 +25,10 @@ import {
   RubricStep,
   getTotalRubricPoints,
 } from '../../engine/judge/calculateSolutionScore';
+import { normalizeOptionAnswer } from '../../engine/judge/normalizeOptionAnswer';
 import { useSessionStore } from '../../store/sessionStore';
+
+export { normalizeOptionAnswer };
 
 export interface ScorePanelProps {
   paper: GeneratedPaper;
@@ -54,7 +60,7 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
   const choiceResults = useMemo(() => {
     return paper.choiceQuestions.map((q) => {
       const studentAns = choiceAnswers[q.question_id] || '';
-      const isCorrect = studentAns === q.answer_standard;
+      const isCorrect = normalizeOptionAnswer(studentAns) === normalizeOptionAnswer(q.answer_standard);
       const score = isCorrect ? q.score_default : 0;
       return { question: q, studentAns, isCorrect, score };
     });
@@ -556,10 +562,13 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                   gap: '0.75rem',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-tertiary)' }}>
-                    第 {idx + 1} 题 · {r.question.score_default}分
-                  </span>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', minWidth: 0 }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-tertiary)', flexShrink: 0 }}>
+                      第 {idx + 1} 题 · {r.question.score_default}分
+                    </span>
+                    <SourceTag source={r.question.source} exam_year={r.question.exam_year} region={r.question.region} />
+                  </div>
                   <span
                     style={{
                       padding: '0.125rem 0.5rem',
@@ -574,7 +583,7 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                   </span>
                 </div>
                 <div style={{ fontSize: '0.8125rem', color: 'var(--text-primary)', lineHeight: 1.5 }}>
-                  <MathRenderer content={r.question.stem_zh} />
+                  <QuestionContent content={r.question.stem_zh} images={r.question.image_paths_json} />
                 </div>
                 <div
                   style={{
@@ -636,10 +645,13 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                   gap: '0.75rem',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-tertiary)' }}>
-                    第 {choiceResults.length + idx + 1} 题 · {r.question.score_default}分
-                  </span>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', minWidth: 0 }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-tertiary)', flexShrink: 0 }}>
+                      第 {choiceResults.length + idx + 1} 题 · {r.question.score_default}分
+                    </span>
+                    <SourceTag source={r.question.source} exam_year={r.question.exam_year} region={r.question.region} />
+                  </div>
                   <span
                     style={{
                       padding: '0.125rem 0.5rem',
@@ -666,7 +678,7 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                   </span>
                 </div>
                 <div style={{ fontSize: '0.8125rem', color: 'var(--text-primary)', lineHeight: 1.5 }}>
-                  <MathRenderer content={r.question.stem_zh} />
+                  <QuestionContent content={r.question.stem_zh} images={r.question.image_paths_json} />
                 </div>
                 <div
                   style={{
@@ -763,9 +775,12 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                     paddingBottom: '0.75rem',
                   }}
                 >
-                  <span style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                    第 {choiceResults.length + fillResults.length + idx + 1} 题 (满分 {r.maxScore} 分) · {r.question.source}
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', minWidth: 0 }}>
+                    <span style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)', flexShrink: 0 }}>
+                      第 {choiceResults.length + fillResults.length + idx + 1} 题 (满分 {r.maxScore} 分)
+                    </span>
+                    <SourceTag source={r.question.source} exam_year={r.question.exam_year} region={r.question.region} />
+                  </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>自核得分:</span>
                     <span
@@ -784,9 +799,9 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                   </div>
                 </div>
 
-                {/* 题干 */}
+                {/* 题干 (支持图锚点混合渲染) */}
                 <div style={{ fontSize: '0.875rem', color: 'var(--text-primary)', lineHeight: 1.6 }}>
-                  <MathRenderer content={r.question.stem_zh} />
+                  <QuestionContent content={r.question.stem_zh} images={r.question.image_paths_json} />
                 </div>
 
                 {/* 学生作答草稿回显 */}
@@ -918,7 +933,7 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                       <span>官方解析与标准推导：</span>
                     </span>
                     <div style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                      <MathRenderer content={r.question.solutions_json} />
+                      <SolutionList solutions={r.question.solutions_json} images={r.question.image_paths_json} />
                     </div>
                   </div>
                 )}

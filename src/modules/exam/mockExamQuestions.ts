@@ -24,7 +24,7 @@ export const mockExamQuestions: QuestionItem[] = [
     stem_en: 'In $\\text{Rt}\\triangle ABC$, two legs are $3$ and $4$. The hypotenuse length is ( )',
     options_json: '{"A":{"zh":"5","en":"5"},"B":{"zh":"6","en":"6"},"C":{"zh":"7","en":"7"},"D":{"zh":"8","en":"8"}}',
     answer_standard: 'A',
-    solutions_json: '[{"method_zh":"直接利用勾股定理计算：$c = \\\\sqrt{3^2 + 4^2} = 5$","steps":["c = 5"]}]',
+    solutions_json: '[{"method":"直接利用勾股定理计算","text":"$c = \\\\sqrt{3^2 + 4^2} = 5$\\\\n$c = 5$"}]',
   },
   {
     question_id: 'Q-2023-SH-002',
@@ -42,7 +42,7 @@ export const mockExamQuestions: QuestionItem[] = [
     stem_en: 'In a right triangle with hypotenuse $13$ and leg $5$, the other leg is ( )',
     options_json: '{"A":{"zh":"10","en":"10"},"B":{"zh":"11","en":"11"},"C":{"zh":"12","en":"12"},"D":{"zh":"13","en":"13"}}',
     answer_standard: 'C',
-    solutions_json: '[{"method_zh":"$b = \\\\sqrt{13^2 - 5^2} = 12$","steps":["b = 12"]}]',
+    solutions_json: '[{"method":"勾股定理计算","text":"$b = \\\\sqrt{13^2 - 5^2} = 12$\\\\n$b = 12$"}]',
   },
   {
     question_id: 'Q-2023-JS-003',
@@ -61,7 +61,7 @@ export const mockExamQuestions: QuestionItem[] = [
     stem_en: 'In an isosceles triangle with base $10$ and leg $13$, the altitude to the base is ( )',
     options_json: '{"A":{"zh":"12","en":"12"},"B":{"zh":"10","en":"10"},"C":{"zh":"8","en":"8"},"D":{"zh":"6","en":"6"}}',
     answer_standard: 'A',
-    solutions_json: '[{"method_zh":"三线合一平分底边得直角边 5，勾股定理求高为 12","steps":["h = 12"]}]',
+    solutions_json: '[{"method":"等腰三角形性质与勾股定理","text":"三线合一平分底边得直角边 5，勾股定理求高为 12\\\\n$h = 12$"}]',
   },
   {
     question_id: 'Q-2023-LINE-001',
@@ -79,7 +79,7 @@ export const mockExamQuestions: QuestionItem[] = [
     stem_zh: '在矩形 $ABCD$ 中，$AB = 3$，$BC = 4$。沿对角线 $AC$ 折叠，点 $B$ 落在 $B\'$ 处，$B\'C$ 交 $AD$ 于点 $E$。则 $AE$ 的长为（ ）',
     options_json: '{"A":{"zh":"7/8","en":"7/8"},"B":{"zh":"7/6","en":"7/6"},"C":{"zh":"7/2","en":"7/2"},"D":{"zh":"5/2","en":"5/2"}}',
     answer_standard: 'A',
-    solutions_json: '[{"method_zh":"设 AE = x，应用勾股定理列方程求解","steps":["x = 7/8"]}]',
+    solutions_json: '[{"method":"解法一 (方程法)","text":"设 $AE = x$，在 $\\\\text{Rt}\\\\triangle ABE$ 中应用勾股定理列方程求解：$x = 7/8$"},{"method":"解法二 (相似三角形法)","text":"由折叠角相等易证三角形相似，列比例式亦可解得 $AE = 7/8$"}]',
   },
   {
     question_id: 'Q-2023-LINE-002',
@@ -97,7 +97,7 @@ export const mockExamQuestions: QuestionItem[] = [
     stem_zh: '在平面直角坐标系中，点 $P(x, y)$ 在直线 $y = -2x + 4$ 上运动，则 $\\sqrt{x^2 + y^2}$ 的最小值为（ ）',
     options_json: '{"A":{"zh":"4√5/5","en":"4√5/5"},"B":{"zh":"2","en":"2"},"C":{"zh":"√5","en":"√5"},"D":{"zh":"4","en":"4"}}',
     answer_standard: 'A',
-    solutions_json: '[{"method_zh":"垂线段最短，点到直线距离公式","steps":["d = 4√5/5"]}]',
+    solutions_json: '[{"method":"垂线段最短原理","text":"垂线段最短，由点到直线距离公式可得 $d = \\\\frac{4\\\\sqrt{5}}{5}$"}]',
   },
   {
     question_id: 'Q-2023-LINE-003',
@@ -115,7 +115,7 @@ export const mockExamQuestions: QuestionItem[] = [
     stem_zh: '已知等腰直角三角形 $\\triangle ABC$ 与 $\\triangle ADE$ 共顶点 $A$。若 $BD = 6$，则 $CE$ 的长为（ ）',
     options_json: '{"A":{"zh":"6","en":"6"},"B":{"zh":"6√2","en":"6√2"},"C":{"zh":"3√2","en":"3√2"},"D":{"zh":"12","en":"12"}}',
     answer_standard: 'A',
-    solutions_json: '[{"method_zh":"手拉手全等模型证明 △ABD ≌ △ACE","steps":["CE = 6"]}]',
+    solutions_json: '[{"method":"手拉手全等模型","text":"证明 $\\\\triangle ABD \\\\cong \\\\triangle ACE$，得对应边 $CE = BD = 6$"}]',
   },
   {
     question_id: 'Q-2023-LINE-004',
@@ -133,7 +133,7 @@ export const mockExamQuestions: QuestionItem[] = [
     stem_zh: '已知直角三角形周长为 $24$，斜边长为 $10$，则该直角三角形的面积为（ ）',
     options_json: '{"A":{"zh":"24","en":"24"},"B":{"zh":"20","en":"20"},"C":{"zh":"30","en":"30"},"D":{"zh":"48","en":"48"}}',
     answer_standard: 'A',
-    solutions_json: '[{"method_zh":"利用完全平方公式求解 2ab = 96，面积为 24","steps":["S = 24"]}]',
+    solutions_json: '[{"method":"完全平方公式","text":"利用完全平方公式求解 $2ab = 96$，面积为 $S = 24$"}]',
   },
   {
     question_id: 'Q-2023-LINE-005',
@@ -151,7 +151,7 @@ export const mockExamQuestions: QuestionItem[] = [
     stem_zh: '抛物线 $y = -x^2 + 2x + 3$ 的顶点坐标与对称轴分别为（ ）',
     options_json: '{"A":{"zh":"(1, 4), x = 1","en":"(1, 4), x = 1"},"B":{"zh":"(-1, 4), x = -1","en":"(-1, 4), x = -1"},"C":{"zh":"(1, 3), x = 1","en":"(1, 3), x = 1"},"D":{"zh":"(2, 3), x = 2","en":"(2, 3), x = 2"}}',
     answer_standard: 'A',
-    solutions_json: '[{"method_zh":"配方得 y = -(x-1)^2 + 4","steps":["Vertex (1,4)"]}]',
+    solutions_json: '[{"method":"二次函数配方法","text":"配方得 $y = -(x-1)^2 + 4$，顶点为 $(1, 4)$，对称轴为 $x = 1$"}]',
   },
   {
     question_id: 'Q-2023-LINE-006',
@@ -169,7 +169,7 @@ export const mockExamQuestions: QuestionItem[] = [
     stem_zh: '在 $\\text{Rt}\\triangle ABC$ 中，$\\angle C = 90^\\circ$，$AC = 4$，$\\sin A = \\frac{3}{5}$，则 $\\tan B$ 的值为（ ）',
     options_json: '{"A":{"zh":"4/3","en":"4/3"},"B":{"zh":"3/4","en":"3/4"},"C":{"zh":"3/5","en":"3/5"},"D":{"zh":"5/4","en":"5/4"}}',
     answer_standard: 'A',
-    solutions_json: '[{"method_zh":"三角比计算 tan B = AC/BC = 4/3","steps":["tan B = 4/3"]}]',
+    solutions_json: '[{"method":"锐角三角函数定义","text":"三角比计算 $\\\\tan B = \\\\frac{AC}{BC} = \\\\frac{4}{3}$"}]',
   },
 
   // 10~17: 扩充单选
@@ -442,7 +442,7 @@ export const mockExamQuestions: QuestionItem[] = [
     stem_zh: '如图，在四边形 $ABCD$ 中，$\\angle B = 90^\\circ$，$AB = 3$，$BC = 4$，$CD = 12$，$AD = 13$。求四边形 $ABCD$ 的面积。',
     answer_standard: '36',
     rubric_checklist_json: '[{"stepIndex":1,"descriptionZh":"连接 AC，由勾股定理求得 AC = 5","points":3},{"stepIndex":2,"descriptionZh":"由逆定理证明 ∠ACD = 90°","points":3},{"stepIndex":3,"descriptionZh":"分别计算两直角三角形面积并求和得 36","points":4}]',
-    solutions_json: '[{"method_zh":"割补法分为两个直角三角形分别计算面积","steps":["S = S1 + S2 = 6 + 30 = 36"]}]',
+    solutions_json: '[{"method":"割补法","text":"分为两个直角三角形分别计算面积：$S = S_1 + S_2 = 6 + 30 = 36$"}]',
   },
   {
     question_id: 'Q-2023-EXAM-S01',
@@ -459,7 +459,7 @@ export const mockExamQuestions: QuestionItem[] = [
     stem_zh: '如图，已知 $AC = DF$，$BC = EF$，$AD = BE$。求证：$\\triangle ABC \\cong \\triangle DEF$。',
     answer_standard: '见解析',
     rubric_checklist_json: '[{"stepIndex":1,"descriptionZh":"由 AD = BE 推导 AB = DE","points":3},{"stepIndex":2,"descriptionZh":"利用 SSS 证明全等","points":3}]',
-    solutions_json: '[{"method_zh":"等式性质证明边相等后利用 SSS 证明全等","steps":["AB = DE","△ABC ≌ △DEF (SSS)"]}]',
+    solutions_json: '[{"method":"SSS全等判定","text":"等式性质证明边相等后利用 SSS 证明全等：$AB = DE$ 且 $\\\\triangle ABC \\\\cong \\\\triangle DEF$"}]',
   },
   {
     question_id: 'Q-2023-EXAM-S02',
@@ -476,7 +476,7 @@ export const mockExamQuestions: QuestionItem[] = [
     stem_zh: '已知一次函数 $y = kx + b$ 的图象经过点 $A(2, 4)$ 和点 $B(-1, -2)$。（1）求解析式；（2）求与两坐标轴围成的三角形面积。',
     answer_standard: 'y = 2x',
     rubric_checklist_json: '[{"stepIndex":1,"descriptionZh":"列出方程组并求得 k = 2, b = 0，解析式为 y = 2x","points":4},{"stepIndex":2,"descriptionZh":"判断直线经过原点并说明面积特征","points":4}]',
-    solutions_json: '[{"method_zh":"待定系数法求解析式","steps":["y = 2x"]}]',
+    solutions_json: '[{"method":"待定系数法","text":"待定系数法列方程组求解得解析式为 $y = 2x$"}]',
   },
   {
     question_id: 'Q-2023-EXAM-S03',
@@ -493,7 +493,7 @@ export const mockExamQuestions: QuestionItem[] = [
     stem_zh: '已知关于 $x$ 的一元二次方程 $x^2 - 4x + m = 0$ 有两实数根 $x_1$、$x_2$。（1）求 $m$ 的取值范围；（2）若 $x_1 + x_2 + x_1 x_2 = 7$，求 $m$。',
     answer_standard: 'm = 3',
     rubric_checklist_json: '[{"stepIndex":1,"descriptionZh":"判别式 Δ ≥ 0 求得 m ≤ 4","points":3},{"stepIndex":2,"descriptionZh":"写出韦达定理 x1 + x2 = 4, x1*x2 = m","points":2},{"stepIndex":3,"descriptionZh":"代入求得 m = 3 并检验","points":3}]',
-    solutions_json: '[{"method_zh":"韦达定理与判别式联立求解","steps":["m = 3"]}]',
+    solutions_json: '[{"method":"根的判别式与韦达定理","text":"判别式 $\\\\Delta \\\\ge 0$ 结合韦达定理联立求解得 $m = 3$"}]',
   },
   {
     question_id: 'Q-2023-EXAM-S04',
@@ -510,7 +510,7 @@ export const mockExamQuestions: QuestionItem[] = [
     stem_zh: '如图，在 $\\square ABCD$ 中，对角线交于点 $O$。过 $O$ 作 $EF \\perp AC$ 分别交 $AD$、$BC$ 于 $E$、$F$。求证：四边形 $AFCE$ 是菱形。',
     answer_standard: '见解析',
     rubric_checklist_json: '[{"stepIndex":1,"descriptionZh":"证明 △AOE ≌ △COF，得出 OE = OF","points":3},{"stepIndex":2,"descriptionZh":"由对角线互相平分判定为平行四边形","points":2},{"stepIndex":3,"descriptionZh":"根据垂直判定四边形为菱形","points":3}]',
-    solutions_json: '[{"method_zh":"对角线垂直平分的平行四边形是菱形","steps":["AFCE 为菱形"]}]',
+    solutions_json: '[{"method":"菱形判定定理","text":"对角线互相垂直平分的四边形是菱形，得 $AFCE$ 为菱形"}]',
   },
   {
     question_id: 'Q-2023-EXAM-S05',
@@ -527,7 +527,7 @@ export const mockExamQuestions: QuestionItem[] = [
     stem_zh: '如图，在 $\\triangle ABC$ 中，$\\angle ACD = \\angle B$。（1）求证：$\\triangle ACD \\sim \\triangle ABC$；（2）若 $AD = 2$，$AB = 8$，求 $AC$。',
     answer_standard: 'AC = 4',
     rubric_checklist_json: '[{"stepIndex":1,"descriptionZh":"公共角及已知角证明相似","points":4},{"stepIndex":2,"descriptionZh":"列出比例式 AC/AB = AD/AC","points":3},{"stepIndex":3,"descriptionZh":"求得 AC = 4","points":2}]',
-    solutions_json: '[{"method_zh":"两角对应相等的两个三角形相似","steps":["AC = 4"]}]',
+    solutions_json: '[{"method":"相似三角形判定与性质","text":"两角对应相等的两个三角形相似，列比例式解得 $AC = 4$"}]',
   },
   {
     question_id: 'Q-2023-EXAM-S06',
@@ -544,7 +544,7 @@ export const mockExamQuestions: QuestionItem[] = [
     stem_zh: '测量楼高：在 $A$ 处测得仰角为 $30^\\circ$，向前走 $20$ 米到达 $B$，测得仰角为 $45^\\circ$。求楼高 $CD$。',
     answer_standard: '10(√3 + 1)',
     rubric_checklist_json: '[{"stepIndex":1,"descriptionZh":"Rt△BCD 得到 BD = CD = h","points":2},{"stepIndex":2,"descriptionZh":"在 Rt△ACD 中利用 tan 30° 列方程","points":3},{"stepIndex":3,"descriptionZh":"解方程得出 h = 10(√3 + 1)","points":3}]',
-    solutions_json: '[{"method_zh":"解直角三角形双仰角模型","steps":["h = 10(√3 + 1)"]}]',
+    solutions_json: '[{"method":"双仰角三角测量模型","text":"设楼高为 $h$，在两直角三角形中列三角函数方程求解得 $h = 10(\\\\sqrt{3} + 1)$"}]',
   },
   {
     question_id: 'Q-2023-EXAM-S07',
@@ -561,7 +561,7 @@ export const mockExamQuestions: QuestionItem[] = [
     stem_zh: '如图，$AB$ 为直径，$AD$ 平分 $\\angle BAC$，$DE \\perp AC$。求证：$DE$ 是 $\\odot O$ 的切线。',
     answer_standard: '见解析',
     rubric_checklist_json: '[{"stepIndex":1,"descriptionZh":"连接 OD，证明 ∠OAD = ∠ODA","points":3},{"stepIndex":2,"descriptionZh":"结合角平分线推导出 OD ∥ AE","points":3},{"stepIndex":3,"descriptionZh":"推出 DE ⊥ OD 证得切线","points":3}]',
-    solutions_json: '[{"method_zh":"连半径证垂直","steps":["DE 是切线"]}]',
+    solutions_json: '[{"method":"切线判定定理","text":"连结半径 $OD$，结合角平分线性质证明 $DE \\\\perp OD$，故 $DE$ 是切线"}]',
   },
   {
     question_id: 'Q-2023-EXAM-S08',
@@ -578,7 +578,7 @@ export const mockExamQuestions: QuestionItem[] = [
     stem_zh: '如图，抛物线 $y = -x^2 + 2x + 3$ 与 $x$ 轴交于 $A$、$B$ 两点，与 $y$ 轴交于点 $C$。（1）求三点坐标；（2）求 $\\triangle ABC$ 的面积。',
     answer_standard: 'A(-1, 0), B(3, 0), C(0, 3), 面积为 6',
     rubric_checklist_json: '[{"stepIndex":1,"descriptionZh":"求出 A(-1, 0), B(3, 0)","points":3},{"stepIndex":2,"descriptionZh":"求出 C(0, 3)","points":2},{"stepIndex":3,"descriptionZh":"底边 AB = 4","points":2},{"stepIndex":4,"descriptionZh":"求得面积为 6","points":3}]',
-    solutions_json: '[{"method_zh":"二次函数坐标轴交点与三角形面积计算","steps":["S = 6"]}]',
+    solutions_json: '[{"method":"解法一 (几何底高公式法)","text":"求出坐标轴交点坐标 $A(-1, 0), B(3, 0), C(0, 3)$，底边 $AB = 4$，高 $OC = 3$，求得面积 $S = \\\\frac{1}{2} \\\\times 4 \\\\times 3 = 6$"},{"method":"解法二 (顶点割补向量法)","text":"利用坐标割补或行列式面积公式，同样算出面积 $S = 6$"}]',
   },
   {
     question_id: 'Q-2023-EXAM-S09',
@@ -596,6 +596,6 @@ export const mockExamQuestions: QuestionItem[] = [
     stem_zh: '已知 $\\triangle ABC$ 与 $\\triangle ADE$ 均为等腰直角三角形。连接 $BD$、$CE$ 交于点 $P$。（1）求证：$BD = CE$ 且 $BD \\perp CE$；（2）当 $P$、$D$、$E$ 共线时，求 $\\angle BPD$。',
     answer_standard: '见解析',
     rubric_checklist_json: '[{"stepIndex":1,"descriptionZh":"SAS 证明 △ABD ≌ △ACE","points":3},{"stepIndex":2,"descriptionZh":"得出对应边相等与对应角相等","points":3},{"stepIndex":3,"descriptionZh":"推导垂直关系 BD ⊥ CE","points":3},{"stepIndex":4,"descriptionZh":"分析共线状态求得角为 90° 或 45°","points":3}]',
-    solutions_json: '[{"method_zh":"手拉手全等与旋转正交性证明","steps":["BD ⊥ CE"]}]',
+    solutions_json: '[{"method":"旋转全等模型","text":"利用等腰直角三角形性质证明手拉手全等，由旋转正交性证明 $BD \\\\perp CE$"}]',
   },
 ];

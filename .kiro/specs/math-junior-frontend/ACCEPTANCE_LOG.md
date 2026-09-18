@@ -555,3 +555,54 @@ tasks 11.3 要求产出 `configs/hand-in-hand.ts`/`apollonius.ts`/`quadratic-ver
 - 样式系统统一至 iOS27 token + inline style，"模块四很乱"根因（Tailwind 空转）消除。
 - **需用户 preview 肉眼终确认模块四美观度**（架构师只能验类名清除与 token 化，观感需用户判断）。
 - 隐患 H1/H3 承前；D4 关闭。
+
+## 批次 #16 — 任务22 题目图片渲染 + 统一图片UI（执行模型：gemini-3.8-flash · 跨项目契约）
+
+- **契约**：math-junior-datalayer/CONTRACT_题目图片渲染_给前端.md（6条拍板已对齐）
+- **架构师验收结论**：**✅ 通过。**
+
+### 实测验收（重点验两个易错点 + 契约6拍板）
+
+| 项 | 关联 | 结论 | 证据（实测） |
+| :--- | :--- | :--- | :--- |
+| 混合渲染器按锚点切分 | 拍板2（最易错） | ✅ | QuestionContent 用 /\[\[IMG:(\d+)\]\]/g 遍历切分，textBefore 段送 MathRenderer，锚点就地插 QuestionImage，绝不整段喂 MathRenderer；越界返 null 容错 |
+| 图路径转绝对 | 拍板3 | ✅ | resolveQuestionImageSrc 相对路径加 / 前缀，http/data/blob 保持 |
+| Lightbox 自实现无依赖 | 拍板5 | ✅ | inline fixed 模态 + ESC + 背景关闭，仅 import 自家 Icon，无图片库 |
+| 三角色统一 UI | §3 | ✅ | stem/option/solution 各样式全走 iOS27 token，无硬编码色；骨架屏防CLS + onError 兜底 |
+| 懒加载 | §4 | ✅ | loading=lazy decoding=async |
+| 图打包进 dist | 拍板6 | ✅ | dist/assets/questions/ 有 990 webp |
+| 判分/抽题零侵入 | 拍板1/Property17 | ✅ | drawQuestions 仅加 image_paths_json 字段透传（SELECT+映射），未碰 FROM questions/ME-隔离过滤；Property17 单跑 3/3 绿 |
+| 零emoji/无foreignObject | 铁律11 | ✅ | 加载/错误用 Icon 非 emoji |
+| 全量 | — | ✅ | 32 套件 154 用例全绿（+10 = QuestionContent 测试），build 0 错 |
+
+### ⚠️ 数据层数据完整性观察（非前端问题，提醒转告数据层）
+- 图数量三处不一致：assets/questions 源目录 1424 张、db 引用 1526 唯一路径、dist 打包 990 张。db 引用文件缺失=0（当前引用都能找到）。
+- 判断：数据层图库仍在持续灌入/变动中，构建时点与当前时点数量不同步。**属数据层数据完整性，非前端渲染代码问题**，不阻塞前端验收。建议数据层核对：最终图总数、db 引用与文件是否一一对应、构建时确保全部图进 dist。
+
+### 门禁决定
+- **批次 #16 关闭，状态 ✅。题目图片渲染完成。**
+- 需用户 preview 肉眼确认带图题（如 Q-2026-SD-0006）观感。
+- 隐患 H1/H3 承前。
+
+## 批次 #17 — 任务23 来源标签 + 溢出防御（执行模型：gemini-3.8-flash · 契约§5增量）
+
+- **架构师验收结论**：**✅ 通过。**
+
+### 实测验收（增量任务：只做§5，不重做图片渲染）
+| 项 | 关联 | 结论 | 证据 |
+| :--- | :--- | :--- | :--- |
+| 短标签规则 | 契约§5 | ✅ | exam_year·region 拼接 |
+| 微专题隐藏 | §5 | ✅ | region 空返回 null，不渲染空 pill（510 题） |
+| 溢出防御 | 铁律12（新增） | ✅ | maxWidth 160px+overflow hidden+ellipsis+nowrap+title全文+minWidth0；实测数据 region 最长34字符/source 53字符可被截断不破版 |
+| source 回退 | §5 | ✅ | 无region无year但有source时回退显示（母题场景） |
+| 来源未污染题干 | §5红线 | ✅ | OnlineExam 中 SourceTag 与 QuestionContent 独立并列，题干只走 QuestionContent |
+| 图片渲染组件零变更 | 硬约束 | ✅ | git diff --stat 空（QuestionContent/QuestionImage 未动） |
+| 零emoji/token | 铁律10/11 | ✅ | 全 token，零 emoji |
+| 全量 | — | ✅ | 33 套件 163 用例全绿（+9 SourceTag），build 0 错 |
+
+### 新增规范
+- **铁律12（文本溢出防御）**已写入 EXECUTION_GUIDE：一切 DB 文本渲染到受限空间必须截断+title+minWidth0，防长文本破版。后续所有数据显示任务自动受约束。
+
+### 门禁决定
+- **批次 #17 关闭。任务23完成。**
+- 隐患 H1/H3 承前。

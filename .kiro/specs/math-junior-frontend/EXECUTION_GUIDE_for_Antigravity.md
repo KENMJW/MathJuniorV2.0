@@ -37,6 +37,7 @@
 9. **母题与真题物理隔离。** 组卷/测评抽题**只查 `questions` 表**，绝不碰 `master_examples` 表。
 10. **CSS 禁止硬编码颜色。** 用 `design.md` §10.2 的 iOS 27 液态玻璃 token（CSS 变量），禁止散落 `#000`/`#fff`/随机十六进制。只用这一套 token，不引入已作废的 `--status-*`/`--pulse-track`。
 11. **禁止 emoji 图标,统一用单色 SVG 线性图标。** 全局 UI **严禁**任何 emoji（🎯⚡🔥🌟📖🧪⚔️💡🔬🚀✅❌📱💻🌐 等一律禁用），包括按钮、标题、卡片、提示文案里的。统一使用项目内的 `<Icon name="..."/>` 组件（内联单色 SVG，继承 `currentColor`）。理由：design §12 要求"彻底消灭 Emoji、单色线稿"，且 emoji 跨平台渲染不一致、破坏 iOS27 液态玻璃质感。**违反即退回。** 源码级门禁：源码中不得出现 emoji 字符。
+12. **一切来自数据的文本显示,必须做溢出防御。** 凡渲染 DB 字段(来源 source/region、考点名、题干片段、选项、标签、母题标题等)到固定/受限空间(pill、卡片角、导航项、按钮)时,**严禁假设长度受控**。实测数据里 region 长达 34 字符、source 长达 53 字符。必须用:单行截断(`max-width` + `overflow:hidden` + `text-overflow:ellipsis` + `white-space:nowrap`)或多行钳制(`-webkit-line-clamp`),配 `title`/hover 显示全文;容器 `min-width:0` 防 flex 撑破;超长绝不允许撑破布局、顶开兄弟元素或溢出卡片。**违反(即长文本破版)即退回。**
 
 ---
 

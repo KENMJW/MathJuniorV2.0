@@ -2,10 +2,33 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import legacy from '@vitejs/plugin-legacy';
 import { VitePWA } from 'vite-plugin-pwa';
+import fs from 'fs';
 import path from 'path';
+
+function syncQuestionAssetsPlugin() {
+  return {
+    name: 'sync-question-assets',
+    buildStart() {
+      const srcDir = path.resolve(__dirname, 'assets/questions');
+      const targetDir = path.resolve(__dirname, 'public/assets/questions');
+      if (fs.existsSync(srcDir)) {
+        fs.mkdirSync(targetDir, { recursive: true });
+        const files = fs.readdirSync(srcDir);
+        for (const file of files) {
+          const srcFile = path.join(srcDir, file);
+          const targetFile = path.join(targetDir, file);
+          if (fs.statSync(srcFile).isFile() && !file.startsWith('.')) {
+            fs.copyFileSync(srcFile, targetFile);
+          }
+        }
+      }
+    },
+  };
+}
 
 export default defineConfig({
   plugins: [
+    syncQuestionAssetsPlugin(),
     react(),
     legacy({
       targets: ['defaults', 'not IE 11', 'Safari >= 14', 'iOS >= 14'],
@@ -37,6 +60,7 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,wasm,db}'],
+        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
       },
     }),
   ],

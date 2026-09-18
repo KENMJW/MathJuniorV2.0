@@ -14,6 +14,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { GeneratedPaper, QuestionItem } from './drawQuestions';
 import { MathRenderer } from '../../components/math/MathRenderer';
+import { QuestionContent } from '../../components/common/QuestionContent';
+import { QuestionImage } from '../../components/common/QuestionImage';
+import { SourceTag } from '../../components/common/SourceTag';
 import { MathKeyboard } from './MathKeyboard';
 import { ScorePanel } from './ScorePanel';
 import { Icon } from '../../components/common/Icon';
@@ -400,7 +403,7 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                   const isFlagged = flaggedIds.has(q.question_id);
                   const selectedOpt = choiceAnswers[q.question_id];
 
-                  let optionsMap: Record<string, { zh: string; en?: string }> = {};
+                  let optionsMap: Record<string, { zh: string; en?: string; img?: string }> = {};
                   try {
                     if (q.options_json) {
                       optionsMap = JSON.parse(q.options_json);
@@ -432,8 +435,8 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                       }}
                     >
                       {/* 题目题头 */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0, flexWrap: 'wrap' }}>
                           <span
                             style={{
                               padding: '0.125rem 0.625rem',
@@ -442,13 +445,15 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                               fontWeight: 900,
                               backgroundColor: 'var(--ios-blue)',
                               color: '#ffffff',
+                              flexShrink: 0,
                             }}
                           >
                             第 {qNum} 题
                           </span>
-                          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-tertiary)' }}>
+                          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-tertiary)', flexShrink: 0 }}>
                             ({q.score_default}分) · 难度 L{q.difficulty_level}
                           </span>
+                          <SourceTag source={q.source} exam_year={q.exam_year} region={q.region} />
                         </div>
                         <button
                           type="button"
@@ -465,6 +470,7 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                             color: isFlagged ? 'var(--ios-red)' : 'var(--text-tertiary)',
                             border: isFlagged ? '1px solid rgba(255, 59, 48, 0.25)' : 'none',
                             cursor: 'pointer',
+                            flexShrink: 0,
                           }}
                         >
                           <Icon name="flag" size={12} style={{ color: isFlagged ? 'var(--ios-red)' : 'currentColor' }} />
@@ -472,9 +478,9 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                         </button>
                       </div>
 
-                      {/* 题干 (严格走 MathRenderer) */}
+                      {/* 题干 (支持图锚点混合渲染) */}
                       <div style={{ fontSize: '0.9375rem', color: 'var(--text-primary)', lineHeight: 1.6 }}>
-                        <MathRenderer content={q.stem_zh} />
+                        <QuestionContent content={q.stem_zh} images={q.image_paths_json} />
                       </div>
 
                       {/* 选项网格 */}
@@ -528,8 +534,12 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                               >
                                 {optKey}
                               </span>
-                              <div style={{ flex: 1, overflowX: 'auto' }}>
-                                <MathRenderer content={optText || '—'} />
+                              <div style={{ flex: 1, overflowX: 'auto', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                                {optObj?.img ? (
+                                  <QuestionImage role="option" src={optObj.img} alt={`选项 ${optKey}`} />
+                                ) : (
+                                  <MathRenderer content={optText || '—'} />
+                                )}
                               </div>
                             </button>
                           );
@@ -591,8 +601,8 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                       }}
                     >
                       {/* 题目题头 */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0, flexWrap: 'wrap' }}>
                           <span
                             style={{
                               padding: '0.125rem 0.625rem',
@@ -601,13 +611,15 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                               fontWeight: 900,
                               backgroundColor: 'var(--ios-blue)',
                               color: '#ffffff',
+                              flexShrink: 0,
                             }}
                           >
                             第 {qNum} 题
                           </span>
-                          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-tertiary)' }}>
+                          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-tertiary)', flexShrink: 0 }}>
                             ({q.score_default}分) · 难度 L{q.difficulty_level}
                           </span>
+                          <SourceTag source={q.source} exam_year={q.exam_year} region={q.region} />
                         </div>
                         <button
                           type="button"
@@ -624,6 +636,7 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                             color: isFlagged ? 'var(--ios-red)' : 'var(--text-tertiary)',
                             border: isFlagged ? '1px solid rgba(255, 59, 48, 0.25)' : 'none',
                             cursor: 'pointer',
+                            flexShrink: 0,
                           }}
                         >
                           <Icon name="flag" size={12} style={{ color: isFlagged ? 'var(--ios-red)' : 'currentColor' }} />
@@ -631,9 +644,9 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                         </button>
                       </div>
 
-                      {/* 题干 (严格走 MathRenderer) */}
+                      {/* 题干 (支持图锚点混合渲染) */}
                       <div style={{ fontSize: '0.9375rem', color: 'var(--text-primary)', lineHeight: 1.6 }}>
-                        <MathRenderer content={q.stem_zh} />
+                        <QuestionContent content={q.stem_zh} images={q.image_paths_json} />
                       </div>
 
                       {/* 填空作答输入区 */}
@@ -769,8 +782,8 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                       }}
                     >
                       {/* 题目题头 */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0, flexWrap: 'wrap' }}>
                           <span
                             style={{
                               padding: '0.125rem 0.625rem',
@@ -779,13 +792,15 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                               fontWeight: 900,
                               backgroundColor: 'var(--ios-blue)',
                               color: '#ffffff',
+                              flexShrink: 0,
                             }}
                           >
                             第 {qNum} 题
                           </span>
-                          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-tertiary)' }}>
-                            (满分 {q.score_default}分) · 难度 L{q.difficulty_level} · {q.source}
+                          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-tertiary)', flexShrink: 0 }}>
+                            (满分 {q.score_default}分) · 难度 L{q.difficulty_level}
                           </span>
+                          <SourceTag source={q.source} exam_year={q.exam_year} region={q.region} />
                         </div>
                         <button
                           type="button"
@@ -802,6 +817,7 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                             color: isFlagged ? 'var(--ios-red)' : 'var(--text-tertiary)',
                             border: isFlagged ? '1px solid rgba(255, 59, 48, 0.25)' : 'none',
                             cursor: 'pointer',
+                            flexShrink: 0,
                           }}
                         >
                           <Icon name="flag" size={12} style={{ color: isFlagged ? 'var(--ios-red)' : 'currentColor' }} />
@@ -809,9 +825,9 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                         </button>
                       </div>
 
-                      {/* 题干 (严格走 MathRenderer) */}
+                      {/* 题干 (支持图锚点混合渲染) */}
                       <div style={{ fontSize: '0.9375rem', color: 'var(--text-primary)', lineHeight: 1.6 }}>
-                        <MathRenderer content={q.stem_zh} />
+                        <QuestionContent content={q.stem_zh} images={q.image_paths_json} />
                       </div>
 
                       {/* 解答草稿输入框 */}

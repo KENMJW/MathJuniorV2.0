@@ -17,6 +17,7 @@ export interface PracticeOption {
   key: string;
   text_zh: string;
   text_en: string;
+  img?: string;
 }
 
 export interface QuickPracticeQuestion {
@@ -30,6 +31,7 @@ export interface QuickPracticeQuestion {
   options: PracticeOption[];
   answer_standard: string;
   solutions_json?: string | null;
+  image_paths_json?: string | null;
 }
 
 export interface DrawResult {
@@ -50,6 +52,7 @@ export function parseOptionsJson(raw: string | null | undefined): PracticeOption
         key: item.key || String.fromCharCode(65 + idx),
         text_zh: item.text_zh || item.zh || item.text || '',
         text_en: item.text_en || item.en || item.text || '',
+        img: item.img,
       }));
     }
     if (typeof parsed === 'object' && parsed !== null) {
@@ -57,6 +60,7 @@ export function parseOptionsJson(raw: string | null | undefined): PracticeOption
         key,
         text_zh: typeof val === 'object' ? val.zh || val.text_zh || '' : String(val),
         text_en: typeof val === 'object' ? val.en || val.text_en || '' : String(val),
+        img: typeof val === 'object' ? val.img : undefined,
       }));
     }
   } catch {
@@ -147,7 +151,7 @@ export function buildQuickPracticeSqlQuery(
   if (presentedIds.length === 0) {
     return {
       sql: `SELECT question_id, primary_point_id, difficulty_level, question_type, score_default,
-                   stem_zh, stem_en, options_json, answer_standard, solutions_json
+                   stem_zh, stem_en, options_json, answer_standard, solutions_json, image_paths_json
             FROM questions
             WHERE primary_point_id = ?
               AND difficulty_level BETWEEN 1 AND 3
@@ -160,7 +164,7 @@ export function buildQuickPracticeSqlQuery(
   const placeholders = presentedIds.map(() => '?').join(',');
   return {
     sql: `SELECT question_id, primary_point_id, difficulty_level, question_type, score_default,
-                 stem_zh, stem_en, options_json, answer_standard, solutions_json
+                 stem_zh, stem_en, options_json, answer_standard, solutions_json, image_paths_json
           FROM questions
           WHERE primary_point_id = ?
             AND difficulty_level BETWEEN 1 AND 3
@@ -221,5 +225,6 @@ export function mapRawRowsToQuestions(rows: any[]): QuickPracticeQuestion[] {
     options: parseOptionsJson(r.options_json),
     answer_standard: String(r.answer_standard || '').trim(),
     solutions_json: r.solutions_json,
+    image_paths_json: r.image_paths_json ? String(r.image_paths_json) : null,
   }));
 }

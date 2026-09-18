@@ -113,6 +113,7 @@
 ### 4. 内容生成管线 [高风险]（§5）
 
 - [ ] 5. 构建期大模型内容生成管线 **[高风险]**
+  > **口径说明（Kiro 记，2026-09）**：本任务的**产出内容已由数据线（math-junior-datalayer）"阶段二回填"流程全部生成入库**，非由前端线执行本任务的构建期管线。实测状态：core.db 考点四段(107)全 done、主线四段(12)全 done、master.db 母题四维(119)全 done 且 dim3 全填、sandbox 概念沙盒46+跃迁模型36。故此处 `[ ]` 仅表示"前端未自建构建期生成管线"，**不代表内容缺失**——内容真实完整可供人工测试。前端只做消费渲染（见 TASK-FE-0003 H 项核实）。
   - [ ] 5.1 实现大模型 Prompt 契约（母题四维 / 四段 / 主线 / 沙盒文本）
     - 按 §5.3 定义 `MasterExamplePromptContract` 及四段精讲、主线精讲、`inquiry_guide`/`model_brief`（30~45 字口诀）的 prompt 模板与输出 schema。
     - [产出文件] `scripts/build/gen/promptContracts.ts`、`scripts/build/gen/generate.ts`

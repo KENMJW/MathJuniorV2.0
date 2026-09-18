@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LogicLine, LineMasterExample } from './types';
 import { MathRenderer } from '../../components/math/MathRenderer';
 import { Icon } from '../../components/common/Icon';
 import { LineQuickPractice } from './LineQuickPractice';
 import { mockLogicLines, mockLineMasterExamples } from './mockGraphData';
 import { useSessionStore } from '../../store/sessionStore';
+import { dbClient } from '../../engine/db/dbClient';
 
 export interface LineClosedLoopProps {
   line?: LogicLine;
@@ -44,8 +45,48 @@ export const LineClosedLoop: React.FC<LineClosedLoopProps> = ({
 
   const [activeTab, setActiveTab] = useState<'lecture' | 'master' | 'practice'>('lecture');
 
+  const [dbMasterExample, setDbMasterExample] = useState<LineMasterExample | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    async function loadLineMaster() {
+      try {
+        const row = await dbClient.queryOne<any>(
+          'master',
+          'SELECT * FROM master_examples WHERE bound_target_id = ? OR example_id = ? OR bound_line_id = ? LIMIT 1',
+          [line.line_id, line.master_example_id || `ME-LINE-${line.line_id}`, line.line_id]
+        );
+        if (active && row) {
+          setDbMasterExample({
+            example_id: String(row.example_id),
+            example_type: 'line_master',
+            bound_target_id: String(row.bound_target_id || line.line_id),
+            source: String(row.source || ''),
+            stem_zh: String(row.stem_zh || ''),
+            stem_en: String(row.stem_en || ''),
+            options_json: row.options_json,
+            correct_option: row.correct_option,
+            dim1_origin: row.dim1_origin,
+            dim2_essence: row.dim2_essence,
+            dim3_rigor: String(row.dim3_rigor || ''),
+            dim4_traps: row.dim4_traps,
+            bound_line_id: String(row.bound_line_id || line.line_id),
+            empirical_scoring_rate: row.empirical_scoring_rate,
+          });
+        }
+      } catch {
+        if (active) setDbMasterExample(null);
+      }
+    }
+    loadLineMaster();
+    return () => {
+      active = false;
+    };
+  }, [line.line_id, line.master_example_id]);
+
   const resolvedMasterExample: LineMasterExample | undefined =
     masterExample ||
+    dbMasterExample ||
     (line.master_example_id ? mockLineMasterExamples[line.master_example_id] : undefined) ||
     mockLineMasterExamples[`ME-LINE-${line.line_id}`];
 

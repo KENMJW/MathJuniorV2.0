@@ -6,8 +6,12 @@ import {
   defaultPicker,
 } from '../concept/quickPractice.machine';
 import { MathRenderer } from '../../components/math/MathRenderer';
+import { QuestionContent } from '../../components/common/QuestionContent';
+import { QuestionImage } from '../../components/common/QuestionImage';
+import { SolutionList } from '../exam/SolutionList';
 import { Icon } from '../../components/common/Icon';
 import { useSessionStore } from '../../store/sessionStore';
+import { normalizeOptionAnswer } from '../../engine/judge/normalizeOptionAnswer';
 import { mockLineQuickPracticeQuestions } from './mockGraphData';
 
 export interface LineQuickPracticeProps {
@@ -176,7 +180,7 @@ export const LineQuickPractice: React.FC<LineQuickPracticeProps> = ({
 
   const handleSubmitCurrent = () => {
     if (!currentQ || !selectedAnswers[currentQ.question_id]) return;
-    const isCorrect = selectedAnswers[currentQ.question_id] === currentQ.answer_standard;
+    const isCorrect = normalizeOptionAnswer(selectedAnswers[currentQ.question_id]) === normalizeOptionAnswer(currentQ.answer_standard);
     const earnedScore = isCorrect ? currentQ.score_default || 3 : 0;
 
     setIsSubmitted((prev) => ({ ...prev, [currentQ.question_id]: true }));
@@ -192,8 +196,8 @@ export const LineQuickPractice: React.FC<LineQuickPracticeProps> = ({
         currentQuestions.forEach((q) => {
           total += q.score_default || 3;
           if (
-            (q.question_id === currentQ.question_id ? selectedAnswers[q.question_id] : selectedAnswers[q.question_id]) ===
-            q.answer_standard
+            normalizeOptionAnswer(selectedAnswers[q.question_id]) ===
+            normalizeOptionAnswer(q.answer_standard)
           ) {
             earned += q.score_default || 3;
           }
@@ -264,7 +268,7 @@ export const LineQuickPractice: React.FC<LineQuickPracticeProps> = ({
         <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
           {currentQuestions.map((q, idx) => {
             const answered = isSubmitted[q.question_id];
-            const isCorrect = answered && selectedAnswers[q.question_id] === q.answer_standard;
+            const isCorrect = answered && normalizeOptionAnswer(selectedAnswers[q.question_id]) === normalizeOptionAnswer(q.answer_standard);
             const isCurrent = idx === currentIndex;
 
             let dotBg = 'rgba(0,0,0,0.12)';
@@ -299,7 +303,11 @@ export const LineQuickPractice: React.FC<LineQuickPracticeProps> = ({
             <div style={{ marginBottom: '0.4rem', fontWeight: 600, color: 'var(--ios-blue)' }}>
               第 {currentIndex + 1} 题 (L{currentQ.difficulty_level} · {currentQ.score_default || 3}分)
             </div>
-            <MathRenderer content={locale === 'en' ? currentQ.stem_en : currentQ.stem_zh} />
+            <QuestionContent
+              content={locale === 'en' ? currentQ.stem_en : currentQ.stem_zh}
+              images={currentQ.image_paths_json}
+              locale={locale.startsWith('en') ? 'en' : 'zh'}
+            />
           </div>
 
           {/* 选项组 */}
@@ -307,7 +315,7 @@ export const LineQuickPractice: React.FC<LineQuickPracticeProps> = ({
             {currentQ.options.map((opt: PracticeOption) => {
               const isSelected = selectedAnswers[currentQ.question_id] === opt.key;
               const submitted = isSubmitted[currentQ.question_id];
-              const isRight = submitted && opt.key === currentQ.answer_standard;
+              const isRight = submitted && normalizeOptionAnswer(opt.key) === normalizeOptionAnswer(currentQ.answer_standard);
               const isWrong = submitted && isSelected && !isRight;
 
               let border = '1px solid rgba(0,0,0,0.1)';
@@ -361,15 +369,19 @@ export const LineQuickPractice: React.FC<LineQuickPracticeProps> = ({
                   >
                     {opt.key}
                   </span>
-                  <div style={{ flex: 1, fontSize: '0.9rem', color: 'var(--text-primary)' }}>
-                    <MathRenderer content={locale === 'en' ? opt.text_en : opt.text_zh} />
+                  <div style={{ flex: 1, fontSize: '0.9rem', color: 'var(--text-primary)', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    {opt.img ? (
+                      <QuestionImage role="option" src={opt.img} alt={`Option ${opt.key}`} />
+                    ) : (
+                      <MathRenderer content={locale === 'en' ? opt.text_en : opt.text_zh} />
+                    )}
                   </div>
                 </button>
               );
             })}
           </div>
 
-          {/* 解析区域 (提交后展示，严格走 MathRenderer) */}
+          {/* 解析区域 (提交后展示，支持图锚点混合渲染) */}
           {isSubmitted[currentQ.question_id] && currentQ.solutions_json && (
             <div
               style={{
@@ -386,7 +398,11 @@ export const LineQuickPractice: React.FC<LineQuickPracticeProps> = ({
                 <Icon name="book" size={15} />
                 <span>{locale === 'en' ? 'Analysis & Solution:' : '主线核心思路解析：'}</span>
               </div>
-              <MathRenderer content={currentQ.solutions_json} />
+              <SolutionList
+                solutions={currentQ.solutions_json}
+                images={currentQ.image_paths_json}
+                locale={locale.startsWith('en') ? 'en' : 'zh'}
+              />
             </div>
           )}
 

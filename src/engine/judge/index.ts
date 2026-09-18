@@ -8,3 +8,4 @@ export * from './evalExpr';
 export * from './sampleDomain';
 export * from './isMathAnswerEquivalent';
 export * from './calculateSolutionScore';
+export * from './normalizeOptionAnswer';

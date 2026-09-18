@@ -178,19 +178,62 @@ export function parseMorphingSpecs(model: LeapSandboxModel) {
   };
 
   try {
-    carrierSpec = JSON.parse(model.carrier_morphing_json);
+    if (model?.carrier_morphing_json) {
+      const parsed = JSON.parse(model.carrier_morphing_json);
+      if (parsed && typeof parsed === 'object') {
+        carrierSpec = {
+          options: Array.isArray(parsed.options) ? parsed.options : [],
+          default: typeof parsed.default === 'string' ? parsed.default : '',
+        };
+      }
+    }
   } catch (e) {}
 
   try {
-    parameterSpec = JSON.parse(model.parameter_morphing_json);
+    if (model?.parameter_morphing_json) {
+      const parsed = JSON.parse(model.parameter_morphing_json);
+      if (parsed && typeof parsed === 'object') {
+        parameterSpec = {
+          sliders: Array.isArray(parsed.sliders) ? parsed.sliders : [],
+        };
+      }
+    }
   } catch (e) {}
 
   try {
-    postureSpec = JSON.parse(model.posture_morphing_json);
+    if (model?.posture_morphing_json) {
+      const parsed = JSON.parse(model.posture_morphing_json);
+      if (parsed && typeof parsed === 'object') {
+        postureSpec = {
+          modes: Array.isArray(parsed.modes) ? parsed.modes : [],
+          default: typeof parsed.default === 'string' ? parsed.default : '',
+        };
+      }
+    }
   } catch (e) {}
 
   try {
-    camouflageSpec = JSON.parse(model.camouflage_xray_json);
+    if (model?.camouflage_xray_json) {
+      const parsed = JSON.parse(model.camouflage_xray_json);
+      if (parsed && typeof parsed === 'object') {
+        camouflageSpec = {
+          distractorLayers: Array.isArray(parsed.distractorLayers) ? parsed.distractorLayers : [],
+          coreSkeleton: parsed.coreSkeleton && typeof parsed.coreSkeleton === 'object'
+            ? {
+                nameZh: parsed.coreSkeleton.nameZh || '',
+                nameEn: parsed.coreSkeleton.nameEn || '',
+                primaryElements: Array.isArray(parsed.coreSkeleton.primaryElements)
+                  ? parsed.coreSkeleton.primaryElements
+                  : [],
+                highlightColor: parsed.coreSkeleton.highlightColor,
+                invariants: Array.isArray(parsed.coreSkeleton.invariants)
+                  ? parsed.coreSkeleton.invariants
+                  : [],
+              }
+            : { nameZh: '', nameEn: '', primaryElements: [] },
+        };
+      }
+    }
   } catch (e) {}
 
   return { carrierSpec, parameterSpec, postureSpec, camouflageSpec };
@@ -203,15 +246,22 @@ export function createDefaultMorphingState(model: LeapSandboxModel): MorphingSta
   const { carrierSpec, parameterSpec, postureSpec, camouflageSpec } = parseMorphingSpecs(model);
 
   const parameterValues: Record<string, number> = {};
-  parameterSpec.sliders.forEach((s) => {
-    parameterValues[s.id] = s.default;
+  const sliders = parameterSpec?.sliders || [];
+  sliders.forEach((s) => {
+    if (s?.id) {
+      parameterValues[s.id] = s.default ?? 0;
+    }
   });
 
+  const carrierOptions = carrierSpec?.options || [];
+  const postureModes = postureSpec?.modes || [];
+  const distractorLayers = camouflageSpec?.distractorLayers || [];
+
   return {
-    carrierId: carrierSpec.default || (carrierSpec.options[0]?.id ?? 'default'),
+    carrierId: carrierSpec?.default || carrierOptions[0]?.id || 'default',
     parameterValues,
-    postureId: postureSpec.default || (postureSpec.modes[0]?.id ?? 'standard'),
-    activeCamouflageIds: camouflageSpec.distractorLayers.map((d) => d.id),
+    postureId: postureSpec?.default || postureModes[0]?.id || 'standard',
+    activeCamouflageIds: distractorLayers.map((d) => d.id).filter(Boolean),
     xrayActive: false,
   };
 }
@@ -220,6 +270,7 @@ export function createDefaultMorphingState(model: LeapSandboxModel): MorphingSta
  * 4D 变异综合编译调度器：
  * 将 LeapSandboxModel + MorphingState 动态编译为标准 SandboxConfig
  * 供现有的通用 SandboxRenderer 声明式驱动渲染
+ * 包含严密空值防护 (carrier.options?.find(...) ?? default)，防字段缺失或格式异常崩溃
  */
 export function compileMorphingSandboxConfig(
   model: LeapSandboxModel,
@@ -227,18 +278,32 @@ export function compileMorphingSandboxConfig(
 ): SandboxConfig {
   const { carrierSpec, parameterSpec, postureSpec, camouflageSpec } = parseMorphingSpecs(model);
 
-  // 1. 查找当前载体选项
+  // 1. 查找当前载体选项 (空值防护：carrier.options?.find(...) ?? default)
+  const carrierOptions = carrierSpec?.options || [];
+  const defaultCarrier: CarrierOption = {
+    id: 'default',
+    nameZh: '默认自由态',
+    nameEn: 'Default Free Form',
+    points: [],
+  };
   const currentCarrier =
-    carrierSpec.options.find((opt) => opt.id === state.carrierId) || carrierSpec.options[0];
+    carrierOptions.find((opt) => opt?.id === state?.carrierId) || carrierOptions[0] || defaultCarrier;
 
   // 2. 查找当前姿态模式
+  const postureModes = postureSpec?.modes || [];
+  const defaultPosture: PostureMode = {
+    id: 'standard',
+    nameZh: '标准姿态',
+    nameEn: 'Standard',
+    rotationDeg: 0,
+    reflected: false,
+  };
   const currentPosture =
-    postureSpec.modes.find((m) => m.id === state.postureId) ||
-    postureSpec.modes[0] || { rotationDeg: 0, reflected: false };
+    postureModes.find((m) => m?.id === state?.postureId) || postureModes[0] || defaultPosture;
 
   // 3. 计算参数滑块的缩放比或增量
   let scaleRatio = 1.0;
-  if (state.parameterValues['param_scale']) {
+  if (state?.parameterValues && state.parameterValues['param_scale'] !== undefined) {
     scaleRatio = clampDynamicValue(state.parameterValues['param_scale'], { min: 0.1, max: 5.0 });
   }
 
@@ -251,8 +316,8 @@ export function compileMorphingSandboxConfig(
     const coords = transformPointCoords(
       pt.x,
       pt.y,
-      currentPosture.rotationDeg || 0,
-      currentPosture.reflected || false,
+      currentPosture?.rotationDeg || 0,
+      currentPosture?.reflected || false,
       scaleRatio
     );
     return {
@@ -267,11 +332,13 @@ export function compileMorphingSandboxConfig(
   const dragPointsJson: any[] = [...transformedPoints];
 
   // 若 X-Ray 未激活且加壳层开启，将干扰几何对象作为辅助点/线注入
-  if (!state.xrayActive) {
-    camouflageSpec.distractorLayers.forEach((layer) => {
-      if (state.activeCamouflageIds.includes(layer.id)) {
+  if (!state?.xrayActive) {
+    const distractorLayers = camouflageSpec?.distractorLayers || [];
+    const activeCamouflageIds = state?.activeCamouflageIds || [];
+    distractorLayers.forEach((layer) => {
+      if (layer && activeCamouflageIds.includes(layer.id) && Array.isArray(layer.items)) {
         layer.items.forEach((item, idx) => {
-          if (item.from && item.to) {
+          if (item?.from && item?.to) {
             dragPointsJson.push({
               id: `distractor_${layer.id}_${idx}_a`,
               name: '',
@@ -297,24 +364,25 @@ export function compileMorphingSandboxConfig(
   }
 
   // 6. 构造不变量展示 (来自核心骨架)
-  const invariantsDisplayJson = JSON.stringify(camouflageSpec.coreSkeleton.invariants || []);
+  const invariantsDisplayJson = JSON.stringify(camouflageSpec?.coreSkeleton?.invariants || []);
 
   // 7. 构造滑块规格
+  const sliders = parameterSpec?.sliders || [];
   const paramSlidersJson = JSON.stringify(
-    parameterSpec.sliders.map((s) => ({
+    sliders.map((s) => ({
       id: s.id,
       name: s.nameZh,
       min: s.min,
       max: s.max,
-      default: state.parameterValues[s.id] ?? s.default,
+      default: state?.parameterValues?.[s.id] ?? s.default,
       step: s.step,
     }))
   );
 
   return {
-    sandbox_id: `LEAP-${model.model_id}-${state.carrierId}-${state.postureId}`,
+    sandbox_id: `LEAP-${model?.model_id || 'unknown'}-${state?.carrierId || 'default'}-${state?.postureId || 'standard'}`,
     canvas_template: currentCarrier?.isAxis ? 'axis' : 'euclidean',
-    viewbox_spec_json: model.viewbox_spec_json,
+    viewbox_spec_json: model?.viewbox_spec_json || '{"minX": -10, "maxX": 10, "minY": -10, "maxY": 10}',
     drag_points_json: JSON.stringify(dragPointsJson),
     param_sliders_json: paramSlidersJson,
     invariants_display_json: invariantsDisplayJson,

@@ -28,6 +28,7 @@ export interface QuestionItem {
   answer_standard?: string | null;
   rubric_checklist_json?: string | null;
   solutions_json?: string | null;
+  image_paths_json?: string | null;
 }
 
 export interface GeneratedPaper {
@@ -139,44 +140,80 @@ export async function drawQuestionsFromDb(
     timeLimitMinutes?: number;
   }
 ): Promise<GeneratedPaper> {
-  const placeholders = config.selectedKpIds.map(() => '?').join(',');
+  const hasKpFilter = Boolean(config.selectedKpIds && config.selectedKpIds.length > 0);
+  const placeholders = hasKpFilter ? config.selectedKpIds.map(() => '?').join(',') : '';
 
   // [铁律 9]: SQL 严格只查 questions 表！
   const sql = `
     SELECT 
       question_id, source, exam_year, region, exam_type, grade_level, semester,
       primary_point_id, combination_id, difficulty_level, question_type, score_default,
-      stem_zh, stem_en, options_json, answer_standard, rubric_checklist_json, solutions_json
+      stem_zh, stem_en, options_json, answer_standard, rubric_checklist_json, solutions_json,
+      image_paths_json
     FROM questions
-    WHERE primary_point_id IN (${placeholders})
+    ${hasKpFilter ? `WHERE primary_point_id IN (${placeholders})` : ''}
     ORDER BY difficulty_level ASC, RANDOM()
   `;
 
+  const params = hasKpFilter ? config.selectedKpIds : [];
   const rows: QuestionItem[] = [];
+
   try {
-    const res = await db.exec(sql, config.selectedKpIds);
-    if (res && res.length > 0 && res[0].values) {
-      for (const v of res[0].values) {
-        rows.push({
-          question_id: v[0],
-          source: v[1],
-          exam_year: v[2],
-          region: v[3],
-          exam_type: v[4],
-          grade_level: v[5],
-          semester: v[6],
-          primary_point_id: v[7],
-          combination_id: v[8],
-          difficulty_level: v[9],
-          question_type: v[10],
-          score_default: v[11],
-          stem_zh: v[12],
-          stem_en: v[13],
-          options_json: v[14],
-          answer_standard: v[15],
-          rubric_checklist_json: v[16],
-          solutions_json: v[17],
-        });
+    if (db && typeof db.query === 'function') {
+      // WASM dbClient 单例分包查询
+      const resultRows = await db.query('questions', sql, params);
+      if (Array.isArray(resultRows)) {
+        for (const r of resultRows) {
+          rows.push({
+            question_id: String(r.question_id),
+            source: String(r.source ?? ''),
+            exam_year: Number(r.exam_year ?? 0),
+            region: String(r.region ?? ''),
+            exam_type: String(r.exam_type ?? ''),
+            grade_level: Number(r.grade_level || 7),
+            semester: Number(r.semester || 1),
+            primary_point_id: String(r.primary_point_id ?? ''),
+            combination_id: r.combination_id ?? null,
+            difficulty_level: Number(r.difficulty_level ?? 1),
+            question_type: r.question_type,
+            score_default: Number(r.score_default ?? 3),
+            stem_zh: String(r.stem_zh ?? ''),
+            stem_en: String(r.stem_en ?? ''),
+            options_json: r.options_json ?? null,
+            answer_standard: String(r.answer_standard ?? ''),
+            rubric_checklist_json: r.rubric_checklist_json ?? null,
+            solutions_json: r.solutions_json ?? null,
+            image_paths_json: r.image_paths_json ?? null,
+          });
+        }
+      }
+    } else if (db && typeof db.exec === 'function') {
+      // 兼容底层原始 sql.js 实例
+      const res = await db.exec(sql, params);
+      if (res && res.length > 0 && res[0].values) {
+        for (const v of res[0].values) {
+          rows.push({
+            question_id: v[0],
+            source: v[1],
+            exam_year: v[2],
+            region: v[3],
+            exam_type: v[4],
+            grade_level: v[5],
+            semester: v[6],
+            primary_point_id: v[7],
+            combination_id: v[8],
+            difficulty_level: v[9],
+            question_type: v[10],
+            score_default: v[11],
+            stem_zh: v[12],
+            stem_en: v[13],
+            options_json: v[14],
+            answer_standard: v[15],
+            rubric_checklist_json: v[16],
+            solutions_json: v[17],
+            image_paths_json: v[18] ?? null,
+          });
+        }
       }
     }
   } catch (err) {

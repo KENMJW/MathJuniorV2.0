@@ -1,0 +1,417 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+真题文档导入工具（占位版）
+把原生 OMML 公式的 doc/docx（教师版真题卷）→ Pandoc 抽取 → 切题 → 占位入库 data/questions.db。
+
+用法：
+  python3 tools/docimport/import_docx.py <文件或文件夹> [--db data/questions.db] [--dry-run]
+
+流程：
+  1. 体检(inspect)：只处理 PASS 的原生 OMML docx，REJECT 的跳过并报告
+  2. extract：Pandoc 抽取 markdown + 图片(原位锚定)
+  3. segment：切题（大题号 / 题型段 / 教师版答案解析归位）
+  4. load：对齐 questions 扁平 schema，占位入库（content_status='pending'）
+
+占位策略（本地拿不到的字段，留 Antigravity 阶段二回填）：
+  primary_point_id='KP-000'(哨兵) / difficulty_level=0 / stem_en='__PENDING__'
+  grade_level=0 / semester=0 / combination_id=NULL / content_status='pending'
+能本地拿到的直接填：stem_zh / options_json / answer_standard / solutions / image_paths / question_type / source
+
+安全：只 INSERT 追加，question_id 去重（已存在则跳过），绝不 DELETE/重建。
+"""
+import sys, os, re, json, subprocess, sqlite3, hashlib, argparse, shutil
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.abspath(os.path.join(HERE, "../.."))
+DEFAULT_DB = os.path.join(ROOT, "data/questions.db")
+IMG_DIR = os.path.join(ROOT, "assets/questions")
+PANDOC = shutil.which("pandoc") or "/opt/homebrew/bin/pandoc"
+
+# ---------- 1. 体检 ----------
+def inspect_ok(path):
+    """复用 inspect_source 逻辑：只放行原生 OMML docx。返回 (ok, reason)。"""
+    if not path.lower().endswith(".docx"):
+        return False, "非 docx（老 .doc 需先转 docx；PDF 不支持）"
+    import zipfile
+    try:
+        z = zipfile.ZipFile(path)
+        xml = z.read("word/document.xml").decode("utf-8", "ignore")
+    except Exception as e:
+        return False, f"无法读取: {e}"
+    omml = len(re.findall(r"<m:oMath[ >]", xml))
+    wmf = sum(1 for n in z.namelist() if n.lower().endswith((".wmf", ".emf")))
+    if omml >= 20 and wmf <= omml * 0.2:
+        return True, f"原生OMML公式 {omml}，矢量碎片 {wmf}"
+    if wmf >= 50 and omml == 0:
+        return False, f"WMF碎片 {wmf}、OMML=0（公式非结构化，需多模态）"
+    if omml == 0:
+        return False, f"无OMML公式（OMML=0, WMF={wmf}）"
+    return True, f"OMML {omml}（混合，建议抽检）"
+
+# ---------- 2. 抽取 ----------
+def extract(path, workdir):
+    os.makedirs(workdir, exist_ok=True)
+    media = os.path.join(workdir, "media")
+    md_path = os.path.join(workdir, "out.md")
+    subprocess.run([PANDOC, path, "--extract-media=" + media, "-t", "markdown", "-o", md_path],
+                   check=True, capture_output=True)
+    with open(md_path, encoding="utf-8") as f:
+        return f.read(), media
+
+# ---------- 3. 切题 ----------
+QTYPE_HEADERS = [
+    (r"(选择题|单选题)", "single_choice"),
+    (r"(填空题)", "fill_blank"),
+    (r"(解答题|计算题|证明题)", "solution"),
+]
+
+# 地区 → 拼音简码（qid 用 ASCII，可追溯）
+REGION_CODE = {
+    "北京":"BJ","上海":"SH","天津":"TJ","重庆":"CQ","成都":"CD","四川":"SC",
+    "广东":"GD","深圳":"SZ","广州":"GZ","广西":"GX","江苏":"JS","苏州":"SUZ",
+    "扬州":"YZ","连云港":"LYG","浙江":"ZJ","山东":"SD","威海":"WH","烟台":"YT",
+    "临沂":"LY","山西":"SX","河北":"HEB","河南":"HEN","湖北":"HUB","湖南":"HUN",
+    "长沙":"CS","江西":"JX","安徽":"AH","福建":"FJ","贵州":"GZH","云南":"YN",
+    "辽宁":"LN","吉林":"JL","长春":"CC","黑龙江":"HLJ","绥化":"SUH","齐齐哈尔":"QQHE",
+    "龙东":"LD","甘肃":"GS","兰州":"LZ","青海":"QH","陕西":"SAX","新疆":"XJ",
+    "内蒙古":"NMG","宁夏":"NX","内江":"NEJ","凉山":"LS","南充":"NC","宜宾":"YB",
+    "广安":"GA","德阳":"DY","泸州":"LUZ","眉山":"MS","自贡":"ZG","达州":"DZH",
+    "遂宁":"SUN","兵团":"BT",
+}
+
+def guess_source_abbr(filename):
+    """从文件名提取 (qid简码, 年份, 完整source标签)。qid 简码用 ASCII。"""
+    base = os.path.splitext(os.path.basename(filename))[0]
+    ym = re.search(r"(20\d{2})", base)
+    year = ym.group(1) if ym else "2025"
+
+    # 微专题：总复习NN 微专题 XX  → 简码 MZ + 编号
+    m_mz = re.search(r"总复习\s*0*(\d+)", base)
+    if m_mz:
+        return f"MZ{int(m_mz.group(1)):02d}", year, base
+
+    # 省卷/期末：匹配地区（优先长地名，如"齐齐哈尔"先于"齐"）
+    for region in sorted(REGION_CODE, key=len, reverse=True):
+        if region in base:
+            return REGION_CODE[region], year, base
+
+    # 兜底：文件名 ASCII 化
+    ascii_part = re.sub(r"[^A-Za-z0-9]", "", base)[:6].upper() or "DOC"
+    return ascii_part, year, base
+
+# 题干冗余前缀：分值 + 出处
+# 覆盖两类：（3分）（24-25八年级·山西大同·阶段练习） 和 （2025•成都）/（2024东莞三模）
+PREFIX_RE = re.compile(
+    r"^\s*(（[^）]*分[^）]*）\s*)?"
+    r"(（[^）]*(练习|期末|期中|模拟|中考|月考|联考|预测|真题|阶段|一模|二模|三模|调研|•|·|\d{4})[^）]*）\s*)*"
+)
+
+def strip_prefix(stem):
+    """剥离题干开头的 分值/出处/年份地区 前缀，返回 (纯题干, 分值, 出处)。"""
+    score = None; source_hint = None
+    m_score = re.match(r"^\s*（\s*(\d+)\s*分\s*）", stem)
+    if m_score: score = int(m_score.group(1))
+    m_src = re.search(r"（([^）]*(?:练习|期末|期中|模拟|中考|月考|联考|预测|真题|阶段|一模|二模|三模|调研|•|·)[^）]*)）", stem[:120])
+    if m_src: source_hint = m_src.group(1)
+    cleaned = PREFIX_RE.sub("", stem, count=1).strip()
+    return cleaned, score, source_hint
+
+# 微专题练习区块标记（只抽这些区块下的题）
+PRACTICE_SECTION_RE = re.compile(r"练考点|课后练习|针对训练|巩固练习|随堂练习|当堂|课堂练习|专项训练|强化训练")
+# 讲解/例题区块标记（跳过）
+LECTURE_SECTION_RE = re.compile(r"考点精讲|考点梳理|构建知识|高频考点|考点\d|典例|例题精讲|方法归纳|知识体系")
+
+def extract_options(text):
+    """抽 A/B/C/D 选项，支持文本选项与图选项。返回 {letter:{'zh':..} or {'img_md':..}}。
+    文本形如: A．xxx B．yyy ... ; 图选项形如: A．![](img)
+    """
+    opts = {}
+    # 用 A．/A. 作为分隔，切成4段
+    # 找所有 选项字母 的位置
+    marks = list(re.finditer(r"(?:^|\s|＞|>)\s*([ABCD])[．.、]", text))
+    if len(marks) < 2:
+        return None
+    for i, mk in enumerate(marks):
+        letter = mk.group(1)
+        start = mk.end()
+        end = marks[i+1].start() if i+1 < len(marks) else len(text)
+        seg = text[start:end].strip()
+        # 该选项内是否有图
+        img_md = re.search(r"!\[[^\]]*\]\(([^)]+)\)", seg)
+        if img_md:
+            opts[letter] = {"img_src": img_md.group(1)}
+        else:
+            # 去掉可能的 markdown 引用符号
+            seg = re.sub(r"^[>＞\s]+", "", seg).strip()
+            if seg:
+                opts[letter] = {"zh": seg}
+    return opts if len(opts) >= 2 else None
+
+def segment(md, source_label, year):
+    """按大题号切题；识别题型段；抽答案；剥前缀；标记题干图与选项图。
+    微专题学案模式：若检测到练习区块标记(练考点等)，则**只抽练习区块下的题**，跳过讲解/例题区。
+    """
+    lines = md.split("\n")
+    cur_type = "single_choice"
+    questions = []
+    buf = None
+
+    # 判断是否微专题学案（含练习区块 + 讲解区块标记）
+    is_worksheet = bool(PRACTICE_SECTION_RE.search(md) and LECTURE_SECTION_RE.search(md))
+    in_practice = not is_worksheet   # 非学案：全程可抽；学案：仅练习区可抽
+
+    def flush():
+        nonlocal buf
+        if buf and buf["stem_lines"]:
+            questions.append(buf)
+        buf = None
+
+    # 题号：支持 1. / 1． / 1、 / Pandoc转义 1\.  / 前导 > 
+    num_re = re.compile(r"^\s*(?:>?\s*)?(\d{1,3})\\?[．.、]\s*")
+    for ln in lines:
+        # 区块切换（学案模式）
+        if is_worksheet:
+            if PRACTICE_SECTION_RE.search(ln) and len(ln) < 30:
+                flush(); in_practice = True; continue
+            if LECTURE_SECTION_RE.search(ln) and len(ln) < 30:
+                flush(); in_practice = False; continue
+        # 题型段
+        for pat, t in QTYPE_HEADERS:
+            if re.search(pat, ln) and len(ln) < 40:
+                cur_type = t; break
+        if not in_practice:
+            continue   # 学案讲解区，跳过
+        m = num_re.match(ln)
+        if m:
+            flush()
+            buf = {"num": int(m.group(1)), "type": cur_type,
+                   "stem_lines": [num_re.sub("", ln)]}
+        elif buf is not None:
+            buf["stem_lines"].append(ln)
+    flush()
+
+    results = []
+    for q in questions:
+        text = "\n".join(q["stem_lines"]).strip()
+        if len(text) < 5:
+            continue
+        # 答案/解析（教师版）
+        ans = ""
+        m_ans = re.search(r"【答案】\s*([^\n【]+)", text)
+        if m_ans: ans = m_ans.group(1).strip()
+        sol = ""
+        m_sol = re.search(r"【(详解|解析|分析)】\s*(.+)", text, re.S)
+        if m_sol: sol = m_sol.group(2).strip()[:2000]
+        # 题干（去答案解析段）
+        raw_stem = re.split(r"【答案】|【详解】|【解析】|【分析】", text)[0].strip()
+
+        # 剔除混入的答案（练习区末尾的答案列表），两类特征：
+        stripped = re.sub(r"\s", "", raw_stem)
+        # (a) 极短且无题干特征
+        short_answer = (len(stripped) < 12 and
+                        not re.search(r"[（(]\s*[　\s]*[）)]|underline|如图|计算|求|下列|化简|解|证明|＝$", raw_stem) and
+                        not re.search(r"[ABCD][．.、]", raw_stem))
+        # (b) 纯答案列表：以 (1)...；(2)... 开头，且无题干动词/疑问/选项/填空
+        answer_list = (re.match(r"^\s*[（(]\s*1\s*[）)]", raw_stem) and
+                       not re.search(r"计算|求|下列|化简|解方程|证明|如图|underline|_{3,}|[ABCD][．.、]|(　　)", raw_stem) and
+                       raw_stem.count("；") + raw_stem.count(";") >= 1)
+        if short_answer or answer_list:
+            continue
+
+        # 题型智能判断：有 A/B/C/D 选项→单选；有下划线填空标记→填空；否则解答
+        has_options = bool(re.search(r"(?:^|\s|＞|>)\s*A[．.、]", raw_stem))
+        has_blank = bool(re.search(r"underline|_{3,}|＿{2,}|［.*］|\[　+\]", raw_stem))
+        if has_options:
+            qtype = "single_choice"
+        elif has_blank and not has_options:
+            qtype = "fill_blank"
+        else:
+            # 沿用段标题判定；解答题特征(求/证明/计算并含多步)
+            qtype = q["type"] if q["type"] != "single_choice" else (
+                "solution" if re.search(r"求|证明|解方程|说明理由|画出", raw_stem) and len(stripped) > 40 else "fill_blank")
+
+        # 选项区
+        options = None
+        stem_body = raw_stem
+        if qtype == "single_choice":
+            first_opt = re.search(r"(?:^|\s|＞|>)\s*A[．.、]", raw_stem)
+            if first_opt:
+                stem_body = raw_stem[:first_opt.start()].strip()
+                options = extract_options(raw_stem[first_opt.start():])
+
+        stem_clean, score, src_hint = strip_prefix(stem_body)
+        if len(re.sub(r"\s", "", stem_clean)) < 4:
+            continue
+        results.append({
+            "num": q["num"], "type": qtype, "stem": stem_clean,
+            "options": options, "answer": ans, "solution": sol,
+            "score": score, "src_hint": src_hint,
+        })
+    return results
+
+# ---------- 4. 入库(占位) ----------
+def make_qid(source_abbr, year, seq):
+    ab = re.sub(r"[^A-Za-z0-9]", "", source_abbr)[:6].upper() or "DOC"
+    return f"Q-{year}-{ab}-{seq:04d}"
+
+def save_webp(src, dst_noext, dry_run, max_w=800):
+    """把源图转 WebP 压缩，返回 assets 相对路径；失败回退原格式拷贝。"""
+    rel = f"assets/questions/{os.path.basename(dst_noext)}.webp"
+    if dry_run:
+        return rel
+    try:
+        from PIL import Image
+        im = Image.open(src)
+        if im.mode in ("P", "RGBA"):
+            im = im.convert("RGBA")
+        else:
+            im = im.convert("RGB")
+        if im.width > max_w:
+            h = int(im.height * max_w / im.width)
+            im = im.resize((max_w, h), Image.LANCZOS)
+        im.save(dst_noext + ".webp", "WEBP", quality=82, method=6)
+        return rel
+    except Exception:
+        ext = os.path.splitext(src)[1] or ".png"
+        shutil.copy(src, dst_noext + ext)
+        return f"assets/questions/{os.path.basename(dst_noext)}{ext}"
+
+def resolve_img(img_ref, media_dir):
+    """markdown 图路径 → 实际文件路径。"""
+    if os.path.isabs(img_ref) and os.path.exists(img_ref):
+        return img_ref
+    for base in (media_dir, os.path.join(media_dir, ".."), os.path.dirname(media_dir)):
+        p = os.path.normpath(os.path.join(base, img_ref))
+        if os.path.exists(p):
+            return p
+    return None
+
+def load(questions, source_label, source_abbr, year, media_dir, db_path, dry_run=False):
+    conn = sqlite3.connect(db_path)
+    cur = conn.cursor()
+    existing = set(r[0] for r in cur.execute("SELECT question_id FROM questions"))
+    os.makedirs(IMG_DIR, exist_ok=True)
+    inserted, skipped, with_opt_img = 0, 0, 0
+    for seq, q in enumerate(questions, 1):
+        qid = make_qid(source_abbr, year, seq)
+        if qid in existing:
+            skipped += 1; continue
+
+        image_paths = []   # 全图总索引
+
+        # 1) 题干图：把 stem 里的 markdown ![](x) 替换成 [[IMG:n]] 锚点，图入索引
+        stem = q["stem"]
+        def repl_stem_img(m):
+            src = resolve_img(m.group(1), media_dir)
+            if not src: return ""
+            n = len(image_paths)
+            rel = save_webp(src, os.path.join(IMG_DIR, f"{qid}_stem{n}"), dry_run)
+            image_paths.append(rel)
+            return f"[[IMG:{n}]]"
+        stem = re.sub(r"!\[[^\]]*\]\(([^)]+)\)", repl_stem_img, stem).strip()
+
+        # 2) 选项图：options 里 img_src → 转webp，标 img 字段入索引
+        options = None
+        if q["options"]:
+            options = {}
+            has_opt_img = False
+            for letter, val in q["options"].items():
+                if "img_src" in val:
+                    src = resolve_img(val["img_src"], media_dir)
+                    if src:
+                        n = len(image_paths)
+                        rel = save_webp(src, os.path.join(IMG_DIR, f"{qid}_opt{letter}"), dry_run)
+                        image_paths.append(rel)
+                        options[letter] = {"zh": "", "en": "", "img": rel}
+                        has_opt_img = True
+                    else:
+                        options[letter] = {"zh": ""}
+                else:
+                    options[letter] = {"zh": val.get("zh", ""), "en": val.get("zh", "")}
+            if has_opt_img: with_opt_img += 1
+
+        # 3) 解析图（solutions 里的 markdown 图 → [[IMG:n]]）
+        sol = q.get("solution", "")
+        if sol:
+            def repl_sol_img(m):
+                src = resolve_img(m.group(1), media_dir)
+                if not src: return ""
+                n = len(image_paths)
+                rel = save_webp(src, os.path.join(IMG_DIR, f"{qid}_sol{n}"), dry_run)
+                image_paths.append(rel)
+                return f"[[IMG:{n}]]"
+            sol = re.sub(r"!\[[^\]]*\]\(([^)]+)\)", repl_sol_img, sol)
+
+        row = {
+            "question_id": qid, "source": source_label,
+            "exam_year": int(year) if year.isdigit() else None,
+            "region": q.get("src_hint"), "exam_type": "中考真题",
+            # 占位值：填合法值以满足 CHECK 约束，靠 content_status='pending' 标记待回填
+            "grade_level": 9, "semester": 1,     # 占位(合法)，回填时按考点重定
+            "primary_point_id": "KP-000",         # 占位哨兵
+            "combination_id": None,
+            "difficulty_level": 1,                # 占位(合法1-9)，回填时按算分重定
+            "question_type": q["type"],
+            "score_default": q.get("score") or 2,
+            "stem_zh": stem, "stem_en": "__PENDING__",
+            "options_json": json.dumps(options, ensure_ascii=False) if options else None,
+            "answer_standard": q["answer"] or "__PENDING__",
+            "rubric_checklist_json": None,
+            "solutions_json": json.dumps([{"text": sol}], ensure_ascii=False) if sol else None,
+            "image_paths_json": json.dumps(image_paths, ensure_ascii=False) if image_paths else None,
+            "content_status": "pending",
+        }
+        if not dry_run:
+            cols = ",".join(row.keys()); ph = ",".join("?" * len(row))
+            cur.execute(f"INSERT INTO questions ({cols}) VALUES ({ph})", list(row.values()))
+        inserted += 1
+    if not dry_run: conn.commit()
+    conn.close()
+    return inserted, skipped, with_opt_img
+
+# ---------- 主流程 ----------
+def collect_docx(target):
+    if os.path.isdir(target):
+        return [os.path.join(r, f) for r, _, fs in os.walk(target)
+                for f in fs if f.lower().endswith(".docx") and not f.startswith("~$")]
+    return [target] if target.lower().endswith(".docx") else []
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("target", help="docx 文件或文件夹")
+    ap.add_argument("--db", default=DEFAULT_DB)
+    ap.add_argument("--dry-run", action="store_true", help="只解析不入库,看切题效果")
+    args = ap.parse_args()
+
+    files = collect_docx(args.target)
+    if not files:
+        print("未找到 .docx"); sys.exit(1)
+    print(f"发现 {len(files)} 个 docx\n{'='*60}")
+    tot_in, tot_skip, rejected = 0, 0, 0
+    for f in files:
+        name = os.path.basename(f)
+        ok, reason = inspect_ok(f)
+        if not ok:
+            print(f"❌ REJECT {name}\n   {reason}"); rejected += 1; continue
+        print(f"✅ 体检通过 {name}\n   {reason}")
+        try:
+            workdir = os.path.join("/tmp/docimport", hashlib.md5(f.encode()).hexdigest()[:8])
+            md, media = extract(f, workdir)
+            abbr, year, source_label = guess_source_abbr(f)
+            qs = segment(md, source_label, year)
+            print(f"   切出 {len(qs)} 道题" + (" [dry-run]" if args.dry_run else ""))
+            # source 存完整文件名标签，qid 用 abbr 简码
+            ins, sk, optimg = load(qs, source_label, abbr, year, media, args.db, args.dry_run)
+            print(f"   [{abbr}] 入库 {ins}，跳过(重复) {sk}，含选项图题 {optimg}")
+            tot_in += ins; tot_skip += sk
+        except Exception as e:
+            print(f"   ⚠️ 处理失败: {e}")
+    print(f"{'='*60}\n汇总: 入库 {tot_in}，跳过 {tot_skip}，拒收 {rejected}")
+    if not args.dry_run:
+        total = sqlite3.connect(args.db).execute("SELECT COUNT(*) FROM questions").fetchone()[0]
+        pending = sqlite3.connect(args.db).execute("SELECT COUNT(*) FROM questions WHERE content_status='pending'").fetchone()[0]
+        print(f"questions.db 现共 {total} 题，其中待回填(pending) {pending} 题")
+
+if __name__ == "__main__":
+    main()

@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { MathRenderer } from '../../components/math/MathRenderer';
+import { QuestionContent } from '../../components/common/QuestionContent';
+import { QuestionImage } from '../../components/common/QuestionImage';
+import { SolutionList } from '../exam/SolutionList';
 import { Icon } from '../../components/common/Icon';
 import {
   QuickPracticeQuestion,
   drawFromPool,
   filterEligibleQuestions,
 } from './quickPractice.machine';
+import { normalizeOptionAnswer } from '../../engine/judge/normalizeOptionAnswer';
 import { useSessionStore } from '../../store/sessionStore';
 
 export interface QuickPracticeProps {
@@ -69,7 +73,7 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
       return; // 已作答题锁定，不可重复点击
     }
 
-    const isCorrect = optionKey.trim().toUpperCase() === q.answer_standard.trim().toUpperCase();
+    const isCorrect = normalizeOptionAnswer(optionKey) === normalizeOptionAnswer(q.answer_standard);
     const earnedScore = isCorrect ? q.score_default : 0;
 
     setSelectedAnswers((prev) => ({ ...prev, [q.question_id]: optionKey }));
@@ -235,7 +239,7 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
           currentQuestions.map((q, idx) => {
             const userChoice = selectedAnswers[q.question_id];
             const isAnswered = !!userChoice;
-            const isCorrect = userChoice?.toUpperCase() === q.answer_standard.toUpperCase();
+            const isCorrect = normalizeOptionAnswer(userChoice) === normalizeOptionAnswer(q.answer_standard);
             const stem = locale === 'en' ? q.stem_en || q.stem_zh : q.stem_zh;
 
             return (
@@ -320,7 +324,7 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
                     color: 'var(--text-primary)',
                   }}
                 >
-                  <MathRenderer content={stem} />
+                  <QuestionContent content={stem} images={q.image_paths_json} locale={locale.startsWith('en') ? 'en' : 'zh'} />
                 </div>
 
                 {/* 选项按钮列表 (A, B, C, D) */}
@@ -333,7 +337,7 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
                 >
                   {q.options.map((opt) => {
                     const isSelected = userChoice === opt.key;
-                    const isStandard = q.answer_standard.toUpperCase() === opt.key.toUpperCase();
+                    const isStandard = normalizeOptionAnswer(q.answer_standard) === normalizeOptionAnswer(opt.key);
                     const optText = locale === 'en' ? opt.text_en || opt.text_zh : opt.text_zh;
 
                     // 颜色状态判定
@@ -389,16 +393,20 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
                         >
                           {opt.key}.
                         </span>
-                        {/* 铁律 3：选项内容通过 MathRenderer 渲染 */}
-                        <div style={{ flex: 1 }}>
-                          <MathRenderer content={optText} />
+                        {/* 选项内容 (有图走 QuestionImage，无图走 MathRenderer) */}
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                          {opt.img ? (
+                            <QuestionImage role="option" src={opt.img} alt={`选项 ${opt.key}`} />
+                          ) : (
+                            <MathRenderer content={optText} />
+                          )}
                         </div>
                       </button>
                     );
                   })}
                 </div>
 
-                {/* 错误时展开解答思路 (铁律 3：解析由 MathRenderer 渲染) */}
+                {/* 错误时展开解答思路 (支持图锚点混合渲染) */}
                 {isAnswered && !isCorrect && q.solutions_json && (
                   <div
                     data-testid={`solution-${q.question_id}`}
@@ -425,7 +433,11 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
                       <Icon name="bulb" size={14} />
                       <span>{locale === 'en' ? 'Solution Explanation' : '解析指引'}</span>
                     </div>
-                    <MathRenderer content={q.solutions_json} />
+                    <SolutionList
+                      solutions={q.solutions_json}
+                      images={q.image_paths_json}
+                      locale={locale.startsWith('en') ? 'en' : 'zh'}
+                    />
                   </div>
                 )}
               </div>

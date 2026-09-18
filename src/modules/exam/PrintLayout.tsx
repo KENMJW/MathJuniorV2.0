@@ -12,6 +12,9 @@
 import React, { useState } from 'react';
 import { GeneratedPaper } from './drawQuestions';
 import { MathRenderer } from '../../components/math/MathRenderer';
+import { QuestionContent } from '../../components/common/QuestionContent';
+import { QuestionImage } from '../../components/common/QuestionImage';
+import { SolutionList } from './SolutionList';
 import { Icon } from '../../components/common/Icon';
 import './print.css';
 
@@ -26,8 +29,8 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
   const [viewMode, setViewMode] = useState<PaperViewMode>('paper');
   const [isTwoColumnPreview, setIsTwoColumnPreview] = useState(true);
 
-  // 解析选择题选项
-  const parseOptions = (optionsJson?: string | null): Record<string, { zh: string; en: string }> | null => {
+  // 安全解析 options_json 备用渲染
+  const parseOptions = (optionsJson?: string | null): Record<string, { zh: string; en: string; img?: string }> | null => {
     if (!optionsJson) return null;
     try {
       return JSON.parse(optionsJson);
@@ -409,7 +412,7 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.35rem' }}>
                           <span style={{ fontWeight: 700 }}>{questionIndex}.</span>
                           <div style={{ flex: 1 }}>
-                            <MathRenderer content={q.stem_zh} />
+                            <QuestionContent content={q.stem_zh} images={q.image_paths_json} />
                           </div>
                         </div>
 
@@ -425,9 +428,15 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
                             }}
                           >
                             {Object.entries(options).map(([optKey, optVal]) => (
-                              <div key={optKey} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                              <div key={optKey} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.35rem' }}>
                                 <span style={{ fontWeight: 700 }}>{optKey}.</span>
-                                <MathRenderer content={optVal.zh} />
+                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                                  {optVal.img ? (
+                                    <QuestionImage role="option" src={optVal.img} alt={`选项 ${optKey}`} />
+                                  ) : (
+                                    <MathRenderer content={optVal.zh} />
+                                  )}
+                                </div>
                               </div>
                             ))}
                           </div>
@@ -452,7 +461,7 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
                             {q.solutions_json && (
                               <div style={{ marginTop: '0.35rem' }}>
                                 <span style={{ fontWeight: 600 }}>【解析点睛】</span>
-                                <MathRenderer content={q.solutions_json} />
+                                <SolutionList solutions={q.solutions_json} images={q.image_paths_json} />
                               </div>
                             )}
                           </div>
@@ -534,7 +543,7 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.35rem' }}>
                           <span style={{ fontWeight: 700 }}>{questionIndex}.</span>
                           <div style={{ flex: 1 }}>
-                            <MathRenderer content={q.stem_zh} />
+                            <QuestionContent content={q.stem_zh} images={q.image_paths_json} />
                           </div>
                         </div>
 
@@ -618,7 +627,7 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
                           <span style={{ fontWeight: 700 }}>{questionIndex}.</span>
                           <span style={{ color: '#64748b', fontWeight: 500 }}>({q.score_default || 8} 分)</span>
                           <div style={{ flex: 1 }}>
-                            <MathRenderer content={q.stem_zh} />
+                            <QuestionContent content={q.stem_zh} images={q.image_paths_json} />
                           </div>
                         </div>
 
@@ -680,7 +689,7 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
                             {q.solutions_json && (
                               <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid #fde68a' }}>
                                 <span style={{ fontWeight: 700, color: '#78350f' }}>【推导精解】</span>
-                                <MathRenderer content={q.solutions_json} />
+                                <SolutionList solutions={q.solutions_json} images={q.image_paths_json} />
                               </div>
                             )}
                           </div>
