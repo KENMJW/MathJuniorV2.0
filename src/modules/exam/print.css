@@ -74,6 +74,33 @@
     padding-right: 4mm !important;
     margin-right: 6mm !important;
   }
+
+  /* 试题示意图打印排版与防截断 */
+  .question-image-wrapper {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 2mm auto !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .question-image-wrapper img {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    max-width: 100% !important;
+    max-height: 55mm !important;
+    object-fit: contain !important;
+    margin: 0 auto !important;
+  }
+
+  /* 打印时隐藏骨架屏和错误占位 */
+  [data-testid="question-image-skeleton"],
+  [data-testid="question-image-error"] {
+    display: none !important;
+  }
 }
 
 /* 屏幕预览下的试卷仿真样式 */
@@ -81,4 +108,10 @@
   background-color: var(--bg-card);
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
   font-family: -apple-system, BlinkMacSystemFont, 'Noto Serif SC', 'Songti SC', SimSun, serif;
+}
+
+.screen-paper-preview .question-image-wrapper {
+  background: #ffffff;
+  box-shadow: none;
+  border: 1px solid #e2e8f0;
 }

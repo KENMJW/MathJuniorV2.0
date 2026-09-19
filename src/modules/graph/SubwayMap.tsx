@@ -22,6 +22,8 @@ export interface SubwayMapProps {
   selectedPointId?: string | null;
   onSelectPoint?: (pointId: string | null) => void;
   onNavigate?: (destination: 'concept' | 'sandbox' | 'exam', pointId: string) => void;
+  onSelectLineClosedLoop?: (lineId: string, targetTab?: 'lecture' | 'master' | 'practice') => void;
+  onOpenFlagshipModel?: (lineId: string, modelId?: string) => void;
   locale?: string;
   className?: string;
   style?: React.CSSProperties;
@@ -60,6 +62,8 @@ export const SubwayMap: React.FC<SubwayMapProps> = ({
   selectedPointId: controlledSelectedPointId,
   onSelectPoint,
   onNavigate,
+  onSelectLineClosedLoop,
+  onOpenFlagshipModel,
   locale = 'zh-CN',
   className = '',
   style = {},
@@ -450,6 +454,8 @@ export const SubwayMap: React.FC<SubwayMapProps> = ({
           allPoints={pointsMap}
           onClose={() => handleSelectPoint(null)}
           onNavigate={onNavigate}
+          onSelectLineClosedLoop={onSelectLineClosedLoop}
+          onOpenSandboxLeap={onOpenFlagshipModel}
           locale={locale}
         />
       )}

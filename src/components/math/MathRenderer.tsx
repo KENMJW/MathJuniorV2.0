@@ -38,9 +38,9 @@ export function renderMathContent(content: string, defaultBlock: boolean = false
   }
 
   try {
-    // 匹配 $$...$$ (块级) 与 $...$ (行内)
+    // 匹配 $$...$$ (块级) 与 $...$ (行内，支持跨单行但禁止跨空行段落)
     // 忽略转义的 \$
-    const mathRegex = /(\$\$[\s\S]*?\$\$|\$[^\$\n]+?\$)/g;
+    const mathRegex = /(\$\$[\s\S]*?\$\$|\$(?:[^\$\n]|\n(?!\s*\n))+?\$)/g;
     let lastIndex = 0;
     let match: RegExpExecArray | null;
     let htmlResult = '';
@@ -54,7 +54,9 @@ export function renderMathContent(content: string, defaultBlock: boolean = false
 
       // 2. 处理公式本体
       const token = match[0];
-      const isDisplay = token.startsWith('$$') || defaultBlock;
+      // 区分行内公式 ($...$) 与块级公式 ($$...$)
+      // 只有显式 $$...$$ 或整体单一公式指定 defaultBlock 时才使用 displayMode
+      const isDisplay = token.startsWith('$$') || (defaultBlock && content.trim() === token);
       const formula = token.startsWith('$$')
         ? token.slice(2, -2).trim()
         : token.slice(1, -1).trim();
@@ -62,6 +64,7 @@ export function renderMathContent(content: string, defaultBlock: boolean = false
       try {
         const rendered = katex.renderToString(formula, {
           displayMode: isDisplay,
+          output: 'html',
           throwOnError: false,
           errorColor: 'var(--ios-red)',
           strict: false,

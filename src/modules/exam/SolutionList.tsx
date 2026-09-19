@@ -8,6 +8,7 @@ export interface SolutionListProps {
   locale?: 'zh' | 'en';
   className?: string;
   style?: React.CSSProperties;
+  eager?: boolean;
 }
 
 /**
@@ -25,6 +26,7 @@ export const SolutionList: React.FC<SolutionListProps> = ({
   locale = 'zh',
   className = '',
   style,
+  eager = false,
 }) => {
   const items = useMemo((): SolutionItem[] => {
     const parsed = parseSolutions(solutions);
@@ -72,6 +74,7 @@ export const SolutionList: React.FC<SolutionListProps> = ({
           images={images}
           role="solution"
           locale={locale}
+          eager={eager}
         />
       </div>
     );
@@ -139,6 +142,7 @@ export const SolutionList: React.FC<SolutionListProps> = ({
                 images={images}
                 role="solution"
                 locale={locale}
+                eager={eager}
               />
             </div>
           </div>

@@ -1,0 +1,2008 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>全科核心素养提分系统 — 真正的 Apple 设计哲学与空间系统美学原型 (全微交互版)</title>
+  <style>
+    /* ==========================================================================
+       Apple Design Philosophy — System Design Tokens (Pure & Restrained)
+       ========================================================================== */
+    :root {
+      /* Typography & Grayscale Hierarchy (Apple Official HIG) */
+      --text-primary: #1d1d1f;       /* Primary Obsidian Label */
+      --text-secondary: #515154;     /* Secondary Reading Body */
+      --text-tertiary: #86868b;      /* Tertiary Caption & Meta */
+      --text-quaternary: #d2d2d7;    /* Subtle Hairline Dividers */
+
+      /* Surface Architecture */
+      --bg-page: #fbfbfd;            /* Apple Signature Light Studio Background */
+      --bg-card: #ffffff;            /* Elevated Crisp Surface */
+      --bg-card-subtle: #f5f5f7;     /* Secondary Substrate */
+      --border-subtle: rgba(0, 0, 0, 0.07);
+      --border-focus: rgba(0, 113, 227, 0.35);
+
+      /* Single Brand Accent (No Rainbow Clutter) */
+      --ios-blue: #0071e3;
+      --ios-blue-tint: rgba(0, 113, 227, 0.06);
+      --ios-blue-glow: rgba(0, 113, 227, 0.18);
+      
+      /* Subtle Functional States */
+      --status-ready-bg: rgba(52, 199, 89, 0.08);
+      --status-ready-text: #248a3d;
+      --status-pending-bg: rgba(0, 0, 0, 0.035);
+      --status-pending-text: #86868b;
+
+      /* Spatial Geometry */
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 22px;
+      --radius-pill: 9999px;
+
+      /* Apple Spring Mechanics */
+      --spring-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Helvetica Neue", sans-serif;
+      background: var(--bg-page);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Ambient Spatial Illumination */
+    .ambient-glow-mesh {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .ambient-glow-top {
+      position: absolute;
+      width: 800px;
+      height: 500px;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: radial-gradient(ellipse at center, rgba(0, 113, 227, 0.04) 0%, transparent 70%);
+      filter: blur(90px);
+    }
+
+    /* Unified Monoline SF Symbols Standard */
+    .sf-icon {
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+      stroke: currentColor;
+    }
+
+    /* ==========================================================================
+       1. Top Fixed Navigation Header (Properly Docked, Zero Overlap)
+       ========================================================================== */
+    .system-nav-anchor {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      width: 100%;
+      background: rgba(251, 251, 253, 0.85);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .system-nav-inner {
+      max-width: 1140px;
+      margin: 0 auto;
+      height: 54px;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand-cluster {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .brand-mark {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      background: var(--text-primary);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .brand-title-group {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+    .brand-title {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+      color: var(--text-primary);
+    }
+    .brand-subtext {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      font-weight: 400;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .nav-pill-btn {
+      height: 32px;
+      padding: 0 12px;
+      border-radius: var(--radius-pill);
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.18s var(--spring-smooth);
+    }
+    .nav-pill-btn:hover {
+      background: #ffffff;
+      color: var(--text-primary);
+      border-color: rgba(0, 0, 0, 0.15);
+    }
+    .nav-icon-btn {
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      justify-content: center;
+      position: relative;
+    }
+    .notif-dot {
+      position: absolute;
+      top: 7px;
+      right: 7px;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #ff3b30;
+    }
+
+    /* Popover */
+    .popover-menu {
+      position: absolute;
+      top: 40px;
+      right: 0;
+      min-width: 150px;
+      background: #ffffff;
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+      padding: 5px;
+      display: none;
+      flex-direction: column;
+      gap: 2px;
+      z-index: 2000;
+    }
+    .popover-item {
+      padding: 7px 10px;
+      border-radius: 7px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.15s;
+    }
+    .popover-item:hover {
+      background: var(--bg-card-subtle);
+      color: var(--text-primary);
+    }
+    .popover-item.active {
+      font-weight: 600;
+      color: var(--ios-blue);
+      background: var(--ios-blue-tint);
+    }
+
+    /* ==========================================================================
+       2. Main Canvas & Layout Hierarchy
+       ========================================================================== */
+    .main-canvas {
+      max-width: 1140px;
+      margin: 36px auto 80px auto;
+      padding: 0 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ==========================================================================
+       3. Segmented Stage Switcher (Clean Apple System Segment)
+       ========================================================================== */
+    .stage-segmented-container {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 36px;
+    }
+    .stage-segmented-control {
+      position: relative;
+      display: inline-flex;
+      background: rgba(0, 0, 0, 0.04);
+      padding: 3px;
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(0, 0, 0, 0.03);
+    }
+    .seg-thumb {
+      position: absolute;
+      top: 3px;
+      bottom: 3px;
+      left: 0;
+      background: #ffffff;
+      border-radius: var(--radius-pill);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+      transition: transform 0.28s var(--spring-smooth), width 0.28s var(--spring-smooth);
+      pointer-events: none;
+      z-index: 1;
+    }
+    .seg-item {
+      position: relative;
+      z-index: 2;
+      padding: 7px 22px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      user-select: none;
+      transition: color 0.2s;
+    }
+    .seg-item.active {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+    .seg-item.active .sf-icon {
+      stroke: var(--ios-blue);
+    }
+
+    /* Stage Panel Containers */
+    .stage-panel {
+      display: none;
+      animation: fadeIn 0.24s var(--spring-smooth);
+    }
+    .stage-panel.active {
+      display: block;
+    }
+
+    /* ==========================================================================
+       4. Flagship Architectural Showcase Card (Apple Keynote Style)
+       ========================================================================== */
+    .flagship-hero-card {
+      position: relative;
+      background: #ffffff;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 36px 40px;
+      margin-bottom: 48px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.28s var(--spring-smooth), box-shadow 0.28s;
+    }
+    .flagship-hero-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.06);
+      border-color: rgba(0, 113, 227, 0.25);
+    }
+
+    /* Ambient Mathematical Geometry Watermark */
+    .hero-bg-geometry {
+      position: absolute;
+      top: -20px;
+      right: -20px;
+      width: 440px;
+      height: 100%;
+      pointer-events: none;
+      opacity: 0.45;
+      z-index: 0;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .hero-layout-body {
+      position: relative;
+      z-index: 1;
+      max-width: 680px;
+    }
+
+    .hero-header-line {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .status-capsule {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 10px;
+      background: var(--status-ready-bg);
+      border-radius: var(--radius-pill);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--status-ready-text);
+      letter-spacing: -0.1px;
+    }
+    .status-dot-pulse {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #34c759;
+    }
+    .hero-stage-meta {
+      font-size: 12px;
+      color: var(--ios-blue);
+      font-weight: 500;
+      letter-spacing: -0.1px;
+    }
+
+    .hero-headline {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.6px;
+      color: var(--text-primary);
+      margin-bottom: 10px;
+      line-height: 1.25;
+    }
+    .hero-description {
+      font-size: 14px;
+      line-height: 1.65;
+      color: var(--text-secondary);
+      margin-bottom: 28px;
+    }
+
+    /* Integrated 4 Metrics Bar */
+    .hero-metrics-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      background: var(--bg-card-subtle);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      margin-bottom: 28px;
+    }
+    .metric-cell {
+      padding: 14px 18px;
+      border-right: 1px solid var(--border-subtle);
+    }
+    .metric-cell:last-child {
+      border-right: none;
+    }
+    .metric-number {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.4px;
+      color: var(--text-primary);
+      display: block;
+    }
+    .metric-label {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      margin-top: 2px;
+      font-weight: 500;
+    }
+
+    .hero-cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 24px;
+      background: var(--ios-blue);
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: var(--radius-pill);
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 2px 8px var(--ios-blue-glow);
+      transition: all 0.2s var(--spring-smooth);
+    }
+    .hero-cta-btn:hover {
+      background: #0077ed;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px var(--ios-blue-glow);
+    }
+
+    /* ==========================================================================
+       5. Disciplines Grid (Calm, Content-First Apple Hierarchy)
+       ========================================================================== */
+    .section-head-bar {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .section-headline {
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+      color: var(--text-primary);
+    }
+    .section-annotation {
+      font-size: 12px;
+      color: var(--text-tertiary);
+    }
+
+    .disciplines-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 16px;
+    }
+
+    .discipline-card {
+      background: #ffffff;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 120px;
+      transition: all 0.22s var(--spring-smooth);
+      position: relative;
+    }
+    .discipline-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(0, 113, 227, 0.3);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+    }
+
+    .card-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .discipline-title-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .discipline-symbol {
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .discipline-card:hover .discipline-symbol {
+      color: var(--ios-blue);
+    }
+    .discipline-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.2px;
+    }
+
+    .quiet-status-tag {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      font-weight: 400;
+      background: var(--bg-card-subtle);
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+    }
+
+    .discipline-grades-scope {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      line-height: 1.4;
+    }
+
+    /* ==========================================================================
+       6. VIEW 2: Junior High Math Workspace
+       ========================================================================== */
+    #view-math {
+      display: none;
+    }
+    .math-workspace-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      background: #ffffff;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-pill);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.18s var(--spring-smooth);
+    }
+    .back-btn:hover {
+      background: var(--bg-card-subtle);
+      border-color: rgba(0, 0, 0, 0.15);
+    }
+
+    .math-segmented-nav {
+      display: flex;
+      background: rgba(0, 0, 0, 0.04);
+      padding: 3px;
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(0, 0, 0, 0.03);
+      gap: 2px;
+    }
+    .math-seg-btn {
+      padding: 6px 14px;
+      border-radius: var(--radius-pill);
+      border: none;
+      background: transparent;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.18s var(--spring-smooth);
+    }
+    .math-seg-btn:hover {
+      color: var(--text-primary);
+    }
+    .math-seg-btn.active {
+      background: #ffffff;
+      color: var(--text-primary);
+      font-weight: 600;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+    }
+    .math-seg-btn.active .sf-icon {
+      stroke: var(--ios-blue);
+    }
+
+    /* Workspace Stage Box */
+    .workspace-stage-card {
+      background: #ffffff;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 28px 32px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.02);
+      min-height: 520px;
+    }
+    .mod-pane {
+      display: none;
+      animation: fadeIn 0.22s var(--spring-smooth);
+    }
+    .mod-pane.active {
+      display: block;
+    }
+
+    /* Module 1: 四段论 Tab 按钮组 */
+    .four-steps-tabs {
+      display: flex;
+      gap: 6px;
+      background: var(--bg-card-subtle);
+      padding: 3px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-subtle);
+    }
+    .step-tab-btn {
+      padding: 5px 14px;
+      border-radius: var(--radius-pill);
+      border: none;
+      background: transparent;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .step-tab-btn:hover {
+      color: var(--text-primary);
+    }
+    .step-tab-btn.active {
+      background: var(--ios-blue);
+      color: #ffffff;
+      font-weight: 600;
+      box-shadow: 0 1px 4px var(--ios-blue-glow);
+    }
+
+    .step-content-box {
+      display: none;
+      animation: fadeIn 0.2s var(--spring-smooth);
+    }
+    .step-content-box.active {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 24px;
+    }
+
+    /* Module 3: 互动沙盒布局与控制器 */
+    .sandbox-split-box {
+      display: flex;
+      flex-direction: column;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+      margin-bottom: 16px;
+    }
+    .sandbox-viewport-85 {
+      height: 340px;
+      background: #0f172a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .sandbox-guide-15 {
+      background: #1e293b;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 24px;
+      color: #e2e8f0;
+      font-size: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    /* Apple Minimalist Range Slider */
+    .sandbox-controls-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-card-subtle);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px 20px;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+    .slider-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+    input[type=range] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 200px;
+      height: 4px;
+      background: #e5e5ea;
+      border-radius: 2px;
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 0.5px solid rgba(0,0,0,0.04);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+    .preset-pill-group {
+      display: flex;
+      gap: 6px;
+    }
+    .preset-btn {
+      padding: 5px 12px;
+      border-radius: var(--radius-pill);
+      background: #ffffff;
+      border: 1px solid var(--border-subtle);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .preset-btn:hover {
+      border-color: rgba(0, 0, 0, 0.15);
+      color: var(--text-primary);
+    }
+
+    /* M4 Exam Split View */
+    .exam-split-grid {
+      display: grid;
+      grid-template-columns: 1fr 310px;
+      gap: 20px;
+      height: 480px;
+    }
+    .exam-paper-scroll {
+      background: var(--bg-card-subtle);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      overflow-y: auto;
+      border: 1px solid var(--border-subtle);
+    }
+    .exam-sidebar-fixed {
+      background: #ffffff;
+      border-radius: var(--radius-md);
+      padding: 18px;
+      border: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(3px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Responsive */
+    @media (max-width: 860px) {
+      .hero-metrics-bar { grid-template-columns: repeat(2, 1fr); }
+      .exam-split-grid { grid-template-columns: 1fr; height: auto; }
+      .step-content-box.active { grid-template-columns: 1fr; }
+      .brand-subtext { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient Light Mesh (Subtle) -->
+  <div class="ambient-glow-mesh">
+    <div class="ambient-glow-top"></div>
+  </div>
+
+  <!-- ==================== 1. System Navigation (Clean Apple Dock) ==================== -->
+  <div class="system-nav-anchor">
+    <header class="system-nav-inner">
+      <!-- Brand Cluster -->
+      <div class="brand-cluster" id="btn-brand-home" title="返回全科总门户">
+        <div class="brand-mark">
+          <svg width="15" height="15" viewBox="0 0 24 24" class="sf-icon" style="stroke-width: 2.2;">
+            <polygon points="12 2 2 22 22 22 12 2" stroke="#fff" fill="none" />
+            <circle cx="12" cy="14" r="2" fill="#fff" stroke="none" />
+          </svg>
+        </div>
+        <div class="brand-title-group">
+          <span class="brand-title" data-i18n="platform.title">全科核心素养提分系统</span>
+          <span class="brand-subtext" data-i18n="platform.subtitle">覆盖小学、初中、高中全学段智能提分平台</span>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="nav-actions">
+        <!-- Announcements Notification Bell -->
+        <div style="position: relative;">
+          <button class="nav-pill-btn nav-icon-btn" id="btn-toggle-notif" title="系统公告">
+            <svg class="sf-icon" width="15" height="15" viewBox="0 0 24 24" style="stroke-width: 1.8;">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+            </svg>
+            <span class="notif-dot"></span>
+          </button>
+          <div class="popover-menu" id="popover-notif" style="width: 260px;">
+            <div style="font-size: 11px; font-weight: 600; color: var(--text-tertiary); padding: 4px 8px;" data-i18n="notif.header">系统更新与教研公告</div>
+            <div class="popover-item" style="flex-direction: column; align-items: flex-start; gap: 3px;">
+              <div style="display: flex; justify-content: space-between; width: 100%; font-size: 11px; font-weight: 600;">
+                <span style="color: var(--ios-blue);" data-i18n="notif.tag1">初中数学首发</span>
+                <span style="color: var(--text-tertiary);">刚刚</span>
+              </div>
+              <p style="font-size: 11px; color: var(--text-secondary);" data-i18n="notif.desc1">107 考点四段论、12 逻辑主线与双轨沙盒全量上线就绪。</p>
+            </div>
+            <div class="popover-item" style="flex-direction: column; align-items: flex-start; gap: 3px;">
+              <div style="display: flex; justify-content: space-between; width: 100%; font-size: 11px; font-weight: 600;">
+                <span style="color: var(--text-primary);" data-i18n="notif.tag2">多语言支持</span>
+                <span style="color: var(--text-tertiary);">今日</span>
+              </div>
+              <p style="font-size: 11px; color: var(--text-secondary);" data-i18n="notif.desc2">纯正学术英语与繁体中文双向同频切换引擎升级完成。</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Language Switcher -->
+        <div style="position: relative;">
+          <button class="nav-pill-btn" id="btn-toggle-lang" title="切换语言">
+            <svg class="sf-icon" width="14" height="14" viewBox="0 0 24 24" style="stroke-width: 1.8;">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M2 12h20" />
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+            </svg>
+            <span id="label-cur-lang">简体中文</span>
+            <svg class="sf-icon" width="8" height="8" viewBox="0 0 24 24" style="stroke: var(--text-tertiary); stroke-width: 2.2;">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+          <div class="popover-menu" id="popover-lang">
+            <div class="popover-item active" data-lang="zh-CN"><span>简体中文</span><span class="chk-mark">✓</span></div>
+            <div class="popover-item" data-lang="zh-TW"><span>繁體中文</span><span class="chk-mark"></span></div>
+            <div class="popover-item" data-lang="en-US"><span>English (Academic)</span><span class="chk-mark"></span></div>
+          </div>
+        </div>
+
+        <!-- Student Persona Pill -->
+        <div class="nav-pill-btn" style="cursor: default;" title="学习者身份">
+          <svg class="sf-icon" width="13" height="13" viewBox="0 0 24 24" style="stroke-width: 1.8;">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+          <span data-i18n="user.persona">默认学员 · 核心素养版</span>
+        </div>
+      </div>
+    </header>
+  </div>
+
+  <!-- ==================== 2. Main Canvas Viewport ==================== -->
+  <main class="main-canvas">
+
+    <!-- ======================================================================
+         VIEW 1: 全科总门户 (Portal Homepage)
+         ====================================================================== -->
+    <section id="view-portal">
+      <!-- Apple Minimalist Segmented Stage Switcher (Exact Screenshot 2) -->
+      <div class="stage-segmented-container">
+        <div class="stage-segmented-control" id="stage-segmented-control">
+          <div class="seg-thumb" id="seg-thumb"></div>
+
+          <!-- Primary Stage -->
+          <div class="seg-item" data-stage="primary">
+            <svg class="sf-icon" width="14" height="14" viewBox="0 0 24 24" style="stroke-width: 1.8;">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+            </svg>
+            <span data-i18n="stages.primary">小学教育 (4科)</span>
+          </div>
+
+          <!-- Junior High Stage (Default Active) -->
+          <div class="seg-item active" data-stage="middle">
+            <svg class="sf-icon" width="14" height="14" viewBox="0 0 24 24" style="stroke-width: 1.8;">
+              <circle cx="12" cy="12" r="10" />
+              <circle cx="12" cy="12" r="6" />
+              <circle cx="12" cy="12" r="2" fill="currentColor" />
+            </svg>
+            <span data-i18n="stages.middle">初中突破 (8科·首发)</span>
+          </div>
+
+          <!-- High School Stage -->
+          <div class="seg-item" data-stage="high">
+            <svg class="sf-icon" width="14" height="14" viewBox="0 0 24 24" style="stroke-width: 1.8;">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+            </svg>
+            <span data-i18n="stages.high">高中决胜 (8科)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== STAGE 1: 小学教育专区 ==================== -->
+      <div class="stage-panel" id="stage-primary-panel">
+        <!-- 小学旗舰展示卡 -->
+        <div class="flagship-hero-card" style="cursor: default;">
+          <div class="hero-bg-geometry">
+            <svg width="340" height="200" viewBox="0 0 340 200" fill="none">
+              <circle cx="170" cy="100" r="70" stroke="#0071e3" stroke-opacity="0.12" stroke-width="2" />
+              <rect x="120" y="50" width="100" height="100" rx="14" stroke="#0071e3" stroke-opacity="0.12" stroke-width="2" />
+              <line x1="60" y1="100" x2="280" y2="100" stroke="#0071e3" stroke-opacity="0.1" stroke-dasharray="4 4" />
+            </svg>
+          </div>
+          <div class="hero-layout-body">
+            <div class="hero-header-line">
+              <span class="status-capsule" style="background: rgba(0,0,0,0.04); color: var(--text-tertiary);">
+                <span>● 筹备中 · 1~6年级全学段</span>
+              </span>
+              <span class="hero-stage-meta" data-i18n="primary.meta">数感与几何直观系统</span>
+            </div>
+            <h2 class="hero-headline" data-i18n="primary.hero_title">小学核心素养数感与几何直观系统</h2>
+            <p class="hero-description" data-i18n="primary.hero_desc">
+              让孩子在具象图形与动手探究中真正爱上数学！独家构建 48 核心素养直观图谱、6 大启蒙思维模型、24 具象互动沙盒与 56 黄金母题。
+            </p>
+            <div class="hero-metrics-bar">
+              <div class="metric-cell">
+                <span class="metric-number">48</span>
+                <span class="metric-label" data-i18n="primary.stat1">直观考点精讲</span>
+              </div>
+              <div class="metric-cell">
+                <span class="metric-number">6</span>
+                <span class="metric-label" data-i18n="primary.stat2">启蒙思维模型</span>
+              </div>
+              <div class="metric-cell">
+                <span class="metric-number">24</span>
+                <span class="metric-label" data-i18n="primary.stat3">具象动手沙盒</span>
+              </div>
+              <div class="metric-cell">
+                <span class="metric-number">56</span>
+                <span class="metric-label" data-i18n="primary.stat4">素养探究母题</span>
+              </div>
+            </div>
+            <button class="hero-cta-btn" style="background: #e5e5ea; color: var(--text-tertiary); box-shadow: none; cursor: default;">
+              <span data-i18n="primary.btn">建设中 · 敬请期待</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="section-head-bar">
+          <h3 class="section-headline">小学启蒙学科矩阵</h3>
+          <span class="section-annotation">按照同构标准有序接入</span>
+        </div>
+        <div class="disciplines-grid">
+          <div class="discipline-card">
+            <div class="card-top-row">
+              <div class="discipline-title-group">
+                <span class="discipline-symbol">
+                  <svg width="18" height="18" viewBox="0 0 24 24" class="sf-icon" style="stroke-width: 1.8;">
+                    <circle cx="12" cy="12" r="9" />
+                    <line x1="12" y1="8" x2="12" y2="16" />
+                    <line x1="8" y1="12" x2="16" y2="12" />
+                  </svg>
+                </span>
+                <h4 class="discipline-name">小学数学</h4>
+              </div>
+              <span class="quiet-status-tag" data-i18n="cards.pending">即将推出</span>
+            </div>
+            <p class="discipline-grades-scope">一至六年级 (数感与图形空间)</p>
+          </div>
+          <div class="discipline-card">
+            <div class="card-top-row">
+              <div class="discipline-title-group">
+                <span class="discipline-symbol">
+                  <svg width="18" height="18" viewBox="0 0 24 24" class="sf-icon" style="stroke-width: 1.8;">
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                  </svg>
+                </span>
+                <h4 class="discipline-name">小学语文</h4>
+              </div>
+              <span class="quiet-status-tag" data-i18n="cards.pending">即将推出</span>
+            </div>
+            <p class="discipline-grades-scope">一至六年级 (字词积累与表达)</p>
+          </div>
+          <div class="discipline-card">
+            <div class="card-top-row">
+              <div class="discipline-title-group">
+                <span class="discipline-symbol">
+                  <svg width="18" height="18" viewBox="0 0 24 24" class="sf-icon" style="stroke-width: 1.8;">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  </svg>
+                </span>
+                <h4 class="discipline-name">小学英语</h4>
+              </div>
+              <span class="quiet-status-tag" data-i18n="cards.pending">即将推出</span>
+            </div>
+            <p class="discipline-grades-scope">三至六年级 (自然拼读与对话)</p>
+          </div>
+          <div class="discipline-card">
+            <div class="card-top-row">
+              <div class="discipline-title-group">
+                <span class="discipline-symbol">
+                  <svg width="18" height="18" viewBox="0 0 24 24" class="sf-icon" style="stroke-width: 1.8;">
+                    <circle cx="12" cy="12" r="3" fill="currentColor" />
+                    <circle cx="12" cy="12" r="8" stroke-dasharray="4 2" />
+                  </svg>
+                </span>
+                <h4 class="discipline-name">小学科学</h4>
+              </div>
+              <span class="quiet-status-tag" data-i18n="cards.pending">即将推出</span>
+            </div>
+            <p class="discipline-grades-scope">一至六年级 (微观观察与实验)</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== STAGE 2: 初中突破专区 (Default Active) ==================== -->
+      <div class="stage-panel active" id="stage-middle-panel">
+        <!-- 旗舰初中数学能量卡 -->
+        <div class="flagship-hero-card" id="btn-enter-math" title="点击立即进入初中数学提分工坊">
+          <div class="hero-bg-geometry">
+            <svg width="360" height="220" viewBox="0 0 360 220" fill="none">
+              <line x1="40" y1="180" x2="340" y2="180" stroke="#0071e3" stroke-opacity="0.12" stroke-width="1.5" />
+              <line x1="60" y1="20" x2="60" y2="200" stroke="#0071e3" stroke-opacity="0.12" stroke-width="1.5" />
+              <path d="M 50 160 C 110 175, 140 50, 210 50 C 270 50, 290 120, 330 90" stroke="#0071e3" stroke-opacity="0.35" stroke-width="2.5" stroke-linecap="round" />
+              <circle cx="210" cy="50" r="4" fill="#0071e3" fill-opacity="0.4" />
+              <circle cx="210" cy="50" r="2" fill="#0071e3" />
+              <path d="M 120 180 A 60 60 0 0 1 180 120 A 40 40 0 0 1 220 160" stroke="#0071e3" stroke-opacity="0.15" stroke-width="1.5" stroke-dasharray="4 4" />
+            </svg>
+          </div>
+
+          <div class="hero-layout-body">
+            <div class="hero-header-line">
+              <span class="status-capsule">
+                <span class="status-dot-pulse"></span>
+                <span data-i18n="hero.ready">已全量就绪 · 点击进入</span>
+              </span>
+              <span class="hero-stage-meta" data-i18n="hero.grades">7~9年级全学段</span>
+            </div>
+
+            <h2 class="hero-headline" data-i18n="hero.title">初中数学核心素养提分系统</h2>
+            <p class="hero-description" data-i18n="hero.desc">
+              彻底打破死记硬背！独家构建 107 大纲考点四段论、12 底层数学主线思维图谱、36 中考压轴跃迁动力学沙盒、以及双栏印刷全真模考系统。
+            </p>
+
+            <div class="hero-metrics-bar">
+              <div class="metric-cell">
+                <span class="metric-number">107</span>
+                <span class="metric-label" data-i18n="hero.stat_kp">考点名师四段论</span>
+              </div>
+              <div class="metric-cell">
+                <span class="metric-number">12</span>
+                <span class="metric-label" data-i18n="hero.stat_lines">跨学期逻辑主线</span>
+              </div>
+              <div class="metric-cell">
+                <span class="metric-number">36</span>
+                <span class="metric-label" data-i18n="hero.stat_sandboxes">思维跃迁 4D 沙盒</span>
+              </div>
+              <div class="metric-cell">
+                <span class="metric-number">119</span>
+                <span class="metric-label" data-i18n="hero.stat_mothers">全解剖黄金母题</span>
+              </div>
+            </div>
+
+            <button class="hero-cta-btn">
+              <span data-i18n="hero.btn_enter">进入初中数学工坊</span>
+              <svg class="sf-icon" width="13" height="13" viewBox="0 0 24 24" style="stroke-width: 2.2;">
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="section-head-bar">
+          <h3 class="section-headline" data-i18n="grid.title">初中其他学科 (全科母版筹备中)</h3>
+          <span class="section-annotation" data-i18n="grid.sub">物理、化学、生物、语文、英语等学科正在按照同构标准有序接入</span>
+        </div>
+
+        <div class="disciplines-grid">
+          <div class="discipline-card">
+            <div class="card-top-row">
+              <div class="discipline-title-group">
+                <span class="discipline-symbol">
+                  <svg width="18" height="18" viewBox="0 0 24 24" class="sf-icon" style="stroke-width: 1.8;">
+                    <circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none" />
+                    <ellipse cx="12" cy="12" rx="9" ry="4" transform="rotate(30 12 12)" />
+                    <ellipse cx="12" cy="12" rx="9" ry="4" transform="rotate(-30 12 12)" />
+                  </svg>
+                </span>
+                <h4 class="discipline-name" data-i18n="sub.physics">初中物理</h4>
+              </div>
+              <span class="quiet-status-tag" data-i18n="cards.pending">即将推出</span>
+            </div>
+            <p class="discipline-grades-scope" data-i18n="sub.physics_grades">八年级 · 九年级 (电光力热)</p>
+          </div>
+
+          <div class="discipline-card">
+            <div class="card-top-row">
+              <div class="discipline-title-group">
+                <span class="discipline-symbol">
+                  <svg width="18" height="18" viewBox="0 0 24 24" class="sf-icon" style="stroke-width: 1.8;">
+                    <path d="M10 2v7.31L4.15 19.1A2 2 0 0 0 5.86 22h12.28a2 2 0 0 0 1.71-2.9L14 9.31V2" />
+                    <line x1="8.5" y1="2" x2="15.5" y2="2" />
+                  </svg>
+                </span>
+                <h4 class="discipline-name" data-i18n="sub.chemistry">初中化学</h4>
+              </div>
+              <span class="quiet-status-tag" data-i18n="cards.pending">即将推出</span>
+            </div>
+            <p class="discipline-grades-scope" data-i18n="sub.chemistry_grades">九年级 (分子微观反应与实验)</p>
+          </div>
+
+          <div class="discipline-card">
+            <div class="card-top-row">
+              <div class="discipline-title-group">
+                <span class="discipline-symbol">
+                  <svg width="18" height="18" viewBox="0 0 24 24" class="sf-icon" style="stroke-width: 1.8;">
+                    <path d="M2 15c6.667-6 13.333 0 20-6" />
+                    <path d="M2 9c6.667 6 13.333 0 20 6" />
+                    <line x1="7" y1="10.5" x2="7" y2="13.5" />
+                    <line x1="12" y1="9" x2="12" y2="15" />
+                    <line x1="17" y1="10.5" x2="17" y2="13.5" />
+                  </svg>
+                </span>
+                <h4 class="discipline-name" data-i18n="sub.biology">初中生物</h4>
+              </div>
+              <span class="quiet-status-tag" data-i18n="cards.pending">即将推出</span>
+            </div>
+            <p class="discipline-grades-scope" data-i18n="sub.biology_grades">七年级 · 八年级 (生命演变)</p>
+          </div>
+
+          <div class="discipline-card">
+            <div class="card-top-row">
+              <div class="discipline-title-group">
+                <span class="discipline-symbol">
+                  <svg width="18" height="18" viewBox="0 0 24 24" class="sf-icon" style="stroke-width: 1.8;">
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                  </svg>
+                </span>
+                <h4 class="discipline-name" data-i18n="sub.chinese">初中语文</h4>
+              </div>
+              <span class="quiet-status-tag" data-i18n="cards.pending">即将推出</span>
+            </div>
+            <p class="discipline-grades-scope" data-i18n="sub.chinese_grades">七~九年级 (文言断句思辨)</p>
+          </div>
+
+          <div class="discipline-card">
+            <div class="card-top-row">
+              <div class="discipline-title-group">
+                <span class="discipline-symbol">
+                  <svg width="18" height="18" viewBox="0 0 24 24" class="sf-icon" style="stroke-width: 1.8;">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    <path d="M8 9h8" stroke-opacity="0.5" />
+                  </svg>
+                </span>
+                <h4 class="discipline-name" data-i18n="sub.english">初中英语</h4>
+              </div>
+              <span class="quiet-status-tag" data-i18n="cards.pending">即将推出</span>
+            </div>
+            <p class="discipline-grades-scope" data-i18n="sub.english_grades">七~九年级 (语篇完形进阶)</p>
+          </div>
+
+          <div class="discipline-card">
+            <div class="card-top-row">
+              <div class="discipline-title-group">
+                <span class="discipline-symbol">
+                  <svg width="18" height="18" viewBox="0 0 24 24" class="sf-icon" style="stroke-width: 1.8;">
+                    <line x1="2" y1="20" x2="22" y2="20" />
+                    <line x1="4" y1="10" x2="4" y2="20" />
+                    <line x1="12" y1="10" x2="12" y2="20" />
+                    <line x1="20" y1="10" x2="20" y2="20" />
+                    <polygon points="12 4 2 10 22 10 12 4" />
+                  </svg>
+                </span>
+                <h4 class="discipline-name" data-i18n="sub.history">初中历史</h4>
+              </div>
+              <span class="quiet-status-tag" data-i18n="cards.pending">即将推出</span>
+            </div>
+            <p class="discipline-grades-scope" data-i18n="sub.history_grades">七~九年级 (时空演进轴线)</p>
+          </div>
+
+          <div class="discipline-card">
+            <div class="card-top-row">
+              <div class="discipline-title-group">
+                <span class="discipline-symbol">
+                  <svg width="18" height="18" viewBox="0 0 24 24" class="sf-icon" style="stroke-width: 1.8;">
+                    <circle cx="12" cy="12" r="10" />
+                    <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="currentColor" />
+                  </svg>
+                </span>
+                <h4 class="discipline-name" data-i18n="sub.geography">初中地理</h4>
+              </div>
+              <span class="quiet-status-tag" data-i18n="cards.pending">即将推出</span>
+            </div>
+            <p class="discipline-grades-scope" data-i18n="sub.geography_grades">七年级 · 八年级 (地形与气候)</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== STAGE 3: 高中决胜专区 ==================== -->
+      <div class="stage-panel" id="stage-high-panel">
+        <!-- 高中旗舰展示卡 -->
+        <div class="flagship-hero-card" style="cursor: default;">
+          <div class="hero-bg-geometry">
+            <svg width="340" height="200" viewBox="0 0 340 200" fill="none">
+              <path d="M 40 180 Q 170 20 300 180" stroke="#0071e3" stroke-opacity="0.2" stroke-width="2" />
+              <line x1="40" y1="180" x2="300" y2="180" stroke="#0071e3" stroke-opacity="0.1" />
+              <line x1="170" y1="20" x2="170" y2="180" stroke="#0071e3" stroke-opacity="0.1" stroke-dasharray="3 3" />
+            </svg>
+          </div>
+          <div class="hero-layout-body">
+            <div class="hero-header-line">
+              <span class="status-capsule" style="background: rgba(0,0,0,0.04); color: var(--text-tertiary);">
+                <span>● 筹备中 · 高一至高三全学段</span>
+              </span>
+              <span class="hero-stage-meta" data-i18n="high.meta">高阶建模与压轴突破</span>
+            </div>
+            <h2 class="hero-headline" data-i18n="high.hero_title">高中数学高阶建模与压轴突破系统</h2>
+            <p class="hero-description" data-i18n="high.hero_desc">
+              精准突破高考压轴难题！独家构建 142 考点四段论、18 底层数学思想模型（数形结合、分类讨论、化归转化）、45 高维动力学沙盒与 180 压轴母题。
+            </p>
+            <div class="hero-metrics-bar">
+              <div class="metric-cell">
+                <span class="metric-number">142</span>
+                <span class="metric-label" data-i18n="high.stat1">高考考点精讲</span>
+              </div>
+              <div class="metric-cell">
+                <span class="metric-number">18</span>
+                <span class="metric-label" data-i18n="high.stat2">底层思想模型</span>
+              </div>
+              <div class="metric-cell">
+                <span class="metric-number">45</span>
+                <span class="metric-label" data-i18n="high.stat3">高维动力沙盒</span>
+              </div>
+              <div class="metric-cell">
+                <span class="metric-number">180</span>
+                <span class="metric-label" data-i18n="high.stat4">全真压轴母题</span>
+              </div>
+            </div>
+            <button class="hero-cta-btn" style="background: #e5e5ea; color: var(--text-tertiary); box-shadow: none; cursor: default;">
+              <span data-i18n="high.btn">建设中 · 敬请期待</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="section-head-bar">
+          <h3 class="section-headline">高中决胜学科矩阵 (9科)</h3>
+          <span class="section-annotation">按照同构标准有序接入</span>
+        </div>
+        <div class="disciplines-grid">
+          <div class="discipline-card">
+            <div class="card-top-row">
+              <div class="discipline-title-group">
+                <span class="discipline-symbol">
+                  <svg width="18" height="18" viewBox="0 0 24 24" class="sf-icon" style="stroke-width: 1.8;">
+                    <circle cx="12" cy="12" r="3" fill="currentColor" />
+                    <path d="M4 12a8 8 0 0 1 16 0" />
+                  </svg>
+                </span>
+                <h4 class="discipline-name">高中物理</h4>
+              </div>
+              <span class="quiet-status-tag" data-i18n="cards.pending">即将推出</span>
+            </div>
+            <p class="discipline-grades-scope">牛顿力学、电磁场与相对论</p>
+          </div>
+          <div class="discipline-card">
+            <div class="card-top-row">
+              <div class="discipline-title-group">
+                <span class="discipline-symbol">
+                  <svg width="18" height="18" viewBox="0 0 24 24" class="sf-icon" style="stroke-width: 1.8;">
+                    <path d="M10 2v7.31L4.15 19.1A2 2 0 0 0 5.86 22h12.28a2 2 0 0 0 1.71-2.9L14 9.31V2" />
+                  </svg>
+                </span>
+                <h4 class="discipline-name">高中化学</h4>
+              </div>
+              <span class="quiet-status-tag" data-i18n="cards.pending">即将推出</span>
+            </div>
+            <p class="discipline-grades-scope">反应原理、物质结构与有机</p>
+          </div>
+          <div class="discipline-card">
+            <div class="card-top-row">
+              <div class="discipline-title-group">
+                <span class="discipline-symbol">
+                  <svg width="18" height="18" viewBox="0 0 24 24" class="sf-icon" style="stroke-width: 1.8;">
+                    <path d="M2 15c6.667-6 13.333 0 20-6" />
+                    <path d="M2 9c6.667 6 13.333 0 20 6" />
+                  </svg>
+                </span>
+                <h4 class="discipline-name">高中生物</h4>
+              </div>
+              <span class="quiet-status-tag" data-i18n="cards.pending">即将推出</span>
+            </div>
+            <p class="discipline-grades-scope">分子细胞、遗传进化与稳态</p>
+          </div>
+          <div class="discipline-card">
+            <div class="card-top-row">
+              <div class="discipline-title-group">
+                <span class="discipline-symbol">
+                  <svg width="18" height="18" viewBox="0 0 24 24" class="sf-icon" style="stroke-width: 1.8;">
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                  </svg>
+                </span>
+                <h4 class="discipline-name">高中语文</h4>
+              </div>
+              <span class="quiet-status-tag" data-i18n="cards.pending">即将推出</span>
+            </div>
+            <p class="discipline-grades-scope">文言精析与高考论述思辨</p>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ======================================================================
+         VIEW 2: 初中数学子系统工作台 (Junior Math Subsystem Workspace)
+         ====================================================================== -->
+    <section id="view-math">
+      <div class="math-workspace-nav">
+        <button class="back-btn" id="btn-back-portal">
+          <svg class="sf-icon" width="13" height="13" viewBox="0 0 24 24" style="stroke-width: 2;">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+          <span data-i18n="math_nav.back">返回全科门户</span>
+        </button>
+
+        <!-- 4 Core Modules Minimalist Segmented Tabs -->
+        <div class="math-segmented-nav">
+          <button class="math-seg-btn active" data-mod="mod1">
+            <svg width="14" height="14" viewBox="0 0 24 24" class="sf-icon" style="stroke-width: 1.8;">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <span data-i18n="math_nav.m1">探本溯源 · 概念精讲</span>
+          </button>
+          <button class="math-seg-btn" data-mod="mod2">
+            <svg width="14" height="14" viewBox="0 0 24 24" class="sf-icon" style="stroke-width: 1.8;">
+              <circle cx="6" cy="6" r="3" />
+              <circle cx="18" cy="18" r="3" />
+              <path d="M6 9v3a6 6 0 0 0 6 6h3" />
+            </svg>
+            <span data-i18n="math_nav.m2">经纬纵横 · 思维图谱</span>
+          </button>
+          <button class="math-seg-btn" data-mod="mod3">
+            <svg width="14" height="14" viewBox="0 0 24 24" class="sf-icon" style="stroke-width: 1.8;">
+              <line x1="4" y1="7" x2="20" y2="7" />
+              <circle cx="9" cy="7" r="2.5" fill="currentColor" />
+              <line x1="4" y1="17" x2="20" y2="17" />
+              <circle cx="15" cy="17" r="2.5" fill="currentColor" />
+            </svg>
+            <span data-i18n="math_nav.m3">见微知著 · 实验探究</span>
+          </button>
+          <button class="math-seg-btn" data-mod="mod4">
+            <svg width="14" height="14" viewBox="0 0 24 24" class="sf-icon" style="stroke-width: 1.8;">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+            </svg>
+            <span data-i18n="math_nav.m4">百炼成钢 · 实战测评</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Workspace Stage Card -->
+      <div class="workspace-stage-card">
+
+        <!-- ==================== Module 1: 探本溯源 (四段论全量交互) ==================== -->
+        <div class="mod-pane active" id="showcase-mod1">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
+            <div>
+              <span style="font-size: 12px; color: var(--ios-blue); font-weight: 600;">KP-023 · 圆的性质</span>
+              <h3 style="font-size: 22px; font-weight: 700; color: var(--text-primary); margin-top: 4px;">垂径定理 (Perpendicular Chord Bisector)</h3>
+            </div>
+            <!-- 四段论 Tab 按钮切换 -->
+            <div class="four-steps-tabs" id="step-tabs-container">
+              <button class="step-tab-btn" data-step="1">① 原点溯源</button>
+              <button class="step-tab-btn" data-step="2">② 本真透视</button>
+              <button class="step-tab-btn active" data-step="3">③ 法典严定</button>
+              <button class="step-tab-btn" data-step="4">④ 本体辨正</button>
+            </div>
+          </div>
+
+          <!-- 切片 1: 原点溯源 -->
+          <div class="step-content-box" id="step-content-1">
+            <div>
+              <h4 style="font-size: 15px; font-weight: 600; color: var(--text-primary); margin-bottom: 10px;">① 原点溯源：为什么两千年前赵爽需要测圆弦？</h4>
+              <p style="font-size: 14px; line-height: 1.7; color: var(--text-secondary); margin-bottom: 16px;">
+                古代治水造渠与农田丈量中，古人无法直接深入池塘圆心测距。《九章算术》“方田章”记录了折竹测圆弦的朴素几何学：圆周上的任意两点连线为弦，只要沿中点做垂直线，必然无限延伸穿过圆心。
+              </p>
+              <div style="background: var(--bg-card-subtle); padding: 14px 18px; border-radius: 10px; font-size: 13px; color: var(--text-primary); margin-bottom: 16px; border-left: 3px solid var(--ios-blue);">
+                《周髀算经》：“圆出于方，方出于矩”。垂径关系是人类把直线测距延伸至曲率圆周的第一个几何桥梁。
+              </div>
+            </div>
+            <div style="background: var(--bg-card-subtle); border-radius: 12px; border: 1px dashed var(--border-subtle); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;">
+              <svg width="200" height="200" viewBox="-100 -100 200 200">
+                <circle cx="0" cy="0" r="75" fill="none" stroke="#aeaeb2" stroke-width="1.8" />
+                <line x1="-65" y1="35" x2="65" y2="35" stroke="#0071e3" stroke-width="2.5" />
+                <line x1="0" y1="35" x2="0" y2="75" stroke="#d97706" stroke-width="2.5" stroke-dasharray="3 3" />
+                <circle cx="0" cy="0" r="3.5" fill="#1d1d1f" />
+                <text x="-12" y="-8" font-size="11" fill="#1d1d1f">圆心 O</text>
+                <text x="5" y="58" font-size="11" fill="#d97706">矢(高)</text>
+                <text x="-4" y="26" font-size="11" fill="#0071e3">弦</text>
+              </svg>
+              <span style="font-size: 12px; color: var(--text-tertiary); margin-top: 8px;">图 1-1：中国古代《九章算术》弧矢几何模型</span>
+            </div>
+          </div>
+
+          <!-- 切片 2: 本真透视 -->
+          <div class="step-content-box" id="step-content-2">
+            <div>
+              <h4 style="font-size: 15px; font-weight: 600; color: var(--text-primary); margin-bottom: 10px;">② 本真透视：轴对称下的本质重合（无需死记）</h4>
+              <p style="font-size: 14px; line-height: 1.7; color: var(--text-secondary); margin-bottom: 16px;">
+                垂径定理的底层数学本质是<strong>一维轴对称反射变换</strong>。圆拥有无数条对称轴（任意直径所在直线）。当直径垂直于弦时，直径即为弦的中垂线。沿直径对折，左半圆弧与右半圆弧完全重合，半弦与半弦重合。
+              </p>
+              <div style="background: var(--bg-card-subtle); padding: 14px 18px; border-radius: 10px; font-size: 13px; color: var(--text-primary); margin-bottom: 16px; border-left: 3px solid #34c759;">
+                核心思维模型：空间沿直径翻折 $\mathcal{R}_L: (x, y) \mapsto (-x, y)$，所有几何元素镜像映射，结论自然涌现。
+              </div>
+            </div>
+            <div style="background: var(--bg-card-subtle); border-radius: 12px; border: 1px dashed var(--border-subtle); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;">
+              <svg width="200" height="200" viewBox="-100 -100 200 200">
+                <circle cx="0" cy="0" r="75" fill="none" stroke="#aeaeb2" stroke-width="1.8" />
+                <line x1="0" y1="-90" x2="0" y2="90" stroke="#34c759" stroke-width="2.5" stroke-dasharray="4 3" />
+                <path d="M -50 25 Q -10 10 0 25" fill="none" stroke="#0071e3" stroke-width="2" />
+                <path d="M 50 25 Q 10 10 0 25" fill="none" stroke="#0071e3" stroke-width="2" stroke-dasharray="2 2" />
+                <circle cx="0" cy="0" r="3" fill="#1d1d1f" />
+                <text x="6" y="-70" font-size="11" fill="#34c759">对称轴 L</text>
+                <text x="-40" y="45" font-size="11" fill="#0071e3">翻折重合</text>
+              </svg>
+              <span style="font-size: 12px; color: var(--text-tertiary); margin-top: 8px;">图 1-2：轴对称镜像翻折与自重合透视</span>
+            </div>
+          </div>
+
+          <!-- 切片 3: 法典严定 (默认) -->
+          <div class="step-content-box active" id="step-content-3">
+            <div>
+              <h4 style="font-size: 15px; font-weight: 600; color: var(--text-primary); margin-bottom: 10px;">③ 法典严定：隐形生死红线</h4>
+              <p style="font-size: 14px; line-height: 1.7; color: var(--text-secondary); margin-bottom: 16px;">
+                垂直于弦的直径平分这条弦，并且平分弦所对的两条弧。<br>
+                在 Rt△OCM 中构造黄金特征直角三角形：
+              </p>
+              <div style="background: var(--bg-card-subtle); padding: 14px 18px; border-radius: 10px; font-family: 'Times New Roman', serif; font-size: 18px; color: var(--text-primary); margin-bottom: 16px; border-left: 3px solid var(--ios-blue);">
+                \[ R^2 = d^2 + \left(\frac{L}{2}\right)^2 \]
+              </div>
+              <div style="padding: 12px 14px; background: rgba(225, 29, 72, 0.06); border-radius: 8px; border-left: 3px solid #e11d48; font-size: 13px; color: #9f1239; line-height: 1.5;">
+                <strong>生死红线：</strong>计算圆心到割线距离时，必须先验证割线是否过圆心！若割线为直径，则弦心距 $d = 0$，特征直角三角形退化。
+              </div>
+            </div>
+            <div style="background: var(--bg-card-subtle); border-radius: 12px; border: 1px dashed var(--border-subtle); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;">
+              <svg width="200" height="200" viewBox="-100 -100 200 200">
+                <circle cx="0" cy="0" r="80" fill="none" stroke="#aeaeb2" stroke-width="1.8" />
+                <line x1="-70" y1="38" x2="70" y2="38" stroke="#0071e3" stroke-width="2.5" />
+                <line x1="0" y1="-80" x2="0" y2="80" stroke="#5856d6" stroke-width="1.8" stroke-dasharray="4 3" />
+                <line x1="0" y1="0" x2="70" y2="38" stroke="#34c759" stroke-width="1.8" />
+                <circle cx="0" cy="0" r="3.5" fill="#1d1d1f" />
+                <text x="-14" y="-8" font-size="12" fill="#1d1d1f">O</text>
+                <text x="76" y="44" font-size="12" fill="#0071e3">B</text>
+                <text x="-86" y="44" font-size="12" fill="#0071e3">A</text>
+                <text x="6" y="52" font-size="12" fill="#5856d6">M</text>
+                <text x="35" y="15" font-size="11" fill="#34c759">R</text>
+              </svg>
+              <span style="font-size: 12px; color: var(--text-tertiary); margin-top: 8px;">图 1-3：垂径黄金直角三角形动态解剖</span>
+            </div>
+          </div>
+
+          <!-- 切片 4: 本体辨正 -->
+          <div class="step-content-box" id="step-content-4">
+            <div>
+              <h4 style="font-size: 15px; font-weight: 600; color: var(--text-primary); margin-bottom: 10px;">④ 本体辨正：中考 3 大伪定理陷阱反证</h4>
+              <p style="font-size: 14px; line-height: 1.7; color: var(--text-secondary); margin-bottom: 16px;">
+                命题判断避坑专攻：“平分弦的直径垂直于弦” —— <strong>假命题！</strong><br>
+                <strong>致命反例：</strong>两条直径互相平分于圆心，但两条直径并不一定垂直！中考选择题常年在此设伏，必须严格补足“弦非直径”的前提。
+              </p>
+              <div style="background: var(--bg-card-subtle); padding: 14px 18px; border-radius: 10px; font-size: 13px; color: var(--text-primary); margin-bottom: 16px; border-left: 3px solid #d97706;">
+                中考考点陷阱库：只有在满足“平分弦（且该弦不是直径）”时，才能推导出“垂直于该弦并平分所对的弧”。
+              </div>
+            </div>
+            <div style="background: var(--bg-card-subtle); border-radius: 12px; border: 1px dashed var(--border-subtle); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;">
+              <svg width="200" height="200" viewBox="-100 -100 200 200">
+                <circle cx="0" cy="0" r="75" fill="none" stroke="#aeaeb2" stroke-width="1.8" />
+                <line x1="-75" y1="0" x2="75" y2="0" stroke="#0071e3" stroke-width="2" />
+                <line x1="-53" y1="-53" x2="53" y2="53" stroke="#e11d48" stroke-width="2" stroke-dasharray="4 3" />
+                <circle cx="0" cy="0" r="3.5" fill="#1d1d1f" />
+                <text x="-8" y="-10" font-size="11" fill="#1d1d1f">O</text>
+                <text x="15" y="-30" font-size="11" fill="#e11d48">45°不垂直但互相平分</text>
+              </svg>
+              <span style="font-size: 12px; color: var(--text-tertiary); margin-top: 8px;">图 1-4：两非垂直直径互相平分反例图解</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== Module 2: 经纬纵横 ==================== -->
+        <div class="mod-pane" id="showcase-mod2">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="font-size: 18px; font-weight: 600; color: var(--text-primary);">12 条跨学期底层数学逻辑主线 (Logic Lines)</h3>
+            <span class="nav-pill-btn" style="color: var(--ios-blue); font-weight: 500;">全景拓扑图模式</span>
+          </div>
+          <div style="background: #ffffff; border-radius: var(--radius-md); padding: 24px; border: 1px solid var(--border-subtle); text-align: center; color: var(--text-secondary);">
+            <p style="margin-bottom: 14px; font-size: 13px;">数与式 (A1-A3) · 方程与不等式 (E1-E2) · 函数与建模 (F1-F2) · 几何变换 (G1-G5)</p>
+            <div style="height: 320px; background: var(--bg-card-subtle); border-radius: 10px; border: 1px dashed var(--border-subtle); display: flex; align-items: center; justify-content: center;">
+              <div style="text-align: center;">
+                <div style="font-size: 15px; font-weight: 600; color: var(--text-primary);">107 大纲考点全拓扑网状有向无环图 (DAG)</div>
+                <div style="font-size: 12px; color: var(--text-tertiary); margin-top: 4px;">支持按中考压轴出题频率双向高亮追溯</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== Module 3: 见微知著 (动态旋转物理沙盒) ==================== -->
+        <div class="mod-pane" id="showcase-mod3">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h3 style="font-size: 17px; font-weight: 600; color: var(--text-primary);">手拉手旋转全等 4D 变异沙盒 (G5 几何变换主线)</h3>
+            <div style="display: flex; gap: 6px;">
+              <span class="nav-pill-btn" style="background: var(--ios-blue); color: #fff;">原型</span>
+              <span class="nav-pill-btn">变式</span>
+              <span class="nav-pill-btn">综合</span>
+            </div>
+          </div>
+
+          <!-- 85% Canvas + 15% Telemetry -->
+          <div class="sandbox-split-box">
+            <div class="sandbox-viewport-85">
+              <svg id="sandbox-svg" width="380" height="280" viewBox="-150 -110 300 220">
+                <!-- Center point -->
+                <circle cx="0" cy="0" r="4.5" fill="#34c759" />
+                <text x="-8" y="-12" fill="#94a3b8" font-size="11">O (共顶点旋转轴)</text>
+                
+                <!-- Fixed Triangle OAB -->
+                <polygon points="0,0 -70,50 10,70" fill="rgba(0,113,227,0.15)" stroke="#0071e3" stroke-width="2" />
+                <circle cx="-70" cy="50" r="3.5" fill="#0071e3" />
+                <text x="-82" y="55" fill="#0071e3" font-size="11">A</text>
+                <circle cx="10" cy="70" r="3.5" fill="#0071e3" />
+                <text x="14" y="75" fill="#0071e3" font-size="11">B</text>
+
+                <!-- Dynamic Rotating Triangle OCD -->
+                <g id="rotating-triangle-group" transform="rotate(45 0 0)">
+                  <polygon points="0,0 -70,50 10,70" fill="rgba(88,86,214,0.18)" stroke="#818cf8" stroke-width="2" />
+                  <circle cx="-70" cy="50" r="3.5" fill="#818cf8" />
+                  <text x="-82" y="55" fill="#818cf8" font-size="11">C</text>
+                  <circle cx="10" cy="70" r="3.5" fill="#818cf8" />
+                  <text x="14" y="75" fill="#818cf8" font-size="11">D</text>
+                </g>
+
+                <!-- Hand-in-Hand Connecting Lines AC and BD -->
+                <line id="line-ac" x1="-70" y1="50" x2="-84" y2="15" stroke="#f59e0b" stroke-width="1.8" stroke-dasharray="3 3" />
+                <line id="line-bd" x1="10" y1="70" x2="-42" y2="57" stroke="#f59e0b" stroke-width="1.8" stroke-dasharray="3 3" />
+                
+                <!-- Rotation Orbit Trace Circle -->
+                <circle cx="0" cy="0" r="86" fill="none" stroke="rgba(255,255,255,0.12)" stroke-dasharray="4 4" />
+              </svg>
+            </div>
+
+            <div class="sandbox-guide-15">
+              <div id="telemetry-box" style="display: flex; gap: 18px; align-items: center;">
+                <span style="color: #38bdf8; font-weight: 500;">不变量实测：AC = BD = <span id="dist-val">5.82</span> cm (恒等)</span>
+                <span style="color: #94a3b8;">夹角实测：直线 AC 与 BD 夹角 = <span id="angle-val">45</span>° (恒等于 α)</span>
+              </div>
+              <div style="color: #34c759; font-weight: 600;">结论：△OAB ≌ △OCD 旋转恒全等</div>
+            </div>
+          </div>
+
+          <!-- Minimalist Control Bar -->
+          <div class="sandbox-controls-bar">
+            <div class="slider-group">
+              <label for="sandbox-slider">旋转角 α: <strong id="lbl-cur-angle" style="color: var(--ios-blue);">45°</strong></label>
+              <input type="range" id="sandbox-slider" min="0" max="360" value="45">
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div class="preset-pill-group">
+                <button class="preset-btn" data-angle="0">0° 重合</button>
+                <button class="preset-btn" data-angle="60">60° 等边</button>
+                <button class="preset-btn" data-angle="90">90° 垂直</button>
+                <button class="preset-btn" data-angle="180">180° 反向共线</button>
+              </div>
+
+              <button class="nav-pill-btn" id="btn-toggle-anim" style="background: #ffffff; color: var(--ios-blue); font-weight: 600;">
+                <span id="anim-icon">▶</span>
+                <span id="anim-text">自动旋转演示</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== Module 4: 百炼成钢 ==================== -->
+        <div class="mod-pane" id="showcase-mod4">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h3 style="font-size: 17px; font-weight: 600; color: var(--text-primary);">2026 初中数学中考全真模拟卷 (100分标准制)</h3>
+            <span style="font-size: 13px; color: #ff3b30; font-weight: 600;">剩余时间: 01:58:32</span>
+          </div>
+          <div class="exam-split-grid">
+            <div class="exam-paper-scroll">
+              <div style="background: #fff; padding: 16px; border-radius: 10px; margin-bottom: 14px; border: 1px solid var(--border-subtle);">
+                <div style="font-weight: 600; font-size: 14px; margin-bottom: 8px;">1. (2分) 设 $M = (x-3)(x-4)$，下列关系正确的是 (  )</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px;">
+                  <label style="padding: 8px; border: 1px solid var(--border-subtle); border-radius: 8px; cursor: pointer;">A. 无法确定</label>
+                  <label style="padding: 8px; border: 1px solid var(--ios-blue); background: var(--ios-blue-tint); border-radius: 8px; cursor: pointer; color: var(--ios-blue); font-weight: 600;">B. M = N (已选)</label>
+                </div>
+              </div>
+              <div style="background: #fff; padding: 16px; border-radius: 10px; margin-bottom: 14px; border: 1px solid var(--border-subtle);">
+                <div style="font-weight: 600; font-size: 14px; margin-bottom: 8px;">16. (2分) 填空题：已知函数 $y = \frac{k}{x}$ 经过点 (2, 3)，则 $k = $ ______。</div>
+                <input type="text" value="6" style="padding: 6px 10px; border: 1px solid rgba(0,0,0,0.12); border-radius: 6px; font-size: 14px; width: 120px;" />
+              </div>
+              <div style="background: #fff; padding: 16px; border-radius: 10px; border: 1px solid var(--border-subtle);">
+                <div style="font-weight: 600; font-size: 14px; margin-bottom: 8px;">21. (6分) 解答题：证明 △ACE ≌ △BDF 并求线段长度。</div>
+                <div style="color: var(--text-tertiary); font-size: 12px; margin-bottom: 6px;">【中考标准分步踩分点自核机制预置中...】</div>
+                <textarea rows="3" style="width: 100%; border: 1px solid rgba(0,0,0,0.12); border-radius: 6px; padding: 8px; font-size: 13px;" placeholder="在此输入作答演算步骤..."></textarea>
+              </div>
+            </div>
+
+            <div class="exam-sidebar-fixed">
+              <div style="background: var(--bg-card-subtle); padding: 12px; border-radius: 8px; font-size: 12px;">
+                <div style="font-weight: 600; margin-bottom: 4px; color: var(--text-primary);">答题辅助与使用说明 [收起▲]</div>
+                <div style="color: var(--text-secondary); line-height: 1.5;">• (x+1)/(x-2) → 分式<br>• sqrt(2x+3) → 根号<br>中考以书写为准，作辅助线请在首行注明。</div>
+              </div>
+
+              <div style="flex: 1; margin: 14px 0;">
+                <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; margin-bottom: 8px;">
+                  <span>动态答题卡</span>
+                  <span style="color: var(--ios-blue);">2 / 27</span>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;">
+                  <button style="height: 30px; border-radius: 6px; border: 1px solid var(--ios-blue); background: var(--ios-blue); color: #fff; font-size: 12px; font-weight: 600;">1</button>
+                  <button style="height: 30px; border-radius: 6px; border: 1px solid var(--border-subtle); background: #fff; font-size: 12px;">2</button>
+                  <button style="height: 30px; border-radius: 6px; border: 1px solid var(--border-subtle); background: #fff; font-size: 12px;">3</button>
+                  <button style="height: 30px; border-radius: 6px; border: 1px solid var(--border-subtle); background: #fff; font-size: 12px;">4</button>
+                  <button style="height: 30px; border-radius: 6px; border: 1px solid var(--border-subtle); background: #fff; font-size: 12px;">5</button>
+                </div>
+              </div>
+
+              <button style="width: 100%; padding: 11px; background: var(--ios-blue); color: #fff; font-weight: 600; font-size: 13px; border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 2px 8px var(--ios-blue-glow);">
+                提交试卷并判分
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==========================================================================
+       Interactive Engine: i18n Dictionary & Route Controllers
+       ========================================================================== */
+  -->
+  <script>
+    const i18nDict = {
+      'zh-CN': {
+        'platform.title': '全科核心素养提分系统',
+        'platform.subtitle': '覆盖小学、初中、高中全学段智能提分平台',
+        'user.persona': '默认学员 · 核心素养版',
+        'stages.primary': '小学教育 (4科)',
+        'stages.middle': '初中突破 (8科·首发)',
+        'stages.high': '高中决胜 (8科)',
+        'hero.ready': '已全量就绪 · 点击进入',
+        'hero.grades': '7~9年级全学段',
+        'hero.title': '初中数学核心素养提分系统',
+        'hero.desc': '彻底打破死记硬背！独家构建 107 大纲考点四段论、12 底层数学主线思维图谱、36 中考压轴跃迁动力学沙盒、以及双栏印刷全真模考系统。',
+        'hero.stat_kp': '考点名师四段论',
+        'hero.stat_lines': '跨学期逻辑主线',
+        'hero.stat_sandboxes': '思维跃迁 4D 沙盒',
+        'hero.stat_mothers': '全解剖黄金母题',
+        'hero.btn_enter': '进入初中数学工坊',
+        'grid.title': '初中其他学科 (全科母版筹备中)',
+        'grid.sub': '物理、化学、生物、语文、英语等学科正在按照同构标准有序接入',
+        'cards.pending': '即将推出',
+        'sub.physics': '初中物理',
+        'sub.physics_grades': '八年级 · 九年级 (电光力热)',
+        'sub.chemistry': '初中化学',
+        'sub.chemistry_grades': '九年级 (微观反应与实验)',
+        'sub.biology': '初中生物',
+        'sub.biology_grades': '七年级 · 八年级 (生命演变)',
+        'sub.chinese': '初中语文',
+        'sub.chinese_grades': '七~九年级 (文言断句思辨)',
+        'sub.english': '初中英语',
+        'sub.english_grades': '七~九年级 (语篇完形进阶)',
+        'sub.history': '初中历史',
+        'sub.history_grades': '七~九年级 (时空演进轴线)',
+        'sub.geography': '初中地理',
+        'sub.geography_grades': '七年级 · 八年级 (地形与气候)',
+        'math_nav.back': '返回全科门户',
+        'math_nav.m1': '探本溯源 · 概念精讲',
+        'math_nav.m2': '经纬纵横 · 思维图谱',
+        'math_nav.m3': '见微知著 · 实验探究',
+        'math_nav.m4': '百炼成钢 · 实战测评',
+        'notif.header': '系统更新与教研公告',
+        'notif.tag1': '初中数学首发',
+        'notif.desc1': '107 考点四段论、12 逻辑主线与双轨沙盒全量上线就绪。',
+        'notif.tag2': '多语言支持',
+        'notif.desc2': '纯正学术英语与繁体中文双向同频切换引擎升级完成。'
+      },
+      'zh-TW': {
+        'platform.title': '全科核心素養提分系統',
+        'platform.subtitle': '覆蓋小學、初中、高中全學段智能提分平臺',
+        'user.persona': '默認學員 · 核心素養版',
+        'stages.primary': '小學教育 (4科)',
+        'stages.middle': '初中突破 (8科·首發)',
+        'stages.high': '高中決勝 (8科)',
+        'hero.ready': '已全量就緒 · 點擊進入',
+        'hero.grades': '7~9年級全學段',
+        'hero.title': '初中數學核心素養提分系統',
+        'hero.desc': '徹底打破死記硬背！獨家構建 107 大綱考點四段論、12 底層數學主線思維圖譜、36 中考壓軸躍遷動力學沙盒、以及雙欄印刷全真模考系統。',
+        'hero.stat_kp': '考點名師四段論',
+        'hero.stat_lines': '跨學期邏輯主線',
+        'hero.stat_sandboxes': '思維躍遷 4D 沙盒',
+        'hero.stat_mothers': '全解剖黃金母題',
+        'hero.btn_enter': '進入初中數學工坊',
+        'grid.title': '初中其他學科 (全科母版籌備中)',
+        'grid.sub': '物理、化學、生物、語文、英語等學科正在按照同構標準有序接入',
+        'cards.pending': '即將推出',
+        'sub.physics': '初中物理',
+        'sub.physics_grades': '八年級 · 九年級 (電光力熱)',
+        'sub.chemistry': '初中化學',
+        'sub.chemistry_grades': '九年級 (微觀反應與實驗)',
+        'sub.biology': '初中生物',
+        'sub.biology_grades': '七年級 · 八年級 (生命演變)',
+        'sub.chinese': '初中語文',
+        'sub.chinese_grades': '七~九年級 (文言斷句思辨)',
+        'sub.english': '初中英語',
+        'sub.english_grades': '七~九年級 (語篇完形進階)',
+        'sub.history': '初中歷史',
+        'sub.history_grades': '七~九年級 (時空演進軸線)',
+        'sub.geography': '初中地理',
+        'sub.geography_grades': '七年級 · 八年級 (地形與氣候)',
+        'math_nav.back': '返回全科門戶',
+        'math_nav.m1': '探本溯源 · 概念精講',
+        'math_nav.m2': '經緯縱橫 · 思維圖譜',
+        'math_nav.m3': '見微知著 · 實驗探究',
+        'math_nav.m4': '百煉成鋼 · 實戰測評',
+        'notif.header': '系統更新與教研公告',
+        'notif.tag1': '初中數學首發',
+        'notif.desc1': '107 考點四段論、12 邏輯主线與雙軌沙盒全量上線就緒。',
+        'notif.tag2': '多語言支持',
+        'notif.desc2': '純正學術英語與繁體中文雙向同頻切換引擎升級完成。'
+      },
+      'en-US': {
+        'platform.title': 'Core Competency Booster',
+        'platform.subtitle': 'Intelligent Targeted Score Booster for K-12 Competencies',
+        'user.persona': 'Student · Competency Edition',
+        'stages.primary': 'Primary School (4)',
+        'stages.middle': 'Junior High (8 · Ready)',
+        'stages.high': 'Senior High (8)',
+        'hero.ready': 'Ready to Launch · Click to Enter',
+        'hero.grades': 'Grades 7 ~ 9',
+        'hero.title': 'Junior High Math Studio',
+        'hero.desc': 'Eliminate rote learning! Featuring 107 syllabus knowledge points, 12 core logic lines, 36 leap dynamic sandboxes, and exam benchmarks.',
+        'hero.stat_kp': 'Concept Lectures',
+        'hero.stat_lines': 'Logic Mainlines',
+        'hero.stat_sandboxes': 'Leap 4D Sandboxes',
+        'hero.stat_mothers': 'Master Exemplars',
+        'hero.btn_enter': 'Enter Learning Studio',
+        'grid.title': 'Other Junior High Disciplines',
+        'grid.sub': 'Physics, Chemistry, Biology, and Humanities are being integrated isomorphically.',
+        'cards.pending': 'Coming Soon',
+        'sub.physics': 'Junior Physics',
+        'sub.physics_grades': 'Grades 8 · 9 (Mechanics & Optics)',
+        'sub.chemistry': 'Junior Chemistry',
+        'sub.chemistry_grades': 'Grade 9 (Reactions & Labs)',
+        'sub.biology': 'Junior Biology',
+        'sub.biology_grades': 'Grades 7 · 8 (Life Sciences)',
+        'sub.chinese': 'Junior Chinese',
+        'sub.chinese_grades': 'Grades 7 ~ 9 (Critical Reading)',
+        'sub.english': 'Junior English',
+        'sub.english_grades': 'Grades 7 ~ 9 (Cloze & Logic)',
+        'sub.history': 'Junior History',
+        'sub.history_grades': 'Grades 7 ~ 9 (Timelines & Sources)',
+        'sub.geography': 'Junior Geography',
+        'sub.geography_grades': 'Grades 7 · 8 (Climate & Topo)',
+        'math_nav.back': 'Back to Portal',
+        'math_nav.m1': 'Origin Concept',
+        'math_nav.m2': 'Logic Map',
+        'math_nav.m3': 'Dynamic Sandbox',
+        'math_nav.m4': 'Real-Exam Test',
+        'notif.header': 'Announcements & Updates',
+        'notif.tag1': 'Math Launch',
+        'notif.desc1': '107 concept lectures, 12 lines & dual sandboxes are live.',
+        'notif.tag2': 'i18n Engine',
+        'notif.desc2': 'Academic English & Traditional Chinese sync completed.'
+      }
+    };
+
+    let currentLang = 'zh-CN';
+
+    function setLanguage(lang) {
+      if (!i18nDict[lang]) return;
+      currentLang = lang;
+      document.documentElement.lang = lang;
+
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (i18nDict[lang][key]) {
+          el.innerText = i18nDict[lang][key];
+        }
+      });
+
+      const labels = { 'zh-CN': '简体中文', 'zh-TW': '繁體中文', 'en-US': 'English' };
+      document.getElementById('label-cur-lang').innerText = labels[lang];
+
+      document.querySelectorAll('#popover-lang .popover-item').forEach(item => {
+        const isMatch = item.getAttribute('data-lang') === lang;
+        item.classList.toggle('active', isMatch);
+        const chk = item.querySelector('.chk-mark');
+        if (chk) chk.innerText = isMatch ? '✓' : '';
+      });
+
+      updateSegThumb();
+    }
+
+    // Popovers
+    const btnLang = document.getElementById('btn-toggle-lang');
+    const popLang = document.getElementById('popover-lang');
+    const btnNotif = document.getElementById('btn-toggle-notif');
+    const popNotif = document.getElementById('popover-notif');
+
+    btnLang.addEventListener('click', (e) => {
+      e.stopPropagation();
+      popLang.style.display = popLang.style.display === 'flex' ? 'none' : 'flex';
+      popNotif.style.display = 'none';
+    });
+
+    btnNotif.addEventListener('click', (e) => {
+      e.stopPropagation();
+      popNotif.style.display = popNotif.style.display === 'flex' ? 'none' : 'flex';
+      popLang.style.display = 'none';
+    });
+
+    document.addEventListener('click', () => {
+      popLang.style.display = 'none';
+      popNotif.style.display = 'none';
+    });
+
+    document.querySelectorAll('#popover-lang .popover-item').forEach(item => {
+      item.addEventListener('click', () => {
+        setLanguage(item.getAttribute('data-lang'));
+      });
+    });
+
+    // 1. 三大学段切换联动逻辑 (小学 / 初中 / 高中)
+    const segThumb = document.getElementById('seg-thumb');
+    const segTabs = document.querySelectorAll('.seg-item');
+
+    function updateSegThumb() {
+      const activeTab = document.querySelector('.seg-item.active');
+      if (!activeTab || !segThumb) return;
+      segThumb.style.width = `${activeTab.offsetWidth}px`;
+      segThumb.style.transform = `translateX(${activeTab.offsetLeft - 3}px)`;
+    }
+
+    segTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        segTabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        updateSegThumb();
+
+        const stage = tab.getAttribute('data-stage');
+        document.querySelectorAll('.stage-panel').forEach(p => p.classList.remove('active'));
+        const activePanel = document.getElementById(`stage-${stage}-panel`);
+        if (activePanel) activePanel.classList.add('active');
+      });
+    });
+
+    window.addEventListener('resize', updateSegThumb);
+    setTimeout(updateSegThumb, 50);
+
+    // 2. 门户主页 vs 初中数学工坊 路由切换
+    const viewPortal = document.getElementById('view-portal');
+    const viewMath = document.getElementById('view-math');
+    const btnEnterMath = document.getElementById('btn-enter-math');
+    const btnBackPortal = document.getElementById('btn-back-portal');
+    const btnBrandHome = document.getElementById('btn-brand-home');
+
+    function showMathView() {
+      viewPortal.style.display = 'none';
+      viewMath.style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showPortalView() {
+      viewMath.style.display = 'none';
+      viewPortal.style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setTimeout(updateSegThumb, 50);
+    }
+
+    btnEnterMath.addEventListener('click', showMathView);
+    btnBackPortal.addEventListener('click', showPortalView);
+    btnBrandHome.addEventListener('click', showPortalView);
+
+    // 3. 初中数学四大核心模块 Tab 切换
+    const mTabs = document.querySelectorAll('.math-seg-btn');
+    mTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        mTabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const mod = tab.getAttribute('data-mod');
+        document.querySelectorAll('.mod-pane').forEach(s => s.classList.remove('active'));
+        const activeShowcase = document.getElementById(`showcase-${mod}`);
+        if (activeShowcase) activeShowcase.classList.add('active');
+      });
+    });
+
+    // 4. Module 1: 名师四段论 Tab 实时切片切换
+    const stepBtns = document.querySelectorAll('.step-tab-btn');
+    stepBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        stepBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const step = btn.getAttribute('data-step');
+        document.querySelectorAll('.step-content-box').forEach(box => box.classList.remove('active'));
+        const targetBox = document.getElementById(`step-content-${step}`);
+        if (targetBox) targetBox.classList.add('active');
+      });
+    });
+
+    // 5. Module 3: 4D 动态物理旋转沙盒 (手拉手模型实时联动)
+    const rotGroup = document.getElementById('rotating-triangle-group');
+    const slider = document.getElementById('sandbox-slider');
+    const lblAngle = document.getElementById('lbl-cur-angle');
+    const angleVal = document.getElementById('angle-val');
+    const distVal = document.getElementById('dist-val');
+    const lineAc = document.getElementById('line-ac');
+    const lineBd = document.getElementById('line-bd');
+
+    function updateSandboxRotation(deg) {
+      if (!rotGroup) return;
+      rotGroup.setAttribute('transform', `rotate(${deg} 0 0)`);
+      if (lblAngle) lblAngle.innerText = `${deg}°`;
+      if (angleVal) angleVal.innerText = `${deg}`;
+
+      // Dynamic calculation of points C and D after rotation
+      // Base C = (-70, 50), Base D = (10, 70)
+      const rad = deg * Math.PI / 180;
+      const cos = Math.cos(rad);
+      const sin = Math.sin(rad);
+
+      const Cx = -70 * cos - 50 * sin;
+      const Cy = -70 * sin + 50 * cos;
+      const Dx = 10 * cos - 70 * sin;
+      const Dy = 10 * sin + 70 * cos;
+
+      // Update connecting lines AC (A: -70, 50) and BD (B: 10, 70)
+      if (lineAc) {
+        lineAc.setAttribute('x2', Cx);
+        lineAc.setAttribute('y2', Cy);
+      }
+      if (lineBd) {
+        lineBd.setAttribute('x2', Dx);
+        lineBd.setAttribute('y2', Dy);
+      }
+
+      // Distance AC = sqrt((-70 - Cx)^2 + (50 - Cy)^2)
+      const dist = Math.sqrt(Math.pow(-70 - Cx, 2) + Math.pow(50 - Cy, 2));
+      // Normalize to realistic cm units
+      const normalizedCm = (dist / 14).toFixed(2);
+      if (distVal) distVal.innerText = normalizedCm;
+    }
+
+    if (slider) {
+      slider.addEventListener('input', (e) => {
+        updateSandboxRotation(e.target.value);
+      });
+    }
+
+    // Preset Angle Buttons
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const deg = btn.getAttribute('data-angle');
+        if (slider) slider.value = deg;
+        updateSandboxRotation(deg);
+      });
+    });
+
+    // Auto Animation Player
+    const btnAnim = document.getElementById('btn-toggle-anim');
+    const animIcon = document.getElementById('anim-icon');
+    const animText = document.getElementById('anim-text');
+    let animInterval = null;
+
+    if (btnAnim) {
+      btnAnim.addEventListener('click', () => {
+        if (animInterval) {
+          clearInterval(animInterval);
+          animInterval = null;
+          animIcon.innerText = '▶';
+          animText.innerText = '自动旋转演示';
+        } else {
+          animIcon.innerText = '⏸';
+          animText.innerText = '暂停演示';
+          animInterval = setInterval(() => {
+            let cur = parseInt(slider.value, 10);
+            cur = (cur + 1) % 361;
+            slider.value = cur;
+            updateSandboxRotation(cur);
+          }, 30);
+        }
+      });
+    }
+  </script>
+</body>
+</html>

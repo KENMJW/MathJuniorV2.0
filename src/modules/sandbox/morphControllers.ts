@@ -9,6 +9,7 @@
 
 import { clampDynamicValue } from '../../engine/sandbox/clampDynamicValue';
 import { SandboxConfig } from './SandboxRenderer';
+import { allLeapSandboxModels } from './mockLeapModels';
 
 export interface CarrierPoint {
   id: string;
@@ -115,6 +116,7 @@ export interface LeapSandboxModel {
   parameter_morphing_json: string;
   posture_morphing_json: string;
   camouflage_xray_json: string;
+  content_status?: string;
 }
 
 export interface MorphingState {
@@ -193,8 +195,19 @@ export function parseMorphingSpecs(model: LeapSandboxModel) {
     if (model?.parameter_morphing_json) {
       const parsed = JSON.parse(model.parameter_morphing_json);
       if (parsed && typeof parsed === 'object') {
+        const rawSliders = Array.isArray(parsed.sliders) ? parsed.sliders : [];
+        const normalizedSliders = rawSliders.map((s: any) => ({
+          id: String(s.id || 'param_t'),
+          nameZh: s.nameZh || (s.id === 'param_t' ? '动点参数 t' : '变异参数'),
+          nameEn: s.nameEn || (s.id === 'param_t' ? 'Parameter t' : 'Morphing Parameter'),
+          min: s.min !== undefined ? Number(s.min) : 0,
+          max: s.max !== undefined ? Number(s.max) : 10,
+          default: s.default !== undefined ? Number(s.default) : 5,
+          step: s.step !== undefined ? Number(s.step) : 0.5,
+          unit: s.unit || '',
+        }));
         parameterSpec = {
-          sliders: Array.isArray(parsed.sliders) ? parsed.sliders : [],
+          sliders: normalizedSliders,
         };
       }
     }
@@ -301,10 +314,18 @@ export function compileMorphingSandboxConfig(
   const currentPosture =
     postureModes.find((m) => m?.id === state?.postureId) || postureModes[0] || defaultPosture;
 
-  // 3. 计算参数滑块的缩放比或增量
+  // 3. 计算参数滑块的缩放比或增量与 param_t 动点位移
   let scaleRatio = 1.0;
   if (state?.parameterValues && state.parameterValues['param_scale'] !== undefined) {
     scaleRatio = clampDynamicValue(state.parameterValues['param_scale'], { min: 0.1, max: 5.0 });
+  }
+
+  // 接入 param_t (0~10) 动点位移驱动
+  let paramTDisplacement = 0;
+  if (state?.parameterValues && state.parameterValues['param_t'] !== undefined) {
+    const tVal = clampDynamicValue(state.parameterValues['param_t'], { min: 0, max: 10 });
+    // 以 5 为对称中点，在 [-2.5, +2.5] 范围内平滑驱动动点位移
+    paramTDisplacement = (tVal - 5) * 0.5;
   }
 
   // 4. 对动点执行 4D 坐标变换 (纯数学变换，无 eval)
@@ -313,9 +334,13 @@ export function compileMorphingSandboxConfig(
     if (pt.isFixed) {
       return pt;
     }
+    // 动点随 param_t 产生横向/垂直平滑位移
+    const shiftedX = pt.x + paramTDisplacement;
+    const shiftedY = pt.y + (Math.abs(pt.y) > 0.01 ? paramTDisplacement * 0.3 : 0);
+
     const coords = transformPointCoords(
-      pt.x,
-      pt.y,
+      shiftedX,
+      shiftedY,
       currentPosture?.rotationDeg || 0,
       currentPosture?.reflected || false,
       scaleRatio
@@ -379,8 +404,14 @@ export function compileMorphingSandboxConfig(
     }))
   );
 
+  const paramSuffix = state?.parameterValues
+    ? Object.entries(state.parameterValues)
+        .map(([k, v]) => `${k}_${v}`)
+        .join('-')
+    : 'default';
+
   return {
-    sandbox_id: `LEAP-${model?.model_id || 'unknown'}-${state?.carrierId || 'default'}-${state?.postureId || 'standard'}`,
+    sandbox_id: `LEAP-${model?.model_id || 'unknown'}-${state?.carrierId || 'default'}-${state?.postureId || 'standard'}-${paramSuffix}`,
     canvas_template: currentCarrier?.isAxis ? 'axis' : 'euclidean',
     viewbox_spec_json: model?.viewbox_spec_json || '{"minX": -10, "maxX": 10, "minY": -10, "maxY": 10}',
     drag_points_json: JSON.stringify(dragPointsJson),
@@ -390,215 +421,7 @@ export function compileMorphingSandboxConfig(
 }
 
 /**
- * 内置跃迁模型标准测试种子 (LM-8A-01 与 LM-9A-01)
+ * 内置跃迁模型标准数据表 (包含全库 36 个跃迁模型 LM-7A-01 至 LM-9B-36，及测试兼容种子 LM-8A-01)
  */
-export const mockLeapSandboxModels: LeapSandboxModel[] = [
-  {
-    model_id: 'LM-8A-01',
-    model_name_zh: '手拉手全等与勾股跃迁模型',
-    model_name_en: 'Hand-in-Hand Congruence and Pythagorean Leap Model',
-    unlocked_semester: '8A',
-    primary_line: 'G4',
-    category_id: 'geometry_transform',
-    tier_level: 1,
-    canonical_state_count: 3,
-    kp_dependencies: ['KP-023', 'KP-024'],
-    clique_id: 'C3-0023',
-    model_brief_zh: '共顶等线成旋转，全等导引勾股现。开启 X-Ray 可一键隐去干扰线，聚焦共顶旋转骨架。',
-    model_brief_en: 'Shared vertex induces rotation; congruence reveals Pythagorean relations. Enable X-Ray to strip clutter.',
-    viewbox_spec_json: JSON.stringify({
-      xMin: -10,
-      xMax: 10,
-      yMin: -8,
-      yMax: 8,
-      marginPercent: 15,
-      preserveAspectRatio: true,
-    }),
-    carrier_morphing_json: JSON.stringify({
-      options: [
-        {
-          id: 'free_triangle',
-          nameZh: '自由三角形载体',
-          nameEn: 'Free Triangle Carrier',
-          points: [
-            { id: 'O', name: 'O(旋转中心)', x: 0, y: 0, color: 'var(--text-primary)', size: 5, isFixed: true },
-            { id: 'A', name: 'A', x: 0, y: 4, color: 'var(--ios-blue)', size: 4 },
-            { id: 'B', name: 'B', x: 4, y: 0, color: 'var(--ios-green)', size: 5 },
-            { id: 'C', name: 'C', x: 2.83, y: 2.83, color: 'var(--ios-orange)', size: 5 },
-          ],
-        },
-        {
-          id: 'quadrilateral',
-          nameZh: '正方形载体',
-          nameEn: 'Square Carrier',
-          points: [
-            { id: 'O', name: 'O', x: 0, y: 0, color: 'var(--text-primary)', size: 5, isFixed: true },
-            { id: 'A', name: 'A', x: 0, y: 4, color: 'var(--ios-blue)', size: 4 },
-            { id: 'B', name: 'B', x: 4, y: 0, color: 'var(--ios-green)', size: 5 },
-            { id: 'C', name: 'C', x: 4, y: 4, color: 'var(--ios-orange)', size: 5 },
-          ],
-        },
-        {
-          id: 'coordinate_grid',
-          nameZh: '直角坐标系载体',
-          nameEn: 'Coordinate Carrier',
-          isAxis: true,
-          points: [
-            { id: 'O', name: 'O(0,0)', x: 0, y: 0, color: 'var(--text-primary)', size: 5, isFixed: true },
-            { id: 'A', name: 'A(0,4)', x: 0, y: 4, color: 'var(--ios-blue)', size: 4 },
-            { id: 'B', name: 'B(4,0)', x: 4, y: 0, color: 'var(--ios-green)', size: 5 },
-            { id: 'C', name: 'C(3,3)', x: 3, y: 3, color: 'var(--ios-orange)', size: 5 },
-          ],
-        },
-      ],
-      default: 'free_triangle',
-    }),
-    parameter_morphing_json: JSON.stringify({
-      sliders: [
-        {
-          id: 'param_scale',
-          nameZh: '线段相似比 k',
-          nameEn: 'Scale Ratio k',
-          min: 0.5,
-          max: 2.0,
-          default: 1.0,
-          step: 0.1,
-          unit: '',
-        },
-      ],
-    }),
-    posture_morphing_json: JSON.stringify({
-      modes: [
-        { id: 'standard', nameZh: '标准正向 (0°)', nameEn: 'Standard (0°)', rotationDeg: 0, reflected: false },
-        { id: 'rotated_90', nameZh: '正交旋转 90°', nameEn: 'Rotated 90°', rotationDeg: 90, reflected: false },
-        { id: 'reflected_x', nameZh: '轴对称翻折', nameEn: 'Reflection', rotationDeg: 0, reflected: true },
-        { id: 'collinear_degraded', nameZh: '共线极端退化态', nameEn: 'Collinear Degraded', rotationDeg: 180, reflected: false },
-      ],
-      default: 'standard',
-    }),
-    camouflage_xray_json: JSON.stringify({
-      distractorLayers: [
-        {
-          id: 'grid_mesh',
-          nameZh: '背景密集干扰网格',
-          nameEn: 'Background Grid Distractor',
-          type: 'lines',
-          items: [
-            { from: [-6, -6], to: [6, 6], color: 'var(--border-subtle)' },
-            { from: [-6, 6], to: [6, -6], color: 'var(--border-subtle)' },
-          ],
-        },
-      ],
-      coreSkeleton: {
-        nameZh: '核心骨架：手拉手共顶全等对',
-        nameEn: 'Core Skeleton: Shared Vertex Congruence',
-        primaryElements: ['O', 'A', 'B', 'C'],
-        highlightColor: 'var(--ios-blue)',
-        invariants: [
-          {
-            id: 'inv_ang',
-            type: 'angle',
-            deps: ['A', 'O', 'B'],
-            formula: '∠AOB = {val}°',
-            labelZh: '顶角守恒',
-          },
-        ],
-      },
-    }),
-  },
-  {
-    model_id: 'LM-9A-01',
-    model_name_zh: '二次函数铅垂高与割线极值跃迁模型',
-    model_name_en: 'Quadratic Plumb Height and Secant Extrema Leap Model',
-    unlocked_semester: '9A',
-    primary_line: 'A4',
-    category_id: 'function_geometry',
-    tier_level: 2,
-    canonical_state_count: 4,
-    kp_dependencies: ['KP-020', 'KP-040'],
-    clique_id: 'C5-0088',
-    model_brief_zh: '抛物线割线作铅垂，水平宽乘积半求积。X-Ray 透视一键滤除切线干扰，暴露铅垂高核心高线。',
-    model_brief_en: 'Vertical plumb height maximizes triangle area on parabola secant. X-Ray removes distractors.',
-    viewbox_spec_json: JSON.stringify({
-      xMin: -8,
-      xMax: 8,
-      yMin: -6,
-      yMax: 10,
-      marginPercent: 15,
-      preserveAspectRatio: true,
-    }),
-    carrier_morphing_json: JSON.stringify({
-      options: [
-        {
-          id: 'standard_parabola',
-          nameZh: '标准抛物线载体',
-          nameEn: 'Standard Parabola Carrier',
-          points: [
-            { id: 'A', name: 'A(-1,0)', x: -1, y: 0, color: 'var(--text-primary)', size: 4, isFixed: true },
-            { id: 'B', name: 'B(3,0)', x: 3, y: 0, color: 'var(--text-primary)', size: 4, isFixed: true },
-            { id: 'P', name: 'P(动点)', x: 1, y: 4, color: 'var(--ios-blue)', size: 5 },
-          ],
-        },
-        {
-          id: 'axis_carrier',
-          nameZh: '坐标网格载体',
-          nameEn: 'Coordinate Carrier',
-          isAxis: true,
-          points: [
-            { id: 'A', name: 'A', x: -1, y: 0, color: 'var(--text-primary)', size: 4 },
-            { id: 'B', name: 'B', x: 3, y: 0, color: 'var(--text-primary)', size: 4 },
-            { id: 'P', name: 'P', x: 1, y: 4, color: 'var(--ios-blue)', size: 5 },
-          ],
-        },
-      ],
-      default: 'standard_parabola',
-    }),
-    parameter_morphing_json: JSON.stringify({
-      sliders: [
-        {
-          id: 'param_scale',
-          nameZh: '铅垂高放大比',
-          nameEn: 'Height Scale',
-          min: 0.5,
-          max: 2.0,
-          default: 1.0,
-          step: 0.1,
-          unit: '',
-        },
-      ],
-    }),
-    posture_morphing_json: JSON.stringify({
-      modes: [
-        { id: 'standard', nameZh: '开口向下 (a < 0)', nameEn: 'Standard (a<0)', rotationDeg: 0, reflected: false },
-        { id: 'reflected', nameZh: '开口向上翻折 (a > 0)', nameEn: 'Reflected (a>0)', rotationDeg: 0, reflected: true },
-      ],
-      default: 'standard',
-    }),
-    camouflage_xray_json: JSON.stringify({
-      distractorLayers: [
-        {
-          id: 'tangent_lines',
-          nameZh: '切线干扰图层',
-          nameEn: 'Tangent Distractor Lines',
-          type: 'lines',
-          items: [{ from: [-3, 8], to: [5, 0], color: 'var(--border-subtle)' }],
-        },
-      ],
-      coreSkeleton: {
-        nameZh: '核心骨架：铅垂高线段与割线',
-        nameEn: 'Core Skeleton: Plumb Height and Secant',
-        primaryElements: ['A', 'B', 'P'],
-        highlightColor: 'var(--ios-blue)',
-        invariants: [
-          {
-            id: 'inv_area',
-            type: 'area_triangle',
-            deps: ['A', 'B', 'P'],
-            formula: 'S_△PAB = {val}',
-            labelZh: '割线三角形面积',
-          },
-        ],
-      },
-    }),
-  },
-];
+export const mockLeapSandboxModels: LeapSandboxModel[] = allLeapSandboxModels;
+

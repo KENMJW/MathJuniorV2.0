@@ -47,13 +47,12 @@ interface DimensionMeta {
   titleZh: string;
   titleEn: string;
   icon: string;
-  isMandatory?: boolean;
 }
 
 const DIMENSIONS_META: DimensionMeta[] = [
   { index: 1, key: 'dim1', titleZh: '直观具象本源', titleEn: 'Intuitive Origin', icon: 'sprout' },
   { index: 2, key: 'dim2', titleZh: '核心数学本质', titleEn: 'Core Essence', icon: 'gem' },
-  { index: 3, key: 'dim3', titleZh: '严谨推导证明', titleEn: 'Rigor & Proof', icon: 'bolt', isMandatory: true },
+  { index: 3, key: 'dim3', titleZh: '严谨推导证明', titleEn: 'Rigor & Proof', icon: 'bolt' },
   { index: 4, key: 'dim4', titleZh: '高阶易错变式', titleEn: 'Traps & Variations', icon: 'target' },
 ];
 
@@ -65,12 +64,28 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
   // 可用维度上限 (默认 4)
   const maxAvailable = Math.max(3, Math.min(4, example.available_dimensions ?? 4));
 
-  // 当前已解锁的最高层级 (默认解锁至第 1 维，dim3 额外恒必展示)
-  const [unlockedLevel, setUnlockedLevel] = useState<number>(1);
+  // 默认进入 4 个阶段全部上锁，通过集合管理已解锁的维度 (1~4)
+  const [unlockedDimensions, setUnlockedDimensions] = useState<Set<number>>(() => new Set<number>());
+
+  // 计算下一个可步进解锁的维度序号
+  const nextToUnlock = [1, 2, 3, 4].find(
+    (idx) => idx <= maxAvailable && !unlockedDimensions.has(idx)
+  );
+
+  // 解锁指定维度 (支持点击卡片直接解锁)
+  const handleUnlockDimension = (index: number) => {
+    setUnlockedDimensions((prev) => {
+      const next = new Set(prev);
+      next.add(index);
+      return next;
+    });
+  };
 
   // 步进解锁下一维
   const handleUnlockNext = () => {
-    setUnlockedLevel((prev) => Math.min(maxAvailable, prev + 1));
+    if (nextToUnlock !== undefined) {
+      handleUnlockDimension(nextToUnlock);
+    }
   };
 
   // 获取对应维度的内容
@@ -165,9 +180,9 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
         {/* 步进进度指示 */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
-            解锁进度：<strong style={{ color: 'var(--ios-blue)' }}>{unlockedLevel}</strong> / {maxAvailable} 维
+            解锁进度：<strong style={{ color: 'var(--ios-blue)' }}>{unlockedDimensions.size}</strong> / {maxAvailable} 维
           </span>
-          {unlockedLevel < maxAvailable && (
+          {nextToUnlock !== undefined && (
             <button
               type="button"
               onClick={handleUnlockNext}
@@ -188,7 +203,7 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
               }}
             >
               <Icon name="unlock" size={13} />
-              <span>{`步进解锁第 ${unlockedLevel + 1} 维`}</span>
+              <span>{`步进解锁第 ${nextToUnlock} 维`}</span>
             </button>
           )}
         </div>
@@ -219,10 +234,14 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
         </span>
         {/* 母题题干 (支持图锚点混合渲染) */}
         <div
+          className="db-content-body"
           style={{
-            fontSize: '0.92rem',
+            fontSize: 'var(--content-font-size-body)',
             color: 'var(--text-primary)',
-            lineHeight: 1.6,
+            lineHeight: 'var(--content-line-height-body)',
+            overflowWrap: 'anywhere',
+            wordBreak: 'break-word',
+            maxWidth: '100%',
           }}
         >
           <QuestionContent content={example.stem_zh} images={example.image_paths_json} />
@@ -315,16 +334,18 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
           }}
         >
           {DIMENSIONS_META.map((dim) => {
-            const isUnlocked = dim.index <= unlockedLevel;
-            const isMandatoryDim3 = dim.isMandatory === true; // dim3_rigor 恒必展示 (CT-6)
-            const shouldRender = isUnlocked || isMandatoryDim3;
+            const isUnlocked = unlockedDimensions.has(dim.index);
             const content = getDimensionContent(dim.index);
 
-            if (!shouldRender) {
+            if (!isUnlocked) {
               return (
                 <div
                   key={dim.key}
                   data-testid={`master-dim-card-${dim.index}-locked`}
+                  onClick={() => handleUnlockDimension(dim.index)}
+                  role="button"
+                  tabIndex={0}
+                  title={`点击解锁第 ${dim.index} 维 · ${dim.titleZh}`}
                   style={{
                     padding: '1.25rem',
                     borderRadius: 'var(--radius-md, 18px)',
@@ -337,6 +358,14 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
                     textAlign: 'center',
                     gap: '0.5rem',
                     userSelect: 'none',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s var(--spring-smooth)',
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleUnlockDimension(dim.index);
+                    }
                   }}
                 >
                   <Icon name="lock" size={24} style={{ color: 'var(--text-tertiary)', opacity: 0.5 }} />
@@ -344,7 +373,7 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
                     {`第 ${dim.index} 维 · ${dim.titleZh}`}
                   </div>
                   <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--text-tertiary)' }}>
-                    点击上方按钮完成当前步骤后自动步进解锁
+                    点击卡片或上方按钮解锁
                   </p>
                 </div>
               );
@@ -357,12 +386,8 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
                 style={{
                   padding: '1.25rem',
                   borderRadius: 'var(--radius-md, 18px)',
-                  border: isMandatoryDim3
-                    ? '1px solid rgba(0, 113, 227, 0.35)'
-                    : '1px solid var(--border-subtle)',
-                  background: isMandatoryDim3
-                    ? 'rgba(0, 113, 227, 0.04)'
-                    : 'var(--glass-bg-elevated)',
+                  border: '1px solid var(--border-subtle)',
+                  background: 'var(--glass-bg-elevated)',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '0.75rem',
@@ -391,41 +416,30 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
                     </h4>
                   </div>
 
-                  {isMandatoryDim3 ? (
-                    <span
-                      style={{
-                        padding: '0.15rem 0.55rem',
-                        borderRadius: 'var(--radius-pill, 9999px)',
-                        fontSize: '0.68rem',
-                        fontWeight: 900,
-                        background: 'var(--ios-blue)',
-                        color: '#ffffff',
-                      }}
-                    >
-                      必修论证 (dim3 必展示)
-                    </span>
-                  ) : (
-                    <span
-                      style={{
-                        padding: '0.15rem 0.55rem',
-                        borderRadius: 'var(--radius-pill, 9999px)',
-                        fontSize: '0.68rem',
-                        fontWeight: 700,
-                        background: 'rgba(52, 199, 89, 0.12)',
-                        color: 'var(--ios-green)',
-                        border: '1px solid rgba(52, 199, 89, 0.25)',
-                      }}
-                    >
-                      已解锁
-                    </span>
-                  )}
+                  <span
+                    style={{
+                      padding: '0.15rem 0.55rem',
+                      borderRadius: 'var(--radius-pill, 9999px)',
+                      fontSize: '0.68rem',
+                      fontWeight: 700,
+                      background: 'rgba(52, 199, 89, 0.12)',
+                      color: 'var(--ios-green)',
+                      border: '1px solid rgba(52, 199, 89, 0.25)',
+                    }}
+                  >
+                    已解锁
+                  </span>
                 </div>
 
                 <div
+                  className="db-content-sub"
                   style={{
-                    fontSize: '0.84rem',
+                    fontSize: 'var(--content-font-size-sub)',
                     color: 'var(--text-secondary)',
-                    lineHeight: 1.6,
+                    lineHeight: 'var(--content-line-height-body)',
+                    overflowWrap: 'anywhere',
+                    wordBreak: 'break-word',
+                    maxWidth: '100%',
                   }}
                 >
                   <QuestionContent content={content} images={example.image_paths_json} role="solution" />

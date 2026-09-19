@@ -49,7 +49,19 @@ export type IconName =
   | 'link'
   | 'graduation-cap'
   | 'chevron-left'
-  | 'chevron-right';
+  | 'chevron-right'
+  | 'menu'
+  | 'search'
+  | 'chevron-down'
+  | 'chevron-up'
+  | 'pin'
+  | 'quote'
+  | 'layers'
+  | 'sparkles'
+  | 'nav-concept'
+  | 'nav-graph'
+  | 'nav-lab'
+  | 'nav-exam';
 
 export interface IconProps {
   name: IconName | string;
@@ -419,6 +431,73 @@ export const Icon: React.FC<IconProps> = ({
         return <polyline points="15 18 9 12 15 6" />;
       case 'chevron-right':
         return <polyline points="9 18 15 12 9 6" />;
+      case 'nav-concept':
+      case 'search':
+        return (
+          <>
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </>
+        );
+      case 'nav-graph':
+        return (
+          <>
+            <circle cx="6" cy="6" r="3" />
+            <circle cx="18" cy="18" r="3" />
+            <path d="M6 9v3a6 6 0 0 0 6 6h3" />
+          </>
+        );
+      case 'nav-lab':
+        return (
+          <>
+            <line x1="4" y1="7" x2="20" y2="7" />
+            <circle cx="9" cy="7" r="2.5" fill="currentColor" />
+            <line x1="4" y1="17" x2="20" y2="17" />
+            <circle cx="15" cy="17" r="2.5" fill="currentColor" />
+          </>
+        );
+      case 'nav-exam':
+        return (
+          <>
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+          </>
+        );
+      case 'menu':
+        return (
+          <>
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </>
+        );
+      case 'chevron-down':
+        return <polyline points="6 9 12 15 18 9" />;
+      case 'chevron-up':
+        return <polyline points="18 15 12 9 6 15" />;
+      case 'pin':
+        return (
+          <>
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+            <circle cx="12" cy="10" r="3" />
+          </>
+        );
+      case 'quote':
+        return (
+          <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.75-2-2-2H4c-1.25 0-2 .75-2 2v6c0 1.25.75 2 2 2 1 0 1 0 1 1 0 2-1.5 4-3 5v2zm13 0c3 0 7-1 7-8V5c0-1.25-.75-2-2-2h-4c-1.25 0-2 .75-2 2v6c0 1.25.75 2 2 2 1 0 1 0 1 1 0 2-1.5 4-3 5v2z" />
+        );
+      case 'layers':
+        return (
+          <>
+            <polygon points="12 2 2 7 12 12 22 7 12 2" />
+            <polyline points="2 17 12 22 22 17" />
+            <polyline points="2 12 12 17 22 12" />
+          </>
+        );
+      case 'sparkles':
+        return (
+          <path d="M12 3v3m0 12v3M3 12h3m12 0h3m-2.7-6.3l-2.1 2.1m-8.4 8.4l-2.1 2.1m0-12.6l2.1 2.1m8.4 8.4l2.1 2.1" />
+        );
       default:
         return <circle cx="12" cy="12" r="4" />;
     }

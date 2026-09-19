@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" width="100%" height="100%">
+  <!-- Background Card -->
+  <rect width="400" height="300" rx="16" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" />
+
+  <!-- Card Header -->
+  <rect x="20" y="16" width="360" height="42" rx="10" fill="#f2f2f7" />
+  <text x="35" y="42" font-family="-apple-system, sans-serif" font-size="13" font-weight="700" fill="#0071e3">KP-002 · 实数</text>
+  <text x="365" y="42" text-anchor="end" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#1d1d1f">数轴</text>
+
+
+  <!-- Number Axis -->
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path class=\"layer-stage-1\" d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#1d1d1f"/>
+    </marker>
+  </defs>
+  <line class=\"layer-stage-1\" x1="45" y1="175" x2="355" y2="175" stroke="#1d1d1f" stroke-width="2.5" marker-end="url(#arrow)" />
+  <!-- Ticks -->
+  <line class=\"layer-stage-1\" x1="80" y1="167" x2="80" y2="183" stroke="#1d1d1f" stroke-width="2"/>
+  <line class=\"layer-stage-1\" x1="140" y1="167" x2="140" y2="183" stroke="#1d1d1f" stroke-width="2"/>
+  <line class=\"layer-stage-1\" x1="200" y1="163" x2="200" y2="187" stroke="#1d1d1f" stroke-width="3"/>
+  <line class=\"layer-stage-1\" x1="260" y1="167" x2="260" y2="183" stroke="#1d1d1f" stroke-width="2"/>
+  <line class=\"layer-stage-1\" x1="320" y1="167" x2="320" y2="183" stroke="#1d1d1f" stroke-width="2"/>
+  <!-- Numbers -->
+  <text class=\"layer-stage-4\" x="80" y="205" text-anchor="middle" font-family="monospace" font-size="14" fill="#86868b">-2</text>
+  <text class=\"layer-stage-4\" x="140" y="205" text-anchor="middle" font-family="monospace" font-size="14" fill="#86868b">-1</text>
+  <text class=\"layer-stage-4\" x="200" y="207" text-anchor="middle" font-family="monospace" font-size="16" font-weight="bold" fill="#1d1d1f">0</text>
+  <text class=\"layer-stage-4\" x="260" y="205" text-anchor="middle" font-family="monospace" font-size="14" fill="#86868b">1</text>
+  <text class=\"layer-stage-4\" x="320" y="205" text-anchor="middle" font-family="monospace" font-size="14" fill="#86868b">2</text>
+  <!-- Highlight Interval / Point -->
+  <circle class=\"layer-stage-2\" cx="200" cy="175" r="5" fill="#1d1d1f"/>
+  <circle class=\"layer-stage-1\" cx="260" cy="175" r="6" fill="#0071e3"/>
+  <circle class=\"layer-stage-2\" cx="140" cy="175" r="6" fill="#ff9500"/>
+  <!-- Distance Arch -->
+  <path class=\"layer-stage-4\" d="M 140 160 Q 170 120 200 160" fill="none" stroke="#ff9500" stroke-width="2" stroke-dasharray="4,3"/>
+  <path class=\"layer-stage-4\" d="M 200 160 Q 230 120 260 160" fill="none" stroke="#0071e3" stroke-width="2" stroke-dasharray="4,3"/>
+  <text class=\"layer-stage-3 formal-labels\" x="170" y="125" text-anchor="middle" font-size="12" font-weight="600" fill="#ff9500">|x| = 1</text>
+  <text class=\"layer-stage-3 formal-labels\" x="230" y="125" text-anchor="middle" font-size="12" font-weight="600" fill="#0071e3">+1</text>
+
+</svg>

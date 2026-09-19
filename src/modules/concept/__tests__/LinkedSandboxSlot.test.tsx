@@ -40,8 +40,7 @@ describe('LinkedSandboxSlot (Task 9.2 & CLS=0 验收)', () => {
 
     expect(html).toContain('data-testid="linked-sandbox-placeholder"');
     expect(html).toContain('560px');
-    expect(html).toContain('CLS = 0 物理等大防抖设计');
-    expect(html).toContain('二次根式的性质与化简');
+    expect(html).toContain('本考点聚焦于代数数式运算、逻辑公理与严谨公式定义，无需动力学几何拖拽模拟。');
   });
 
   it('3. 铁律 3 门禁：源码必须通过 MathRenderer 渲染文本，严禁裸 dangerouslySetInnerHTML', () => {

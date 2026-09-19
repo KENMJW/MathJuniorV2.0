@@ -310,13 +310,11 @@ export const PaperWorkbench: React.FC = () => {
       {/* 头部导航与满分制 3 卡片体系选择器 */}
       <div
         style={{
-          padding: '2rem',
-          borderRadius: 'var(--radius-xl)',
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
-          backgroundColor: 'var(--glass-bg)',
-          border: '1px solid var(--border-subtle)',
-          boxShadow: 'var(--shadow-sm)',
+          padding: '24px 28px',
+          borderRadius: 'var(--radius-lg, 22px)',
+          backgroundColor: 'var(--bg-card, #ffffff)',
+          border: '1px solid var(--border-subtle, rgba(0, 0, 0, 0.07))',
+          boxShadow: '0 2px 16px rgba(0, 0, 0, 0.03)',
           display: 'flex',
           flexDirection: 'column',
           gap: '1.5rem',
@@ -340,7 +338,7 @@ export const PaperWorkbench: React.FC = () => {
               }}
             >
               <Icon name="target" size={14} />
-              <span>模块四 · 子系统 A</span>
+              <span>百炼成钢 · 实战测评</span>
               <span style={{ opacity: 0.6 }}>|</span>
               <span>精准出题中心</span>
             </div>
@@ -489,13 +487,11 @@ export const PaperWorkbench: React.FC = () => {
       {/* 快捷选卷预设卷库 */}
       <div
         style={{
-          padding: '2rem',
-          borderRadius: 'var(--radius-xl)',
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
-          backgroundColor: 'var(--glass-bg)',
-          border: '1px solid var(--border-subtle)',
-          boxShadow: 'var(--shadow-sm)',
+          padding: '24px 28px',
+          borderRadius: 'var(--radius-lg, 22px)',
+          backgroundColor: 'var(--bg-card, #ffffff)',
+          border: '1px solid var(--border-subtle, rgba(0, 0, 0, 0.07))',
+          boxShadow: '0 2px 16px rgba(0, 0, 0, 0.03)',
           display: 'flex',
           flexDirection: 'column',
           gap: '1.25rem',
@@ -674,13 +670,11 @@ export const PaperWorkbench: React.FC = () => {
           style={{
             flex: '1 1 580px',
             minWidth: '320px',
-            padding: '2rem',
-            borderRadius: 'var(--radius-xl)',
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
-            backgroundColor: 'var(--glass-bg)',
-            border: '1px solid var(--border-subtle)',
-            boxShadow: 'var(--shadow-sm)',
+            padding: '24px 28px',
+            borderRadius: 'var(--radius-lg, 22px)',
+            backgroundColor: 'var(--bg-card, #ffffff)',
+            border: '1px solid var(--border-subtle, rgba(0, 0, 0, 0.07))',
+            boxShadow: '0 2px 16px rgba(0, 0, 0, 0.03)',
             display: 'flex',
             flexDirection: 'column',
             gap: '1.25rem',
@@ -832,13 +826,11 @@ export const PaperWorkbench: React.FC = () => {
           {/* 题型与分值参数 */}
           <div
             style={{
-              padding: '1.5rem',
-              borderRadius: 'var(--radius-xl)',
-              backdropFilter: 'blur(16px)',
-              WebkitBackdropFilter: 'blur(16px)',
-              backgroundColor: 'var(--glass-bg)',
-              border: '1px solid var(--border-subtle)',
-              boxShadow: 'var(--shadow-sm)',
+              padding: '24px 28px',
+              borderRadius: 'var(--radius-lg, 22px)',
+              backgroundColor: 'var(--bg-card, #ffffff)',
+              border: '1px solid var(--border-subtle, rgba(0, 0, 0, 0.07))',
+              boxShadow: '0 2px 16px rgba(0, 0, 0, 0.03)',
               display: 'flex',
               flexDirection: 'column',
               gap: '1rem',
@@ -972,13 +964,11 @@ export const PaperWorkbench: React.FC = () => {
           {/* L1~L5 难度滑块 */}
           <div
             style={{
-              padding: '1.5rem',
-              borderRadius: 'var(--radius-xl)',
-              backdropFilter: 'blur(16px)',
-              WebkitBackdropFilter: 'blur(16px)',
-              backgroundColor: 'var(--glass-bg)',
-              border: '1px solid var(--border-subtle)',
-              boxShadow: 'var(--shadow-sm)',
+              padding: '24px 28px',
+              borderRadius: 'var(--radius-lg, 22px)',
+              backgroundColor: 'var(--bg-card, #ffffff)',
+              border: '1px solid var(--border-subtle, rgba(0, 0, 0, 0.07))',
+              boxShadow: '0 2px 16px rgba(0, 0, 0, 0.03)',
               display: 'flex',
               flexDirection: 'column',
               gap: '1rem',

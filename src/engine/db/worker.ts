@@ -1,5 +1,7 @@
 /// <reference lib="webworker" />
 import sqlite3InitModule, { type Sqlite3Static, type Database } from '@sqlite.org/sqlite-wasm';
+// @ts-ignore: Vite ?url import for wasm
+import sqlite3WasmUrl from '../../../node_modules/@sqlite.org/sqlite-wasm/sqlite-wasm/jswasm/sqlite3.wasm?url';
 import { type DbPackage, DB_PACKAGE_PATHS } from './packages';
 
 export interface WorkerMessageRequest {
@@ -73,7 +75,14 @@ async function loadDbPackage(pkg: DbPackage): Promise<void> {
  */
 async function init(): Promise<void> {
   if (!sqlite3) {
-    sqlite3 = await sqlite3InitModule();
+    sqlite3 = await sqlite3InitModule({
+      locateFile: (path: string) => {
+        if (path.endsWith('.wasm')) {
+          return sqlite3WasmUrl;
+        }
+        return path;
+      }
+    });
   }
   // 按照设计文档 §2.3：启动仅加载 core.db
   await loadDbPackage('core');

@@ -302,26 +302,38 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
                         fontSize: '0.82rem',
                         fontWeight: 600,
                         color: isCorrect ? 'var(--ios-green)' : 'var(--ios-red)',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        flexWrap: 'wrap',
+                        gap: '0.25rem',
+                        wordBreak: 'break-word',
+                        overflowWrap: 'anywhere',
+                        maxWidth: '100%',
                       }}
                     >
-                      {isCorrect
-                        ? locale === 'en'
-                          ? '✓ Correct (+2)'
-                          : '✓ 回答正确 (+2分)'
-                        : locale === 'en'
-                        ? `✗ Incorrect (Ans: ${q.answer_standard})`
-                        : `✗ 回答错误 (正确答案: ${q.answer_standard})`}
+                      {isCorrect ? (
+                        locale === 'en' ? '✓ Correct (+2)' : '✓ 回答正确 (+2分)'
+                      ) : (
+                        <>
+                          <span>{locale === 'en' ? '✗ Incorrect (Ans: ' : '✗ 回答错误 (正确答案: '}</span>
+                          <MathRenderer content={q.answer_standard || ''} />
+                          <span>)</span>
+                        </>
+                      )}
                     </span>
                   )}
                 </div>
 
-                {/* 铁律 3：题干通过 MathRenderer 渲染 */}
+                {/* 铁律 3：题干通过 MathRenderer 渲染，统一内容字号与行高 */}
                 <div
-                  className="question-stem"
+                  className="question-stem db-content-body"
                   style={{
-                    fontSize: '0.98rem',
-                    lineHeight: 1.6,
+                    fontSize: 'var(--content-font-size-body)',
+                    lineHeight: 'var(--content-line-height-body)',
                     color: 'var(--text-primary)',
+                    overflowWrap: 'anywhere',
+                    wordBreak: 'break-word',
+                    maxWidth: '100%',
                   }}
                 >
                   <QuestionContent content={stem} images={q.image_paths_json} locale={locale.startsWith('en') ? 'en' : 'zh'} />
@@ -373,28 +385,31 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
                           display: 'flex',
                           alignItems: 'center',
                           gap: '0.65rem',
-                          padding: '0.65rem 0.85rem',
+                          padding: '0.6rem 0.85rem',
                           borderRadius: 'var(--radius-sm, 12px)',
                           background: bg,
                           border,
                           color: textColor,
                           cursor: isAnswered ? 'default' : 'pointer',
                           textAlign: 'left',
-                          fontSize: '0.9rem',
+                          fontSize: 'var(--content-font-size-sub)',
+                          lineHeight: 'var(--content-line-height-body)',
                           transition: 'all 0.2s ease',
+                          overflowWrap: 'anywhere',
+                          wordBreak: 'break-word',
                         }}
                       >
                         <span
                           style={{
                             fontWeight: 700,
-                            fontSize: '0.95rem',
+                            fontSize: '0.86rem',
                             minWidth: '1.2rem',
                           }}
                         >
                           {opt.key}.
                         </span>
                         {/* 选项内容 (有图走 QuestionImage，无图走 MathRenderer) */}
-                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                        <div className="db-content-sub" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.25rem', overflowWrap: 'anywhere', wordBreak: 'break-word' }}>
                           {opt.img ? (
                             <QuestionImage role="option" src={opt.img} alt={`选项 ${opt.key}`} />
                           ) : (
@@ -410,14 +425,17 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
                 {isAnswered && !isCorrect && q.solutions_json && (
                   <div
                     data-testid={`solution-${q.question_id}`}
+                    className="db-content-sub"
                     style={{
                       padding: '0.75rem 1rem',
                       borderRadius: 'var(--radius-sm, 12px)',
                       background: 'rgba(255, 149, 0, 0.08)',
                       borderLeft: '3px solid var(--ios-orange)',
-                      fontSize: '0.86rem',
-                      lineHeight: 1.6,
+                      fontSize: 'var(--content-font-size-sub)',
+                      lineHeight: 'var(--content-line-height-body)',
                       color: 'var(--text-primary)',
+                      overflowWrap: 'anywhere',
+                      wordBreak: 'break-word',
                     }}
                   >
                     <div

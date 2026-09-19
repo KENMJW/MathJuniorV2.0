@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" width="100%" height="100%">
+  <!-- Background Card -->
+  <rect width="400" height="300" rx="16" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" />
+
+  <!-- Card Header -->
+  <rect x="20" y="16" width="360" height="42" rx="10" fill="#f2f2f7" />
+  <text x="35" y="42" font-family="-apple-system, sans-serif" font-size="13" font-weight="700" fill="#0071e3">KP-082 · 图形变换</text>
+  <text x="365" y="42" text-anchor="end" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#1d1d1f">Central Symmetry and Centrally Symmetric Figures</text>
+
+
+  <!-- Rotation / Reflection Transformation -->
+  <g transform="translate(70, 80)">
+    <!-- Pre-image triangle -->
+    <polygon class=\"layer-stage-1\" points="30,120 90,120 60,60" fill="#0071e3" fill-opacity="0.2" stroke="#0071e3" stroke-width="2"/>
+    <text class=\"layer-stage-3 formal-labels\" x="55" y="105" font-size="12" font-weight="bold" fill="#0071e3">△ABC</text>
+    <!-- Center of rotation O -->
+    <circle class=\"layer-stage-2\" cx="130" cy="90" r="4" fill="#1d1d1f"/>
+    <text class=\"layer-stage-3 formal-labels\" x="127" y="110" font-size="12" font-weight="bold" fill="#1d1d1f">O</text>
+    <!-- Post-image rotated -->
+    <polygon class=\"layer-stage-2\" points="170,60 230,60 200,120" fill="#34c759" fill-opacity="0.2" stroke="#34c759" stroke-width="2"/>
+    <text class=\"layer-stage-3 formal-labels\" x="185" y="85" font-size="12" font-weight="bold" fill="#34c759">△A&apos;B&apos;C&apos;</text>
+    <!-- Rotation arcs -->
+    <path class=\"layer-stage-4\" d="M 60 60 Q 130 30 200 120" fill="none" stroke="#ff9500" stroke-width="1.5" stroke-dasharray="3,3"/>
+  </g>
+  <text class=\"layer-stage-4\" x="200" y="265" text-anchor="middle" font-size="13" font-weight="600" fill="#1d1d1f">Rigid Motion: Isometric &amp; Angle-preserving</text>
+
+</svg>

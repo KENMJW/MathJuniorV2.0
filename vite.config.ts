@@ -5,20 +5,23 @@ import { VitePWA } from 'vite-plugin-pwa';
 import fs from 'fs';
 import path from 'path';
 
-function syncQuestionAssetsPlugin() {
+function syncAssetsPlugin() {
   return {
-    name: 'sync-question-assets',
+    name: 'sync-assets',
     buildStart() {
-      const srcDir = path.resolve(__dirname, 'assets/questions');
-      const targetDir = path.resolve(__dirname, 'public/assets/questions');
-      if (fs.existsSync(srcDir)) {
-        fs.mkdirSync(targetDir, { recursive: true });
-        const files = fs.readdirSync(srcDir);
-        for (const file of files) {
-          const srcFile = path.join(srcDir, file);
-          const targetFile = path.join(targetDir, file);
-          if (fs.statSync(srcFile).isFile() && !file.startsWith('.')) {
-            fs.copyFileSync(srcFile, targetFile);
+      const dirs = ['assets/questions', 'assets/concepts'];
+      for (const relDir of dirs) {
+        const srcDir = path.resolve(__dirname, relDir);
+        const targetDir = path.resolve(__dirname, 'public', relDir);
+        if (fs.existsSync(srcDir)) {
+          fs.mkdirSync(targetDir, { recursive: true });
+          const files = fs.readdirSync(srcDir);
+          for (const file of files) {
+            const srcFile = path.join(srcDir, file);
+            const targetFile = path.join(targetDir, file);
+            if (fs.statSync(srcFile).isFile() && !file.startsWith('.')) {
+              fs.copyFileSync(srcFile, targetFile);
+            }
           }
         }
       }
@@ -28,7 +31,7 @@ function syncQuestionAssetsPlugin() {
 
 export default defineConfig({
   plugins: [
-    syncQuestionAssetsPlugin(),
+    syncAssetsPlugin(),
     react(),
     legacy({
       targets: ['defaults', 'not IE 11', 'Safari >= 14', 'iOS >= 14'],

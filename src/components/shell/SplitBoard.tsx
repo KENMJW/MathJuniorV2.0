@@ -98,6 +98,7 @@ export const SplitBoard: React.FC<SplitBoardProps> = ({
             flex: 1,
             height: "100%",
             overflowY: "auto",
+            overflowX: "hidden",
             backgroundColor: "var(--bg-canvas)",
             position: "relative",
             display: "flex",

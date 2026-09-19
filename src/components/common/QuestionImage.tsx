@@ -9,6 +9,7 @@ export interface QuestionImageProps {
   style?: React.CSSProperties;
   onClick?: (e: React.MouseEvent) => void;
   disableLightbox?: boolean;
+  eager?: boolean;
 }
 
 /**
@@ -18,7 +19,24 @@ export interface QuestionImageProps {
  */
 export function resolveQuestionImageSrc(src: string): string {
   if (!src) return '';
-  const trimmed = src.trim();
+  let trimmed = src.trim();
+
+  // 防御 JSON 数组字符串，例如 '["assets/questions/xxx.webp"]'
+  if (trimmed.startsWith('["') && trimmed.endsWith('"]')) {
+    try {
+      const arr = JSON.parse(trimmed);
+      if (Array.isArray(arr) && arr[0]) {
+        trimmed = String(arr[0]).trim();
+      }
+    } catch {
+      // 保持原样
+    }
+  }
+
+  // 去除首尾多余引号
+  trimmed = trimmed.replace(/^["']|["']$/g, '');
+  if (!trimmed) return '';
+
   if (
     trimmed.startsWith('http://') ||
     trimmed.startsWith('https://') ||
@@ -27,7 +45,11 @@ export function resolveQuestionImageSrc(src: string): string {
   ) {
     return trimmed;
   }
-  return trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+
+  const base = (typeof import.meta !== 'undefined' && (import.meta as any).env?.BASE_URL) || '/';
+  const cleanBase = base.endsWith('/') ? base : `${base}/`;
+  const cleanPath = trimmed.startsWith('/') ? trimmed.slice(1) : trimmed;
+  return `${cleanBase}${cleanPath}`;
 }
 
 export const QuestionImage: React.FC<QuestionImageProps> = ({
@@ -38,11 +60,25 @@ export const QuestionImage: React.FC<QuestionImageProps> = ({
   style,
   onClick,
   disableLightbox = false,
+  eager = false,
 }) => {
   const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
   const [isLightboxOpen, setIsLightboxOpen] = useState<boolean>(false);
+  const imgRef = React.useRef<HTMLImageElement | null>(null);
 
   const resolvedSrc = resolveQuestionImageSrc(src);
+
+  // 检测缓存中已完成加载的图片，防止 onLoad 漏触发导致死锁
+  useEffect(() => {
+    const img = imgRef.current;
+    if (img && img.complete) {
+      if (img.naturalWidth > 0) {
+        setStatus('loaded');
+      } else if (img.src) {
+        setStatus('error');
+      }
+    }
+  }, [resolvedSrc]);
 
   // 监听 ESC 键关闭 Lightbox
   useEffect(() => {
@@ -136,39 +172,39 @@ export const QuestionImage: React.FC<QuestionImageProps> = ({
   };
 
   const getImageStyle = (): React.CSSProperties => {
+    const isLoaded = status === 'loaded';
+    const baseStyle: React.CSSProperties = {
+      maxWidth: '100%',
+      objectFit: 'contain',
+      borderRadius: 'var(--radius-sm, 12px)',
+      cursor: disableLightbox ? 'default' : 'zoom-in',
+      transition: 'opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+      opacity: isLoaded ? 1 : 0,
+      position: isLoaded ? 'static' : 'absolute',
+      width: isLoaded ? 'auto' : '1px',
+      height: isLoaded ? 'auto' : '1px',
+      pointerEvents: isLoaded ? 'auto' : 'none',
+      display: status === 'error' ? 'none' : 'block',
+    };
+
     if (role === 'option') {
       return {
-        maxWidth: '100%',
+        ...baseStyle,
         maxHeight: '128px',
-        objectFit: 'contain',
-        borderRadius: 'var(--radius-sm, 12px)',
-        cursor: disableLightbox ? 'default' : 'zoom-in',
-        transition: 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-        display: status === 'loaded' ? 'block' : 'none',
       };
     }
 
     if (role === 'solution') {
       return {
-        maxWidth: '100%',
+        ...baseStyle,
         maxHeight: '300px',
-        objectFit: 'contain',
-        borderRadius: 'var(--radius-sm, 12px)',
-        cursor: disableLightbox ? 'default' : 'zoom-in',
-        transition: 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-        display: status === 'loaded' ? 'block' : 'none',
       };
     }
 
     // stem
     return {
-      maxWidth: '100%',
+      ...baseStyle,
       maxHeight: '380px',
-      objectFit: 'contain',
-      borderRadius: 'var(--radius-sm, 12px)',
-      cursor: disableLightbox ? 'default' : 'zoom-in',
-      transition: 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-      display: status === 'loaded' ? 'block' : 'none',
     };
   };
 
@@ -230,10 +266,11 @@ export const QuestionImage: React.FC<QuestionImageProps> = ({
         {/* 真实图片本体 */}
         {resolvedSrc && (
           <img
+            ref={imgRef}
             src={resolvedSrc}
             alt={alt}
-            loading="lazy"
-            decoding="async"
+            loading={eager ? 'eager' : 'lazy'}
+            decoding={eager ? 'sync' : 'async'}
             style={getImageStyle()}
             onLoad={() => setStatus('loaded')}
             onError={() => setStatus('error')}

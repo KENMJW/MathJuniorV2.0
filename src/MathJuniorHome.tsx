@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ConceptNav } from "./ConceptNav";
 import { SubwayMap, LineClosedLoop, mockLogicLines } from "./modules/graph";
-import { LeapLab, mockLeapSandboxModels } from "./modules/sandbox";
-import { SandboxRenderer } from "./modules/sandbox/SandboxRenderer";
+import { mockLeapSandboxModels } from "./modules/sandbox";
+import { LabWorkspace } from "./modules/sandbox/LabWorkspace";
 import {
   handInHandConfig,
   quadraticVerticalHeightConfig,
@@ -73,11 +73,12 @@ export const MathJuniorHome: React.FC = () => {
 
   // 模块内部状态
   const [graphSubView, setGraphSubView] = useState<"map" | "line_loop">("map");
-  const [selectedLineId, setSelectedLineId] = useState<string>("G4");
+  const [selectedGraphPointId, setSelectedGraphPointId] = useState<string | null>(null);
   const [labSubView, setLabSubView] = useState<"concept_sandbox" | "leap_4d">("concept_sandbox");
-  const [selectedSandboxId, setSelectedSandboxId] = useState<string>("SB-HAND-IN-HAND");
-  const [selectedLeapModelId, setSelectedLeapModelId] = useState<string>("LM-8A-01");
-
+  const [selectedLeapModelId, setSelectedLeapModelId] = useState<string>("LM-9A-19");
+  const [selectedLineId, setSelectedLineId] = useState<string>("G4");
+  const [lineLoopTargetTab, setLineLoopTargetTab] = useState<'lecture' | 'master' | 'practice'>('lecture');
+      
   // 异步真库数据状态 (core.db 107 考点 + 12 主线 + 图谱连通 + 组合题)
   const [dbLines, setDbLines] = useState<LogicLine[] | null>(null);
   const [dbPoints, setDbPoints] = useState<GraphKnowledgePoint[] | null>(null);
@@ -169,17 +170,24 @@ export const MathJuniorHome: React.FC = () => {
     let active = true;
     async function loadSandboxData() {
       try {
-        const [sbRows, leapRows] = await Promise.all([
+        const [sbRows, leapRows, kpRows] = await Promise.all([
           dbClient.query<any>('sandbox', 'SELECT * FROM concept_sandboxes ORDER BY sandbox_id ASC'),
           dbClient.query<any>('sandbox', 'SELECT * FROM leap_sandbox_models ORDER BY model_id ASC'),
+          dbClient.query<any>('core', 'SELECT point_id, name_zh FROM knowledge_points'),
         ]);
 
         if (!active) return;
 
         if (sbRows && sbRows.length > 0) {
+          
+          const kpMap = new Map();
+          if (kpRows) {
+            kpRows.forEach(r => kpMap.set(r.point_id, r.name_zh));
+          }
           const mappedSandboxes = sbRows.map((r: any) => ({
             id: String(r.sandbox_id),
-            nameZh: `${r.sandbox_id} (${r.canvas_template || '几何'})`,
+            nameZh: kpMap.get(r.point_id) || r.sandbox_id,
+            
             nameEn: String(r.sandbox_id),
             config: {
               sandbox_id: String(r.sandbox_id),
@@ -256,41 +264,13 @@ export const MathJuniorHome: React.FC = () => {
     navigate(`/math-junior/${moduleKey}`);
   };
 
-  // 顶栏品牌与返回按钮
-  const renderHeaderLeft = () => (
-    <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-      <button
-        type="button"
-        data-testid="back-to-portal-btn"
-        onClick={() => navigate("/")}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "0.4rem",
-          padding: "0.4rem 0.8rem",
-          borderRadius: "var(--radius-pill)",
-          border: "1px solid var(--border-subtle)",
-          background: "var(--bg-card)",
-          color: "var(--text-primary)",
-          fontSize: "0.82rem",
-          fontWeight: 600,
-          cursor: "pointer",
-        }}
-      >
-        <span>←</span>
-        <span>{t("nav.backToPortal", locale, "全科门户")}</span>
-      </button>
-
-      <div>
-        <h1 style={{ margin: 0, fontSize: "1.15rem", fontWeight: 800, color: "var(--text-primary)" }}>
-          初中数学核心素养工坊
-        </h1>
-        <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>
-          初中学段 · 数学学科 V2.0
-        </span>
-      </div>
-    </div>
-  );
+  // 四大模块正式入口导航项 (严格对标 ios27_demo 与产品规范)
+  const MODULE_NAV_ITEMS = [
+    { key: "concept", labelZh: "探本溯源 · 概念精讲", labelEn: "Concept Lecture", icon: "nav-concept" },
+    { key: "graph", labelZh: "经纬纵横 · 思维图谱", labelEn: "Knowledge Graph", icon: "nav-graph" },
+    { key: "lab", labelZh: "见微知著 · 实验探究", labelEn: "Lab Exploration", icon: "nav-lab" },
+    { key: "exam", labelZh: "百炼成钢 · 实战测评", labelEn: "Assessment Center", icon: "nav-exam" },
+  ];
 
   // 顶栏右侧工具操作区
   const renderHeaderRight = () => (
@@ -364,13 +344,383 @@ export const MathJuniorHome: React.FC = () => {
     </div>
   );
 
-  // 四大模块正式入口导航项
-  const MODULE_NAV_ITEMS = [
-    { key: "concept", labelZh: "探本溯源·概念精讲", labelEn: "Concept Lecture", icon: "book" },
-    { key: "graph", labelZh: "经纬纵横·思维图谱", labelEn: "Knowledge Graph", icon: "graph" },
-    { key: "lab", labelZh: "见微知著·实验探究", labelEn: "Lab Exploration", icon: "flask" },
-    { key: "exam", labelZh: "百炼成钢·实战测评", labelEn: "Assessment Center", icon: "sword" },
-  ];
+  // 电脑端双层顶栏 (Layer 1 全局系统栏 + Layer 2 次级导航条，100% 对标 Demo 截图 2)
+  const renderDesktopHeader = () => (
+    <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
+      {/* 第 1 层：全局系统顶栏 */}
+      <div
+        data-testid="math-junior-global-bar"
+        style={{
+          width: "100%",
+          borderBottom: "none",
+          background: "rgba(255, 255, 255, 0.85)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: "1240px",
+            margin: "0 auto",
+            height: "50px",
+            padding: "0 1.5rem",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            boxSizing: "border-box",
+          }}
+        >
+          {/* 左侧：黑标 App Logo + 全科核心素养提分系统 + 初中数学 */}
+          <div
+            onClick={() => navigate("/")}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              cursor: "pointer",
+              userSelect: "none",
+            }}
+          >
+            <div
+              style={{
+                width: "28px",
+                height: "28px",
+                borderRadius: "7px",
+                background: "var(--text-primary)",
+                color: "#ffffff",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: "0 2px 6px rgba(0, 0, 0, 0.15)",
+                flexShrink: 0,
+              }}
+            >
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#ffffff"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polygon points="12 2 2 22 22 22 12 2" stroke="#fff" fill="none" />
+                <circle cx="12" cy="14" r="2" fill="#fff" stroke="none" />
+              </svg>
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <span
+                style={{
+                  fontSize: "14px",
+                  fontWeight: 700,
+                  letterSpacing: "-0.2px",
+                  color: "var(--text-primary)",
+                }}
+              >
+                全科核心素养提分系统
+              </span>
+              <span
+                style={{
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  padding: "2px 8px",
+                  borderRadius: "var(--radius-pill)",
+                  background: "rgba(0, 113, 227, 0.08)",
+                  color: "var(--ios-blue)",
+                  border: "1px solid rgba(0, 113, 227, 0.2)",
+                }}
+              >
+                初中数学
+              </span>
+            </div>
+          </div>
+
+          {/* 右侧：通知小铃铛 + 语言切换 + 学员状态 */}
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            {/* 通知铃铛 */}
+            <button
+              type="button"
+              title="系统公告"
+              style={{
+                width: "30px",
+                height: "30px",
+                padding: 0,
+                borderRadius: "var(--radius-pill)",
+                background: "transparent",
+                border: "1px solid var(--border-subtle)",
+                color: "var(--text-secondary)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                position: "relative",
+                cursor: "pointer",
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+              </svg>
+              <span
+                style={{
+                  position: "absolute",
+                  top: "6px",
+                  right: "6px",
+                  width: "5px",
+                  height: "5px",
+                  borderRadius: "50%",
+                  background: "#ff3b30",
+                }}
+              />
+            </button>
+
+            {/* 语言切换 */}
+            <button
+              type="button"
+              onClick={() => setLocale(locale === "zh-CN" ? "en" : "zh-CN")}
+              style={{
+                height: "30px",
+                padding: "0 10px",
+                borderRadius: "var(--radius-pill)",
+                background: "transparent",
+                border: "1px solid var(--border-subtle)",
+                color: "var(--text-secondary)",
+                fontSize: "12px",
+                fontWeight: 500,
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                cursor: "pointer",
+              }}
+            >
+              <Icon name="globe" size={13} />
+              <span>{locale === "zh-CN" ? "简体中文" : "English"}</span>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+
+            {/* 学员状态 */}
+            <div
+              style={{
+                height: "30px",
+                padding: "0 10px",
+                borderRadius: "var(--radius-pill)",
+                background: "#ffffff",
+                border: "1px solid var(--border-subtle)",
+                color: "var(--text-secondary)",
+                fontSize: "12px",
+                fontWeight: 500,
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                boxShadow: "0 1px 3px rgba(0, 0, 0, 0.04)",
+              }}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+              <span>{locale === "en" ? "Student Mode" : "默认学员 · 核心素养版"}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 第 2 层：次级导航条 (返回全科门户 + 4 主模块胶囊分段器) */}
+      <div
+        data-testid="math-junior-subnav-bar"
+        style={{
+          width: "100%",
+          background: "transparent",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: "1240px",
+            margin: "0 auto",
+            height: "52px",
+            padding: "0 1rem",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            boxSizing: "border-box",
+          }}
+        >
+          {/* 左侧：< 返回全科门户 */}
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <button
+              type="button"
+              data-testid="back-to-portal-btn"
+              onClick={() => navigate("/")}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                padding: "6px 14px",
+                borderRadius: "var(--radius-pill)",
+                border: "1px solid var(--border-subtle)",
+                background: "#ffffff",
+                color: "var(--text-primary)",
+                fontFamily: "var(--font-family-sans, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', sans-serif)",
+                fontSize: "12px",
+                fontWeight: 500,
+                letterSpacing: "-0.2px",
+                cursor: "pointer",
+                boxShadow: "0 1px 3px rgba(0, 0, 0, 0.04)",
+                transition: "all 0.18s cubic-bezier(0.16, 1, 0.3, 1)",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "var(--bg-card-subtle)";
+                e.currentTarget.style.borderColor = "rgba(0, 0, 0, 0.15)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "#ffffff";
+                e.currentTarget.style.borderColor = "var(--border-subtle)";
+              }}
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+              <span>{t("nav.backToPortal", locale, "返回全科门户")}</span>
+            </button>
+          </div>
+
+          {/* 右侧：4 模块横向胶囊 (靠右对齐，与下面大卡片的右边缘完全对齐) */}
+          <div
+            style={{
+              display: "inline-flex",
+              background: "rgba(0, 0, 0, 0.04)",
+              padding: "3px",
+              borderRadius: "var(--radius-pill)",
+              border: "1px solid rgba(0, 0, 0, 0.03)",
+              gap: "2px",
+            }}
+          >
+            {MODULE_NAV_ITEMS.map((item) => {
+              const active = currentSubModule === item.key;
+              return (
+                <button
+                  key={item.key}
+                  type="button"
+                  data-testid={`module-nav-${item.key}`}
+                  onClick={() => handleSelectSubModule(item.key)}
+                  style={{
+                    padding: "6px 14px",
+                    borderRadius: "var(--radius-pill)",
+                    border: "none",
+                    background: active ? "#ffffff" : "transparent",
+                    fontFamily: "var(--font-family-sans, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', sans-serif)",
+                    fontSize: "12px",
+                    fontWeight: active ? 600 : 500,
+                    color: active ? "var(--text-primary)" : "var(--text-secondary)",
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    letterSpacing: "-0.2px",
+                    boxShadow: active
+                      ? "0 1px 4px rgba(0, 0, 0, 0.06)"
+                      : "none",
+                    transition: "all 0.18s cubic-bezier(0.16, 1, 0.3, 1)",
+                  }}
+                >
+                  <Icon
+                    name={item.icon}
+                    size={14}
+                    style={{ stroke: active ? "var(--ios-blue)" : "currentColor" }}
+                  />
+                  <span>{locale === "en" ? item.labelEn : item.labelZh}</span>
+                  <span style={{ display: "none" }}>{item.labelZh.replace(/\s+/g, "")}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // 平板端与移动端顶部栏组件
+  const renderTabletHeader = () => (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
+      <button
+        type="button"
+        data-testid="back-to-portal-btn"
+        onClick={() => navigate("/")}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "6px",
+          padding: "6px 14px",
+          borderRadius: "var(--radius-pill)",
+          border: "1px solid var(--border-subtle)",
+          background: "#ffffff",
+          color: "var(--text-primary)",
+          fontSize: "12px",
+          fontWeight: 500,
+          cursor: "pointer",
+        }}
+      >
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+        <span>{t("nav.backToPortal", locale, "返回全科门户")}</span>
+      </button>
+
+      <div>
+        <h1 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "var(--text-primary)" }}>
+          初中数学核心素养工坊
+        </h1>
+      </div>
+
+      {renderHeaderRight()}
+    </div>
+  );
+
+  const renderMobileHeader = () => (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
+      <button
+        type="button"
+        data-testid="back-to-portal-btn"
+        onClick={() => navigate("/")}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "4px",
+          padding: "4px 10px",
+          borderRadius: "var(--radius-pill)",
+          border: "1px solid var(--border-subtle)",
+          background: "#ffffff",
+          color: "var(--text-primary)",
+          fontSize: "12px",
+          fontWeight: 500,
+          cursor: "pointer",
+        }}
+      >
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+        <span>全科门户</span>
+      </button>
+
+      <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--text-primary)" }}>
+        初中数学
+      </span>
+
+      {renderHeaderRight()}
+    </div>
+  );
 
   // 导航栏 (供 Desktop / Tablet 侧边或顶部展示)
   const renderNavList = () => (
@@ -467,217 +817,169 @@ export const MathJuniorHome: React.FC = () => {
 
       case "graph":
         return (
-          <div style={{ display: "flex", flexDirection: "column", gap: "1rem", width: "100%" }}>
-            {/* 思维图谱子视图切换器 */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div
-                style={{
-                  display: "inline-flex",
-                  background: "var(--bg-canvas)",
-                  padding: "0.25rem",
-                  borderRadius: "var(--radius-pill)",
-                  border: "1px solid var(--border-subtle)",
-                }}
-              >
-                {[
-                  { key: "map", label: "6x12 泳道地铁图", icon: "graph" },
-                  { key: "line_loop", label: "主线四位一体闭环", icon: "link" },
-                ].map((tab) => {
-                  const active = graphSubView === tab.key;
-                  return (
-                    <button
-                      key={tab.key}
-                      type="button"
-                      data-testid={`graph-view-${tab.key}`}
-                      onClick={() => setGraphSubView(tab.key as any)}
-                      style={{
-                        border: "none",
-                        padding: "0.45rem 1rem",
-                        borderRadius: "var(--radius-pill)",
-                        background: active ? "var(--bg-card)" : "transparent",
-                        color: active ? "var(--ios-blue)" : "var(--text-secondary)",
-                        fontWeight: active ? 700 : 500,
-                        fontSize: "0.85rem",
-                        cursor: "pointer",
-                        boxShadow: active ? "0 2px 8px rgba(0,0,0,0.06)" : "none",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "0.35rem",
-                      }}
-                    >
-                      <Icon name={tab.icon} size={14} />
-                      <span>{tab.label}</span>
-                    </button>
-                  );
-                })}
+          <div
+            className="graph-stage-wrapper"
+            data-testid="graph-stage-wrapper"
+            style={{
+              maxWidth: "1240px",
+              margin: "0 auto",
+              width: "100%",
+              boxSizing: "border-box",
+            }}
+          >
+            <div
+              className="workspace-stage-card"
+              data-testid="workspace-stage-card"
+              style={{
+                background: "var(--bg-card, #ffffff)",
+                border: "1px solid var(--border-subtle, rgba(0, 0, 0, 0.07))",
+                borderRadius: "var(--radius-lg, 22px)",
+                padding: "24px 28px",
+                boxShadow: "0 2px 16px rgba(0, 0, 0, 0.03)",
+                display: "flex",
+                flexDirection: "column",
+                gap: "16px",
+                boxSizing: "border-box",
+                width: "100%",
+              }}
+            >
+              {/* 顶部分段切换控制条 (Apple HIG standard) */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
+                <div
+                  className="stage-segmented-control"
+                  style={{
+                    position: "relative",
+                    display: "inline-flex",
+                    background: "rgba(0, 0, 0, 0.04)",
+                    padding: "3px",
+                    borderRadius: "var(--radius-pill, 9999px)",
+                    border: "1px solid rgba(0, 0, 0, 0.03)",
+                    gap: "2px",
+                  }}
+                >
+                  <button
+                    type="button"
+                    data-testid="graph-view-map"
+                    onClick={() => setGraphSubView("map")}
+                    style={{
+                      border: "none",
+                      padding: "6px 16px",
+                      borderRadius: "var(--radius-pill, 9999px)",
+                      background: graphSubView === "map" ? "var(--bg-card, #ffffff)" : "transparent",
+                      color: graphSubView === "map" ? "var(--ios-blue)" : "var(--text-secondary)",
+                      fontWeight: graphSubView === "map" ? 700 : 500,
+                      fontSize: "12px",
+                      cursor: "pointer",
+                      boxShadow: graphSubView === "map" ? "0 2px 8px rgba(0,0,0,0.06)" : "none",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      transition: "all 0.18s ease",
+                    }}
+                  >
+                    <Icon name="graph" size={13} />
+                    <span>6×12 泳道地铁图</span>
+                  </button>
+                  <button
+                    type="button"
+                    data-testid="graph-view-line_loop"
+                    onClick={() => setGraphSubView("line_loop")}
+                    style={{
+                      border: "none",
+                      padding: "6px 16px",
+                      borderRadius: "var(--radius-pill, 9999px)",
+                      background: graphSubView === "line_loop" ? "var(--bg-card, #ffffff)" : "transparent",
+                      color: graphSubView === "line_loop" ? "var(--ios-blue)" : "var(--text-secondary)",
+                      fontWeight: graphSubView === "line_loop" ? 700 : 500,
+                      fontSize: "12px",
+                      cursor: "pointer",
+                      boxShadow: graphSubView === "line_loop" ? "0 2px 8px rgba(0,0,0,0.06)" : "none",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      transition: "all 0.18s ease",
+                    }}
+                  >
+                    <Icon name="refresh" size={13} />
+                    <span>主线四位一体闭环</span>
+                  </button>
+                </div>
               </div>
 
-              {graphSubView === "line_loop" && (
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>
-                  {effectiveLines.map((l) => {
-                    const active = l.line_id === selectedLineId;
-                    return (
-                      <button
-                        key={l.line_id}
-                        type="button"
-                        onClick={() => setSelectedLineId(l.line_id)}
-                        style={{
-                          border: active ? "1.5px solid var(--ios-blue)" : "1px solid var(--border-subtle)",
-                          background: active ? "var(--ios-blue)" : "var(--bg-card)",
-                          color: active ? "white" : "var(--text-primary)",
-                          padding: "0.3rem 0.65rem",
-                          borderRadius: "8px",
-                          fontSize: "0.78rem",
-                          fontWeight: active ? 700 : 500,
-                          cursor: "pointer",
-                        }}
-                      >
-                        {l.line_id}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+              {/* 模块内双视图常驻挂载以维持状态不丢失 */}
+              <div
+                style={{
+                  width: "100%",
+                  display: graphSubView === "map" ? "block" : "none",
+                  boxSizing: "border-box",
+                }}
+              >
+                <SubwayMap
+                  lines={effectiveLines}
+                  points={dbPoints || undefined}
+                  graphNodes={dbGraphNodes || undefined}
+                  combinations={dbCombinations || undefined}
+                  selectedPointId={selectedGraphPointId}
+                  onSelectPoint={setSelectedGraphPointId}
+                  onSelectLineClosedLoop={(lineId, targetTab = "lecture") => {
+                    setSelectedLineId(lineId);
+                    setLineLoopTargetTab(targetTab);
+                    setGraphSubView("line_loop");
+                  }}
+                  onOpenFlagshipModel={(_lineId, modelId) => {
+                    const targetModel = modelId || "LM-9A-19";
+                    setSelectedLeapModelId(targetModel);
+                    handleSelectSubModule("lab");
+                    setLabSubView("leap_4d");
+                  }}
+                  onNavigate={(dest, _pointId) => {
+                    if (dest === "concept") handleSelectSubModule("concept");
+                    else if (dest === "sandbox") {
+                      handleSelectSubModule("lab");
+                      setLabSubView("leap_4d");
+                    } else if (dest === "exam") {
+                      handleSelectSubModule("exam");
+                    }
+                  }}
+                />
+              </div>
 
-            {graphSubView === "map" ? (
-              <SubwayMap
-                lines={effectiveLines}
-                points={dbPoints || undefined}
-                graphNodes={dbGraphNodes || undefined}
-                combinations={dbCombinations || undefined}
-                onNavigate={(dest) => {
-                  if (dest === "concept") handleSelectSubModule("concept");
-                  else if (dest === "sandbox") handleSelectSubModule("lab");
-                  else if (dest === "exam") handleSelectSubModule("exam");
+              <div
+                style={{
+                  width: "100%",
+                  display: graphSubView === "line_loop" ? "block" : "none",
+                  boxSizing: "border-box",
                 }}
-              />
-            ) : (
-              <LineClosedLoop
-                line={effectiveLines.find((l) => l.line_id === selectedLineId) || effectiveLines[0]}
-                onOpenFlagshipModel={(modelId) => {
-                  setSelectedLeapModelId(modelId);
-                  handleSelectSubModule("lab");
-                  setLabSubView("leap_4d");
-                }}
-                onBackToMap={() => setGraphSubView("map")}
-              />
-            )}
+              >
+                <LineClosedLoop
+                  lines={effectiveLines}
+                  selectedLineId={selectedLineId}
+                  onSelectLineId={setSelectedLineId}
+                  activeTab={lineLoopTargetTab}
+                  onTabChange={setLineLoopTargetTab}
+                  onOpenFlagshipModel={(modelId) => {
+                    setSelectedLeapModelId(modelId);
+                    handleSelectSubModule("lab");
+                    setLabSubView("leap_4d");
+                  }}
+                  onBackToMap={() => setGraphSubView("map")}
+                />
+              </div>
+            </div>
           </div>
         );
 
       case "lab":
         return (
-          <div style={{ display: "flex", flexDirection: "column", gap: "1rem", width: "100%" }}>
-            {/* 实验室子视图切换器 */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div
-                style={{
-                  display: "inline-flex",
-                  background: "var(--bg-canvas)",
-                  padding: "0.25rem",
-                  borderRadius: "var(--radius-pill)",
-                  border: "1px solid var(--border-subtle)",
-                }}
-              >
-                {[
-                  { key: "concept_sandbox", label: "概念沙盒 (实验室一)", icon: "flask" },
-                  { key: "leap_4d", label: "4D 跃迁模型 (实验室二)", icon: "rocket" },
-                ].map((tab) => {
-                  const active = labSubView === tab.key;
-                  return (
-                    <button
-                      key={tab.key}
-                      type="button"
-                      data-testid={`lab-view-${tab.key}`}
-                      onClick={() => setLabSubView(tab.key as any)}
-                      style={{
-                        border: "none",
-                        padding: "0.45rem 1rem",
-                        borderRadius: "var(--radius-pill)",
-                        background: active ? "var(--bg-card)" : "transparent",
-                        color: active ? "var(--ios-blue)" : "var(--text-secondary)",
-                        fontWeight: active ? 700 : 500,
-                        fontSize: "0.85rem",
-                        cursor: "pointer",
-                        boxShadow: active ? "0 2px 8px rgba(0,0,0,0.06)" : "none",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "0.35rem",
-                      }}
-                    >
-                      <Icon name={tab.icon} size={14} />
-                      <span>{tab.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {labSubView === "concept_sandbox" && (
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", maxHeight: "120px", overflowY: "auto" }}>
-                  {effectiveSandboxes.map((item) => {
-                    const active = item.id === selectedSandboxId;
-                    return (
-                      <button
-                        key={item.id}
-                        type="button"
-                        onClick={() => setSelectedSandboxId(item.id)}
-                        style={{
-                          border: active ? "1.5px solid var(--ios-blue)" : "1px solid var(--border-subtle)",
-                          background: active ? "var(--ios-blue)" : "var(--bg-card)",
-                          color: active ? "white" : "var(--text-primary)",
-                          padding: "0.3rem 0.65rem",
-                          borderRadius: "8px",
-                          fontSize: "0.78rem",
-                          fontWeight: active ? 700 : 500,
-                          cursor: "pointer",
-                        }}
-                      >
-                        {item.nameZh.split(" ")[0]}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            {labSubView === "concept_sandbox" ? (
-              (() => {
-                const current = effectiveSandboxes.find((s) => s.id === selectedSandboxId) || effectiveSandboxes[0];
-                return (
-                  <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                    <div
-                      style={{
-                        padding: "0.75rem 1.2rem",
-                        borderRadius: "var(--radius-sm)",
-                        background: "var(--ios-blue-glow)",
-                        borderLeft: "4px solid var(--ios-blue)",
-                        color: "var(--text-primary)",
-                        fontSize: "0.9rem",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "0.4rem",
-                      }}
-                    >
-                      <Icon name="bulb" size={16} />
-                      <strong>探究指南：</strong> {current.desc}
-                    </div>
-                    <SandboxRenderer
-                      key={current.id}
-                      config={current.config}
-                      style={{ height: "580px", background: "var(--bg-card)" }}
-                    />
-                  </div>
-                );
-              })()
-            ) : (
-              <LeapLab
-                modelId={selectedLeapModelId}
-                allModels={effectiveLeapModels}
-                onBack={() => setLabSubView("concept_sandbox")}
-              />
-            )}
-          </div>
+          <LabWorkspace
+            effectiveSandboxes={effectiveSandboxes}
+            effectiveLeapModels={effectiveLeapModels}
+            locale={locale}
+            labSubView={labSubView}
+            onLabSubViewChange={setLabSubView}
+            selectedLeapModelId={selectedLeapModelId}
+            onSelectLeapModelId={setSelectedLeapModelId}
+          />
         );
 
       case "exam":
@@ -692,12 +994,7 @@ export const MathJuniorHome: React.FC = () => {
   if (deviceProfile === "MOBILE") {
     return (
       <CardDeck
-        header={
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
-            {renderHeaderLeft()}
-            {renderHeaderRight()}
-          </div>
-        }
+        header={renderMobileHeader()}
         bottomSheet={renderMobileBottomBar()}
       >
         <div style={{ padding: "0.5rem" }}>{renderModuleContent()}</div>
@@ -708,12 +1005,7 @@ export const MathJuniorHome: React.FC = () => {
   if (deviceProfile === "TABLET") {
     return (
       <SplitBoard
-        header={
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
-            {renderHeaderLeft()}
-            {renderHeaderRight()}
-          </div>
-        }
+        header={renderTabletHeader()}
         sidebar={renderNavList()}
         sidebarWidth={280}
       >
@@ -724,14 +1016,24 @@ export const MathJuniorHome: React.FC = () => {
     );
   }
 
-  // 默认 DESKTOP: Cockpit 宽屏大剧场
+  // 默认 DESKTOP: Cockpit 宽屏大剧场 (居中 Keynote 大卡片布局，彻底取消侧边栏抽屉挤压)
   return (
     <Cockpit
-      header={renderHeaderLeft()}
-      sidebar={renderNavList()}
-      toolbar={renderHeaderRight()}
+      header={renderDesktopHeader()}
+      sidebar={<div style={{ display: "none" }}>{renderNavList()}</div>}
+      toolbar={null}
+      defaultSidebarCollapsed={true}
+      hideSidebarToggle={true}
     >
-      <div style={{ padding: "1.5rem", height: "100%", overflowY: "auto", boxSizing: "border-box" }}>
+      <div
+        style={{
+          width: "100%",
+          maxWidth: "1240px",
+          margin: "0 auto",
+          padding: "1.5rem 1rem 3rem 1rem",
+          boxSizing: "border-box",
+        }}
+      >
         {renderModuleContent()}
       </div>
     </Cockpit>

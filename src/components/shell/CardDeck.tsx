@@ -65,6 +65,7 @@ export const CardDeck: React.FC<CardDeckProps> = ({
         style={{
           flex: 1,
           overflowY: "auto",
+          overflowX: "hidden",
           WebkitOverflowScrolling: "touch",
           padding: "1rem",
           display: "flex",

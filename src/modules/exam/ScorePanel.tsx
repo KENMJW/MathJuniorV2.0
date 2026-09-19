@@ -55,6 +55,7 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
 }) => {
   const setExamScore = useSessionStore((state) => state.setExamScore);
   const resetScores = useSessionStore((state) => state.resetScores);
+  const locale = useSessionStore((state) => state.locale);
 
   // 1. 选择题判分结果
   const choiceResults = useMemo(() => {
@@ -589,19 +590,29 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                   style={{
                     fontSize: '0.75rem',
                     display: 'flex',
-                    alignItems: 'center',
-                    gap: '1rem',
+                    alignItems: 'flex-start',
+                    flexWrap: 'wrap',
+                    gap: '0.75rem 1.25rem',
                     backgroundColor: 'var(--glass-bg-card)',
                     padding: '0.5rem 0.75rem',
                     borderRadius: 'var(--radius-md)',
                     border: '1px solid var(--border-subtle)',
+                    wordBreak: 'break-word',
+                    overflowWrap: 'anywhere',
+                    maxWidth: '100%',
                   }}
                 >
-                  <span>
-                    您的作答：<strong style={{ color: r.isCorrect ? 'var(--ios-green)' : 'var(--ios-red)' }}>{r.studentAns || '未作答'}</strong>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', flexWrap: 'wrap' }}>
+                    <span style={{ color: 'var(--text-tertiary)' }}>您的作答：</span>
+                    <strong style={{ color: r.isCorrect ? 'var(--ios-green)' : 'var(--ios-red)' }}>
+                      <MathRenderer content={r.studentAns || (locale === 'en' ? 'Unanswered' : '未作答')} />
+                    </strong>
                   </span>
-                  <span>
-                    标准答案：<strong style={{ color: 'var(--ios-blue)' }}>{r.question.answer_standard}</strong>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', flexWrap: 'wrap' }}>
+                    <span style={{ color: 'var(--text-tertiary)' }}>标准答案：</span>
+                    <strong style={{ color: 'var(--ios-blue)' }}>
+                      <MathRenderer content={r.question.answer_standard || '—'} />
+                    </strong>
                   </span>
                 </div>
               </div>
@@ -685,22 +696,25 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                     fontSize: '0.75rem',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '0.375rem',
+                    gap: '0.5rem',
                     backgroundColor: 'var(--glass-bg-card)',
                     padding: '0.625rem 0.75rem',
                     borderRadius: 'var(--radius-md)',
                     border: '1px solid var(--border-subtle)',
+                    wordBreak: 'break-word',
+                    overflowWrap: 'anywhere',
+                    maxWidth: '100%',
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ color: 'var(--text-tertiary)' }}>您的填空：</span>
-                    <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
+                    <span style={{ color: 'var(--text-tertiary)', flexShrink: 0 }}>您的填空：</span>
+                    <span style={{ fontWeight: 600, color: 'var(--text-primary)', wordBreak: 'break-word', overflowWrap: 'anywhere', flex: 1, minWidth: 0 }}>
                       <MathRenderer content={r.studentAns || '（未填写）'} />
                     </span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ color: 'var(--text-tertiary)' }}>标准答案：</span>
-                    <span style={{ fontWeight: 600, color: 'var(--ios-blue)' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
+                    <span style={{ color: 'var(--text-tertiary)', flexShrink: 0 }}>标准答案：</span>
+                    <span style={{ fontWeight: 600, color: 'var(--ios-blue)', wordBreak: 'break-word', overflowWrap: 'anywhere', flex: 1, minWidth: 0 }}>
                       <MathRenderer content={r.standardAns || '—'} />
                     </span>
                   </div>
@@ -905,6 +919,41 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                     })}
                   </div>
                 </div>
+
+                {/* 官方标准答案 (完整换行展示，绝不截断) */}
+                {r.question.answer_standard && (
+                  <div
+                    style={{
+                      padding: '0.75rem 1rem',
+                      borderRadius: 'var(--radius-md)',
+                      backgroundColor: 'var(--glass-bg-card)',
+                      border: '1px solid var(--border-subtle)',
+                      fontSize: '0.75rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.35rem',
+                      wordBreak: 'break-word',
+                      overflowWrap: 'anywhere',
+                      maxWidth: '100%',
+                    }}
+                  >
+                    <span style={{ fontWeight: 700, color: 'var(--ios-blue)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <Icon name="check" size={13} />
+                      <span>{locale === 'en' ? 'Standard Answer:' : '官方参考答案：'}</span>
+                    </span>
+                    <div
+                      style={{
+                        color: 'var(--text-primary)',
+                        lineHeight: 'var(--content-line-height-body, 1.6)',
+                        wordBreak: 'break-word',
+                        overflowWrap: 'anywhere',
+                        maxWidth: '100%',
+                      }}
+                    >
+                      <MathRenderer content={r.question.answer_standard} />
+                    </div>
+                  </div>
+                )}
 
                 {/* 官方标准解答与多解法平铺 (PRD §5.4) */}
                 {r.question.solutions_json && (

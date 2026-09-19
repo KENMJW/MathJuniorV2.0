@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 export type StageNumber = 1 | 2 | 3 | 4;
 
@@ -7,7 +7,113 @@ export interface SvgLayerRevealProps {
   pointId?: string;
   className?: string;
   style?: React.CSSProperties;
+  svgAssetPath?: string;
 }
+
+/**
+ * 辅助函数：确保 SVG 元素拥有四阶段图层类名 (layer-stage-1 ~ layer-stage-4)
+ * 若 SVG 已包含图层类名则直接返回；若无，则自动进行语义分类注入
+ */
+export function injectSvgStageLayers(svgRaw: string): string {
+  if (!svgRaw) return svgRaw;
+  if (svgRaw.includes('layer-stage-1') && svgRaw.includes('layer-stage-2')) {
+    return svgRaw;
+  }
+
+  try {
+    if (typeof DOMParser === 'undefined') {
+      return svgRaw;
+    }
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(svgRaw, 'image/svg+xml');
+    const svgEl = doc.querySelector('svg');
+    if (!svgEl) return svgRaw;
+
+    const allRects = Array.from(svgEl.querySelectorAll('rect'));
+    const allTexts = Array.from(svgEl.querySelectorAll('text'));
+
+    // 标记固定背景与顶栏
+    allRects.forEach((r) => {
+      const w = r.getAttribute('width');
+      const h = r.getAttribute('height');
+      const y = parseFloat(r.getAttribute('y') || '0');
+      if ((w === '400' && h === '300') || (y <= 20 && parseFloat(h || '0') <= 50)) {
+        r.classList.add('layer-base-permanent');
+      }
+    });
+
+    allTexts.forEach((t) => {
+      const y = parseFloat(t.getAttribute('y') || '0');
+      if (y <= 50) {
+        t.classList.add('layer-base-permanent');
+      }
+    });
+
+    // 收集所有内容几何元素
+    const contentElements: Element[] = [];
+    const walk = (node: Element) => {
+      const tag = node.tagName.toLowerCase();
+      if (tag === 'defs' || tag === 'marker') return;
+      if (node.classList.contains('layer-base-permanent')) return;
+
+      if (['path', 'line', 'polyline', 'polygon', 'circle', 'ellipse', 'rect', 'text'].includes(tag)) {
+        contentElements.push(node);
+      } else {
+        Array.from(node.children).forEach(walk);
+      }
+    };
+    Array.from(svgEl.children).forEach(walk);
+
+    if (contentElements.length === 0) return svgRaw;
+
+    let firstShapeDone = false;
+    contentElements.forEach((el) => {
+      const tag = el.tagName.toLowerCase();
+      const fill = (el.getAttribute('fill') || '').toLowerCase();
+      const stroke = (el.getAttribute('stroke') || '').toLowerCase();
+      const dash = el.getAttribute('stroke-dasharray');
+      const textContent = el.textContent || '';
+      const isRedOrAmber =
+        fill.includes('ff3b30') || stroke.includes('ff3b30') || fill.includes('red') || stroke.includes('red') ||
+        dash || textContent.includes('P(') || textContent.includes('Vertex') || textContent.includes('!=') || textContent.includes('≠');
+
+      if (!firstShapeDone && ['polygon', 'path', 'circle', 'line', 'rect'].includes(tag)) {
+        el.classList.add('layer-stage-1');
+        firstShapeDone = true;
+        return;
+      }
+
+      if (isRedOrAmber) {
+        el.classList.add('layer-stage-4');
+      } else if (tag === 'text') {
+        const y = parseFloat(el.getAttribute('y') || '0');
+        if (y >= 240) {
+          el.classList.add('layer-stage-4');
+        } else {
+          el.classList.add('layer-stage-3', 'formal-labels');
+        }
+      } else if (fill.includes('ff9500') || stroke.includes('ff9500') || fill.includes('34c759') || stroke.includes('34c759') || el.getAttribute('width') === '18') {
+        el.classList.add('layer-stage-2');
+      } else if (['rect', 'circle'].includes(tag) && !stroke.includes('0071e3')) {
+        el.classList.add('layer-stage-2');
+      } else {
+        el.classList.add('layer-stage-1');
+      }
+    });
+
+    return new XMLSerializer().serializeToString(svgEl);
+  } catch {
+    return svgRaw;
+  }
+}
+
+const STAGE_THEMES: Record<StageNumber, { title: string; color: string; desc: string }> = {
+  1: { title: '① 原点溯源', color: '#0071e3', desc: '原点模型基底' },
+  2: { title: '② 本真透视', color: '#30b0c7', desc: '几何割补与结构透视' },
+  3: { title: '③ 法典严定', color: '#af52de', desc: '精确定义与公式标签' },
+  4: { title: '④ 本体辨正', color: '#ff9500', desc: '临界题眼与极值反例' },
+};
 
 /**
  * 概念精讲 SVG 图层分步点亮组件 (路线 B)
@@ -23,25 +129,58 @@ export const SvgLayerReveal: React.FC<SvgLayerRevealProps> = ({
   pointId = 'KP-023',
   className = '',
   style = {},
+  svgAssetPath,
 }) => {
-  // 阶段透明度与高亮计算
-  const stage1Opacity = 1;
-  const stage2Opacity = activeStage >= 2 ? 1 : 0.2;
-  const stage3Opacity = activeStage >= 3 ? 1 : 0; // 第 2 段隐藏标签，第 3 段点亮
-  const stage4Opacity = activeStage >= 4 ? 1 : 0.15;
+  const [svgContent, setSvgContent] = useState<string | null>(null);
+  const [error, setError] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!svgAssetPath) {
+      setSvgContent(null);
+      setError(false);
+      return;
+    }
+
+    setSvgContent(null);
+    setError(false);
+
+    // 格式化路径，确保以 /assets 开头
+    let path = svgAssetPath.trim();
+    if (path.startsWith('public/')) {
+      path = path.replace('public/', '/');
+    }
+    if (!path.startsWith('/') && !path.startsWith('http')) {
+      path = '/' + path;
+    }
+
+    fetch(path)
+      .then((res) => {
+        if (!res.ok) throw new Error(`Fetch failed with status ${res.status}`);
+        return res.text();
+      })
+      .then((text) => {
+        const layered = injectSvgStageLayers(text);
+        setSvgContent(layered);
+        setError(false);
+      })
+      .catch((err) => {
+        console.error('Failed to load SVG:', path, err);
+        setError(true);
+      });
+  }, [svgAssetPath, pointId]);
+
+  // 第 2 段时隐藏 .formal-labels（opacity: 0），其它阶段显示（opacity: 1）
+  const hideFormalLabels = activeStage === 2;
+  const currentTheme = STAGE_THEMES[activeStage];
 
   return (
     <div
-      className={`svg-layer-reveal ${className}`.trim()}
-      data-point-id={pointId}
-      data-active-stage={activeStage}
+      className={`concept-svg-container svg-layer-reveal stage-${activeStage} ${className} ${hideFormalLabels ? 'hide-formal-labels' : ''}`}
       style={{
         width: '100%',
-        maxWidth: '520px',
+        maxWidth: '500px',
         aspectRatio: '1 / 1',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        margin: '0 auto',
         background: 'var(--glass-bg, rgba(255,255,255,0.7))',
         borderRadius: 'var(--radius-lg, 24px)',
         border: '1px solid var(--glass-border, rgba(255,255,255,0.8))',
@@ -53,248 +192,107 @@ export const SvgLayerReveal: React.FC<SvgLayerRevealProps> = ({
         ...style,
       }}
     >
-      <svg
-        viewBox="0 0 500 500"
-        width="100%"
-        height="100%"
-        style={{ overflow: 'visible', userSelect: 'none' }}
+      <style>{`
+        .concept-svg-container .layer-stage-1,
+        .concept-svg-container .layer-stage-2,
+        .concept-svg-container .layer-stage-3,
+        .concept-svg-container .layer-stage-4,
+        .concept-svg-container .formal-labels {
+          transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+          opacity: 1;
+        }
+        .concept-svg-container.stage-1 .layer-stage-2,
+        .concept-svg-container.stage-1 .layer-stage-3,
+        .concept-svg-container.stage-1 .layer-stage-4,
+        .concept-svg-container.stage-1 .formal-labels {
+          opacity: 0 !important;
+          pointer-events: none;
+        }
+        .concept-svg-container.stage-2 .layer-stage-3,
+        .concept-svg-container.stage-2 .layer-stage-4,
+        .concept-svg-container.stage-2 .formal-labels,
+        .concept-svg-container.hide-formal-labels .formal-labels {
+          opacity: 0 !important;
+          pointer-events: none;
+        }
+        .concept-svg-container.stage-3 .layer-stage-4 {
+          opacity: 0 !important;
+          pointer-events: none;
+        }
+        .concept-svg-container.stage-4 .layer-stage-4 {
+          opacity: 1 !important;
+        }
+        .concept-svg-container svg {
+          width: 100%;
+          height: 100%;
+          overflow: visible;
+        }
+      `}</style>
+
+      {/* 动态四图层微光状态指示胶囊 */}
+      <div
+        data-testid="svg-stage-indicator"
+        style={{
+          position: 'absolute',
+          top: '12px',
+          right: '16px',
+          zIndex: 10,
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '6px',
+          padding: '4px 10px',
+          borderRadius: 'var(--radius-pill, 9999px)',
+          background: 'rgba(255, 255, 255, 0.92)',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+          border: '1px solid rgba(0, 0, 0, 0.06)',
+          fontSize: '11px',
+          fontWeight: 600,
+          color: currentTheme.color,
+          pointerEvents: 'none',
+          userSelect: 'none',
+          transition: 'all 0.25s ease',
+        }}
       >
-        <defs>
-          {/* 直角标记与网格滤镜 */}
-          <marker
-            id="arrow"
-            viewBox="0 0 10 10"
-            refX="5"
-            refY="5"
-            markerWidth="6"
-            markerHeight="6"
-            orient="auto-start-reverse"
-          >
-            <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ios-blue)" />
-          </marker>
-        </defs>
-
-        {/* 图层 1: 原点溯源 (历史原点与背景底图) */}
-        <g
-          id="layer-stage-1"
+        <span
           style={{
-            opacity: stage1Opacity,
-            transition: 'opacity 0.4s var(--spring-smooth, ease)',
+            width: '6px',
+            height: '6px',
+            borderRadius: '50%',
+            background: currentTheme.color,
+            boxShadow: `0 0 6px ${currentTheme.color}`,
           }}
-        >
-          {/* 背景坐标网格暗线 */}
-          <line x1="50" y1="250" x2="450" y2="250" stroke="var(--border-subtle)" strokeDasharray="4 4" />
-          <line x1="250" y1="50" x2="250" y2="450" stroke="var(--border-subtle)" strokeDasharray="4 4" />
-          {/* 弦图外围辅助大框 */}
-          <rect
-            x="70"
-            y="70"
-            width="360"
-            height="360"
-            fill="none"
-            stroke="var(--border-subtle)"
-            strokeWidth="1.5"
-            rx="8"
-            strokeDasharray="6 6"
-          />
-          <text x="80" y="95" fill="var(--text-tertiary)" fontSize="13" fontFamily="sans-serif">
-            原点溯源：赵爽弦图与面积割补
-          </text>
-        </g>
+        />
+        <span>{currentTheme.title} · 图层 1~{activeStage}</span>
+        <div style={{ display: 'inline-flex', gap: '2px', marginLeft: '2px' }}>
+          {([1, 2, 3, 4] as StageNumber[]).map((s) => (
+            <span
+              key={s}
+              style={{
+                width: '4px',
+                height: '4px',
+                borderRadius: '50%',
+                background: s <= activeStage ? currentTheme.color : 'rgba(0, 0, 0, 0.15)',
+                transition: 'background 0.2s ease',
+              }}
+            />
+          ))}
+        </div>
+      </div>
 
-        {/* 图层 2: 本真透视 (几何本质：直角三角形与三边正方形面积) */}
-        <g
-          id="layer-stage-2"
-          style={{
-            opacity: stage2Opacity,
-            transition: 'opacity 0.4s var(--spring-smooth, ease)',
-          }}
-        >
-          {/* 直角三角形本体: C(180, 320), A(180, 200), B(340, 320) */}
-          {/* 直角边 a (BC=160), 直角边 b (AC=120), 斜边 c (AB=200) */}
-          <polygon
-            points="180,320 180,200 340,320"
-            fill="rgba(0, 113, 227, 0.12)"
-            stroke="var(--ios-blue)"
-            strokeWidth="3"
-          />
-
-          {/* 直角标记 (Corner at C) */}
-          <path
-            d="M 180 300 L 200 300 L 200 320"
-            fill="none"
-            stroke="var(--ios-blue)"
-            strokeWidth="2"
-          />
-
-          {/* 直角边 b 上的正方形 (面积 b^2) */}
-          <rect
-            x="60"
-            y="200"
-            width="120"
-            height="120"
-            fill="rgba(88, 86, 214, 0.16)"
-            stroke="var(--ios-indigo)"
-            strokeWidth="2"
-          />
-          <text
-            x="120"
-            y="265"
-            textAnchor="middle"
-            fill="var(--ios-indigo)"
-            fontSize="14"
-            fontWeight="bold"
-            fontFamily="sans-serif"
-          >
-            S_b = b²
-          </text>
-
-          {/* 直角边 a 上的正方形 (面积 a^2) */}
-          <rect
-            x="180"
-            y="320"
-            width="160"
-            height="160"
-            fill="rgba(48, 176, 199, 0.16)"
-            stroke="var(--ios-teal)"
-            strokeWidth="2"
-          />
-          <text
-            x="260"
-            y="405"
-            textAnchor="middle"
-            fill="var(--ios-teal)"
-            fontSize="14"
-            fontWeight="bold"
-            fontFamily="sans-serif"
-          >
-            S_a = a²
-          </text>
-
-          {/* 斜边 c 上的正方形 (旋转角度 ~ -36.87°) */}
-          <polygon
-            points="180,200 340,320 460,160 300,40"
-            fill="rgba(52, 199, 89, 0.18)"
-            stroke="var(--ios-green)"
-            strokeWidth="2"
-          />
-          <text
-            x="320"
-            y="185"
-            textAnchor="middle"
-            fill="var(--ios-green)"
-            fontSize="15"
-            fontWeight="bold"
-            fontFamily="sans-serif"
-          >
-            S_c = c²
-          </text>
-        </g>
-
-        {/* 图层 3: 法典严定 (符号定义与精确字母标注: A, B, C, a, b, c) */}
-        {/* 第 2 段隐藏，第 3 段淡入点亮 opacity 0 -> 1 */}
-        <g
-          id="layer-stage-3"
-          className="formal-labels"
-          style={{
-            opacity: stage3Opacity,
-            transition: 'opacity 0.4s var(--spring-smooth, ease)',
-          }}
-        >
-          {/* 顶点标签 */}
-          <circle cx="180" cy="200" r="4" fill="var(--ios-blue)" />
-          <text x="170" y="190" fill="var(--text-primary)" fontSize="16" fontWeight="bold" fontFamily="serif">
-            A
-          </text>
-
-          <circle cx="340" cy="320" r="4" fill="var(--ios-blue)" />
-          <text x="355" y="325" fill="var(--text-primary)" fontSize="16" fontWeight="bold" fontFamily="serif">
-            B
-          </text>
-
-          <circle cx="180" cy="320" r="4" fill="var(--ios-blue)" />
-          <text x="165" y="340" fill="var(--text-primary)" fontSize="16" fontWeight="bold" fontFamily="serif">
-            C (90°)
-          </text>
-
-          {/* 边长标签 */}
-          <text x="165" y="260" textAnchor="end" fill="var(--ios-indigo)" fontSize="15" fontFamily="serif">
-            b
-          </text>
-          <text x="260" y="315" textAnchor="middle" fill="var(--ios-teal)" fontSize="15" fontFamily="serif">
-            a
-          </text>
-          <text x="270" y="250" textAnchor="start" fill="var(--ios-green)" fontSize="16" fontFamily="serif">
-            c
-          </text>
-
-          {/* 定理公式横幅 */}
-          <rect
-            x="130"
-            y="15"
-            width="240"
-            height="36"
-            rx="18"
-            fill="var(--glass-bg-elevated)"
-            stroke="var(--ios-blue)"
-            strokeWidth="1.5"
-          />
-          <text
-            x="250"
-            y="39"
-            textAnchor="middle"
-            fill="var(--ios-blue)"
-            fontSize="16"
-            fontWeight="bold"
-            fontFamily="sans-serif"
-          >
-            a² + b² = c² (∠C = 90°)
-          </text>
-        </g>
-
-        {/* 图层 4: 本体辨正 (反例与边界条件：钝角 a^2+b^2 < c^2 与 锐角 a^2+b^2 > c^2) */}
-        <g
-          id="layer-stage-4"
-          style={{
-            opacity: stage4Opacity,
-            transition: 'opacity 0.4s var(--spring-smooth, ease)',
-          }}
-        >
-          {/* 边界虚线圆弧 (直径 AB 的半圆，判定直角/锐角/钝角边界) */}
-          <path
-            d="M 180 200 A 100 100 0 0 1 340 320"
-            fill="none"
-            stroke="var(--ios-orange)"
-            strokeWidth="2"
-            strokeDasharray="5 5"
-          />
-          <text x="320" y="280" fill="var(--ios-orange)" fontSize="13" fontFamily="sans-serif">
-            圆周直角边界
-          </text>
-          {/* 辨正标签 */}
-          <rect
-            x="130"
-            y="455"
-            width="240"
-            height="32"
-            rx="16"
-            fill="rgba(255, 149, 0, 0.12)"
-            stroke="var(--ios-orange)"
-            strokeWidth="1"
-          />
-          <text
-            x="250"
-            y="476"
-            textAnchor="middle"
-            fill="var(--ios-orange)"
-            fontSize="13"
-            fontWeight="bold"
-            fontFamily="sans-serif"
-          >
-            逆定理: a² + b² = c² ⇔ ∠C = 90°
-          </text>
-        </g>
-      </svg>
+      {error ? (
+        <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>
+          [ 图解缺失: {pointId} ]
+        </div>
+      ) : svgContent ? (
+        <div
+          style={{ width: '100%', height: '100%' }}
+          dangerouslySetInnerHTML={{ __html: svgContent }}
+        />
+      ) : (
+        <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>
+          加载图解中...
+        </div>
+      )}
     </div>
   );
 };

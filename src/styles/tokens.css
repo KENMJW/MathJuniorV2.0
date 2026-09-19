@@ -1,4 +1,7 @@
 :root {
+  /* Enforce Light Color Scheme (Strictly Light Mode, No Auto-Switching) */
+  color-scheme: light;
+
   /* iOS 27 Dynamic System Colors */
   --ios-blue: #0071e3;
   --ios-blue-glow: rgba(0, 113, 227, 0.28);
@@ -37,24 +40,90 @@
   /* Spring Physics */
   --spring-smooth: cubic-bezier(0.16, 1, 0.3, 1);
   --spring-bouncy: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* 统一全科内容排版与字号体系 (iOS 27 设计系统规范) */
+  --font-family-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-family-mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+
+  --content-font-size-title: 1.15rem;   /* 考点与母题大标题 (~18px) */
+  --content-font-size-body: 0.88rem;    /* 数据库正文字线：四段论正文、题干 (~14px，紧凑优雅) */
+  --content-font-size-sub: 0.82rem;     /* 次级正文：选项说明、解析步骤、提示 (~13px) */
+  --content-font-size-caption: 0.75rem; /* 角标、来源、元数据标签 (~12px) */
+
+  --content-line-height-body: 1.6;
+  --content-line-height-tight: 1.35;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text-primary: #f5f5f7;
-    --text-secondary: #a1a1a6;
-    --text-tertiary: #6e6e73;
-
-    --glass-bg: rgba(30, 30, 35, 0.72);
-    --glass-bg-elevated: rgba(45, 45, 52, 0.88);
-    --glass-border: rgba(255, 255, 255, 0.12);
-    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.36);
-    --glass-shadow-deep: 0 20px 60px -10px rgba(0, 0, 0, 0.5);
-
-    --bg-canvas: #0f172a;
-    --bg-card: #1e293b;
-    --bg-card-hover: #334155;
-    --bg-input: rgba(30, 41, 59, 0.8);
-    --border-subtle: #334155;
-  }
+/* 全局页面防横向溢出与基础盒模型重置 */
+html {
+  box-sizing: border-box;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
 }
+
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+
+body {
+  font-family: var(--font-family-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: var(--text-primary);
+  background-color: var(--bg-canvas);
+  margin: 0;
+  padding: 0;
+  line-height: var(--content-line-height-body);
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* 数据库富文本与公式排版统一，溢出绝对兜底防破框 */
+.math-renderer {
+  font-family: inherit;
+  line-height: inherit;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  max-width: 100%;
+}
+
+/* 纠正 KaTeX 默认 1.21em 导致的公式虚大膨胀，视觉与汉字行高严格匹配 */
+.math-renderer .katex {
+  font-size: 1.04em !important;
+  line-height: 1.2;
+}
+
+/* 块级公式横向自适应安全滚动条，绝不撑破卡片 */
+.math-renderer .katex-display {
+  margin: 0.5rem 0 !important;
+  padding: 0.25rem 0;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  max-width: 100% !important;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 通用数据库内容文本排版容器 */
+.db-content-body {
+  font-size: var(--content-font-size-body) !important;
+  line-height: var(--content-line-height-body) !important;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  max-width: 100%;
+}
+
+.db-content-sub {
+  font-size: var(--content-font-size-sub) !important;
+  line-height: var(--content-line-height-body) !important;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  max-width: 100%;
+}
+
+/* 强制保持浅色模式，不跟随系统暗色切换 */
+

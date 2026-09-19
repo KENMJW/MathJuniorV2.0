@@ -9,6 +9,7 @@ export interface CockpitProps {
   className?: string;
   style?: React.CSSProperties;
   defaultSidebarCollapsed?: boolean;
+  hideSidebarToggle?: boolean;
 }
 
 /**
@@ -28,6 +29,7 @@ export const Cockpit: React.FC<CockpitProps> = ({
   className = "",
   style = {},
   defaultSidebarCollapsed = false,
+  hideSidebarToggle = false,
 }) => {
   const [collapsed, setCollapsed] = useState(defaultSidebarCollapsed);
 
@@ -68,20 +70,18 @@ export const Cockpit: React.FC<CockpitProps> = ({
           data-testid="cockpit-header"
           style={{
             flexShrink: 0,
-            minHeight: "48px",
             display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "0 1.5rem",
+            flexDirection: "column",
+            width: "100%",
             background: "var(--glass-bg)",
             backdropFilter: "blur(20px)",
             WebkitBackdropFilter: "blur(20px)",
-            borderBottom: "1px solid var(--border-subtle)",
+            borderBottom: "none",
             zIndex: 20,
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-            {sidebar && (
+          <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
+            {sidebar && !hideSidebarToggle && (
               <button
                 data-testid="cockpit-toggle-sidebar"
                 type="button"
@@ -90,6 +90,7 @@ export const Cockpit: React.FC<CockpitProps> = ({
                 style={{
                   minWidth: "36px",
                   minHeight: "36px",
+                  marginLeft: "1.5rem",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -107,7 +108,7 @@ export const Cockpit: React.FC<CockpitProps> = ({
                 )}
               </button>
             )}
-            {header}
+            <div style={{ flex: 1, width: "100%" }}>{header}</div>
           </div>
           {toolbar && <div data-testid="cockpit-toolbar">{toolbar}</div>}
         </header>
@@ -150,6 +151,7 @@ export const Cockpit: React.FC<CockpitProps> = ({
             flex: 1,
             height: "100%",
             overflowY: "auto",
+            overflowX: "hidden",
             backgroundColor: "var(--bg-canvas)",
             position: "relative",
             display: "flex",

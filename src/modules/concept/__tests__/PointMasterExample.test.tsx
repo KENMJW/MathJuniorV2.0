@@ -30,13 +30,21 @@ describe('PointMasterExample (Task 9.3 & dim3 必展示验收)', () => {
     expect(html).toContain('第 1 维 · 直观具象本源');
   });
 
-  it('2. [铁律约束] (CT-6)：dim3_rigor (严谨证明) 恒必展示，不可被锁闭', () => {
+  it('2. [母题解锁]：初始状态 4 维默认全上锁，第 3 维无特殊标签且与其它维度一致', () => {
     const html = renderToString(<PointMasterExample example={mockMasterExample} />);
 
-    // 第 3 维必须处于渲染状态
-    expect(html).toContain('data-testid="master-dim-card-3"');
-    expect(html).toContain('必修论证 (dim3 必展示)');
-    expect(html).toContain('由勾股定理');
+    // 默认进入 4 维全部上锁
+    expect(html).toContain('data-testid="master-dim-card-1-locked"');
+    expect(html).toContain('data-testid="master-dim-card-2-locked"');
+    expect(html).toContain('data-testid="master-dim-card-3-locked"');
+    expect(html).toContain('data-testid="master-dim-card-4-locked"');
+    expect(html).toContain('解锁进度：');
+    expect(html).toContain('>0</strong>');
+    expect(html).toContain('4 维');
+
+    // 移除特殊"必修论证 (dim3 必展示)"标签，与其它维度表现完全一致
+    expect(html).not.toContain('必修论证 (dim3 必展示)');
+    expect(html).toContain('点击卡片或上方按钮解锁');
   });
 
   it('3. 铁律 3 门禁：源码中公式与解析统一经由 MathRenderer 渲染，无裸 dangerouslySetInnerHTML', () => {

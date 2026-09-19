@@ -412,7 +412,7 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.35rem' }}>
                           <span style={{ fontWeight: 700 }}>{questionIndex}.</span>
                           <div style={{ flex: 1 }}>
-                            <QuestionContent content={q.stem_zh} images={q.image_paths_json} />
+                            <QuestionContent content={q.stem_zh} images={q.image_paths_json} eager={true} />
                           </div>
                         </div>
 
@@ -432,7 +432,7 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
                                 <span style={{ fontWeight: 700 }}>{optKey}.</span>
                                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                                   {optVal.img ? (
-                                    <QuestionImage role="option" src={optVal.img} alt={`选项 ${optKey}`} />
+                                    <QuestionImage role="option" src={optVal.img} alt={`选项 ${optKey}`} eager={true} />
                                   ) : (
                                     <MathRenderer content={optVal.zh} />
                                   )}
@@ -455,13 +455,13 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
                               fontSize: '11px',
                             }}
                           >
-                            <p style={{ margin: 0, fontWeight: 700, color: '#047857' }}>
-                              【标准答案】 {q.answer_standard}
+                            <p style={{ margin: 0, fontWeight: 700, color: '#047857', wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
+                              【标准答案】 <MathRenderer content={q.answer_standard || ''} />
                             </p>
                             {q.solutions_json && (
                               <div style={{ marginTop: '0.35rem' }}>
                                 <span style={{ fontWeight: 600 }}>【解析点睛】</span>
-                                <SolutionList solutions={q.solutions_json} images={q.image_paths_json} />
+                                <SolutionList solutions={q.solutions_json} images={q.image_paths_json} eager={true} />
                               </div>
                             )}
                           </div>
@@ -543,7 +543,7 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.35rem' }}>
                           <span style={{ fontWeight: 700 }}>{questionIndex}.</span>
                           <div style={{ flex: 1 }}>
-                            <QuestionContent content={q.stem_zh} images={q.image_paths_json} />
+                            <QuestionContent content={q.stem_zh} images={q.image_paths_json} eager={true} />
                           </div>
                         </div>
 
@@ -627,7 +627,7 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
                           <span style={{ fontWeight: 700 }}>{questionIndex}.</span>
                           <span style={{ color: '#64748b', fontWeight: 500 }}>({q.score_default || 8} 分)</span>
                           <div style={{ flex: 1 }}>
-                            <QuestionContent content={q.stem_zh} images={q.image_paths_json} />
+                            <QuestionContent content={q.stem_zh} images={q.image_paths_json} eager={true} />
                           </div>
                         </div>
 
@@ -672,24 +672,31 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
                             {rubricSteps.length > 0 ? (
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginBottom: '0.5rem' }}>
                                 {rubricSteps.map((step) => (
-                                  <div key={step.stepIndex} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
-                                    <span>
-                                      第 {step.stepIndex} 步：<MathRenderer content={step.descriptionZh} />
-                                    </span>
-                                    <span style={{ fontWeight: 700, color: '#b45309', whiteSpace: 'nowrap' }}>
-                                      +{step.points} 分
-                                    </span>
-                                  </div>
-                                ))}
+                                   <div key={step.stepIndex} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
+                                     <span>
+                                       第 {step.stepIndex} 步：<MathRenderer content={step.descriptionZh} />
+                                     </span>
+                                     <span style={{ fontWeight: 700, color: '#b45309', whiteSpace: 'nowrap' }}>
+                                       +{step.points} 分
+                                     </span>
+                                   </div>
+                                 ))}
                               </div>
                             ) : (
                               <p style={{ margin: 0, color: '#64748b' }}>本题暂无细分步骤点</p>
                             )}
 
+                            {q.answer_standard && (
+                              <div style={{ marginTop: '0.4rem', wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
+                                <span style={{ fontWeight: 700, color: '#92400e' }}>【参考答案】</span>
+                                <MathRenderer content={q.answer_standard} />
+                              </div>
+                            )}
+
                             {q.solutions_json && (
                               <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid #fde68a' }}>
                                 <span style={{ fontWeight: 700, color: '#78350f' }}>【推导精解】</span>
-                                <SolutionList solutions={q.solutions_json} images={q.image_paths_json} />
+                                <SolutionList solutions={q.solutions_json} images={q.image_paths_json} eager={true} />
                               </div>
                             )}
                           </div>

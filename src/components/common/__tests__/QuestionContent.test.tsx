@@ -13,6 +13,9 @@ describe('QuestionImage 单元与规范测试', () => {
       'https://example.com/fig.webp'
     );
     expect(resolveQuestionImageSrc('')).toBe('');
+    expect(resolveQuestionImageSrc('["assets/questions/fig.webp"]')).toBe(
+      '/assets/questions/fig.webp'
+    );
   });
 
   it('初始服务端渲染包含骨架屏与图片结构 (防 CLS 跳动)', () => {
@@ -119,5 +122,20 @@ describe('QuestionContent 混合渲染器测试', () => {
     );
     expect(html).toContain('本题考查了正方形的性质');
     expect(html).toContain('src="/assets/questions/Q-2026-51619-0005_sol1.webp"');
+  });
+
+  it('防御性兜底：当题干无 [[IMG:0]] 锚点但提供图片时，自动追加渲染不丢图', () => {
+    const stem = '如图，正方形 ABCD 的边长为 4，求对角线长。';
+    const images = ['assets/questions/Q-2025-HEB-0012_stem0.webp'];
+    const html = renderToString(<QuestionContent content={stem} images={images} />);
+    expect(html).toContain('如图，正方形 ABCD 的边长为 4');
+    expect(html).toContain('src="/assets/questions/Q-2025-HEB-0012_stem0.webp"');
+  });
+
+  it('支持 eager 属性，确保试卷排版与打印时立即加载图片', () => {
+    const html = renderToString(
+      <QuestionImage src="assets/questions/print-test.webp" eager={true} />
+    );
+    expect(html).toContain('loading="eager"');
   });
 });

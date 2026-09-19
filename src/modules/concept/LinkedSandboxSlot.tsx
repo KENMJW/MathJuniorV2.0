@@ -28,7 +28,7 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
   height = 560,
   className = '',
   style = {},
-  pointNameZh = '当前知识考点',
+  pointNameZh: _pointNameZh = '当前知识考点',
 }) => {
   const containerHeight = typeof height === 'number' ? `${height}px` : height;
 
@@ -115,60 +115,22 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
           <span>基础定理直读</span>
         </div>
 
-        {/* 考点标题与说明 */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', width: '100%' }}>
-          <h3
-            style={{
-              margin: 0,
-              fontSize: '1.1rem',
-              fontWeight: 900,
-              color: 'var(--text-primary)',
-            }}
-          >
-            {pointNameZh}
-          </h3>
-          <div
-            style={{
-              fontSize: '0.82rem',
-              color: 'var(--text-secondary)',
-              lineHeight: 1.6,
-            }}
-          >
-            <MathRenderer content="本考点聚焦于代数数式运算、逻辑公理与严谨公式定义，无需动力学几何拖拽模拟。" />
-          </div>
-        </div>
-
-        {/* CLS=0 物理等大锁定防抖说明 */}
+        {/* 核心提示蓝框 */}
         <div
           style={{
-            padding: '0.85rem 1rem',
+            padding: '1rem 1.5rem',
             borderRadius: 'var(--radius-md, 18px)',
             background: 'rgba(0, 113, 227, 0.06)',
             border: '1px solid rgba(0, 113, 227, 0.18)',
-            fontSize: '0.78rem',
+            fontSize: '0.85rem',
             color: 'var(--ios-blue)',
-            lineHeight: 1.6,
+            lineHeight: 1.65,
             textAlign: 'center',
             width: '100%',
             boxSizing: 'border-box',
           }}
         >
-          <div
-            style={{
-              fontWeight: 700,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.35rem',
-              marginBottom: '0.35rem',
-            }}
-          >
-            <Icon name="shield" size={14} />
-            <span>CLS = 0 物理等大防抖设计</span>
-          </div>
-          <div>
-            本视窗高度物理锁定为 <strong style={{ fontFamily: 'monospace' }}>{containerHeight}</strong>，与实验探究沙盒尺寸严格一致，彻底消除内容异步加载带来的页面跳动。
-          </div>
+          <MathRenderer content="本考点聚焦于代数数式运算、逻辑公理与严谨公式定义，无需动力学几何拖拽模拟。" />
         </div>
 
         {/* 快捷指引 */}

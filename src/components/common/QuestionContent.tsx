@@ -9,6 +9,7 @@ export interface QuestionContentProps {
   locale?: 'zh' | 'en';
   className?: string;
   style?: React.CSSProperties;
+  eager?: boolean;
 }
 
 interface ContentSegment {
@@ -47,6 +48,7 @@ export function parseImagePaths(raw: string[] | string | null | undefined): stri
  * 1. 严格使用正则 /\[\[IMG:(\d+)\]\]/g 切分 content。
  * 2. 纯文本片段交给 <MathRenderer>，锚点位置就地插入 <QuestionImage>。
  * 3. 严禁整段喂给 MathRenderer，防止锚点被 HTML 转义破坏。
+ * 4. 防御兜底：若题库提供了图片但题干遗漏 [[IMG:n]] 锚点，尾部自动追加补全，杜绝丢图。
  */
 export const QuestionContent: React.FC<QuestionContentProps> = ({
   content,
@@ -55,6 +57,7 @@ export const QuestionContent: React.FC<QuestionContentProps> = ({
   locale = 'zh',
   className = '',
   style,
+  eager = false,
 }) => {
   const imageList = useMemo(() => parseImagePaths(images), [images]);
 
@@ -86,14 +89,41 @@ export const QuestionContent: React.FC<QuestionContentProps> = ({
     return result;
   }, [content]);
 
+  // 计算已被正文锚点 [[IMG:n]] 消费的图片索引
+  const anchoredIndices = useMemo(() => {
+    const set = new Set<number>();
+    for (const seg of segments) {
+      if (seg.type === 'image' && seg.imageIndex !== undefined) {
+        set.add(seg.imageIndex);
+      }
+    }
+    return set;
+  }, [segments]);
+
+  // 提取未被正文锚点匹配的图片列表 (兜底保护)
+  const unanchoredImages = useMemo(() => {
+    return imageList
+      .map((src, index) => ({ src, index }))
+      .filter(({ index }) => !anchoredIndices.has(index));
+  }, [imageList, anchoredIndices]);
+
   if (!content) {
     return null;
   }
 
-  // 若无任何图片锚点，直接走 MathRenderer 提高渲染性能
-  if (segments.length <= 1 && segments[0]?.type === 'text') {
+  // 若无任何图片锚点，且题库也没有提供任何未匹配的图片，直接走 MathRenderer 提高渲染性能
+  if (segments.length <= 1 && segments[0]?.type === 'text' && unanchoredImages.length === 0) {
     return (
-      <div className={`question-content-plain ${className}`} style={{ lineHeight: 1.6, ...style }}>
+      <div
+        className={`question-content-plain db-content-body ${className}`.trim()}
+        style={{
+          lineHeight: 'var(--content-line-height-body, 1.6)',
+          overflowWrap: 'anywhere',
+          wordBreak: 'break-word',
+          maxWidth: '100%',
+          ...style,
+        }}
+      >
         <MathRenderer content={content} />
       </div>
     );
@@ -101,12 +131,15 @@ export const QuestionContent: React.FC<QuestionContentProps> = ({
 
   return (
     <div
-      className={`question-content-mixed ${className}`}
+      className={`question-content-mixed db-content-body ${className}`.trim()}
       style={{
         display: 'flex',
         flexDirection: 'column',
         gap: '0.25rem',
-        lineHeight: 1.6,
+        lineHeight: 'var(--content-line-height-body, 1.6)',
+        overflowWrap: 'anywhere',
+        wordBreak: 'break-word',
+        maxWidth: '100%',
         ...style,
       }}
     >
@@ -132,12 +165,24 @@ export const QuestionContent: React.FC<QuestionContentProps> = ({
               role={role}
               src={imageSrc}
               alt={altText}
+              eager={eager}
             />
           );
         }
 
         return null;
       })}
+
+      {/* 渲染未被正文锚点匹配的图片 (兜底避免丢图) */}
+      {unanchoredImages.map(({ src, index }) => (
+        <QuestionImage
+          key={`img-unanchored-${index}`}
+          role={role}
+          src={src}
+          alt={locale === 'en' ? `Figure ${index + 1}` : `示意图 ${index + 1}`}
+          eager={eager}
+        />
+      ))}
     </div>
   );
 };
