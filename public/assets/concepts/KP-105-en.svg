@@ -11,18 +11,18 @@
   <!-- Probability Tree / Spinner Diagram -->
   <g transform="translate(200, 160)">
     <!-- Probability Spinner Wheel -->
-    <circle class=\"layer-stage-1\" cx="-60" cy="0" r="55" fill="#f8fafc" stroke="#1d1d1f" stroke-width="2"/>
-    <path class=\"layer-stage-1\" d="M -60 0 L -60 -55 A 55 55 0 0 1 -5 0 Z" fill="#0071e3" fill-opacity="0.4"/>
-    <path class=\"layer-stage-2\" d="M -60 0 L -5 0 A 55 55 0 0 1 -60 55 Z" fill="#34c759" fill-opacity="0.4"/>
-    <path class=\"layer-stage-2\" d="M -60 0 L -60 55 A 55 55 0 0 1 -115 0 Z" fill="#ff9500" fill-opacity="0.4"/>
-    <path class=\"layer-stage-1\" d="M -60 0 L -115 0 A 55 55 0 0 1 -60 -55 Z" fill="#af52de" fill-opacity="0.4"/>
+    <circle class="layer-stage-1" cx="-60" cy="0" r="55" fill="#f8fafc" stroke="#1d1d1f" stroke-width="2"/>
+    <path class="layer-stage-1" d="M -60 0 L -60 -55 A 55 55 0 0 1 -5 0 Z" fill="#0071e3" fill-opacity="0.4"/>
+    <path class="layer-stage-2" d="M -60 0 L -5 0 A 55 55 0 0 1 -60 55 Z" fill="#34c759" fill-opacity="0.4"/>
+    <path class="layer-stage-2" d="M -60 0 L -60 55 A 55 55 0 0 1 -115 0 Z" fill="#ff9500" fill-opacity="0.4"/>
+    <path class="layer-stage-1" d="M -60 0 L -115 0 A 55 55 0 0 1 -60 -55 Z" fill="#af52de" fill-opacity="0.4"/>
     <!-- Center pointer -->
-    <circle class=\"layer-stage-2\" cx="-60" cy="0" r="5" fill="#1d1d1f"/>
-    <line class=\"layer-stage-4\" x1="-60" y1="0" x2="-35" y2="-25" stroke="#ff3b30" stroke-width="2.5"/>
+    <circle class="layer-stage-2" cx="-60" cy="0" r="5" fill="#1d1d1f"/>
+    <line class="layer-stage-4" x1="-60" y1="0" x2="-35" y2="-25" stroke="#ff3b30" stroke-width="2.5"/>
     <!-- Probability Formulas -->
-    <text class=\"layer-stage-4\" x="40" y="-15" font-family="monospace" font-size="14" font-weight="bold" fill="#0071e3">P(A) = m / n</text>
-    <text class=\"layer-stage-4\" x="40" y="15" font-size="12" fill="#86868b">0 ≤ P(A) ≤ 1</text>
+    <text class="layer-stage-4" x="40" y="-15" font-family="monospace" font-size="14" font-weight="bold" fill="#0071e3">P(A) = m / n</text>
+    <text class="layer-stage-4" x="40" y="15" font-size="12" fill="#86868b">0 ≤ P(A) ≤ 1</text>
   </g>
-  <text class=\"layer-stage-4\" x="200" y="268" text-anchor="middle" font-size="13" font-weight="600" fill="#1d1d1f">Classical Probability &amp; Frequency Convergence</text>
+  <text class="layer-stage-4" x="200" y="268" text-anchor="middle" font-size="13" font-weight="600" fill="#1d1d1f">Classical Probability &amp; Frequency Convergence</text>
 
 </svg>

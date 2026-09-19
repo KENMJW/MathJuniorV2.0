@@ -16,6 +16,8 @@ export interface SvgLayerRevealProps {
  */
 export function injectSvgStageLayers(svgRaw: string): string {
   if (!svgRaw) return svgRaw;
+  // 防御性清洗：剔除可能存在的字面反斜杠转义 \"
+  svgRaw = svgRaw.replace(/\\"/g, '"');
   if (svgRaw.includes('layer-stage-1') && svgRaw.includes('layer-stage-2')) {
     return svgRaw;
   }
@@ -197,29 +199,40 @@ export const SvgLayerReveal: React.FC<SvgLayerRevealProps> = ({
         .concept-svg-container .layer-stage-2,
         .concept-svg-container .layer-stage-3,
         .concept-svg-container .layer-stage-4,
-        .concept-svg-container .formal-labels {
+        .concept-svg-container .formal-labels,
+        .concept-svg-container [class*="layer-stage-1"],
+        .concept-svg-container [class*="layer-stage-2"],
+        .concept-svg-container [class*="layer-stage-3"],
+        .concept-svg-container [class*="layer-stage-4"] {
           transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
           opacity: 1;
         }
         .concept-svg-container.stage-1 .layer-stage-2,
         .concept-svg-container.stage-1 .layer-stage-3,
         .concept-svg-container.stage-1 .layer-stage-4,
-        .concept-svg-container.stage-1 .formal-labels {
+        .concept-svg-container.stage-1 .formal-labels,
+        .concept-svg-container.stage-1 [class*="layer-stage-2"],
+        .concept-svg-container.stage-1 [class*="layer-stage-3"],
+        .concept-svg-container.stage-1 [class*="layer-stage-4"] {
           opacity: 0 !important;
           pointer-events: none;
         }
         .concept-svg-container.stage-2 .layer-stage-3,
         .concept-svg-container.stage-2 .layer-stage-4,
         .concept-svg-container.stage-2 .formal-labels,
+        .concept-svg-container.stage-2 [class*="layer-stage-3"],
+        .concept-svg-container.stage-2 [class*="layer-stage-4"],
         .concept-svg-container.hide-formal-labels .formal-labels {
           opacity: 0 !important;
           pointer-events: none;
         }
-        .concept-svg-container.stage-3 .layer-stage-4 {
+        .concept-svg-container.stage-3 .layer-stage-4,
+        .concept-svg-container.stage-3 [class*="layer-stage-4"] {
           opacity: 0 !important;
           pointer-events: none;
         }
-        .concept-svg-container.stage-4 .layer-stage-4 {
+        .concept-svg-container.stage-4 .layer-stage-4,
+        .concept-svg-container.stage-4 [class*="layer-stage-4"] {
           opacity: 1 !important;
         }
         .concept-svg-container svg {
