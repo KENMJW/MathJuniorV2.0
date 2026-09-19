@@ -57,9 +57,14 @@ export function renderMathContent(content: string, defaultBlock: boolean = false
       // 区分行内公式 ($...$) 与块级公式 ($$...$)
       // 只有显式 $$...$$ 或整体单一公式指定 defaultBlock 时才使用 displayMode
       const isDisplay = token.startsWith('$$') || (defaultBlock && content.trim() === token);
-      const formula = token.startsWith('$$')
+      let formula = token.startsWith('$$')
         ? token.slice(2, -2).trim()
         : token.slice(1, -1).trim();
+
+      // 容错防御：消除尾部单斜杠 (如 \\right.\\$ 误写产生的悬挂尾斜杠)
+      if (formula.endsWith('\\') && !formula.endsWith('\\\\')) {
+        formula = formula.slice(0, -1).trim();
+      }
 
       try {
         const rendered = katex.renderToString(formula, {
