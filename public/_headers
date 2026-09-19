@@ -2,9 +2,12 @@
   Cross-Origin-Opener-Policy: same-origin
   Cross-Origin-Embedder-Policy: require-corp
   X-Content-Type-Options: nosniff
+  Cache-Control: no-cache, no-store, must-revalidate
 
-/*.html
-  Cache-Control: no-cache
+# 核心 Service Worker 必须实时验证，绝不缓存
+/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate
 
+# 带有哈希指纹的打包静态文件，安全长期缓存
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
