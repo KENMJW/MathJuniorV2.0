@@ -4,10 +4,23 @@
   X-Content-Type-Options: nosniff
   Cache-Control: no-cache, no-store, must-revalidate
 
-# 核心 Service Worker 必须实时验证，绝不缓存
+# 核心 Service Worker 与入口 html 必须实时验证，绝不长缓
 /sw.js
   Cache-Control: no-cache, no-store, must-revalidate
 
-# 带有哈希指纹的打包静态文件，安全长期缓存
-/assets/*
+/index.html
+  Cache-Control: no-cache, no-store, must-revalidate
+
+# 无哈希的 SVG 概念图，设置 max-age=0 必须协商验证，防止旧图残留
+/assets/concepts/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/assets/questions/*
+  Cache-Control: public, max-age=86400
+
+# 带有哈希指纹的打包静态 JS/CSS，安全长期缓存
+/assets/*.js
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/*.css
   Cache-Control: public, max-age=31536000, immutable

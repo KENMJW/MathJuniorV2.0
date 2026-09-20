@@ -12,8 +12,9 @@ import {
 } from "./modules/sandbox/configs";
 import { PaperWorkbench } from "./modules/exam";
 import { CardDeck, SplitBoard, Cockpit } from "./components/shell";
-import { detectDeviceProfile, DeviceProfile } from "./engine/device/detectDeviceProfile";
+import { DeviceProfile } from "./engine/device/detectDeviceProfile";
 import { setDeviceOverride, getDeviceOverride } from "./engine/device/deviceOverride";
+import { useDeviceResponsive } from "./hooks/useDeviceResponsive";
 import { t } from "./engine/i18n/i18n";
 import { useSessionStore } from "./store/sessionStore";
 import { Icon } from "./components/common/Icon";
@@ -67,9 +68,10 @@ export const MathJuniorHome: React.FC = () => {
   const pathParts = location.pathname.split("/").filter(Boolean);
   const currentSubModule = pathParts[1] || "concept";
 
-  // 设备检测与手动 override 状态管理 (任务 20.4)
-  const [deviceProfile, setDeviceProfile] = useState<DeviceProfile>(detectDeviceProfile());
+  // 设备检测与手动 override 状态管理 (任务 20.4 & TASK-FE-0010)
+  const responsive = useDeviceResponsive();
   const [currentOverride, setCurrentOverride] = useState<DeviceProfile | null>(getDeviceOverride());
+  const deviceProfile = currentOverride || responsive.device;
 
   // 模块内部状态
   const [graphSubView, setGraphSubView] = useState<"map" | "line_loop">("map");
@@ -245,20 +247,15 @@ export const MathJuniorHome: React.FC = () => {
   const effectiveSandboxes = dbConceptSandboxes || ALL_SANDBOXES;
   const effectiveLeapModels = dbLeapModels || mockLeapSandboxModels;
 
-  // 监听窗口尺寸变化自动更新设备 profile
+  // 自动化测试机制支持 (允许通过 window.__setDeviceOverride 供 E2E 调试使用，绝无任何 UI 按钮呈现)
   useEffect(() => {
-    const handleResize = () => {
-      setDeviceProfile(detectDeviceProfile());
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    if (typeof window !== "undefined") {
+      (window as any).__setDeviceOverride = (override: DeviceProfile | null) => {
+        setDeviceOverride(override);
+        setCurrentOverride(override);
+      };
+    }
   }, []);
-
-  const handleSetOverride = (override: DeviceProfile | null) => {
-    setDeviceOverride(override);
-    setCurrentOverride(override);
-    setDeviceProfile(detectDeviceProfile());
-  };
 
   const handleSelectSubModule = (moduleKey: string) => {
     navigate(`/math-junior/${moduleKey}`);
@@ -272,53 +269,9 @@ export const MathJuniorHome: React.FC = () => {
     { key: "exam", labelZh: "百炼成钢 · 实战测评", labelEn: "Assessment Center", icon: "nav-exam" },
   ];
 
-  // 顶栏右侧工具操作区
+  // 顶栏右侧工具操作区 (彻底删除设备切换钮 UI，保留语言切换与自动适配)
   const renderHeaderRight = () => (
     <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
-      {/* 设备 Profile 切换选择器 (任务 20.4) */}
-      <div
-        data-testid="device-profile-selector"
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "0.2rem",
-          padding: "0.2rem",
-          borderRadius: "var(--radius-pill)",
-          background: "var(--bg-card)",
-          border: "1px solid var(--border-subtle)",
-        }}
-      >
-        {[
-          { key: null, label: "自动" },
-          { key: "MOBILE", label: "手机" },
-          { key: "TABLET", label: "平板" },
-          { key: "DESKTOP", label: "电脑" },
-        ].map((item) => {
-          const active = currentOverride === item.key;
-          return (
-            <button
-              key={item.label}
-              type="button"
-              data-testid={`device-override-${item.key || "auto"}`}
-              onClick={() => handleSetOverride(item.key as any)}
-              style={{
-                border: "none",
-                padding: "0.3rem 0.6rem",
-                borderRadius: "var(--radius-pill)",
-                background: active ? "var(--ios-blue)" : "transparent",
-                color: active ? "white" : "var(--text-secondary)",
-                fontWeight: active ? 700 : 500,
-                fontSize: "0.76rem",
-                cursor: "pointer",
-                transition: "all 0.15s ease",
-              }}
-            >
-              {item.label}
-            </button>
-          );
-        })}
-      </div>
-
       {/* 语言切换器 */}
       <button
         type="button"
@@ -336,6 +289,8 @@ export const MathJuniorHome: React.FC = () => {
           display: "flex",
           alignItems: "center",
           gap: "0.3rem",
+          whiteSpace: "nowrap",
+          flexShrink: 0,
         }}
       >
         <Icon name="globe" size={14} />
@@ -653,7 +608,7 @@ export const MathJuniorHome: React.FC = () => {
 
   // 平板端与移动端顶部栏组件
   const renderTabletHeader = () => (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", gap: "12px" }}>
       <button
         type="button"
         data-testid="back-to-portal-btn"
@@ -670,6 +625,8 @@ export const MathJuniorHome: React.FC = () => {
           fontSize: "12px",
           fontWeight: 500,
           cursor: "pointer",
+          whiteSpace: "nowrap",
+          flexShrink: 0,
         }}
       >
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -679,7 +636,7 @@ export const MathJuniorHome: React.FC = () => {
       </button>
 
       <div>
-        <h1 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "var(--text-primary)" }}>
+        <h1 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "var(--text-primary)", whiteSpace: "nowrap" }}>
           初中数学核心素养工坊
         </h1>
       </div>
@@ -689,36 +646,87 @@ export const MathJuniorHome: React.FC = () => {
   );
 
   const renderMobileHeader = () => (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        width: "100%",
+        gap: "8px",
+      }}
+    >
+      {/* 手机端精简返回按钮：极简图标 (<) 紧凑胶囊，热区 >= 44px，彻底根除“全科门/户”竖排 */}
       <button
         type="button"
         data-testid="back-to-portal-btn"
         onClick={() => navigate("/")}
+        aria-label="返回全科门户"
+        title="返回全科门户"
         style={{
           display: "inline-flex",
           alignItems: "center",
-          gap: "4px",
-          padding: "4px 10px",
+          justifyContent: "center",
+          width: "36px",
+          height: "36px",
+          minWidth: "36px",
+          minHeight: "36px",
+          padding: 0,
           borderRadius: "var(--radius-pill)",
           border: "1px solid var(--border-subtle)",
           background: "#ffffff",
           color: "var(--text-primary)",
-          fontSize: "12px",
-          fontWeight: 500,
           cursor: "pointer",
+          flexShrink: 0,
+          boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
         }}
       >
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
           <polyline points="15 18 9 12 15 6" />
         </svg>
-        <span>全科门户</span>
       </button>
 
-      <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--text-primary)" }}>
+      {/* 手机端标题：单行不换行，绝不出现“初中数/学”竖排 */}
+      <span
+        style={{
+          fontSize: "0.95rem",
+          fontWeight: 700,
+          color: "var(--text-primary)",
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          textAlign: "center",
+          flex: 1,
+        }}
+      >
         初中数学
       </span>
 
-      {renderHeaderRight()}
+      {/* 手机端右侧语言切换：紧凑胶囊，绝无挤压 */}
+      <button
+        type="button"
+        data-testid="math-lang-toggle"
+        onClick={() => setLocale(locale === "zh-CN" ? "en" : "zh-CN")}
+        style={{
+          height: "32px",
+          padding: "0 10px",
+          borderRadius: "var(--radius-pill)",
+          border: "1px solid var(--border-subtle)",
+          background: "#ffffff",
+          color: "var(--text-primary)",
+          cursor: "pointer",
+          fontWeight: 600,
+          fontSize: "0.78rem",
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "4px",
+          flexShrink: 0,
+          whiteSpace: "nowrap",
+          boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
+        }}
+      >
+        <Icon name="globe" size={13} />
+        <span>{locale === "zh-CN" ? "EN" : "中"}</span>
+      </button>
     </div>
   );
 
@@ -768,7 +776,7 @@ export const MathJuniorHome: React.FC = () => {
     </nav>
   );
 
-  // 移动端底部卡片导航抽屉
+  // 移动端底部原生 iOS Tab Bar
   const renderMobileBottomBar = () => (
     <div
       style={{
@@ -784,25 +792,29 @@ export const MathJuniorHome: React.FC = () => {
           <button
             key={item.key}
             type="button"
+            data-testid={`mobile-tab-${item.key}`}
             onClick={() => handleSelectSubModule(item.key)}
             style={{
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: "0.2rem",
+              gap: "2px",
               border: "none",
-              background: "transparent",
+              background: active ? "rgba(0, 113, 227, 0.08)" : "transparent",
+              borderRadius: "10px",
+              padding: "4px 10px",
               color: active ? "var(--ios-blue)" : "var(--text-secondary)",
               fontWeight: active ? 700 : 500,
               fontSize: "0.72rem",
               cursor: "pointer",
               minWidth: "52px",
-              minHeight: "52px",
+              minHeight: "48px",
               justifyContent: "center",
+              transition: "all 0.18s cubic-bezier(0.16, 1, 0.3, 1)",
             }}
           >
             <Icon name={item.icon} size={20} />
-            <span>{item.labelZh.split("·")[1] || item.labelZh}</span>
+            <span style={{ whiteSpace: "nowrap" }}>{(item.labelZh.split("·")[1] || item.labelZh).trim()}</span>
           </button>
         );
       })}
@@ -997,7 +1009,7 @@ export const MathJuniorHome: React.FC = () => {
         header={renderMobileHeader()}
         bottomSheet={renderMobileBottomBar()}
       >
-        <div style={{ padding: "0.5rem" }}>{renderModuleContent()}</div>
+        <div style={{ width: "100%", boxSizing: "border-box" }}>{renderModuleContent()}</div>
       </CardDeck>
     );
   }
@@ -1007,7 +1019,8 @@ export const MathJuniorHome: React.FC = () => {
       <SplitBoard
         header={renderTabletHeader()}
         sidebar={renderNavList()}
-        sidebarWidth={280}
+        sidebarWidth={260}
+        isPortrait={responsive.orientation === "portrait"}
       >
         <div style={{ padding: "1.25rem", height: "100%", overflowY: "auto", boxSizing: "border-box" }}>
           {renderModuleContent()}

@@ -10,12 +10,12 @@ export interface CardDeckProps {
 
 /**
  * 手机端横向/纵向卡片穿透流骨架 (CardDeck)
- * 对应设计文档 §10.3、任务 16.2
+ * 对应设计文档 §10.3、任务 16.2 与 TASK-FE-0010 规范
  *
  * 关键特征：
- * - 100dvh 屏幕锁定，垂直自适应流动
- * - 拇指热区/触控靶心规范 >= 52px
- * - 支持顶部导航条与底部抽屉 (Bottom Sheet)
+ * - 100dvh 屏幕锁定，垂直单列自适应流动
+ * - 单手拇指触控靶心规范 >= 48px
+ * - 支持顶部 Slim 导航条与底部原生 iOS Tab Bar (带 safe-area 避让)
  */
 export const CardDeck: React.FC<CardDeckProps> = ({
   children,
@@ -33,13 +33,15 @@ export const CardDeck: React.FC<CardDeckProps> = ({
         flexDirection: "column",
         height: "100dvh",
         width: "100%",
-        backgroundColor: "var(--bg-canvas)",
-        color: "var(--text-primary)",
+        backgroundColor: "var(--bg-canvas, #f5f5f7)",
+        color: "var(--text-primary, #1d1d1f)",
         overflow: "hidden",
         position: "relative",
+        boxSizing: "border-box",
         ...style,
       }}
     >
+      {/* 顶部 Slim 导航条 */}
       {header && (
         <header
           data-testid="card-deck-header"
@@ -48,18 +50,20 @@ export const CardDeck: React.FC<CardDeckProps> = ({
             minHeight: "52px",
             display: "flex",
             alignItems: "center",
-            padding: "0 1rem",
-            background: "var(--glass-bg)",
+            padding: "0 0.75rem",
+            background: "rgba(255, 255, 255, 0.92)",
             backdropFilter: "blur(20px)",
             WebkitBackdropFilter: "blur(20px)",
-            borderBottom: "1px solid var(--border-subtle)",
-            zIndex: 10,
+            borderBottom: "1px solid var(--border-subtle, rgba(0, 0, 0, 0.08))",
+            zIndex: 20,
+            boxSizing: "border-box",
           }}
         >
           {header}
         </header>
       )}
 
+      {/* 主卡片垂直单列流动容器 */}
       <main
         data-testid="card-deck-body"
         style={{
@@ -67,33 +71,36 @@ export const CardDeck: React.FC<CardDeckProps> = ({
           overflowY: "auto",
           overflowX: "hidden",
           WebkitOverflowScrolling: "touch",
-          padding: "1rem",
+          padding: "0.5rem 0.5rem 1rem 0.5rem",
           display: "flex",
           flexDirection: "column",
-          gap: "1rem",
+          gap: "0.75rem",
+          boxSizing: "border-box",
         }}
       >
         {children}
       </main>
 
+      {/* 底部原生 iOS Tab Bar (含 safe-area 避让) */}
       {bottomSheet && (
-        <aside
+        <nav
           data-testid="card-deck-bottom-sheet"
+          className="mobile-safe-bottom"
           style={{
             flexShrink: 0,
             minHeight: "52px",
-            background: "var(--glass-bg-elevated)",
+            background: "rgba(255, 255, 255, 0.96)",
             backdropFilter: "blur(25px)",
             WebkitBackdropFilter: "blur(25px)",
-            borderTop: "1px solid var(--border-subtle)",
-            borderRadius: "var(--radius-lg) var(--radius-lg) 0 0",
-            boxShadow: "var(--glass-shadow-deep)",
-            padding: "1rem",
-            zIndex: 20,
+            borderTop: "1px solid var(--border-subtle, rgba(0, 0, 0, 0.08))",
+            boxShadow: "0 -2px 10px rgba(0, 0, 0, 0.04)",
+            padding: "4px 8px calc(4px + env(safe-area-inset-bottom, 0px)) 8px",
+            zIndex: 30,
+            boxSizing: "border-box",
           }}
         >
           {bottomSheet}
-        </aside>
+        </nav>
       )}
     </div>
   );

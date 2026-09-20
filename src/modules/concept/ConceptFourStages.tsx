@@ -214,17 +214,19 @@ export const ConceptFourStages: React.FC<ConceptFourStagesProps> = ({
         {`${knowledgePoint.point_id} · ${kpName} · ${locale === 'en' ? 'Stage' : '阶段'} ${activeStage} / 4 · ${activeTheme.titleEn}`}
       </span>
 
-      {/* 顶行：① 原点溯源 · 历史题眼 | ② 本真透视 · 几何割补 | ③ 法典严定 · 标准算法 | ④ 本体辨正 · 临界反例 */}
+      {/* 顶行：① 原点溯源 · 历史题眼 | ② 本真透视 · 几何割补 | ③ 法典严定 · 标准算法 | ④ 本体辨正 · 临界反例 (按图二风格对齐) */}
       <nav
         aria-label="Four Stages Navigation"
-        data-testid="all-stages-manifest"
+        data-testid="concept-four-stages-nav"
+        className="concept-stage-tabs-mobile stage-segmented-control"
         style={{
           display: 'flex',
+          gap: '2px',
           width: '100%',
+          padding: '3px',
           background: 'rgba(0, 0, 0, 0.04)',
-          padding: '4px',
+          border: '1px solid rgba(0, 0, 0, 0.03)',
           borderRadius: 'var(--radius-pill, 9999px)',
-          gap: '6px',
           boxSizing: 'border-box',
         }}
       >
@@ -241,20 +243,20 @@ export const ConceptFourStages: React.FC<ConceptFourStagesProps> = ({
               data-stage-btn={stageNum}
               style={{
                 flex: 1,
-                border: isSelected ? `1.5px solid ${cfg.color}` : '1.5px solid transparent',
+                border: 'none',
                 borderRadius: 'var(--radius-pill, 9999px)',
-                padding: '0.55rem 0.75rem',
-                fontSize: '0.85rem',
+                padding: '6px 16px',
+                fontSize: '12px',
                 fontWeight: isSelected ? 700 : 500,
                 cursor: 'pointer',
-                background: isSelected ? '#ffffff' : 'transparent',
+                background: isSelected ? 'var(--bg-card, #ffffff)' : 'transparent',
                 color: isSelected ? cfg.color : 'var(--text-secondary)',
-                boxShadow: isSelected ? `0 2px 10px ${cfg.color}25` : 'none',
+                boxShadow: isSelected ? '0 2px 8px rgba(0, 0, 0, 0.06)' : 'none',
                 transition: 'all 0.18s cubic-bezier(0.16, 1, 0.3, 1)',
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '0.35rem',
+                gap: '6px',
                 whiteSpace: 'nowrap',
               }}
             >
@@ -266,6 +268,7 @@ export const ConceptFourStages: React.FC<ConceptFourStagesProps> = ({
 
       {/* 主体区：左侧 55% 溯源文案与高亮引用框，右侧 45% 高清几何矢量图 */}
       <div
+        className="concept-two-column-layout"
         style={{
           display: 'flex',
           gap: '1.5rem',

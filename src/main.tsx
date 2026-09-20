@@ -2,6 +2,21 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './styles/tokens.css';
+import './styles/responsive.css';
+
+// 自动检测新版本：一旦检测到新 Service Worker 立即触发更新核验，杜绝旧缓存
+if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+  navigator.serviceWorker.ready
+    .then((registration) => {
+      registration.update();
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          registration.update();
+        }
+      });
+    })
+    .catch(() => {});
+}
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {

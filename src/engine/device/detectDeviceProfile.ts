@@ -22,22 +22,18 @@ export function evaluateDeviceFeatures(features: DeviceFeatures): DeviceProfile 
   const hasHover = features.hasHover ?? true;
 
   // 1. 移动端判定:
-  // 宽度 < 600px，或带有粗指针触控且宽 < 768 且无 hover
-  if (width < 600 || (width < 768 && (hasCoarsePointer || maxTouchPoints > 0) && !hasHover)) {
+  // 宽度 < 768px (手机竖屏/横屏)，或触控设备且宽度 < 768px 且无精准 hover
+  if (width < 768 || (width < 768 && (hasCoarsePointer || maxTouchPoints > 0) && !hasHover)) {
     return "MOBILE";
   }
 
   // 2. 平板端判定:
-  // 触控特征 (maxTouchPoints > 0 或 coarsePointer) 且宽度在 [600, 1024] 之间，
-  // 或屏幕宽度在 [600, 900) 范围内
-  if (
-    (width >= 600 && width <= 1024 && (maxTouchPoints > 0 || hasCoarsePointer)) ||
-    (width >= 600 && width < 900)
-  ) {
+  // 宽度在 [768, 1024] 范围内
+  if (width <= 1024) {
     return "TABLET";
   }
 
-  // 3. 桌面端判定 (默认宽屏与精准鼠标)
+  // 3. 桌面端判定 (默认宽屏与精准鼠标 > 1024px)
   return "DESKTOP";
 }
 

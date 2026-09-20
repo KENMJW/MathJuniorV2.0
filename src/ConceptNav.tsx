@@ -377,6 +377,7 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
         右侧：4 个扁平分段胶囊：[四段论精讲] [链接沙盒] [考点母题] [单点快练]
       */}
       <header
+        className="concept-nav-header"
         style={{
           display: "flex",
           alignItems: "center",
@@ -401,34 +402,39 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
         <button
           type="button"
           data-testid="concept-drawer-trigger"
+          className="concept-drawer-trigger-btn"
           onClick={() => setIsDrawerOpen((prev) => !prev)}
           style={{
             display: "inline-flex",
             alignItems: "center",
-            gap: "0.5rem",
-            padding: "0.42rem 1rem",
+            gap: "6px",
+            padding: "6px 16px",
             background: "#ffffff",
             border: "1.5px solid var(--ios-blue, #0071e3)",
             borderRadius: "var(--radius-pill, 9999px)",
             color: "var(--ios-blue, #0071e3)",
-            fontSize: "0.88rem",
+            fontSize: "12px",
             fontWeight: 700,
             cursor: "pointer",
             boxShadow: "0 1px 4px rgba(0, 113, 227, 0.12)",
             transition: "all 0.18s ease",
+            maxWidth: "100%",
+            whiteSpace: "nowrap",
+            flexShrink: 0,
           }}
         >
-          <Icon name="pin" size={15} />
-          <span>
+          <Icon name="pin" size={13} />
+          <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
             {locale === "en" ? currentPoint.name_en : currentPoint.name_zh} · {currentPoint.grade}年级 {currentPoint.semester === 1 ? '上学期' : '下学期'}
           </span>
           <span style={{ display: "none" }}>{currentPoint.point_id}</span>
           <Icon
             name="chevron-down"
-            size={13}
+            size={12}
             style={{
               transform: isDrawerOpen ? "rotate(180deg)" : "none",
               transition: "transform 0.2s ease",
+              flexShrink: 0,
             }}
           />
         </button>
@@ -454,12 +460,18 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
         {/* 中间：Flex 自适应留白 (Negative Space，严禁微光竖线) */}
         <div style={{ flex: 1 }} />
 
-        {/* 右侧：4 个扁平分段胶囊 */}
+        {/* 右侧：4 个扁平分段胶囊 (按图二风格：灰底胶囊槽 + 12px + 纯白微阴影活动态) */}
         <div
-          className="dimension-segmented-control"
+          className="dimension-segmented-control stage-segmented-control"
           style={{
+            position: "relative",
             display: "inline-flex",
-            gap: "4px",
+            background: "rgba(0, 0, 0, 0.04)",
+            padding: "3px",
+            borderRadius: "var(--radius-pill, 9999px)",
+            border: "1px solid rgba(0, 0, 0, 0.03)",
+            gap: "2px",
+            whiteSpace: "nowrap",
           }}
         >
           {[
@@ -477,22 +489,24 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
                 onClick={() => setActiveSubTab(tab.key as any)}
                 style={{
                   border: "none",
-                  padding: "0.4rem 0.9rem",
+                  padding: "6px 16px",
                   borderRadius: "var(--radius-pill, 9999px)",
-                  background: active ? "#ffffff" : "transparent",
-                  color: active ? "var(--ios-blue, #0071e3)" : "var(--text-secondary, #666666)",
+                  background: active ? "var(--bg-card, #ffffff)" : "transparent",
+                  color: active ? "var(--ios-blue)" : "var(--text-secondary)",
                   fontWeight: active ? 700 : 500,
-                  fontSize: "0.84rem",
+                  fontSize: "12px",
                   cursor: "pointer",
-                  boxShadow: active ? "0 1px 4px rgba(0, 0, 0, 0.08)" : "none",
-                  transition: "all 0.15s ease",
+                  boxShadow: active ? "0 2px 8px rgba(0, 0, 0, 0.06)" : "none",
+                  transition: "all 0.18s ease",
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: "0.4rem",
+                  gap: "6px",
+                  whiteSpace: "nowrap",
+                  flexShrink: 0,
                 }}
               >
-                <Icon name={tab.icon} size={14} />
-                <span>{tab.label}</span>
+                <Icon name={tab.icon} size={13} />
+                <span style={{ whiteSpace: "nowrap" }}>{tab.label}</span>
               </button>
             );
           })}

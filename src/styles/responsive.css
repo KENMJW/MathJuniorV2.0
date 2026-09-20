@@ -1,0 +1,236 @@
+/**
+ * 多端自适应与触控响应式增强样式表
+ * 严格遵循 iOS 27 设计哲学与多端隔离规范
+ *
+ * 铁律约束：
+ * 1. 桌面端 (>1024px) 零回归，原生 Keynote 1240px 舞台不受任何侵入影响；
+ * 2. 移动端 (<768px) 强化安全区、单手拇指热区与单列自适应；
+ * 3. 平板端 (768px~1024px) 支持横竖屏自适应与触控优化。
+ */
+
+:root {
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+  --mobile-tabbar-height: 56px;
+  --tablet-header-height: 52px;
+}
+
+/* 移动端与触控通用体验优化 */
+@media (max-width: 1024px) {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  button, .pill-btn, .tab-btn {
+    word-break: keep-all;
+  }
+}
+
+/* 手机端专用深度增强 (<768px) */
+@media (max-width: 767px) {
+  body {
+    overscroll-behavior-y: none;
+  }
+
+  /* 顶栏防折行与紧凑化 */
+  .card-deck-header {
+    padding: 0 0.5rem !important;
+    min-height: 48px !important;
+  }
+
+  /* 模块一：概念精讲在手机端深度适配 */
+  .concept-nav-header {
+    padding: 10px 10px !important;
+    gap: 8px !important;
+  }
+
+  .concept-drawer-trigger-btn {
+    max-width: 100% !important;
+    white-space: nowrap !important;
+    min-height: 44px !important;
+  }
+
+  /* 四段论子入口胶囊条：横滑图标胶囊条，绝不每字竖排 */
+  .dimension-segmented-control {
+    display: flex !important;
+    width: 100% !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    gap: 6px !important;
+    padding: 4px 2px !important;
+  }
+  .dimension-segmented-control::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .dimension-segmented-control button {
+    flex: 0 0 auto !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    min-height: 44px !important;
+    padding: 0.45rem 0.85rem !important;
+    font-size: 0.82rem !important;
+  }
+
+  /* 概念精讲大卡片内衬 */
+  .concept-main-card {
+    padding: 14px 10px 20px 10px !important;
+    border-radius: 0 0 16px 16px !important;
+    min-height: auto !important;
+  }
+
+  /* 概念精讲两栏自动转上下单列流 */
+  .concept-two-column-layout {
+    flex-direction: column !important;
+    gap: 1rem !important;
+  }
+
+  .concept-two-column-layout > div {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: none !important;
+  }
+
+  /* 概念精讲四段论顶部切换条：支持横向滑动，文字不截断 */
+  .concept-stage-tabs-mobile {
+    display: flex !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    padding: 4px !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    gap: 6px !important;
+  }
+  .concept-stage-tabs-mobile::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .concept-stage-tabs-mobile button {
+    flex: 0 0 auto !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    min-height: 44px !important;
+    padding: 0.5rem 0.85rem !important;
+    font-size: 0.82rem !important;
+  }
+
+  /* 模块二：思维图谱在手机端适配 */
+  .subway-map-container {
+    border-radius: 16px !important;
+    min-height: 480px !important;
+  }
+
+  .combination-panel {
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    max-height: 80vh !important;
+    border-left: none !important;
+    border-top: 1px solid var(--border-subtle, rgba(0, 0, 0, 0.12)) !important;
+    border-radius: 20px 20px 0 0 !important;
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.18) !important;
+    z-index: 99 !important;
+  }
+
+  /* 模块三：沙盒探究在手机端适配 */
+  .workspace-stage-card {
+    padding: 12px 10px !important;
+    border-radius: 16px !important;
+    gap: 12px !important;
+  }
+
+  .sandbox-top-bar {
+    gap: 8px !important;
+  }
+
+  .sandbox-header-line {
+    gap: 8px !important;
+  }
+
+  .sandbox-viewport-85 {
+    height: 320px !important;
+    min-height: 320px !important;
+  }
+
+  .sandbox-controls-bar {
+    padding: 10px 12px !important;
+    gap: 10px !important;
+  }
+
+  .slider-group {
+    width: 100% !important;
+    min-width: 100% !important;
+  }
+
+  .sandbox-guide-15 {
+    padding: 10px 14px !important;
+    font-size: 11px !important;
+  }
+
+  /* 模块四：实战测评在手机端适配 */
+  .exam-workbench-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .score-panel-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* 移动端安全边距内衬 */
+  .mobile-safe-bottom {
+    padding-bottom: calc(var(--safe-area-bottom) + 12px) !important;
+  }
+}
+
+/* 平板端专用增强 (768px ~ 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+  /* 平板竖屏模式：两栏平滑转为自适应堆叠 */
+  @media (orientation: portrait) {
+    .concept-two-column-layout {
+      flex-direction: column !important;
+    }
+    .concept-two-column-layout > div {
+      width: 100% !important;
+      max-width: 100% !important;
+      flex: none !important;
+    }
+  }
+
+  /* 平板横屏模式：保持双栏 */
+  @media (orientation: landscape) {
+    .concept-two-column-layout {
+      flex-direction: row !important;
+    }
+  }
+
+  .concept-stage-tabs-mobile {
+    display: flex !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    padding: 4px !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+  }
+
+  .concept-stage-tabs-mobile button {
+    white-space: nowrap !important;
+    min-height: 44px !important;
+    flex: 1 1 auto !important;
+  }
+
+  .dimension-segmented-control button {
+    white-space: nowrap !important;
+    min-height: 44px !important;
+  }
+}
