@@ -4,7 +4,8 @@ import { renderToString } from 'react-dom/server';
 import fs from 'fs';
 import path from 'path';
 import { SubwayMap } from '../SubwayMap';
-import { mockLogicLines, mockKnowledgePoints, mockGraphNodes } from '../mockGraphData';
+import { mockLogicLines } from '../mockGraphData';
+import { ALL_107_KNOWLEDGE_POINTS } from '../../concept/allPointsData';
 
 describe('SubwayMap & FocusBeam (Task 10.1 & 10.2 & 铁律 4/7 校验)', () => {
   it('【铁律 4 源码门神】绝对不含作废的学情热力图、traceRootCause、脉冲红线与作废 token', () => {
@@ -46,8 +47,7 @@ describe('SubwayMap & FocusBeam (Task 10.1 & 10.2 & 铁律 4/7 校验)', () => {
     const html = renderToString(
       React.createElement(SubwayMap, {
         lines: mockLogicLines,
-        points: mockKnowledgePoints,
-        graphNodes: mockGraphNodes,
+        points: ALL_107_KNOWLEDGE_POINTS,
       })
     );
 
@@ -71,11 +71,41 @@ describe('SubwayMap & FocusBeam (Task 10.1 & 10.2 & 铁律 4/7 校验)', () => {
   });
 
   it('Task 10.2 FocusBeam: 点击 KP-023 触发蓝色入度光束与紫色出度光束，无关节点 opacity 变为 0.15', () => {
+    const testGraphNodes = [
+      {
+        node_id: 'NODE-9-1-023',
+        point_id: 'KP-023',
+        grade_semester: '9-1',
+        module_name: '方程组',
+        predecessors: ['KP-022'],
+        successors: ['KP-024'],
+        is_milestone: 1,
+      },
+      {
+        node_id: 'NODE-9-1-022',
+        point_id: 'KP-022',
+        grade_semester: '9-1',
+        module_name: '方程组',
+        predecessors: [],
+        successors: ['KP-023'],
+        is_milestone: 0,
+      },
+      {
+        node_id: 'NODE-9-1-024',
+        point_id: 'KP-024',
+        grade_semester: '9-1',
+        module_name: '方程组',
+        predecessors: ['KP-023'],
+        successors: [],
+        is_milestone: 0,
+      },
+    ];
+
     const html = renderToString(
       React.createElement(SubwayMap, {
         lines: mockLogicLines,
-        points: mockKnowledgePoints,
-        graphNodes: mockGraphNodes,
+        points: ALL_107_KNOWLEDGE_POINTS,
+        graphNodes: testGraphNodes,
         selectedPointId: 'KP-023',
       })
     );
@@ -92,8 +122,8 @@ describe('SubwayMap & FocusBeam (Task 10.1 & 10.2 & 铁律 4/7 校验)', () => {
     // 3. 非关联考点 (例如 KP-001 不在 KP-023 的直接入度/出度中) 被淡化为 opacity="0.15"
     expect(html).toMatch(/data-testid="subway-station-KP-001"[^>]*opacity="0.15"/);
 
-    // 4. 前置考点 KP-015 (入度) 保持 opacity="1"
-    expect(html).toMatch(/data-testid="subway-station-KP-015"[^>]*opacity="1"/);
+    // 4. 前置考点 KP-022 (入度) 保持 opacity="1"
+    expect(html).toMatch(/data-testid="subway-station-KP-022"[^>]*opacity="1"/);
 
     // 5. 侧滑出 CombinationPanel 抽屉
     expect(html).toContain('data-testid="combination-panel"');

@@ -151,7 +151,35 @@
   }
 
   .sandbox-top-bar {
+    position: static !important;
+    margin: 0 !important;
+    padding: 6px 0 !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
     gap: 8px !important;
+  }
+
+  .graph-subnav-sticky-header {
+    position: static !important;
+    margin: 0 !important;
+    padding: 6px 0 !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
+  }
+
+  .concept-nav-header {
+    position: static !important;
+    margin: 0 !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
+  }
+
+  .exam-subnav-sticky-header {
+    position: static !important;
+    margin: 0 !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
+    padding: 10px 14px !important;
   }
 
   .sandbox-header-line {
@@ -232,5 +260,33 @@
   .dimension-segmented-control button {
     white-space: nowrap !important;
     min-height: 44px !important;
+  }
+
+  .sandbox-top-bar {
+    position: static !important;
+    margin: 0 !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
+  }
+
+  .graph-subnav-sticky-header {
+    position: static !important;
+    margin: 0 !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
+  }
+
+  .concept-nav-header {
+    position: static !important;
+    margin: 0 !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
+  }
+
+  .exam-subnav-sticky-header {
+    position: static !important;
+    margin: 0 !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
   }
 }

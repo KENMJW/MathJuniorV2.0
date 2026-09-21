@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { useSessionStore } from "../store/sessionStore";
 import { drawQuestions } from "../modules/exam/drawQuestions";
-import { mockExamQuestions } from "../modules/exam/mockExamQuestions";
+import { testExamQuestions } from "../modules/exam/__tests__/testExamQuestions";
 import { calculateTriangleArea } from "../modules/sandbox/invariants";
 import { calculateSolutionScore } from "../engine/judge/calculateSolutionScore";
 
@@ -75,7 +75,7 @@ describe("Feature: math-junior-frontend, Property 19: 零持久化不变量 (EDG
 
     // 1. 组卷
     const paper = drawQuestions(
-      mockExamQuestions,
+      testExamQuestions,
       {
         selectedKpIds: [],
         choiceCount: 2,

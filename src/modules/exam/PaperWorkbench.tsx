@@ -24,7 +24,6 @@ import {
   InventoryCheckResult,
 } from './verifyPaperInventory';
 import { drawQuestions, drawQuestionsFromDb, GeneratedPaper, QuestionItem } from './drawQuestions';
-import { mockExamQuestions } from './mockExamQuestions';
 import { PrintLayout } from './PrintLayout';
 import { OnlineExam } from './OnlineExam';
 import { MathRenderer } from '../../components/math/MathRenderer';
@@ -50,8 +49,8 @@ const KP_DIRECTORY: KpMeta[] = [
   { id: 'KP-015', nameZh: '全等三角形判定(SAS/ASA/AAS/SSS)', grade: 7, semester: 2, line: 'G2' },
   { id: 'KP-018', nameZh: '轴对称与等腰三角形', grade: 8, semester: 1, line: 'G2' },
   { id: 'KP-020', nameZh: '一次函数的图象与性质', grade: 8, semester: 1, line: 'A4' },
-  { id: 'KP-023', nameZh: '勾股定理及其逆定理', grade: 8, semester: 1, line: 'G4' },
-  { id: 'KP-024', nameZh: '勾股数与距离公式', grade: 8, semester: 1, line: 'G4' },
+  { id: 'KP-023', nameZh: '配方法', grade: 9, semester: 1, line: 'A3' },
+  { id: 'KP-024', nameZh: '求根公式法', grade: 9, semester: 1, line: 'A3' },
   { id: 'KP-028', nameZh: '一元二次方程根与系数关系', grade: 8, semester: 2, line: 'A3' },
   { id: 'KP-030', nameZh: '平行四边形与矩形菱形性质', grade: 8, semester: 2, line: 'G3' },
   { id: 'KP-032', nameZh: '相似三角形判定与性质', grade: 8, semester: 2, line: 'G2' },
@@ -94,8 +93,8 @@ export const PaperWorkbench: React.FC = () => {
   // 当前视图模式: 'workbench' | 'print' | 'online_exam'
   const [activeView, setActiveView] = useState<'workbench' | 'print' | 'online_exam'>('workbench');
 
-  // 真库 2064 题目池状态与 107 考点录 (默认 mock 兜底保证首屏即刻可用)
-  const [questionPool, setQuestionPool] = useState<QuestionItem[]>(mockExamQuestions);
+  // 真库 2064 题目池状态与 107 考点录 (初始为空，从 questions.db 异步加载)
+  const [questionPool, setQuestionPool] = useState<QuestionItem[]>([]);
   const [dbKpDirectory, setDbKpDirectory] = useState<KpMeta[] | null>(null);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
 
@@ -296,17 +295,89 @@ export const PaperWorkbench: React.FC = () => {
 
   return (
     <div
+      className="paper-workbench-container"
+      data-testid="paper-workbench-container"
       style={{
         width: '100%',
-        maxWidth: '1280px',
+        maxWidth: '1240px',
         margin: '0 auto',
-        padding: '2rem 1rem',
+        padding: '0 0 2rem 0',
         display: 'flex',
         flexDirection: 'column',
-        gap: '2rem',
+        gap: '1rem',
         fontFamily: 'var(--font-family-system)',
       }}
     >
+      {/* 模块四固定的吸顶二级菜单 (Apple HIG standard - 对齐模块一、二、三) */}
+      <div
+        className="exam-subnav-sticky-header"
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 40,
+          background: 'var(--bg-card, #ffffff)',
+          padding: '16px 28px',
+          borderRadius: 'var(--radius-lg, 22px)',
+          border: '1px solid var(--border-subtle, rgba(0, 0, 0, 0.07))',
+          borderBottom: '1px solid rgba(0, 0, 0, 0.05)',
+          boxShadow: '0 2px 10px rgba(0, 0, 0, 0.02)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '12px',
+          boxSizing: 'border-box',
+          width: '100%',
+        }}
+      >
+        <div
+          className="stage-segmented-control"
+          style={{
+            position: 'relative',
+            display: 'inline-flex',
+            background: 'rgba(0, 0, 0, 0.04)',
+            padding: '3px',
+            borderRadius: 'var(--radius-pill, 9999px)',
+            border: '1px solid rgba(0, 0, 0, 0.03)',
+            gap: '2px',
+          }}
+        >
+          <span
+            style={{
+              padding: '6px 16px',
+              borderRadius: 'var(--radius-pill, 9999px)',
+              background: 'var(--bg-card, #ffffff)',
+              color: 'var(--ios-blue, #0071e3)',
+              fontWeight: 700,
+              fontSize: '12px',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              letterSpacing: '-0.2px',
+            }}
+          >
+            <Icon name="bolt" size={13} style={{ color: 'var(--ios-blue)' }} />
+            <span>精准出题中心</span>
+          </span>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span
+            style={{
+              fontSize: '12px',
+              color: 'var(--text-secondary)',
+              padding: '4px 10px',
+              background: 'rgba(0, 0, 0, 0.03)',
+              borderRadius: 'var(--radius-pill)',
+              border: '1px solid var(--border-subtle, rgba(0,0,0,0.05))',
+            }}
+          >
+            全真题库 2064 题已就绪
+          </span>
+        </div>
+      </div>
+
       {/* 头部导航与满分制 3 卡片体系选择器 */}
       <div
         style={{
@@ -322,26 +393,6 @@ export const PaperWorkbench: React.FC = () => {
       >
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
           <div>
-            <div
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.375rem',
-                padding: '0.25rem 0.75rem',
-                borderRadius: '9999px',
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                backgroundColor: 'rgba(0, 122, 255, 0.1)',
-                color: 'var(--ios-blue)',
-                border: '1px solid rgba(0, 122, 255, 0.2)',
-                marginBottom: '0.5rem',
-              }}
-            >
-              <Icon name="target" size={14} />
-              <span>百炼成钢 · 实战测评</span>
-              <span style={{ opacity: 0.6 }}>|</span>
-              <span>精准出题中心</span>
-            </div>
             <h1
               style={{
                 fontSize: '1.75rem',

@@ -3,7 +3,7 @@ import fc from 'fast-check';
 import fs from 'fs';
 import path from 'path';
 import { drawQuestions, QuestionItem } from './drawQuestions';
-import { mockExamQuestions } from './mockExamQuestions';
+import { testExamQuestions } from './__tests__/testExamQuestions';
 import { PaperConfig } from './verifyPaperInventory';
 
 describe('Feature: math-junior-frontend, Property 17 (母题与真题物理隔离抽题属性测试)', () => {
@@ -34,7 +34,7 @@ describe('Feature: math-junior-frontend, Property 17 (母题与真题物理隔�
             solutionCount: reqSolution,
           };
 
-          const paper = drawQuestions(mockExamQuestions, config, { seed });
+          const paper = drawQuestions(testExamQuestions, config, { seed });
 
           const drawnIds = new Set<string>([
             ...paper.choiceQuestions.map((q) => q.question_id),
@@ -63,7 +63,7 @@ describe('Feature: math-junior-frontend, Property 17 (母题与真题物理隔�
       solutionCount: 8,
     };
 
-    const paper = drawQuestions(mockExamQuestions, config);
+    const paper = drawQuestions(testExamQuestions, config);
     const allQuestions: QuestionItem[] = [
       ...paper.choiceQuestions,
       ...paper.fillQuestions,

@@ -76,8 +76,8 @@ export const Cockpit: React.FC<CockpitProps> = ({
             background: "var(--glass-bg)",
             backdropFilter: "blur(20px)",
             WebkitBackdropFilter: "blur(20px)",
-            borderBottom: "none",
-            zIndex: 20,
+            borderBottom: "1px solid rgba(0, 0, 0, 0.05)",
+            zIndex: 120,
           }}
         >
           <div style={{ display: "flex", alignItems: "center", width: "100%" }}>

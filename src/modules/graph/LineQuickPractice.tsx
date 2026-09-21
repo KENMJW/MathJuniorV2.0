@@ -12,7 +12,6 @@ import { SolutionList } from '../exam/SolutionList';
 import { Icon } from '../../components/common/Icon';
 import { useSessionStore } from '../../store/sessionStore';
 import { normalizeOptionAnswer } from '../../engine/judge/normalizeOptionAnswer';
-import { mockLineQuickPracticeQuestions } from './mockGraphData';
 
 export interface LineQuickPracticeProps {
   lineId: string;
@@ -40,7 +39,7 @@ export const LineQuickPractice: React.FC<LineQuickPracticeProps> = ({
   lineId,
   lineName,
   initialQuestions,
-  allQuestions = mockLineQuickPracticeQuestions,
+  allQuestions = [],
   pointIds,
   cliqueIds,
   onComplete,

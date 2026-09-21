@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { LineClosedLoop } from '../LineClosedLoop';
 import { LineQuickPractice } from '../LineQuickPractice';
-import { mockLogicLines, mockLineMasterExamples, mockLineQuickPracticeQuestions } from '../mockGraphData';
+import { mockLogicLines } from '../mockGraphData';
 import { useSessionStore } from '../../../store/sessionStore';
 
 describe('LineClosedLoop & LineQuickPractice (Task 10.4 & 铁律 3/4 门禁校验)', () => {
@@ -13,7 +13,22 @@ describe('LineClosedLoop & LineQuickPractice (Task 10.4 & 铁律 3/4 门禁校�
   });
 
   const testLine = mockLogicLines.find((l) => l.line_id === 'G4') || mockLogicLines[0];
-  const testMaster = mockLineMasterExamples['ME-LINE-G4'];
+  const testMaster = {
+    example_id: 'ME-LINE-G4',
+    example_type: 'line_master' as const,
+    bound_target_id: 'G4',
+    source: '中考圆综合压轴母题',
+    stem_zh: '在圆中求证切线与角度关系',
+    stem_en: 'Prove tangent and angle relations in circle',
+    options_json: '{"A":{"zh":"60°"},"B":{"zh":"90°"}}',
+    correct_option: 'B',
+    dim1_origin: '圆的度量源头',
+    dim2_essence: '垂径与切线本质',
+    dim3_rigor: '严密几何推导',
+    dim4_traps: '双切线与隐圆陷阱',
+    bound_line_id: 'G4',
+    empirical_scoring_rate: 0.65,
+  };
 
   it('1. LineClosedLoop 完整渲染主线闭环四要素', () => {
     const html = renderToString(
@@ -25,10 +40,10 @@ describe('LineClosedLoop & LineQuickPractice (Task 10.4 & 铁律 3/4 门禁校�
 
     // ① 主线标识与名称
     expect(html).toContain('G4');
-    expect(html).toContain('几何度量与勾股演进');
+    expect(html).toContain('圆的几何度量与位置关系');
 
     // ② 实验室二旗舰模型
-    expect(html).toContain('LM-8A-01');
+    expect(html).toContain('LM-9A-24');
     expect(html).toContain('实验室二旗舰模型');
 
     // ① 主线精讲四段内容
@@ -38,7 +53,7 @@ describe('LineClosedLoop & LineQuickPractice (Task 10.4 & 铁律 3/4 门禁校�
     expect(html).toContain('中考压轴矩阵');
 
     // 包含四段论内容
-    expect(html).toContain('从直观线段度量到面积割补证明');
+    expect(html).toContain((testLine.origin_foundation_zh || '').slice(0, 10));
   });
 
   it('2. LineQuickPractice 严格锁定 L4~L6 难度，排除 L1~L3 题', () => {
@@ -116,11 +131,58 @@ describe('LineClosedLoop & LineQuickPractice (Task 10.4 & 铁律 3/4 门禁校�
   });
 
   it('3. LineQuickPractice 渲染主线题目内容并走 MathRenderer', () => {
+    const testPracticeQuestions: any[] = [
+      {
+        question_id: 'Q-TEST-01',
+        primary_point_id: 'KP-023',
+        difficulty_level: 4,
+        question_type: 'single_choice',
+        score_default: 3,
+        stem_zh: '在几何图形中验证比例关系为 $\\frac{7}{8}$',
+        stem_en: 'Verify ratio 7/8',
+        options: [
+          { key: 'A', text_zh: '7/8', text_en: '7/8' },
+          { key: 'B', text_zh: '1/2', text_en: '1/2' },
+          { key: 'C', text_zh: '3/4', text_en: '3/4' },
+          { key: 'D', text_zh: '1', text_en: '1' },
+        ],
+        answer_standard: 'A',
+      },
+      {
+        question_id: 'Q-TEST-02',
+        primary_point_id: 'KP-023',
+        difficulty_level: 5,
+        question_type: 'single_choice',
+        score_default: 3,
+        stem_zh: '主线巩固第二题',
+        stem_en: 'Reinforcement Question 2',
+        options: [
+          { key: 'A', text_zh: '1', text_en: '1' },
+          { key: 'B', text_zh: '2', text_en: '2' },
+        ],
+        answer_standard: 'A',
+      },
+      {
+        question_id: 'Q-TEST-03',
+        primary_point_id: 'KP-023',
+        difficulty_level: 6,
+        question_type: 'single_choice',
+        score_default: 3,
+        stem_zh: '主线巩固第三题',
+        stem_en: 'Reinforcement Question 3',
+        options: [
+          { key: 'A', text_zh: '3', text_en: '3' },
+          { key: 'B', text_zh: '4', text_en: '4' },
+        ],
+        answer_standard: 'A',
+      },
+    ];
+
     const html = renderToString(
       <LineQuickPractice
         lineId="G4"
-        initialQuestions={[mockLineQuickPracticeQuestions[0]]}
-        allQuestions={mockLineQuickPracticeQuestions}
+        initialQuestions={testPracticeQuestions}
+        allQuestions={testPracticeQuestions}
       />
     );
 

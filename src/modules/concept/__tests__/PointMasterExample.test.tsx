@@ -9,15 +9,15 @@ describe('PointMasterExample (Task 9.3 & dim3 必展示验收)', () => {
     example_id: 'ME-KP023',
     example_type: 'point_master',
     bound_target_id: 'KP-023',
-    source: '2023年北京中考真题精选',
-    stem_zh: '在 $\\text{Rt}\\triangle ABC$ 中，$\\angle C = 90^\\circ$，$AC = 6$，$BC = 8$。求斜边 $AB$ 的长。',
-    stem_en: 'In right triangle ABC, find hypotenuse AB.',
-    options_json: '{"A":{"zh":"8"},"B":{"zh":"10"},"C":{"zh":"12"},"D":{"zh":"14"}}',
-    correct_option: 'B',
-    dim1_origin: '直角三角形边长关系源于赵爽弦图面积割补。',
-    dim2_essence: '面积守恒为几何直观核心。',
-    dim3_rigor: '在 $\\text{Rt}\\triangle ABC$ 中，由勾股定理：$AB = \\sqrt{6^2 + 8^2} = 10$。',
-    dim4_traps: '若未指明直角边与斜边时，需进行分类讨论以防漏解。',
+    source: '经典中考题型仿编 · 方程组核心例题',
+    stem_zh: '已知关于 $x$ 的一元二次方程 $x^2 - (2m-1)x + m^2 - 1 = 0$ 有两个不相等的实数根 $x_1, x_2$。若 $x_1 + x_2 = x_1 x_2$，求实数 $m$ 的值。',
+    stem_en: 'Given that quadratic equation $x^2 - (2m-1)x + m^2 - 1 = 0$ has two distinct real roots $x_1, x_2$, and $x_1 + x_2 = x_1 x_2$, find $m$.',
+    options_json: '{"A":{"zh":"0"},"B":{"zh":"2"},"C":{"zh":"0 或 2"},"D":{"zh":"-1"}}',
+    correct_option: 'A',
+    dim1_origin: '本题针对考点【配方法】的核心考查要求进行命题设计。',
+    dim2_essence: '配方法的本质是补齐几何正方形缺失的右下角。',
+    dim3_rigor: '判别式校验与韦达定理综合求解。',
+    dim4_traps: '二次项系数不为 1 时漏除以 a。',
     available_dimensions: 4,
   };
 
@@ -26,7 +26,7 @@ describe('PointMasterExample (Task 9.3 & dim3 必展示验收)', () => {
 
     expect(html).toContain('data-testid="point-master-example-card"');
     expect(html).toContain('ME-KP023');
-    expect(html).toContain('2023年北京中考真题精选');
+    expect(html).toContain('经典中考题型仿编 · 方程组核心例题');
     expect(html).toContain('第 1 维 · 直观具象本源');
   });
 

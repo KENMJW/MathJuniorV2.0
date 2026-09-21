@@ -42,7 +42,11 @@ export interface SessionState {
   deviceOverride: DeviceProfile | null;
   setDeviceOverride: (override: DeviceProfile | null) => void;
 
-  // 6. 考完即焚 / 会话重置 (零持久化)
+  // 6. 概念精讲全局锁定选中的考点 ID (默认 KP-001)
+  selectedConceptPointId: string;
+  setSelectedConceptPointId: (id: string) => void;
+
+  // 7. 考完即焚 / 会话重置 (零持久化)
   resetAll: () => void;
 }
 
@@ -52,6 +56,7 @@ const initialState = {
   sandboxSliders: {},
   locale: 'zh-CN' as Locale,
   deviceOverride: null as DeviceProfile | null,
+  selectedConceptPointId: 'KP-001',
 };
 
 export const useSessionStore = create<SessionState>((set, get) => ({
@@ -133,6 +138,10 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
   setDeviceOverride: (override: DeviceProfile | null) => {
     set({ deviceOverride: override });
+  },
+
+  setSelectedConceptPointId: (id: string) => {
+    set({ selectedConceptPointId: id });
   },
 
   resetAll: () => {

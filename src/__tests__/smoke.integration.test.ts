@@ -6,7 +6,7 @@ import ReactDOMServer from "react-dom/server";
 import { DB_PACKAGES, DB_PACKAGE_PATHS, getPackageForTable } from "../engine/db/packages";
 import { setLocale, getLocale, applyI18nDom, onLocaleChange } from "../engine/i18n/i18n";
 import { PrintLayout } from "../modules/exam/PrintLayout";
-import { mockExamQuestions } from "../modules/exam/mockExamQuestions";
+import { testExamQuestions } from "../modules/exam/__tests__/testExamQuestions";
 import { drawQuestions } from "../modules/exam/drawQuestions";
 
 class MockElement {
@@ -155,7 +155,7 @@ describe("Task 18.3: 三引擎冒烟集成测试 (WASM分包 / i18n热切换 / @
 
     // 2. 渲染 PrintLayout 组件并核验印刷 DOM 结构
     const paper = drawQuestions(
-      mockExamQuestions,
+      testExamQuestions,
       {
         selectedKpIds: [],
         choiceCount: 2,

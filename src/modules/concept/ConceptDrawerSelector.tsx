@@ -194,7 +194,7 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
               data-testid="concept-search-input"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={locale === 'en' ? 'Search points by name, pinyin, or KP-ID...' : '实时搜索考点名称、拼音或编号 (如: 勾股, ggdl, KP-023)...'}
+              placeholder={locale === 'en' ? 'Search points by name, pinyin, or KP-ID...' : '实时搜索考点名称、拼音或编号 (如: 配方法, pff, KP-023)...'}
               style={{
                 flex: 1,
                 border: 'none',

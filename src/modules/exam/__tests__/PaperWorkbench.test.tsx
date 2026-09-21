@@ -5,7 +5,7 @@ import path from 'path';
 import { PaperWorkbench } from '../PaperWorkbench';
 import { PrintLayout } from '../PrintLayout';
 import { drawQuestions } from '../drawQuestions';
-import { mockExamQuestions } from '../mockExamQuestions';
+import { testExamQuestions } from './testExamQuestions';
 import { FULL_SCORE_SYSTEMS, PRESET_PAPERS } from '../presetPapers';
 
 describe('PaperWorkbench & PrintLayout (Tasks 17.1 ~ 17.4 & 铁律 3/9/10 门禁校验)', () => {
@@ -53,7 +53,7 @@ describe('PaperWorkbench & PrintLayout (Tasks 17.1 ~ 17.4 & 铁律 3/9/10 门禁
 
   it('4. PrintLayout 完整渲染试卷头部、三大题型与左侧密封线', () => {
     const paper = drawQuestions(
-      mockExamQuestions,
+      testExamQuestions,
       {
         selectedKpIds: [],
         choiceCount: 10,

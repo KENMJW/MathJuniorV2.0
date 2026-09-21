@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import { KnowledgePointRecord } from "./modules/concept/types";
-import { mockKnowledgePointRecords } from "./modules/concept/mockPoints";
 import { ALL_107_KNOWLEDGE_POINTS } from "./modules/concept/allPointsData";
 import { ConceptDrawerSelector } from "./modules/concept/ConceptDrawerSelector";
 import { ConceptFourStages } from "./modules/concept/ConceptFourStages";
@@ -33,21 +32,6 @@ function getSandboxConfigForPoint(sandboxId?: string | null): SandboxConfig | nu
 
 // 辅助函数：为考点生成标准母题
 function getMasterExampleForPoint(point: KnowledgePointRecord): MasterExampleItem {
-  if (point.point_id === "KP-023" || point.name_zh.includes("勾股")) {
-    return {
-      example_id: "ME-KP023",
-      example_type: "point_master",
-      bound_target_id: point.point_id,
-      source: "中考经典真题题眼模型",
-      stem_zh: "在 $\\text{Rt}\\triangle ABC$ 中，$\\angle C = 90^\\circ$，$a=3, b=4$，求斜边 $c$ 及斜边上的高 $h$。",
-      stem_en: "In $\\text{Rt}\\triangle ABC$ with $\\angle C = 90^\\circ, a=3, b=4$, find hypotenuse $c$ and altitude $h$.",
-      dim1_origin: "源自古代测量中直角三角形面积与斜边投影的比例需求。",
-      dim2_essence: "勾股定理结合等面积法：$S = \\frac{1}{2}ab = \\frac{1}{2}ch$。",
-      dim3_rigor: "由勾股定理 $c = \\sqrt{a^2 + b^2} = \\sqrt{3^2 + 4^2} = 5$；由面积恒等式 $ab = ch$ 得 $h = \\frac{3 \\times 4}{5} = 2.4$。",
-      dim4_traps: "警惕未指明直角边与斜边时可能产生的双解情况。",
-      available_dimensions: 4,
-    };
-  }
 
   return {
     example_id: point.master_example_id || `ME-${point.point_id}`,
@@ -134,11 +118,13 @@ function getPracticeQuestionsForPoint(point: KnowledgePointRecord): QuickPractic
  */
 export const ConceptNav: React.FC<ConceptNavProps> = ({
   knowledgePoints: propKnowledgePoints,
-  initialPointId = "KP-023",
+  initialPointId,
   onSelectPoint,
   className = "",
 }) => {
   const locale = useSessionStore((state) => state.locale);
+  const selectedConceptPointId = useSessionStore((state) => state.selectedConceptPointId);
+  const setSelectedConceptPointId = useSessionStore((state) => state.setSelectedConceptPointId);
 
   // 异步从 core.db 读真实考点数据 (真机运行时)
   const [dbKnowledgePoints, setDbKnowledgePoints] = useState<KnowledgePointRecord[] | null>(null);
@@ -170,16 +156,18 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
     };
   }, []);
 
-  // 优先级：传入的非默认 prop > 异步 core.db > 107 考点全库 > mock
+  // 优先级：传入的 prop > 异步 core.db > 107 考点全库 (已对齐真库权威镜像)
   const knowledgePoints = useMemo(() => {
-    if (propKnowledgePoints && propKnowledgePoints.length > 0 && propKnowledgePoints !== mockKnowledgePointRecords) {
+    if (propKnowledgePoints && propKnowledgePoints.length > 0) {
       return propKnowledgePoints;
     }
-    return dbKnowledgePoints || propKnowledgePoints || ALL_107_KNOWLEDGE_POINTS;
+    return dbKnowledgePoints || ALL_107_KNOWLEDGE_POINTS;
   }, [propKnowledgePoints, dbKnowledgePoints]);
 
-  // 当前选中的考点 ID
-  const [selectedPointId, setSelectedPointId] = useState<string>(initialPointId);
+  // 当前选中的考点 ID：优先支持外部传入 initialPointId，其次取全局锁定的 selectedConceptPointId，最终兜底 KP-001
+  const [selectedPointId, setSelectedPointId] = useState<string>(
+    initialPointId || selectedConceptPointId || "KP-001"
+  );
   // 当前子视窗 Tab (四段论 / 沙盒 / 母题 / 快练)
   const [activeSubTab, setActiveSubTab] = useState<"stages" | "sandbox" | "master" | "practice">("stages");
   const mainStageRef = useRef<HTMLElement>(null);
@@ -226,11 +214,12 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
   const currentPoint = useMemo(() => {
     const found = knowledgePoints.find((p) => p.point_id === selectedPointId);
     if (found) return found;
-    return knowledgePoints[0] || mockKnowledgePointRecords[0];
+    return knowledgePoints[0] || ALL_107_KNOWLEDGE_POINTS[0];
   }, [knowledgePoints, selectedPointId]);
 
   const handleSelectPoint = (point: KnowledgePointRecord) => {
     setSelectedPointId(point.point_id);
+    setSelectedConceptPointId(point.point_id);
     setSelectedGrade(point.grade);
     setSelectedSemester(point.semester);
     setSelectedDomain(point.domain);
@@ -371,7 +360,7 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
       }}
     >
       {/* 
-        图 2：书签式顶栏 (无缝贴在大卡片顶部，非纯白底色，中间零分割线，32px 边距使配方法与原点溯源严格垂直对齐)
+        顶部二级导航栏：纯白底色（与图二、图三对齐），吸顶常驻，不随滚动消失
         左侧：[ 考点名称 · 9年级 上学期 ▾ ] 胶囊按钮 (点击唤起 4 级抽屉)
         中间：Flex 留白
         右侧：4 个扁平分段胶囊：[四段论精讲] [链接沙盒] [考点母题] [单点快练]
@@ -384,18 +373,20 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
           justifyContent: "space-between",
           flexWrap: "wrap",
           gap: "0.75rem",
-          padding: "11px 32px",
-          background: "rgba(0, 0, 0, 0.035)",
+          padding: "16px 28px",
+          background: "var(--bg-card, #ffffff)",
           borderTopLeftRadius: "var(--radius-lg, 22px)",
           borderTopRightRadius: "var(--radius-lg, 22px)",
           borderBottomLeftRadius: 0,
           borderBottomRightRadius: 0,
           border: "1px solid var(--border-subtle, rgba(0, 0, 0, 0.07))",
-          borderBottom: "none",
-          position: "relative",
-          zIndex: 80,
+          borderBottom: "1px solid rgba(0, 0, 0, 0.05)",
+          position: "sticky",
+          top: 0,
+          zIndex: 40,
           boxSizing: "border-box",
           width: "100%",
+          boxShadow: "0 2px 10px rgba(0, 0, 0, 0.02)",
         }}
       >
         {/* 左侧：[ 考点名称 · 9年级 上学期 ▾ ] 胶囊按钮 (左侧对齐 32px，与下方【原点溯源】完全平齐) */}

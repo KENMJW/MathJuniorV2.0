@@ -219,9 +219,9 @@ export const PRESET_PAPERS: PresetPaper[] = [
     difficultyDistribution: [25, 35, 25, 15, 0],
     targetGrade: 8,
     targetSemester: 1,
-    descriptionZh: '涵盖三角形轴对称、一次函数解析式、勾股定理及其逆定理。',
-    descriptionEn: 'Isosceles triangles, linear functions, and Pythagorean theorem.',
-    selectedKpIds: ['KP-018', 'KP-020', 'KP-023', 'KP-024'],
+    descriptionZh: '涵盖三角形轴对称、分式方程、等腰三角形性质。',
+    descriptionEn: 'Axial symmetry, fractional equations, and isosceles triangles.',
+    selectedKpIds: ['KP-018', 'KP-053', 'KP-079', 'KP-033'],
   },
   {
     id: 'PAPER-TERM-8B',

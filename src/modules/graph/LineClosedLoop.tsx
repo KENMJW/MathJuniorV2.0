@@ -3,7 +3,7 @@ import { LogicLine, LineMasterExample } from './types';
 import { MathRenderer } from '../../components/math/MathRenderer';
 import { Icon } from '../../components/common/Icon';
 import { LineQuickPractice } from './LineQuickPractice';
-import { mockLogicLines, mockLineMasterExamples } from './mockGraphData';
+import { mockLogicLines } from './mockGraphData';
 import { useSessionStore } from '../../store/sessionStore';
 import { dbClient } from '../../engine/db/dbClient';
 
@@ -307,8 +307,7 @@ export const LineClosedLoop: React.FC<LineClosedLoopProps> = ({
     (masterExample && (masterExample.bound_line_id === currentLine.line_id || masterExample.bound_target_id === currentLine.line_id) ? masterExample : undefined) ||
     masterExample ||
     dbMasterExample ||
-    (currentLine.master_example_id ? mockLineMasterExamples[currentLine.master_example_id] : undefined) ||
-    mockLineMasterExamples[`ME-LINE-${currentLine.line_id}`];
+    undefined;
 
   return (
     <div

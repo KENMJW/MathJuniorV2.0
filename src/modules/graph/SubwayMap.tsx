@@ -5,12 +5,8 @@ import {
   GraphNode,
   KnowledgeCombination,
 } from './types';
-import {
-  mockLogicLines,
-  mockKnowledgePoints,
-  mockGraphNodes,
-  mockCombinations,
-} from './mockGraphData';
+import { mockLogicLines } from './mockGraphData';
+import { ALL_107_KNOWLEDGE_POINTS } from '../concept/allPointsData';
 import { FocusBeam, PointCoord } from './FocusBeam';
 import { CombinationPanel } from './CombinationPanel';
 
@@ -56,9 +52,9 @@ const DOMAIN_COLOR_MAP: Record<string, string> = {
  */
 export const SubwayMap: React.FC<SubwayMapProps> = ({
   lines = mockLogicLines,
-  points = mockKnowledgePoints,
-  graphNodes = mockGraphNodes,
-  combinations = mockCombinations,
+  points = ALL_107_KNOWLEDGE_POINTS,
+  graphNodes = [],
+  combinations = [],
   selectedPointId: controlledSelectedPointId,
   onSelectPoint,
   onNavigate,

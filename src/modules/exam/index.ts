@@ -7,7 +7,6 @@ export * from './verifyPaperInventory';
 export * from './drawQuestions';
 export * from './PrintLayout';
 export * from './PaperWorkbench';
-export * from './mockExamQuestions';
 export * from './MathKeyboard';
 export * from './RadarChart';
 export * from './ScorePanel';

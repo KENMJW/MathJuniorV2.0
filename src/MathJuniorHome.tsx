@@ -387,7 +387,7 @@ export const MathJuniorHome: React.FC = () => {
                   border: "1px solid rgba(0, 113, 227, 0.2)",
                 }}
               >
-                初中数学
+                初中数学 V2.0.0beta
               </span>
             </div>
           </div>
@@ -495,7 +495,7 @@ export const MathJuniorHome: React.FC = () => {
           style={{
             maxWidth: "1240px",
             margin: "0 auto",
-            height: "52px",
+            height: "58px",
             padding: "0 1rem",
             display: "flex",
             justifyContent: "space-between",
@@ -512,15 +512,15 @@ export const MathJuniorHome: React.FC = () => {
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                gap: "6px",
-                padding: "6px 14px",
+                gap: "8px",
+                padding: "8px 18px",
                 borderRadius: "var(--radius-pill)",
                 border: "1px solid var(--border-subtle)",
                 background: "#ffffff",
                 color: "var(--text-primary)",
                 fontFamily: "var(--font-family-sans, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', sans-serif)",
-                fontSize: "12px",
-                fontWeight: 500,
+                fontSize: "13px",
+                fontWeight: 600,
                 letterSpacing: "-0.2px",
                 cursor: "pointer",
                 boxShadow: "0 1px 3px rgba(0, 0, 0, 0.04)",
@@ -536,8 +536,8 @@ export const MathJuniorHome: React.FC = () => {
               }}
             >
               <svg
-                width="14"
-                height="14"
+                width="15"
+                height="15"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -551,15 +551,15 @@ export const MathJuniorHome: React.FC = () => {
             </button>
           </div>
 
-          {/* 右侧：4 模块横向胶囊 (靠右对齐，与下面大卡片的右边缘完全对齐) */}
+          {/* 右侧：4 模块横向胶囊 (方案 1：整体放大至 14px + 经典蓝底高光，建立清晰一级父级统治层级) */}
           <div
             style={{
               display: "inline-flex",
-              background: "rgba(0, 0, 0, 0.04)",
-              padding: "3px",
+              background: "rgba(0, 0, 0, 0.05)",
+              padding: "4px",
               borderRadius: "var(--radius-pill)",
-              border: "1px solid rgba(0, 0, 0, 0.03)",
-              gap: "2px",
+              border: "1px solid rgba(0, 0, 0, 0.04)",
+              gap: "3px",
             }}
           >
             {MODULE_NAV_ITEMS.map((item) => {
@@ -571,29 +571,39 @@ export const MathJuniorHome: React.FC = () => {
                   data-testid={`module-nav-${item.key}`}
                   onClick={() => handleSelectSubModule(item.key)}
                   style={{
-                    padding: "6px 14px",
+                    padding: "8px 20px",
                     borderRadius: "var(--radius-pill)",
                     border: "none",
-                    background: active ? "#ffffff" : "transparent",
+                    background: active ? "var(--ios-blue, #0071e3)" : "transparent",
                     fontFamily: "var(--font-family-sans, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', sans-serif)",
-                    fontSize: "12px",
+                    fontSize: "14px",
                     fontWeight: active ? 600 : 500,
-                    color: active ? "var(--text-primary)" : "var(--text-secondary)",
+                    color: active ? "#ffffff" : "var(--text-secondary)",
                     cursor: "pointer",
                     display: "inline-flex",
                     alignItems: "center",
-                    gap: "6px",
+                    gap: "8px",
                     letterSpacing: "-0.2px",
                     boxShadow: active
-                      ? "0 1px 4px rgba(0, 0, 0, 0.06)"
+                      ? "0 4px 14px rgba(0, 113, 227, 0.28)"
                       : "none",
-                    transition: "all 0.18s cubic-bezier(0.16, 1, 0.3, 1)",
+                    transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!active) {
+                      e.currentTarget.style.color = "var(--text-primary, #1d1d1f)";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!active) {
+                      e.currentTarget.style.color = "var(--text-secondary)";
+                    }
                   }}
                 >
                   <Icon
                     name={item.icon}
-                    size={14}
-                    style={{ stroke: active ? "var(--ios-blue)" : "currentColor" }}
+                    size={16}
+                    style={{ stroke: active ? "#ffffff" : "currentColor" }}
                   />
                   <span>{locale === "en" ? item.labelEn : item.labelZh}</span>
                   <span style={{ display: "none" }}>{item.labelZh.replace(/\s+/g, "")}</span>
@@ -855,8 +865,27 @@ export const MathJuniorHome: React.FC = () => {
                 width: "100%",
               }}
             >
-              {/* 顶部分段切换控制条 (Apple HIG standard) */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
+              {/* 顶部分段切换控制条 (Apple HIG standard - 吸顶固定常驻) */}
+              <div
+                className="graph-subnav-sticky-header"
+                style={{
+                  position: "sticky",
+                  top: 0,
+                  zIndex: 40,
+                  background: "var(--bg-card, #ffffff)",
+                  padding: "16px 28px",
+                  margin: "-24px -28px 0 -28px",
+                  borderTopLeftRadius: "var(--radius-lg, 22px)",
+                  borderTopRightRadius: "var(--radius-lg, 22px)",
+                  borderBottom: "1px solid rgba(0, 0, 0, 0.05)",
+                  boxShadow: "0 2px 10px rgba(0, 0, 0, 0.02)",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  gap: "10px",
+                }}
+              >
                 <div
                   className="stage-segmented-control"
                   style={{
@@ -982,6 +1011,7 @@ export const MathJuniorHome: React.FC = () => {
         );
 
       case "lab":
+      case "sandbox":
         return (
           <LabWorkspace
             effectiveSandboxes={effectiveSandboxes}

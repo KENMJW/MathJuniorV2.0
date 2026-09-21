@@ -99,11 +99,11 @@ describe("Task 20: 产品化外壳与信息架构集成测试", () => {
       expect(html).toContain("第四级 · 大纲考点");
 
       // 2. 年级/学期/领域/考点
-      expect(html).toContain("八年级");
+      expect(html).toContain("九年级");
       expect(html).toContain("上学期 (1)");
-      expect(html).toContain("图形与几何");
+      expect(html).toContain("数与代数");
       expect(html).toContain("KP-023");
-      expect(html).toContain("勾股定理及其逆定理");
+      expect(html).toContain("配方法");
 
       // 3. 四位一体子视窗 Tab
       expect(html).toContain("四段论精讲");

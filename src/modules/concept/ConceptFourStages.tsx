@@ -19,7 +19,32 @@ export interface ConceptFourStagesProps {
  * 经典典籍高亮引用辅助函数 (左侧 55% 溯源引用框)
  */
 function getAncientQuote(pointId: string, stage: StageNumber, nameZh: string): { book: string; quote: string } {
-  if (pointId === 'KP-023' || nameZh.includes('勾股')) {
+  if (pointId === 'KP-023' || nameZh.includes('配方法')) {
+    if (stage === 1) {
+      return {
+        book: '《代数学》（Kitāb al-Jabr wa-l-Muqābala）',
+        quote: '“若有平方与根等于数，则画一正方形表示未知数之平方，在其两边各补一矩形，补齐缺失之小正方形角块，方程自明。”',
+      };
+    }
+    if (stage === 2) {
+      return {
+        book: '阿尔·花拉子米 · 几何配方法',
+        quote: '“以面积割补补齐正方形缺失之右下角，一次项系数一半之平方 $(b/2)^2$ 即为面积补丁。”',
+      };
+    }
+    if (stage === 3) {
+      return {
+        book: '《九章算术》· 开方篇',
+        quote: '“开方作法本算，借一算步之，超一等，配实除法，以从开平方之术。”',
+      };
+    }
+    return {
+      book: '代数方程正逆辨正',
+      quote: '“二次项系数必先化为一，两边同加半方；审视判别式临界，辨根之虚实与最值极点。”',
+    };
+  }
+
+  if (pointId === 'KP-058' || nameZh.includes('勾股')) {
     if (stage === 1) {
       return {
         book: '《周髀算经》卷上',
@@ -147,8 +172,10 @@ export const ConceptFourStages: React.FC<ConceptFourStagesProps> = ({
 
   // 高清矢量图注
   const vectorCaption =
-    knowledgePoint.point_id === 'KP-023' || knowledgePoint.name_zh.includes('勾股')
+    knowledgePoint.point_id === 'KP-058' || knowledgePoint.name_zh.includes('勾股')
       ? '图 1-1 中国古代《九章算术》弧矢几何模型 · 几何本真割补与投影'
+      : knowledgePoint.point_id === 'KP-023' || knowledgePoint.name_zh.includes('配方法')
+      ? '图 1-1 阿尔·花拉子米几何配方法模型 · 几何拼补与面积投影'
       : knowledgePoint.name_zh.includes('垂径')
       ? '图 1-1 中国古代《九章算术》垂径定理弦与矢图示'
       : `图 1-1 · ${kpName} 几何模型与数学结构图示`;

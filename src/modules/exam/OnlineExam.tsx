@@ -12,6 +12,7 @@
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { GeneratedPaper, QuestionItem } from './drawQuestions';
 import { MathRenderer } from '../../components/math/MathRenderer';
 import { QuestionContent } from '../../components/common/QuestionContent';
@@ -54,6 +55,9 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
 
   // 右侧辅助说明卡折叠状态
   const [isTipsExpanded, setIsTipsExpanded] = useState<boolean>(true);
+
+  // 退出考试二次确认提示框状态
+  const [showExitConfirm, setShowExitConfirm] = useState<boolean>(false);
 
   // 扁平化全部题目列表 (用于题号索引与定位)
   const allQuestions = useMemo(() => {
@@ -252,60 +256,82 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
         fontFamily: 'var(--font-family-system)',
       }}
     >
-      {/* 顶部简易栏：返回工作台、试卷标题与倒计时 */}
+      {/* 模块四在线考试吸顶常驻二级菜单 (Apple HIG standard) */}
       <div
+        className="exam-subnav-sticky-header"
         style={{
           display: 'flex',
           flexWrap: 'wrap',
           alignItems: 'center',
           justifyContent: 'space-between',
           gap: '1rem',
-          padding: '1rem 1.5rem',
-          borderRadius: 'var(--radius-xl)',
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
-          backgroundColor: 'var(--glass-bg)',
-          border: '1px solid var(--border-subtle)',
-          boxShadow: 'var(--shadow-sm)',
+          padding: '12px 24px',
+          borderRadius: 'var(--radius-lg, 22px)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          backgroundColor: 'var(--bg-card, #ffffff)',
+          border: '1px solid var(--border-subtle, rgba(0, 0, 0, 0.07))',
+          borderBottom: '1px solid rgba(0, 0, 0, 0.05)',
+          boxShadow: '0 2px 10px rgba(0, 0, 0, 0.02)',
+          position: 'sticky',
+          top: 0,
+          zIndex: 40,
           marginBottom: '1.5rem',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
           <button
             type="button"
-            onClick={onBackToWorkbench}
+            data-testid="exam-back-to-workbench-btn"
+            onClick={() => setShowExitConfirm(true)}
             style={{
-              padding: '0.375rem 0.75rem',
-              borderRadius: 'var(--radius-md)',
-              fontSize: '0.75rem',
+              padding: '6px 14px',
+              borderRadius: 'var(--radius-pill)',
+              fontSize: '12px',
               fontWeight: 600,
-              backgroundColor: 'var(--glass-bg-card)',
+              backgroundColor: 'rgba(0, 0, 0, 0.04)',
               border: '1px solid var(--border-subtle)',
               color: 'var(--text-primary)',
               cursor: 'pointer',
-              transition: 'background-color 0.2s',
+              transition: 'all 0.2s',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
             }}
           >
-            ← 返回出题工作台
+            <Icon name="chevron-left" size={13} />
+            <span>返回出题中心</span>
           </button>
-          <div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span
+              style={{
+                fontSize: '12px',
+                fontWeight: 700,
+                color: 'var(--ios-blue)',
+                padding: '3px 10px',
+                borderRadius: 'var(--radius-pill)',
+                background: 'rgba(0, 113, 227, 0.08)',
+                border: '1px solid rgba(0, 113, 227, 0.15)',
+              }}
+            >
+              精准出题中心
+            </span>
             <h1
               style={{
-                fontSize: '1.125rem',
-                fontWeight: 900,
+                fontSize: '1rem',
+                fontWeight: 700,
                 color: 'var(--text-primary)',
                 margin: 0,
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
-                maxWidth: '400px',
+                maxWidth: '360px',
               }}
+              title={paper.titleZh}
             >
               {paper.titleZh}
             </h1>
-            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: '0.25rem 0 0 0' }}>
-              全卷满分 {paper.fullScore} 分 · 限时 {paper.timeLimitMinutes} 分钟 · 共 {allQuestions.length} 题
-            </p>
           </div>
         </div>
 
@@ -1142,6 +1168,115 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
         onClose={() => setKeyboardVisible(false)}
         targetTitle={focusedTitle}
       />
+
+      {/* 退出考试二次确认提示弹窗 (Portal 挂载至 document.body 确保真全屏视口水平垂直严格绝对居中) */}
+      {showExitConfirm &&
+        (typeof document !== 'undefined'
+          ? createPortal(
+              <div
+                data-testid="exam-exit-confirm-modal"
+                style={{
+                  position: 'fixed',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  width: '100vw',
+                  height: '100vh',
+                  zIndex: 99999,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: 'rgba(0, 0, 0, 0.45)',
+                  backdropFilter: 'blur(8px)',
+                  WebkitBackdropFilter: 'blur(8px)',
+                }}
+              >
+                <div
+                  style={{
+                    width: '90%',
+                    maxWidth: '380px',
+                    padding: '24px',
+                    borderRadius: '20px',
+                    background: 'var(--bg-card, #ffffff)',
+                    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.22)',
+                    border: '1px solid var(--border-subtle, rgba(0, 0, 0, 0.08))',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    textAlign: 'center',
+                    gap: '16px',
+                  }}
+                >
+                  <div
+                    style={{
+                      width: '48px',
+                      height: '48px',
+                      borderRadius: '50%',
+                      background: 'rgba(255, 149, 0, 0.12)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'var(--ios-amber, #ff9500)',
+                    }}
+                  >
+                    <Icon name="alert" size={24} />
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                      确认退出考试
+                    </h3>
+                    <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                      正在进行考试，你是否确认退出？
+                    </p>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '12px', width: '100%', marginTop: '6px' }}>
+                    <button
+                      type="button"
+                      onClick={() => setShowExitConfirm(false)}
+                      style={{
+                        flex: 1,
+                        padding: '10px 16px',
+                        borderRadius: '12px',
+                        border: '1px solid var(--border-subtle, rgba(0, 0, 0, 0.12))',
+                        background: 'var(--glass-bg, rgba(0, 0, 0, 0.04))',
+                        color: 'var(--text-primary)',
+                        fontWeight: 600,
+                        fontSize: '13px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      继续考试
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowExitConfirm(false);
+                        onBackToWorkbench();
+                      }}
+                      style={{
+                        flex: 1,
+                        padding: '10px 16px',
+                        borderRadius: '12px',
+                        border: 'none',
+                        background: 'var(--ios-red, #ff3b30)',
+                        color: '#ffffff',
+                        fontWeight: 600,
+                        fontSize: '13px',
+                        cursor: 'pointer',
+                        boxShadow: '0 4px 12px rgba(255, 59, 48, 0.25)',
+                      }}
+                    >
+                      确认退出
+                    </button>
+                  </div>
+                </div>
+              </div>,
+              document.body
+            )
+          : null)}
     </div>
   );
 };

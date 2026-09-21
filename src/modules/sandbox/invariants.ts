@@ -16,11 +16,21 @@ export type InvariantType =
   | 'angle'
   | 'vertical_distance'
   | 'area_triangle'
-  | 'ratio_distance';
+  | 'area'
+  | 'ratio_distance'
+  | 'ratio'
+  | 'distance_sum'
+  | 'product'
+  | 'midpoint'
+  | 'point'
+  | 'relation'
+  | 'value'
+  | 'lines'
+  | 'circles';
 
 export interface InvariantSpec {
   id?: string;
-  type: InvariantType;
+  type: InvariantType | string;
   deps: string[]; // 依赖的点或对象 key
   formula?: string; // 展示模板，如 "∠AOB = {val}°" 或 "PA / PB = {val}"
   label?: string;
@@ -133,6 +143,23 @@ export function evaluateInvariantValue(
       return Math.hypot(p1.x - p2.x, p1.y - p2.y);
     }
 
+    case 'distance_sum': {
+      if (!deps || deps.length < 3) return null;
+      if (deps.length >= 4) {
+        const p1 = pointMap[deps[0]];
+        const p2 = pointMap[deps[1]];
+        const p3 = pointMap[deps[2]];
+        const p4 = pointMap[deps[3]];
+        if (!p1 || !p2 || !p3 || !p4) return null;
+        return Math.hypot(p1.x - p2.x, p1.y - p2.y) + Math.hypot(p3.x - p4.x, p3.y - p4.y);
+      }
+      const pP = pointMap[deps[0]];
+      const pA = pointMap[deps[1]];
+      const pB = pointMap[deps[2]];
+      if (!pP || !pA || !pB) return null;
+      return Math.hypot(pP.x - pA.x, pP.y - pA.y) + Math.hypot(pP.x - pB.x, pP.y - pB.y);
+    }
+
     case 'angle': {
       if (!deps || deps.length < 3) return null;
       const pA = pointMap[deps[0]];
@@ -150,6 +177,7 @@ export function evaluateInvariantValue(
       return calculateVerticalDistance(p1, p2);
     }
 
+    case 'area':
     case 'area_triangle': {
       if (!deps || deps.length < 3) return null;
       const pA = pointMap[deps[0]];
@@ -159,13 +187,36 @@ export function evaluateInvariantValue(
       return calculateTriangleArea(pA, pB, pC);
     }
 
+    case 'ratio':
     case 'ratio_distance': {
       if (!deps || deps.length < 3) return null;
+      // 修复 4 点比值截断：若依赖 4 个点 [A1, B1, A, B]，计算 dist(p0,p1) / dist(p2,p3)
+      if (deps.length >= 4) {
+        const p1 = pointMap[deps[0]];
+        const p2 = pointMap[deps[1]];
+        const p3 = pointMap[deps[2]];
+        const p4 = pointMap[deps[3]];
+        if (!p1 || !p2 || !p3 || !p4) return null;
+        const d1 = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+        const d2 = Math.hypot(p3.x - p4.x, p3.y - p4.y);
+        if (d2 <= 1e-9) return 0;
+        return d1 / d2;
+      }
       const pP = pointMap[deps[0]];
       const pA = pointMap[deps[1]];
       const pB = pointMap[deps[2]];
       if (!pP || !pA || !pB) return null;
       return calculateDistanceRatio(pP, pA, pB);
+    }
+
+    case 'product': {
+      if (!deps || deps.length < 4) return null;
+      const p1 = pointMap[deps[0]];
+      const p2 = pointMap[deps[1]];
+      const p3 = pointMap[deps[2]];
+      const p4 = pointMap[deps[3]];
+      if (!p1 || !p2 || !p3 || !p4) return null;
+      return Math.hypot(p1.x - p2.x, p1.y - p2.y) * Math.hypot(p3.x - p4.x, p3.y - p4.y);
     }
 
     default:
@@ -181,9 +232,39 @@ export function formatInvariantText(
   pointMap: Record<string, Point2D>,
   locale: string = 'zh-CN'
 ): string {
-  const val = evaluateInvariantValue(spec, pointMap);
   const label = (locale === 'en' ? spec.labelEn : spec.labelZh) || spec.label || spec.labelZh || '';
   const formula = spec.formula || '{val}';
+
+  // 处理中点坐标展示: formula = "Mid(AC) = ({x}, {y})"
+  if (spec.type === 'midpoint') {
+    if (spec.deps && spec.deps.length >= 2) {
+      const p1 = pointMap[spec.deps[0]];
+      const p2 = pointMap[spec.deps[1]];
+      if (p1 && p2) {
+        const mx = ((p1.x + p2.x) / 2).toFixed(1);
+        const my = ((p1.y + p2.y) / 2).toFixed(1);
+        const res = formula.replace('{x}', mx).replace('{y}', my).replace('{val}', `(${mx}, ${my})`);
+        return label ? `${label}: ${res}` : res;
+      }
+    }
+    return label ? `${label}: ${formula}` : formula;
+  }
+
+  // 处理单点坐标展示: formula = "Solution ({x}, {y})"
+  if (spec.type === 'point') {
+    if (spec.deps && spec.deps.length >= 1) {
+      const p = pointMap[spec.deps[0]];
+      if (p) {
+        const px = p.x.toFixed(1);
+        const py = p.y.toFixed(1);
+        const res = formula.replace('{x}', px).replace('{y}', py).replace('{val}', `(${px}, ${py})`);
+        return label ? `${label}: ${res}` : res;
+      }
+    }
+    return label ? `${label}: ${formula}` : formula;
+  }
+
+  const val = evaluateInvariantValue(spec, pointMap);
 
   if (val === null) {
     return label ? `${label}: ${formula}` : formula;

@@ -39,12 +39,19 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
   selectedLeapModelId: controlledLeapId,
   onSelectLeapModelId,
 }) => {
-  // 默认开启 4D 跃迁实验室 (旗舰手拉手模型)
-  const [internalSubView, setInternalSubView] = useState<"concept_sandbox" | "leap_4d">("leap_4d");
-  const [selectedSandboxId, setSelectedSandboxId] = useState<string>(effectiveSandboxes[0]?.id || "");
+  // 默认开启概念具象沙盒 (实验室一)
+  const [internalSubView, setInternalSubView] = useState<"concept_sandbox" | "leap_4d">("concept_sandbox");
+  const [selectedSandboxId, setSelectedSandboxId] = useState<string>(
+    effectiveSandboxes.find((s) => s.id === 'SB-KP001')?.id ||
+    effectiveSandboxes.find((s) => s.grade === 7 && s.semester === 1)?.id ||
+    effectiveSandboxes[0]?.id ||
+    ""
+  );
   const [internalLeapId, setInternalLeapId] = useState<string>(
-    effectiveLeapModels.find((m) => m.model_id.includes('9A-19') || m.model_name_zh.includes('手拉手'))?.model_id ||
-    'LM-9A-19'
+    effectiveLeapModels.find((m) => m.model_id === 'LM-7A-01')?.model_id ||
+    effectiveLeapModels.find((m) => m.model_id.startsWith('LM-7A'))?.model_id ||
+    effectiveLeapModels[0]?.model_id ||
+    'LM-7A-01'
   );
 
   const labSubView = controlledLabSubView ?? internalSubView;
@@ -52,10 +59,11 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
   const selectedLeapModelId = controlledLeapId ?? internalLeapId;
   const setSelectedLeapModelId = onSelectLeapModelId ?? setInternalLeapId;
 
-  // 概念沙盒 4 级抽屉盒状态
+  // 抽屉盒状态
   const [isConceptDrawerOpen, setIsConceptDrawerOpen] = useState<boolean>(false);
+  const [isLeapDrawerOpen, setIsLeapDrawerOpen] = useState<boolean>(false);
   const [conceptSearchQuery, setConceptSearchQuery] = useState<string>('');
-  const [filterGrade, setFilterGrade] = useState<number>(8);
+  const [filterGrade, setFilterGrade] = useState<number>(7);
   const [filterSemester, setFilterSemester] = useState<number>(1);
   const [filterCategory, setFilterCategory] = useState<string>('all');
 
@@ -65,6 +73,15 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
   const currentSandbox = useMemo(() => {
     return effectiveSandboxes.find((s) => s.id === selectedSandboxId) || effectiveSandboxes[0];
   }, [effectiveSandboxes, selectedSandboxId]);
+
+  // 当前激活的跃迁模型
+  const currentLeapModel = useMemo(() => {
+    return (
+      effectiveLeapModels.find((m) => m.model_id === selectedLeapModelId) ||
+      effectiveLeapModels.find((m) => m.model_id === 'LM-7A-01') ||
+      effectiveLeapModels[0]
+    );
+  }, [effectiveLeapModels, selectedLeapModelId]);
 
   // 从知识点信息自动推断沙盒的年级/学期/课程归类
   const enrichedSandboxes = useMemo(() => {
@@ -203,29 +220,54 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
   return (
     <div className="sandbox-stage-wrapper">
       <div className="workspace-stage-card">
-        {/* 顶部统一实验室切换器 */}
-        <div className="sandbox-top-bar">
+        {/* 顶部统一实验室切换器 - 吸顶固定常驻 */}
+        <div
+          className="sandbox-top-bar"
+          style={{
+            position: "sticky",
+            top: 0,
+            zIndex: 40,
+            background: "var(--bg-card, #ffffff)",
+            padding: "16px 28px",
+            margin: "-24px -28px 0 -28px",
+            borderTopLeftRadius: "var(--radius-lg, 22px)",
+            borderTopRightRadius: "var(--radius-lg, 22px)",
+            borderBottom: "1px solid rgba(0, 0, 0, 0.05)",
+            boxShadow: "0 2px 10px rgba(0, 0, 0, 0.02)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: "12px",
+          }}
+        >
           <div className="stage-segmented-control">
             <button
               type="button"
-              onClick={() => setLabSubView("leap_4d")}
-              className={`seg-item ${labSubView === "leap_4d" ? "active" : ""}`}
-            >
-              <Icon name="rocket" size={13} className="seg-icon" />
-              <span>4D 跃迁模型 (实验室二 · {effectiveLeapModels.length})</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setLabSubView("concept_sandbox")}
+              onClick={() => {
+                setLabSubView("concept_sandbox");
+                setIsLeapDrawerOpen(false);
+              }}
               className={`seg-item ${labSubView === "concept_sandbox" ? "active" : ""}`}
             >
               <Icon name="flask" size={13} className="seg-icon" />
               <span>概念具象沙盒 (实验室一 · {effectiveSandboxes.length})</span>
             </button>
+            <button
+              type="button"
+              onClick={() => {
+                setLabSubView("leap_4d");
+                setIsConceptDrawerOpen(false);
+              }}
+              className={`seg-item ${labSubView === "leap_4d" ? "active" : ""}`}
+            >
+              <Icon name="rocket" size={13} className="seg-icon" />
+              <span>4D 跃迁模型 (实验室二 · {effectiveLeapModels.length})</span>
+            </button>
           </div>
 
-          {/* 概念沙盒模式下的顶部模型抽屉入口 */}
-          {labSubView === "concept_sandbox" && (
+          {/* 统一模型/沙盒选择抽屉入口 (固定在二级菜单右侧) */}
+          {labSubView === "concept_sandbox" ? (
             <button
               type="button"
               className="model-drawer-trigger-btn"
@@ -234,6 +276,16 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
               <Icon name="menu" size={13} />
               <span>选择沙盒: {currentSandbox?.nameZh || currentSandbox?.id}</span>
               <Icon name={isConceptDrawerOpen ? "chevron-up" : "chevron-down"} size={13} />
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="model-drawer-trigger-btn"
+              onClick={() => setIsLeapDrawerOpen(!isLeapDrawerOpen)}
+            >
+              <Icon name="layers" size={13} />
+              <span>选择模型: {currentLeapModel?.model_id} · {locale === 'en' ? currentLeapModel?.model_name_en : currentLeapModel?.model_name_zh}</span>
+              <Icon name={isLeapDrawerOpen ? "chevron-up" : "chevron-down"} size={13} />
             </button>
           )}
         </div>
@@ -378,9 +430,14 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
         {labSubView === "leap_4d" ? (
           <LeapLab
             modelId={selectedLeapModelId}
-            onSelectModelId={setSelectedLeapModelId}
+            onSelectModelId={(id) => {
+              setSelectedLeapModelId(id);
+              setIsLeapDrawerOpen(false);
+            }}
             allModels={effectiveLeapModels}
             locale={locale}
+            isDrawerOpen={isLeapDrawerOpen}
+            onToggleDrawer={setIsLeapDrawerOpen}
           />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%' }}>
@@ -393,9 +450,47 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
                 </span>
               </h3>
 
-              <div className="tier-pill-group">
-                <span className="nav-pill-btn active">概念具象化</span>
-                <span className="nav-pill-btn">视口阻尼锁定</span>
+              <div className="tier-pill-group" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <span
+                  data-testid="badge-concept-concrete"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '3px 10px',
+                    borderRadius: 'var(--radius-pill, 9999px)',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    background: 'rgba(0, 113, 227, 0.08)',
+                    color: 'var(--ios-blue, #0071e3)',
+                    border: '1px solid rgba(0, 113, 227, 0.18)',
+                    cursor: 'default',
+                    userSelect: 'none',
+                  }}
+                >
+                  <Icon name="check-circle" size={11} />
+                  概念具象化
+                </span>
+                <span
+                  data-testid="badge-viewport-locked"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '3px 10px',
+                    borderRadius: 'var(--radius-pill, 9999px)',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    background: 'rgba(52, 199, 89, 0.08)',
+                    color: '#2e7d32',
+                    border: '1px solid rgba(52, 199, 89, 0.2)',
+                    cursor: 'default',
+                    userSelect: 'none',
+                  }}
+                >
+                  <Icon name="lock" size={11} />
+                  视口阻尼锁定
+                </span>
               </div>
             </div>
 

@@ -101,11 +101,165 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
     boardRef.current = board;
     const elements: Record<string, any> = {};
 
-    // 3. 渲染动点 (drag_points_json)
+    // 3. 渲染动点 (drag_points_json) 并根据 paramValues 动态更新坐标 (A1 滑块接线)
     let dragPoints: any[] = [];
     try {
       dragPoints = JSON.parse(config.drag_points_json || '[]');
     } catch (e) {}
+
+    const tpl = config.canvas_template || '';
+    const isCircleTemplate =
+      tpl.includes('circle') ||
+      tpl.includes('inscribed') ||
+      tpl.includes('chord') ||
+      tpl.includes('tangent') ||
+      tpl.includes('sector') ||
+      tpl.includes('incircle') ||
+      config.sandbox_id === 'SB-KP073';
+
+    // A1 滑块接线：针对不同几何与代数模板应用 paramValues 驱动动点坐标
+    dragPoints = dragPoints.map((ptDef) => {
+      let x = ptDef.x ?? 0;
+      let y = ptDef.y ?? 0;
+
+      // 数轴模板：动点 X 坐标响应 param_t / pt_p / pt_x / point_x
+      if (tpl.startsWith('number_axis')) {
+        if (!ptDef.constraints?.type || ptDef.constraints?.type !== 'fixed') {
+          const sliderX =
+            paramValues['point_x'] ??
+            paramValues['pt_x'] ??
+            paramValues['pt_p'] ??
+            paramValues['param_t'] ??
+            paramValues['val'];
+          if (sliderX !== undefined && (ptDef.id === 'P' || ptDef.id === 'PointP' || ptDef.name === 'P')) {
+            x = Number(sliderX);
+          }
+        }
+        if (ptDef.id === 'A' && paramValues['interval_a'] !== undefined) {
+          x = Number(paramValues['interval_a']);
+        }
+        if (ptDef.id === 'B' && paramValues['interval_b'] !== undefined) {
+          x = Number(paramValues['interval_b']);
+        }
+      }
+
+      // 直角三角形/勾股定理模板：直角边 leg_a 与 leg_b 改变顶点坐标
+      if (tpl.includes('right_triangle') || tpl.includes('pythagorean')) {
+        const legA = paramValues['leg_a'];
+        const legB = paramValues['leg_b'];
+        if (legA !== undefined && (ptDef.id === 'B' || ptDef.name === 'B')) {
+          x = Number(legA);
+        }
+        if (legB !== undefined && (ptDef.id === 'A' || ptDef.name === 'A')) {
+          y = Number(legB);
+        }
+      }
+
+      // 等腰三角形底边宽度
+      if (tpl.includes('isosceles') && paramValues['base_width'] !== undefined) {
+        const half = Number(paramValues['base_width']) / 2;
+        if (ptDef.id === 'B' || ptDef.name === 'B') x = -half;
+        if (ptDef.id === 'C' || ptDef.name === 'C') x = half;
+      }
+
+      // 等边三角形边长
+      if (tpl.includes('equilateral') && paramValues['side_length'] !== undefined) {
+        const s = Number(paramValues['side_length']);
+        if (ptDef.id === 'B' || ptDef.name === 'B') x = -s / 2;
+        if (ptDef.id === 'C' || ptDef.name === 'C') x = s / 2;
+        if (ptDef.id === 'A' || ptDef.name === 'A') y = (s * Math.sqrt(3)) / 2;
+      }
+
+      // 矩形宽高
+      if (tpl.includes('rectangle')) {
+        const rw = paramValues['rect_width'];
+        const rh = paramValues['rect_height'];
+        if (rw !== undefined) {
+          if (ptDef.id === 'B' || ptDef.name === 'B' || ptDef.id === 'C' || ptDef.name === 'C') {
+            x = Number(rw) / 2;
+          }
+          if (ptDef.id === 'A' || ptDef.name === 'A' || ptDef.id === 'D' || ptDef.name === 'D') {
+            x = -Number(rw) / 2;
+          }
+        }
+        if (rh !== undefined) {
+          if (ptDef.id === 'C' || ptDef.name === 'C' || ptDef.id === 'D' || ptDef.name === 'D') {
+            y = Number(rh) / 2;
+          }
+          if (ptDef.id === 'A' || ptDef.name === 'A' || ptDef.id === 'B' || ptDef.name === 'B') {
+            y = -Number(rh) / 2;
+          }
+        }
+      }
+
+      // 正方形边长
+      if (tpl.includes('square') && paramValues['side_len'] !== undefined) {
+        const s = Number(paramValues['side_len']) / 2;
+        if (ptDef.id === 'A' || ptDef.name === 'A') { x = -s; y = -s; }
+        if (ptDef.id === 'B' || ptDef.name === 'B') { x = s; y = -s; }
+        if (ptDef.id === 'C' || ptDef.name === 'C') { x = s; y = s; }
+        if (ptDef.id === 'D' || ptDef.name === 'D') { x = -s; y = s; }
+      }
+
+      // 菱形对角线
+      if (tpl.includes('rhombus')) {
+        const dh = paramValues['diag_h'];
+        const dv = paramValues['diag_v'];
+        if (dh !== undefined) {
+          if (ptDef.id === 'B' || ptDef.name === 'B') x = Number(dh) / 2;
+          if (ptDef.id === 'D' || ptDef.name === 'D') x = -Number(dh) / 2;
+        }
+        if (dv !== undefined) {
+          if (ptDef.id === 'A' || ptDef.name === 'A') y = Number(dv) / 2;
+          if (ptDef.id === 'C' || ptDef.name === 'C') y = -Number(dv) / 2;
+        }
+      }
+
+      // 几何平移 dx, dy
+      if (tpl.includes('translation')) {
+        const dx = paramValues['dx'] ?? 0;
+        const dy = paramValues['dy'] ?? 0;
+        if (ptDef.id.includes('2') || ptDef.id.includes('prime') || ptDef.id.includes('_t')) {
+          x += Number(dx);
+          y += Number(dy);
+        }
+      }
+
+      // 几何旋转角度 theta
+      if (tpl.includes('rotation') && paramValues['theta'] !== undefined) {
+        if (ptDef.id.includes('2') || ptDef.id.includes('prime') || ptDef.id.includes('_r')) {
+          const rad = (Number(paramValues['theta']) * Math.PI) / 180;
+          const origX = ptDef.x ?? 0;
+          const origY = ptDef.y ?? 0;
+          x = origX * Math.cos(rad) - origY * Math.sin(rad);
+          y = origX * Math.sin(rad) + origY * Math.cos(rad);
+        }
+      }
+
+      // 相似比 / 缩放比 sim_ratio / scale
+      if (tpl.includes('similarity') && paramValues['sim_ratio'] !== undefined) {
+        const k = Number(paramValues['sim_ratio']);
+        if (ptDef.id.includes('2') || ptDef.id.includes('prime')) {
+          x = (ptDef.x ?? 0) * k;
+          y = (ptDef.y ?? 0) * k;
+        }
+      }
+
+      // 圆模型半径变化
+      if (isCircleTemplate) {
+        const cr = paramValues['r'] ?? paramValues['radius_r'] ?? paramValues['circle_r'];
+        if (cr !== undefined && ptDef.id !== 'O' && ptDef.id !== 'Origin') {
+          const curDist = Math.hypot(x, y);
+          if (curDist > 0.1) {
+            const ratio = Number(cr) / curDist;
+            x = x * ratio;
+            y = y * ratio;
+          }
+        }
+      }
+
+      return { ...ptDef, x, y };
+    });
 
     const distractorPairs: Record<string, any[]> = {};
 
@@ -210,14 +364,123 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
       }
     });
 
-    // 5. 核心几何拓扑绘制 (支持自动多边形与旋转全等手拉手)
+    // 5. 核心几何拓扑绘制 (支持自动多边形与圆图元、函数曲线及 X-Ray 发光)
     const primaryPoints = Object.keys(elements)
       .filter((k) => !k.startsWith('distractor_') && elements[k].elType === 'point')
       .map((k) => elements[k]);
 
-    const tpl = config.canvas_template || '';
+    // A2: 真实圆图元开发，消除三角形降级与 SB-KP073 误判
+    if (isCircleTemplate) {
+      const centerPt = elements['O'] || elements['Origin'] || primaryPoints[0];
+      const radiusVal = Number(paramValues['r'] ?? paramValues['radius_r'] ?? paramValues['circle_r'] ?? 4);
 
-    if (tpl.startsWith('number_axis_')) {
+      if (centerPt) {
+        // X-Ray 发光骨架底晕
+        if (xrayActive) {
+          board.create('circle', [centerPt, radiusVal], {
+            strokeColor: '#0071e3',
+            strokeWidth: 6,
+            strokeOpacity: 0.4,
+            fillColor: 'none',
+          });
+        }
+        board.create('circle', [centerPt, radiusVal], {
+          strokeColor: '#38bdf8',
+          strokeWidth: xrayActive ? 3.5 : 2.2,
+          fillColor: 'rgba(56, 189, 248, 0.08)',
+        });
+      }
+
+      // SB-KP073: 圆周角模型 (O 为圆心, A, B 为弦端点, C 为圆周角顶点)
+      if (tpl.includes('inscribed') || config.sandbox_id === 'SB-KP073') {
+        if (elements['O'] && elements['A']) {
+          board.create('segment', [elements['O'], elements['A']], {
+            strokeColor: '#0071e3',
+            strokeWidth: xrayActive ? 3 : 2,
+          });
+        }
+        if (elements['O'] && elements['B']) {
+          board.create('segment', [elements['O'], elements['B']], {
+            strokeColor: '#0071e3',
+            strokeWidth: xrayActive ? 3 : 2,
+          });
+        }
+        if (elements['C'] && elements['A']) {
+          board.create('segment', [elements['C'], elements['A']], {
+            strokeColor: '#818cf8',
+            strokeWidth: xrayActive ? 3.5 : 2.2,
+          });
+        }
+        if (elements['C'] && elements['B']) {
+          board.create('segment', [elements['C'], elements['B']], {
+            strokeColor: '#818cf8',
+            strokeWidth: xrayActive ? 3.5 : 2.2,
+          });
+        }
+        if (elements['A'] && elements['B']) {
+          board.create('segment', [elements['A'], elements['B']], {
+            strokeColor: '#64748b',
+            strokeWidth: 1.5,
+            dash: 2,
+          });
+        }
+      }
+      // 垂径定理模型
+      else if (tpl.includes('chord')) {
+        if (elements['A'] && elements['B']) {
+          board.create('segment', [elements['A'], elements['B']], {
+            strokeColor: '#38bdf8',
+            strokeWidth: xrayActive ? 3.5 : 2.5,
+          });
+        }
+        const midOrD = elements['M'] || elements['D'];
+        if (elements['O'] && midOrD) {
+          board.create('segment', [elements['O'], midOrD], {
+            strokeColor: '#f59e0b',
+            strokeWidth: 2,
+          });
+        }
+      }
+      // 切线模型
+      else if (tpl.includes('tangent')) {
+        if (elements['P'] && elements['A']) {
+          board.create('segment', [elements['P'], elements['A']], {
+            strokeColor: '#34c759',
+            strokeWidth: 2.2,
+          });
+        }
+        if (elements['P'] && elements['B']) {
+          board.create('segment', [elements['P'], elements['B']], {
+            strokeColor: '#34c759',
+            strokeWidth: 2.2,
+          });
+        }
+        if (elements['O'] && elements['A']) {
+          board.create('segment', [elements['O'], elements['A']], {
+            strokeColor: '#64748b',
+            strokeWidth: 1.5,
+            dash: 2,
+          });
+        }
+      }
+      // 直线与圆模型
+      else if (tpl.includes('line_circle')) {
+        const lineDist = paramValues['line_dist_d'] ?? 5;
+        board.create('line', [[-10, lineDist], [10, lineDist]], {
+          strokeColor: '#f59e0b',
+          strokeWidth: 2,
+        });
+      }
+      // 通用圆图元点连线
+      else if (primaryPoints.length >= 2) {
+        for (let i = 0; i < primaryPoints.length - 1; i++) {
+          board.create('segment', [primaryPoints[i], primaryPoints[i + 1]], {
+            strokeColor: '#38bdf8',
+            strokeWidth: 2,
+          });
+        }
+      }
+    } else if (tpl.startsWith('number_axis_')) {
       if (!isAxis) {
         board.create('axis', [[0, 0], [1, 0]], {
           strokeColor: '#475569',
@@ -244,27 +507,63 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
       const getInvK = () => paramValues['inv_k'] ?? paramValues['rect_k'] ?? 6;
 
       if (tpl.includes('quadratic') || tpl.includes('parabola')) {
-        if (tpl.includes('vertex')) {
-          const k_vert = paramValues['param_k'] ?? 0;
-          board.create('functiongraph', [(x: number) => getA() * Math.pow(x - getH(), 2) + k_vert, -15, 15], {
-            strokeColor: '#38bdf8',
-            strokeWidth: 2.5,
-          });
-        } else {
-          board.create('functiongraph', [(x: number) => getA() * x * x + getB() * x + getC(), -15, 15], {
-            strokeColor: '#38bdf8',
-            strokeWidth: 2.5,
+        const a = getA();
+        const b = getB();
+        const c = getC();
+        // A7: X-Ray 开启时骨架曲线高亮发光
+        if (xrayActive) {
+          board.create('functiongraph', [(x: number) => (tpl.includes('vertex') ? a * Math.pow(x - getH(), 2) + (paramValues['param_k'] ?? 0) : a * x * x + b * x + c), -15, 15], {
+            strokeColor: '#0071e3',
+            strokeWidth: 6,
+            strokeOpacity: 0.4,
           });
         }
-      } else if (tpl.includes('inverse')) {
-        board.create('functiongraph', [(x: number) => getInvK() / (x || 0.001), -15, 15], {
+        if (tpl.includes('vertex')) {
+          const k_vert = paramValues['param_k'] ?? 0;
+          board.create('functiongraph', [(x: number) => a * Math.pow(x - getH(), 2) + k_vert, -15, 15], {
+            strokeColor: '#38bdf8',
+            strokeWidth: xrayActive ? 3.5 : 2.5,
+          });
+        } else {
+          board.create('functiongraph', [(x: number) => a * x * x + b * x + c, -15, 15], {
+            strokeColor: '#38bdf8',
+            strokeWidth: xrayActive ? 3.5 : 2.5,
+          });
+        }
+
+        // 若存在割线/两点，绘制抛物线上的连线
+        if (primaryPoints.length >= 2) {
+          board.create('segment', [primaryPoints[0], primaryPoints[1]], {
+            strokeColor: '#f59e0b',
+            strokeWidth: 2,
+          });
+        }
+      } else if (tpl.includes('inverse') || tpl.includes('hyperbola')) {
+        const invK = getInvK();
+        if (xrayActive) {
+          board.create('functiongraph', [(x: number) => (x < 0 ? invK / x : NaN), -15, -0.05], {
+            strokeColor: '#0071e3',
+            strokeWidth: 6,
+            strokeOpacity: 0.4,
+          });
+          board.create('functiongraph', [(x: number) => (x > 0 ? invK / x : NaN), 0.05, 15], {
+            strokeColor: '#0071e3',
+            strokeWidth: 6,
+            strokeOpacity: 0.4,
+          });
+        }
+        board.create('functiongraph', [(x: number) => (x < 0 ? invK / x : NaN), -15, -0.05], {
           strokeColor: '#38bdf8',
-          strokeWidth: 2.5,
+          strokeWidth: xrayActive ? 3.5 : 2.5,
+        });
+        board.create('functiongraph', [(x: number) => (x > 0 ? invK / x : NaN), 0.05, 15], {
+          strokeColor: '#38bdf8',
+          strokeWidth: xrayActive ? 3.5 : 2.5,
         });
       } else {
         board.create('functiongraph', [(x: number) => getK() * x + getB(), -15, 15], {
           strokeColor: '#38bdf8',
-          strokeWidth: 2.5,
+          strokeWidth: xrayActive ? 3.5 : 2.5,
         });
         if (paramValues['slope_k2'] !== undefined) {
           const k2 = paramValues['slope_k2'];
@@ -281,21 +580,21 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
         // 1. 定三角形 OAB
         board.create('polygon', [elements['O'], elements['A'], elements['B']], {
           borders: {
-            strokeColor: '#0071e3',
-            strokeWidth: xrayActive ? 3 : 2.2,
+            strokeColor: xrayActive ? '#38bdf8' : '#0071e3',
+            strokeWidth: xrayActive ? 3.5 : 2.2,
           },
           fillColor: '#0071e3',
-          fillOpacity: 0.22,
+          fillOpacity: xrayActive ? 0.35 : 0.22,
         });
 
         // 2. 动多边形或三角形
         board.create('polygon', [elements['O'], elements['B'], elements['C']], {
           borders: {
-            strokeColor: '#818cf8',
-            strokeWidth: xrayActive ? 3 : 2.2,
+            strokeColor: xrayActive ? '#818cf8' : '#818cf8',
+            strokeWidth: xrayActive ? 3.5 : 2.2,
           },
           fillColor: '#818cf8',
-          fillOpacity: 0.22,
+          fillOpacity: xrayActive ? 0.35 : 0.22,
         });
 
         // 3. 辅助手拉手虚线
@@ -303,31 +602,31 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
           strokeColor: '#fbbf24',
           strokeWidth: 2,
           dash: 3,
-          strokeOpacity: xrayActive ? 0.3 : 0.9,
+          strokeOpacity: xrayActive ? 0.2 : 0.9,
         });
       } else if (primaryPoints.length === 2) {
         board.create('segment', [primaryPoints[0], primaryPoints[1]], {
           strokeColor: '#38bdf8',
-          strokeWidth: 3,
+          strokeWidth: xrayActive ? 4 : 3,
         });
       } else if (primaryPoints.length === 3) {
         board.create('polygon', primaryPoints, {
-          borders: { strokeColor: '#38bdf8', strokeWidth: 2.5 },
+          borders: { strokeColor: '#38bdf8', strokeWidth: xrayActive ? 3.5 : 2.5 },
           fillColor: '#38bdf8',
-          fillOpacity: 0.22,
+          fillOpacity: xrayActive ? 0.3 : 0.22,
         });
       } else if (primaryPoints.length === 4) {
         board.create('polygon', primaryPoints, {
-          borders: { strokeColor: '#38bdf8', strokeWidth: 2.5 },
+          borders: { strokeColor: '#38bdf8', strokeWidth: xrayActive ? 3.5 : 2.5 },
           fillColor: '#38bdf8',
-          fillOpacity: 0.22,
+          fillOpacity: xrayActive ? 0.3 : 0.22,
         });
       } else if (primaryPoints.length >= 5) {
         // 5 点及以上：自动生成封闭多边形发光填充与连线，绝不出现黑屏
         board.create('polygon', primaryPoints, {
-          borders: { strokeColor: '#38bdf8', strokeWidth: 2.5 },
+          borders: { strokeColor: '#38bdf8', strokeWidth: xrayActive ? 3.5 : 2.5 },
           fillColor: '#38bdf8',
-          fillOpacity: 0.22,
+          fillOpacity: xrayActive ? 0.3 : 0.22,
         });
         for (let i = 0; i < primaryPoints.length; i++) {
           const nextIdx = (i + 1) % primaryPoints.length;

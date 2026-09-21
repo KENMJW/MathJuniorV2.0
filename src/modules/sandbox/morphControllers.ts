@@ -65,9 +65,11 @@ export interface PostureMorphingSpec {
 export interface DistractorItem {
   from?: [number, number];
   to?: [number, number];
-  center?: [number, number];
+  center?: [number, number] | string;
   radius?: number;
   color?: string;
+  type?: string;
+  points?: string[];
 }
 
 export interface DistractorLayer {
@@ -332,7 +334,20 @@ export function compileMorphingSandboxConfig(
   const rawPoints = currentCarrier?.points || [];
   const transformedPoints = rawPoints.map((pt) => {
     if (pt.isFixed) {
-      return pt;
+      // 刚体姿态变换：固定锚点不随 param_t 动点平移位移，但必须参与整机旋转/镜像/缩放！
+      // 杜绝基准点留在原地而动点旋转产生的模型姿态严重撕裂
+      const coords = transformPointCoords(
+        pt.x,
+        pt.y,
+        currentPosture?.rotationDeg || 0,
+        currentPosture?.reflected || false,
+        scaleRatio
+      );
+      return {
+        ...pt,
+        x: coords.x,
+        y: coords.y,
+      };
     }
     // 动点随 param_t 产生横向/垂直平滑位移
     const shiftedX = pt.x + paramTDisplacement;
@@ -360,16 +375,25 @@ export function compileMorphingSandboxConfig(
   if (!state?.xrayActive) {
     const distractorLayers = camouflageSpec?.distractorLayers || [];
     const activeCamouflageIds = state?.activeCamouflageIds || [];
+    
+    // 构建点坐标映射表，兼容按点名称引用协议 (如 {"type": "line", "points": ["B", "D"]})
+    const pointCoordMap: Record<string, { x: number; y: number }> = {};
+    transformedPoints.forEach((p) => {
+      pointCoordMap[p.id] = { x: p.x, y: p.y };
+      if (p.name) pointCoordMap[p.name] = { x: p.x, y: p.y };
+    });
+
     distractorLayers.forEach((layer) => {
       if (layer && activeCamouflageIds.includes(layer.id) && Array.isArray(layer.items)) {
         layer.items.forEach((item, idx) => {
+          // 协议 1: { from: [x, y], to: [x, y] }
           if (item?.from && item?.to) {
             dragPointsJson.push({
               id: `distractor_${layer.id}_${idx}_a`,
               name: '',
               x: item.from[0],
               y: item.from[1],
-              color: item.color || 'var(--border-subtle)',
+              color: item.color || '#94a3b8',
               size: 2,
               isDistractor: true,
             });
@@ -378,7 +402,62 @@ export function compileMorphingSandboxConfig(
               name: '',
               x: item.to[0],
               y: item.to[1],
-              color: item.color || 'var(--border-subtle)',
+              color: item.color || '#94a3b8',
+              size: 2,
+              isDistractor: true,
+            });
+          }
+          // 协议 2: { type: 'line', points: ['B', 'D'] }
+          else if (item?.type === 'line' && Array.isArray(item?.points) && item.points.length >= 2) {
+            const pA = pointCoordMap[item.points[0]];
+            const pB = pointCoordMap[item.points[1]];
+            if (pA && pB) {
+              dragPointsJson.push({
+                id: `distractor_${layer.id}_${idx}_a`,
+                name: '',
+                x: pA.x,
+                y: pA.y,
+                color: item.color || '#94a3b8',
+                size: 2,
+                isDistractor: true,
+              });
+              dragPointsJson.push({
+                id: `distractor_${layer.id}_${idx}_b`,
+                name: '',
+                x: pB.x,
+                y: pB.y,
+                color: item.color || '#94a3b8',
+                size: 2,
+                isDistractor: true,
+              });
+            }
+          }
+          // 协议 3: { type: 'circle', center: 'A' | [x, y], radius: 2 }
+          else if (item?.type === 'circle') {
+            let cx = 0, cy = 0;
+            if (typeof item.center === 'string' && pointCoordMap[item.center]) {
+              cx = pointCoordMap[item.center].x;
+              cy = pointCoordMap[item.center].y;
+            } else if (Array.isArray(item.center)) {
+              cx = item.center[0];
+              cy = item.center[1];
+            }
+            const r = typeof item.radius === 'number' ? item.radius : 2;
+            dragPointsJson.push({
+              id: `distractor_${layer.id}_${idx}_a`,
+              name: '',
+              x: cx - r,
+              y: cy,
+              color: item.color || '#94a3b8',
+              size: 2,
+              isDistractor: true,
+            });
+            dragPointsJson.push({
+              id: `distractor_${layer.id}_${idx}_b`,
+              name: '',
+              x: cx + r,
+              y: cy,
+              color: item.color || '#94a3b8',
               size: 2,
               isDistractor: true,
             });
@@ -410,9 +489,40 @@ export function compileMorphingSandboxConfig(
         .join('-')
     : 'default';
 
+  // 8. 恢复抛物线/双曲线函数渲染通道 (消除强制退化为 euclidean/axis)
+  let canvasTemplate: string = 'euclidean';
+  const carrierId = (currentCarrier?.id || '').toLowerCase();
+  const modelNameZh = (model?.model_name_zh || '').toLowerCase();
+  const modelId = (model?.model_id || '').toLowerCase();
+
+  if (
+    carrierId.includes('parabola') ||
+    carrierId.includes('para_') ||
+    carrierId.includes('rect_') ||
+    modelNameZh.includes('抛物线') ||
+    modelNameZh.includes('二次函数') ||
+    modelId.includes('parabola') ||
+    modelId === 'lm-9a-25' ||
+    modelId === 'lm-9a-26' ||
+    modelId === 'lm-9a-27' ||
+    modelId === 'lm-9a-28'
+  ) {
+    canvasTemplate = 'function_quadratic_parabola';
+  } else if (
+    carrierId.includes('hyperbola') ||
+    carrierId.includes('inverse') ||
+    modelNameZh.includes('双曲线') ||
+    modelNameZh.includes('反比例') ||
+    modelId === 'lm-9b-34'
+  ) {
+    canvasTemplate = 'function_inverse';
+  } else if (currentCarrier?.isAxis) {
+    canvasTemplate = 'axis';
+  }
+
   return {
     sandbox_id: `LEAP-${model?.model_id || 'unknown'}-${state?.carrierId || 'default'}-${state?.postureId || 'standard'}-${paramSuffix}`,
-    canvas_template: currentCarrier?.isAxis ? 'axis' : 'euclidean',
+    canvas_template: canvasTemplate,
     viewbox_spec_json: model?.viewbox_spec_json || '{"minX": -10, "maxX": 10, "minY": -10, "maxY": 10}',
     drag_points_json: JSON.stringify(dragPointsJson),
     param_sliders_json: paramSlidersJson,

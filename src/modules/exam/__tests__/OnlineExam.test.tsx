@@ -7,14 +7,14 @@ import { MathKeyboard } from '../MathKeyboard';
 import { RadarChart } from '../RadarChart';
 import { ScorePanel } from '../ScorePanel';
 import { drawQuestions } from '../drawQuestions';
-import { mockExamQuestions } from '../mockExamQuestions';
+import { testExamQuestions } from './testExamQuestions';
 import { isMathAnswerEquivalent } from '../../../engine/judge/isMathAnswerEquivalent';
 import { calculateSolutionScore } from '../../../engine/judge/calculateSolutionScore';
 import { useSessionStore } from '../../../store/sessionStore';
 
 describe('OnlineExam & Assessment Center (Tasks 17.5 + 17.6 & 铁律 2/3/9/10 门禁校验)', () => {
   const testPaper = drawQuestions(
-    mockExamQuestions,
+    testExamQuestions,
     {
       selectedKpIds: [],
       choiceCount: 3,
@@ -234,9 +234,12 @@ describe('OnlineExam & Assessment Center (Tasks 17.5 + 17.6 & 铁律 2/3/9/10 �
       <OnlineExam paper={testPaper} onBackToWorkbench={() => {}} />
     );
 
-    // 来源标签渲染在卡片头部，短标签如 2023·北京
+    // 来源标签渲染在卡片头部，短标签如 2025·广东
     expect(html).toContain('data-testid="source-tag"');
-    expect(html).toContain('2023·北京');
+    const firstChoice = testPaper.choiceQuestions[0];
+    if (firstChoice.region) {
+      expect(html).toContain(`${firstChoice.exam_year}·${firstChoice.region}`);
+    }
 
     // 来源绝未污染 stem_zh
     testPaper.choiceQuestions.forEach((q) => {

@@ -1,6 +1,16 @@
 # 前端线待办 Backlog（Kiro 维护）
 
-## [✅ 已诊断·待修复] 沙盒与映射的功能正确性 —— 见 RESULT-FE-0012
+## [✅ 已修复闭环] 沙盒功能正确性 + mock清理 —— FE-0013（2026-09-20 验收归档）
+诊断（FE-0012）发现的非SVG前端问题已全部修复，Kiro 独立复核通过：
+- 沙盒渲染A部分7项：滑块接线（几何/数轴消费paramValues）、圆图元开发（SB-KP073不再三角形）、姿态撕裂修复、抛物线/双曲线通道、假按钮改状态徽章、invariants补算子（16模型遥测）、X-Ray联动
+- mock清理B部分（方案B）：删除 mockPoints.ts / mockExamQuestions.ts；mockGraphData 仅留对齐真库的 mockLogicLines；allPointsData KP-023 改回"配方法(A3)"；ConceptNav 勾股硬编码删除；降级链收敛真库；测试断言同步更新
+- 独立验证：mock文件确删、生产零残留引用、10张截图MD5全唯一（未再造假）、实跑199测试全绿、tsc 0错误
+- 报告：`archive/RESULT-FE-0013.md`
+- ⚠️ 遗留：107考点SVG语义错配仍未修（用户将亲自大改，见 `SVG_BACKLOG_待用户大改时合并.md`）
+
+---
+
+## [历史·已完成] 沙盒与映射的功能正确性诊断 —— 见 RESULT-FE-0012
 
 TASK-FE-0012 只读诊断已完成并验收归档（2026-09-20）。共查 271 标的，发现 **62 项问题**：🔴开发遗漏 22 · 🟠数据错配 26 · 🟢设计如此 14。
 诊断报告：`.kiro/relay/frontend/archive/RESULT-FE-0012.md`；分片明细：`tmp/diag_fe0012/part1~8.jsonl`。

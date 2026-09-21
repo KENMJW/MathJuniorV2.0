@@ -11,7 +11,7 @@ describe('ConceptNav 顶层大卡片与 4 级抽屉集成测试 (Demo 图 4 对�
     // 左侧胶囊唤起按钮
     expect(html).toContain('data-testid="concept-drawer-trigger"');
     expect(html).toContain('KP-023');
-    expect(html).toContain('勾股定理及其逆定理');
+    expect(html).toContain('配方法');
 
     // 右侧 4 个扁平分段胶囊
     expect(html).toContain('data-testid="subtab-stages"');
@@ -29,8 +29,8 @@ describe('ConceptNav 顶层大卡片与 4 级抽屉集成测试 (Demo 图 4 对�
     const html = renderToString(<ConceptNav initialPointId="KP-023" />);
 
     // 经典典籍引用框
-    expect(html).toContain('《周髀算经》卷上');
-    expect(html).toContain('数之法出于圆方');
+    expect(html).toContain('《代数学》');
+    expect(html).toContain('若有平方与根等于数');
 
     // 四段论子胶囊
     expect(html).toContain('① 原点溯源');
@@ -40,7 +40,7 @@ describe('ConceptNav 顶层大卡片与 4 级抽屉集成测试 (Demo 图 4 对�
 
     // 右侧高清几何模型
     expect(html).toContain('svg-layer-reveal');
-    expect(html).toContain('图 1-1 中国古代《九章算术》弧矢几何模型');
+    expect(html).toContain('图 1-1 阿尔·花拉子米几何配方法模型');
   });
 
   it('3. 4级抽屉盒选择器结构完备且挂载 107 大纲考点全谱系', () => {

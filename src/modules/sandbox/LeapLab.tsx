@@ -21,25 +21,42 @@ export interface LeapLabProps {
   locale?: string;
   className?: string;
   style?: React.CSSProperties;
+  isDrawerOpen?: boolean;
+  onToggleDrawer?: (open: boolean) => void;
 }
 
-const SEMESTERS = ['7A', '7B', '8A', '8B', '9A', '9B'] as const;
+export const SEMESTER_CONFIG = [
+  { key: '7A', label: '7年级上学期', short: '7上' },
+  { key: '7B', label: '7年级下学期', short: '7下' },
+  { key: '8A', label: '8年级上学期', short: '8上' },
+  { key: '8B', label: '8年级下学期', short: '8下' },
+  { key: '9A', label: '9年级上学期', short: '9上' },
+  { key: '9B', label: '9年级下学期', short: '9下' },
+] as const;
+
+export function formatSemesterZh(sem?: string): string {
+  if (!sem) return '7年级上学期';
+  const found = SEMESTER_CONFIG.find((s) => s.key === sem);
+  return found ? found.label : sem;
+}
 
 /**
  * 实验室二：4D 变异跃迁沙盒 (支持全库 36 个跃迁模型，100% 严格对标 ios27_demo.html)
  * 
  * 核心设计标准：
- * 1. 2 级抽屉盒模型切换：年级学期 (7A~9B) -> 真实模型卡片，顶部配备实时搜索框；
+ * 1. 2 级抽屉盒模型切换：年级学期 (全中文) -> 真实模型卡片，顶部配备实时搜索框；
  * 2. 5 维载体变异平滑形变：手拉手模型原生支持 opt1 (等边)、opt2 (等腰直角)、quadrilateral (正方形)、coordinate_grid (坐标系)、free_triangle；
  * 3. 极简白外置控制条：param_t (0~10) 动点驱动与纯数学刚体旋转；
  * 4. 铁律 11 零 emoji、铁律 1/3 零 eval/innerHTML、铁律 2 零 foreignObject。
  */
 export const LeapLab: React.FC<LeapLabProps> = ({
   model: propModel,
-  modelId = 'LM-9A-19',
+  modelId = 'LM-7A-01',
   onSelectModelId,
   allModels = mockLeapSandboxModels,
   locale = 'zh-CN',
+  isDrawerOpen: controlledDrawerOpen,
+  onToggleDrawer,
 }) => {
   // 内部维护受控/非受控激活模型 ID
   const [activeModelId, setActiveModelId] = useState<string>(modelId);
@@ -52,23 +69,29 @@ export const LeapLab: React.FC<LeapLabProps> = ({
 
   const effectiveModelId = activeModelId || modelId;
 
-  // 1. 获取当前模型 (从 36 个真实跃迁模型与兼容测试种子中匹配)
+  // 1. 获取当前模型 (从 36 个真实跃迁模型与兼容测试种子中匹配，默认 7年级首个模型 LM-7A-01)
   const currentModel = useMemo(() => {
     if (propModel) return propModel;
     return (
       allModels.find((m) => m.model_id === effectiveModelId) ||
       allModels.find((m) => m.model_id.includes(effectiveModelId)) ||
+      allModels.find((m) => m.model_id === 'LM-7A-01') ||
       allModels.find((m) => m.model_id === 'LM-9A-19') ||
-      allModels.find((m) => m.model_id === 'LM-8A-01') ||
       allModels[0]
     );
   }, [propModel, effectiveModelId, allModels]);
 
-  // 2. 抽屉盒选择状态管理
-  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
+  // 2. 抽屉盒选择状态管理 (支持受控与非受控)
+  const [internalDrawerOpen, setInternalDrawerOpen] = useState<boolean>(false);
+  const isDrawerOpen = controlledDrawerOpen !== undefined ? controlledDrawerOpen : internalDrawerOpen;
+  const setIsDrawerOpen = (open: boolean) => {
+    if (onToggleDrawer) onToggleDrawer(open);
+    setInternalDrawerOpen(open);
+  };
+
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedSem, setSelectedSem] = useState<string>(
-    currentModel.unlocked_semester || '9A'
+    currentModel.unlocked_semester || '7A'
   );
 
   useEffect(() => {
@@ -288,7 +311,7 @@ export const LeapLab: React.FC<LeapLabProps> = ({
           </button>
 
           <span style={{ fontSize: '12px', color: 'var(--text-tertiary)', fontWeight: 500 }}>
-            (主线 {currentModel.primary_line} · {currentModel.unlocked_semester})
+            (主线 {currentModel.primary_line} · {formatSemesterZh(currentModel.unlocked_semester)})
           </span>
         </div>
 
@@ -328,7 +351,7 @@ export const LeapLab: React.FC<LeapLabProps> = ({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="搜索 36 个跃迁模型 (如 手拉手 / LM-9A-19 / 抛物线)..."
+                placeholder="搜索 36 个跃迁模型 (如 手拉手 / LM-7A-01 / 抛物线)..."
                 className="drawer-search-field"
               />
               {searchQuery && (
@@ -350,20 +373,20 @@ export const LeapLab: React.FC<LeapLabProps> = ({
             </button>
           </div>
 
-          {/* 1 级：年级学期选择标签 */}
+          {/* 1 级：年级学期选择标签 (全中文) */}
           {!searchQuery && (
             <div className="drawer-sem-tabs">
-              {SEMESTERS.map((sem) => {
-                const count = modelsBySemester[sem]?.length || 0;
-                const active = selectedSem === sem;
+              {SEMESTER_CONFIG.map((cfg) => {
+                const count = modelsBySemester[cfg.key]?.length || 0;
+                const active = selectedSem === cfg.key;
                 return (
                   <button
-                    key={sem}
+                    key={cfg.key}
                     type="button"
                     className={`drawer-sem-chip ${active ? 'active' : ''}`}
-                    onClick={() => setSelectedSem(sem)}
+                    onClick={() => setSelectedSem(cfg.key)}
                   >
-                    <span>{sem}</span>
+                    <span>{cfg.label}</span>
                     <span className="drawer-sem-count">({count})</span>
                   </button>
                 );
@@ -376,7 +399,7 @@ export const LeapLab: React.FC<LeapLabProps> = ({
             {filteredModels.length > 0 ? (
               filteredModels.map((m) => {
                 const isSelected = m.model_id === currentModel.model_id;
-                const isFlagship = m.model_id.includes('9A-19');
+                const isFlagship = m.model_id.includes('9A-19') || m.model_id.includes('7A-01');
                 return (
                   <button
                     key={m.model_id}
@@ -386,8 +409,8 @@ export const LeapLab: React.FC<LeapLabProps> = ({
                   >
                     <div className="drawer-card-header">
                       <span className="drawer-card-code">{m.model_id}</span>
-                      <span className="drawer-card-sem">{m.unlocked_semester}</span>
-                      {isFlagship && <span className="drawer-card-flagship">旗舰模型</span>}
+                      <span className="drawer-card-sem">{formatSemesterZh(m.unlocked_semester)}</span>
+                      {isFlagship && <span className="drawer-card-flagship">重点模型</span>}
                       {isSelected && <Icon name="check" size={12} style={{ color: 'var(--ios-blue)', marginLeft: 'auto' }} />}
                     </div>
                     <div className="drawer-card-name">{m.model_name_zh}</div>

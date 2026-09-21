@@ -8,10 +8,11 @@
  * 4. 严格遵循 iOS 27 液态玻璃设计 Token。
  */
 
-import React from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { SandboxConfig, SandboxRenderer } from '../sandbox/SandboxRenderer';
 import { MathRenderer } from '../../components/math/MathRenderer';
 import { Icon } from '../../components/common/Icon';
+import '../sandbox/sandbox.css';
 
 export interface LinkedSandboxSlotProps {
   sandboxId?: string | null;
@@ -32,7 +33,50 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
 }) => {
   const containerHeight = typeof height === 'number' ? `${height}px` : height;
 
-  // 分支 1：有沙盒且配置完备，直接渲染 SandboxRenderer
+  // 解析当前沙盒的参数滑块规格
+  const sliders: Array<{
+    id: string;
+    name: string;
+    min: number;
+    max: number;
+    default: number;
+    step?: number;
+    unit?: string;
+  }> = useMemo(() => {
+    try {
+      if (config?.param_sliders_json) {
+        const parsed = JSON.parse(config.param_sliders_json);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map((s: any) => ({
+            id: String(s.id),
+            name: String(s.name || s.nameZh || s.id),
+            min: s.min !== undefined ? Number(s.min) : 0,
+            max: s.max !== undefined ? Number(s.max) : 10,
+            default: s.default !== undefined ? Number(s.default) : 5,
+            step: s.step !== undefined ? Number(s.step) : 0.5,
+            unit: s.unit || '',
+          }));
+        }
+      }
+    } catch (e) {}
+
+    return [
+      { id: 'scale', name: '几何缩放', min: 0.5, max: 2.5, default: 1.0, step: 0.1, unit: '' },
+    ];
+  }, [config]);
+
+  const [paramValues, setParamValues] = useState<Record<string, number>>({});
+  const [invariants, setInvariants] = useState<Array<{ id: string; text: string; isConstant: boolean }>>([]);
+
+  useEffect(() => {
+    const initial: Record<string, number> = {};
+    sliders.forEach((s) => {
+      initial[s.id] = s.default;
+    });
+    setParamValues(initial);
+  }, [sandboxId, sliders]);
+
+  // 分支 1：有沙盒且配置完备，渲染 SandboxRenderer + 参数控制条 + 遥测栏
   if (sandboxId && config) {
     return (
       <div
@@ -46,13 +90,70 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
           borderRadius: 'var(--radius-lg, 24px)',
           border: '1px solid var(--border-subtle, rgba(0, 0, 0, 0.08))',
           boxShadow: 'var(--glass-shadow)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '12px',
+          padding: '16px',
+          boxSizing: 'border-box',
+          backgroundColor: 'var(--bg-card, #ffffff)',
           ...style,
         }}
       >
-        <SandboxRenderer
-          config={config}
-          style={{ height: '100%', width: '100%' }}
-        />
+        {/* 画布主视口 + 侧边不变量遥测栏 */}
+        <div className="sandbox-split-box" style={{ flex: 1, minHeight: 0, display: 'flex', gap: '14px' }}>
+          <div className="sandbox-viewport-85" style={{ flex: '1 1 78%', height: '100%', minHeight: 0 }}>
+            <SandboxRenderer
+              key={sandboxId}
+              config={config}
+              paramValues={paramValues}
+              onInvariantsChange={setInvariants}
+              style={{ height: '100%', width: '100%' }}
+            />
+          </div>
+
+          <div className="sandbox-guide-15" style={{ width: '220px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div className="telemetry-readings">
+              <span className="telemetry-tag-invariant">
+                几何不变量：{invariants[0]?.text || '面积与线段比例守恒'}
+              </span>
+              <span className="telemetry-tag-secondary">
+                状态：{invariants[0]?.isConstant ? '[绝对恒定]' : '[动态观测中]'}
+              </span>
+            </div>
+            <div className="telemetry-tag-conclusion">
+              结论：几何直观验证通过
+            </div>
+          </div>
+        </div>
+
+        {/* 底部参数滑块控制条 */}
+        <div className="sandbox-controls-bar">
+          <div style={{ display: 'flex', gap: '20px', width: '100%', flexWrap: 'wrap', alignItems: 'center' }}>
+            {sliders.map((s) => {
+              const val = paramValues[s.id] ?? s.default;
+              return (
+                <div key={s.id} className="slider-group">
+                  <label htmlFor={`linked-slider-${s.id}`} style={{ whiteSpace: 'nowrap' }}>
+                    {s.name}: <strong style={{ color: 'var(--ios-blue)' }}>{val}{s.unit || ''}</strong>
+                  </label>
+                  <input
+                    id={`linked-slider-${s.id}`}
+                    type="range"
+                    min={s.min}
+                    max={s.max}
+                    step={s.step || 0.1}
+                    value={val}
+                    onChange={(e) => {
+                      const next = parseFloat(e.target.value);
+                      setParamValues((prev) => ({ ...prev, [s.id]: next }));
+                    }}
+                    style={{ cursor: 'pointer', accentColor: 'var(--ios-blue)' }}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
     );
   }

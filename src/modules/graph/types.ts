@@ -56,7 +56,7 @@ export interface GraphKnowledgePoint {
   domain: string;
   subcategory: string;
   primary_line_id: string;
-  is_mandatory: number;
+  is_mandatory: number | boolean;
 }
 
 export interface KnowledgeCombination {

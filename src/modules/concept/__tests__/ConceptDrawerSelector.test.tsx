@@ -13,10 +13,10 @@ describe('ConceptDrawerSelector (4级抽屉盒选择器)', () => {
         onClose={vi.fn()}
         knowledgePoints={ALL_107_KNOWLEDGE_POINTS}
         currentPoint={mockCurrentPoint}
-        selectedGrade={8}
+        selectedGrade={9}
         selectedSemester={1}
-        selectedDomain="图形与几何"
-        selectedSubcategory="三角形"
+        selectedDomain="数与代数"
+        selectedSubcategory="方程组"
         onSelectGrade={vi.fn()}
         onSelectSemester={vi.fn()}
         onSelectDomain={vi.fn()}
@@ -34,11 +34,11 @@ describe('ConceptDrawerSelector (4级抽屉盒选择器)', () => {
     expect(html).toContain('第四级 · 大纲考点');
 
     // 默认选中项
-    expect(html).toContain('八年级');
+    expect(html).toContain('九年级');
     expect(html).toContain('上学期 (1)');
-    expect(html).toContain('图形与几何');
+    expect(html).toContain('数与代数');
     expect(html).toContain('KP-023');
-    expect(html).toContain('勾股定理及其逆定理');
+    expect(html).toContain('配方法');
   });
 
   it('2. 包含顶部搜索输入框与大纲考点列表', () => {
@@ -48,10 +48,10 @@ describe('ConceptDrawerSelector (4级抽屉盒选择器)', () => {
         onClose={vi.fn()}
         knowledgePoints={ALL_107_KNOWLEDGE_POINTS}
         currentPoint={mockCurrentPoint}
-        selectedGrade={8}
+        selectedGrade={9}
         selectedSemester={1}
-        selectedDomain="图形与几何"
-        selectedSubcategory="三角形"
+        selectedDomain="数与代数"
+        selectedSubcategory="方程组"
         onSelectGrade={vi.fn()}
         onSelectSemester={vi.fn()}
         onSelectDomain={vi.fn()}
@@ -72,10 +72,10 @@ describe('ConceptDrawerSelector (4级抽屉盒选择器)', () => {
         onClose={vi.fn()}
         knowledgePoints={ALL_107_KNOWLEDGE_POINTS}
         currentPoint={mockCurrentPoint}
-        selectedGrade={8}
+        selectedGrade={9}
         selectedSemester={1}
-        selectedDomain="图形与几何"
-        selectedSubcategory="三角形"
+        selectedDomain="数与代数"
+        selectedSubcategory="方程组"
         onSelectGrade={vi.fn()}
         onSelectSemester={vi.fn()}
         onSelectDomain={vi.fn()}
