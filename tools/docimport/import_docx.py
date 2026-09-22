@@ -192,6 +192,65 @@ def looks_like_answer(raw_stem):
         return True
     return False
 
+# ---------- 试卷头/答题卡须知 等行政说明（非题目，应丢弃）----------
+_INSTRUCTION_RE = re.compile(
+    r"答题卡|准考证|条形码|2B\s*铅笔|涂改液|涂改胶|贴纸|签字笔|座位号|考室|考场号|"
+    r"请将题目写成|保持卡面|卡面清洁|不要折叠|不要弄破|一律无效|作答无效|填涂方框|"
+    r"考试时间\s*\d+\s*分钟|考试时量|监考|一并交回|试题卷和答题|草稿纸|答题提示|答题区域|矩形边框"
+)
+_PAPER_META_RE = re.compile(
+    r"(满分\s*\d+\s*分).{0,12}(考试时间|考试时量|分钟)|"
+    r"本试卷共.{0,6}小题|本学科试卷共|共\s*\d+\s*页|分选择题和非选择题"
+)
+# 题型段标题（一、选择题…）——是段标题不是题干
+_SECTION_HEADER_RE = re.compile(r"(?:选择题|填空题|解答题|计算题|证明题)")
+# 标准答案列表：字母答案序列 'A 16. C 17. D'（选择题答案区，极高置信）
+_ANSWER_KEY_LETTERSEQ_RE = re.compile(r"(?:[ABCD]\s+\d{1,2}\s*[.．]\s*){2,}")
+_ANSWER_KEY_NUMSEQ_RE = re.compile(r"(?:\d{1,2}\s*[.．、]\s*){3,}")
+# 情境/题干信号：出现即认为含真题（可能尾部拼答案），不按纯答案/说明丢弃
+_QUESTION_GUARD_RE = re.compile(
+    r"如图|计算|化简|求出|求\s*[\$∠]|求.{0,4}(值|度数|面积|周长|概率)|"
+    r"证明|已知|下列|阅读|工厂|学校|商店|设\s|甲种|乙种|两种产品|"
+    r"随机抽|绘制|统计图|调查了|科学记数法|表示为"
+)
+# 频率分布表残行：起手 "区间 频数 频率" 或 "合计 N ..."
+_TABLE_FRAG_HEAD_RE = re.compile(r"^\s*\d+(?:\.\d+)?\s*-\s*\d+(?:\.\d+)?\s+\d+\s+[\d.]+|^\s*合计\s+\d+")
+
+
+def strip_md_headers(text):
+    """剥离 MinerU/pandoc 残留的 markdown 标题行(## 一、选择题 / ## 18.(5分))与水印尾注。"""
+    if not text:
+        return text
+    text = re.sub(r"^\s*#+\s.*$", "", text, flags=re.M)          # 整行 ## 标题
+    text = re.sub(r"公众号\s*[\"“][^\"”]*[\"”]", "", text)        # 公众号水印
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    return text.strip()
+
+
+def is_paper_noise(raw_stem):
+    """判断切出的段落是否为 试卷说明/答题卡须知/段标题残渣/频率表残行/标准答案列表（应丢弃）。
+    保守：含题干情境信号(_QUESTION_GUARD_RE)一律判为真题不丢。返回 True 表示应丢弃。"""
+    s = raw_stem.strip()
+    if not s:
+        return True
+    if _QUESTION_GUARD_RE.search(s):        # 含真题信号 → 保留
+        return False
+    if _TABLE_FRAG_HEAD_RE.match(s):        # 频率分布表残行起手
+        return True
+    if _INSTRUCTION_RE.search(s) or _PAPER_META_RE.search(s):   # 行政说明/卷头
+        return True
+    if _ANSWER_KEY_LETTERSEQ_RE.search(s):  # 字母答案列表
+        return True
+    if _ANSWER_KEY_NUMSEQ_RE.match(s[:30].lstrip()) or _ANSWER_KEY_NUMSEQ_RE.search(s[:20]):
+        return True
+    # 剔除 ## 段标题/图锚点后正文近乎为空，且原文含段标题/图 → 段标题残渣
+    body = strip_md_headers(s)
+    body = re.sub(r"\[\[IMG:\d+\]\]|第\s*\d+\s*题图|图\s*\d|[（(]\s*\d+\s*分\s*[）)]", "", body)
+    if len(re.sub(r"\s", "", body)) < 6 and (_SECTION_HEADER_RE.search(s) or "[[IMG:" in s
+                                             or re.search(r"^\s*#+\s*\d+", s, re.M)):
+        return True
+    return False
+
 def extract_options(text):
     """抽 A/B/C/D 选项，支持文本选项与图选项。返回 {letter:{'zh':..} or {'img_md':..}}。
     文本形如: A．xxx B．yyy ... ; 图选项形如: A．![](img)
@@ -282,6 +341,7 @@ def segment(md, source_label, year):
         # 题干（去答案解析段）
         raw_stem = re.split(r"【答案】|【详解】|【解析】|【分析】", text)[0].strip()
         raw_stem = clean_pandoc_noise(raw_stem)
+        raw_stem = strip_md_headers(raw_stem)     # 剥离 MinerU 的 ## 标题行/水印
         sol = clean_pandoc_noise(sol)
 
         # 剔除混入的答案（练习区末尾的答案列表），两类特征：
@@ -294,7 +354,7 @@ def segment(md, source_label, year):
         answer_list = (re.match(r"^\s*[（(]\s*1\s*[）)]", raw_stem) and
                        not re.search(r"计算|求|下列|化简|解方程|证明|如图|underline|_{3,}|[ABCD][．.、]|(　　)", raw_stem) and
                        raw_stem.count("；") + raw_stem.count(";") >= 1)
-        if short_answer or answer_list or looks_like_answer(raw_stem):
+        if short_answer or answer_list or looks_like_answer(raw_stem) or is_paper_noise(raw_stem):
             continue
 
         # 题型智能判断：有 A/B/C/D 选项→单选；有下划线填空标记→填空；否则解答
