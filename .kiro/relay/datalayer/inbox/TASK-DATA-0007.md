@@ -1,7 +1,7 @@
 ---
 id: TASK-DATA-0007
 line: datalayer
-status: assigned
+status: done
 attempt: 1
 created_by: Kiro
 title: 沙盒模型数据语义正确性【只读验证+改造规格】— 82模型逐个核对 name↔数据↔渲染契约总表（并发8，不写库不改码）

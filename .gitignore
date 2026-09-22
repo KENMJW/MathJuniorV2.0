@@ -8,6 +8,12 @@ dist
 # 临时/工作文件
 tmp
 *.log
+scratch/
+
+# 本地真题原件/扫描图集(本地保留,不进源码仓)
+assets/seminar_2025/
+assets/*.pdf
+*.docx
 
 # Python
 .venv
