@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ConceptNav } from "./ConceptNav";
 import { SubwayMap, LineClosedLoop, mockLogicLines } from "./modules/graph";
@@ -245,14 +245,28 @@ export const MathJuniorHome: React.FC = () => {
 
   const effectiveLines = dbLines || mockLogicLines;
   const effectiveSandboxes = dbConceptSandboxes || ALL_SANDBOXES;
-  const effectiveLeapModels = dbLeapModels || mockLeapSandboxModels;
+  const effectiveLeapModels = useMemo(() => {
+    const dbList = dbLeapModels || [];
+    return mockLeapSandboxModels.map((mockM) => {
+      // 契约升级模型优先使用前端契约配置
+      if ((mockM as any).canvas_template) return mockM;
+      const foundInDb = dbList.find((d) => d.model_id === mockM.model_id);
+      return foundInDb || mockM;
+    });
+  }, [dbLeapModels]);
 
-  // 自动化测试机制支持 (允许通过 window.__setDeviceOverride 供 E2E 调试使用，绝无任何 UI 按钮呈现)
+  // 自动化测试机制支持 (允许通过 window.__setDeviceOverride / __setLabState 供 E2E 调试使用)
   useEffect(() => {
     if (typeof window !== "undefined") {
       (window as any).__setDeviceOverride = (override: DeviceProfile | null) => {
         setDeviceOverride(override);
         setCurrentOverride(override);
+      };
+      (window as any).__setLabSubView = (subView: "concept_sandbox" | "leap_4d") => {
+        setLabSubView(subView);
+      };
+      (window as any).__setSelectedLeapModelId = (id: string) => {
+        setSelectedLeapModelId(id);
       };
     }
   }, []);

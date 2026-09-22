@@ -119,6 +119,9 @@ export interface LeapSandboxModel {
   posture_morphing_json: string;
   camouflage_xray_json: string;
   content_status?: string;
+  canvas_template?: string;
+  carrier?: any;
+  telemetry_invariants?: any[];
 }
 
 export interface MorphingState {
@@ -467,8 +470,12 @@ export function compileMorphingSandboxConfig(
     });
   }
 
-  // 6. 构造不变量展示 (来自核心骨架)
-  const invariantsDisplayJson = JSON.stringify(camouflageSpec?.coreSkeleton?.invariants || []);
+  // 6. 构造不变量展示 (来自核心骨架或 telemetry_invariants)
+  let invariantsList = camouflageSpec?.coreSkeleton?.invariants || [];
+  if ((model as any).telemetry_invariants && Array.isArray((model as any).telemetry_invariants)) {
+    invariantsList = (model as any).telemetry_invariants;
+  }
+  const invariantsDisplayJson = JSON.stringify(invariantsList);
 
   // 7. 构造滑块规格
   const sliders = parameterSpec?.sliders || [];
@@ -489,13 +496,17 @@ export function compileMorphingSandboxConfig(
         .join('-')
     : 'default';
 
-  // 8. 恢复抛物线/双曲线函数渲染通道 (消除强制退化为 euclidean/axis)
-  let canvasTemplate: string = 'euclidean';
+  // 8. 恢复 10 大类契约总表画布模板分发
+  let canvasTemplate: string = (model as any).canvas_template || 'euclidean';
   const carrierId = (currentCarrier?.id || '').toLowerCase();
   const modelNameZh = (model?.model_name_zh || '').toLowerCase();
   const modelId = (model?.model_id || '').toLowerCase();
 
-  if (
+  if (modelId === 'lm-9b-35' || carrierId.includes('three_view')) {
+    canvasTemplate = 'discrete_orthographic_three_view';
+  } else if (modelId === 'lm-9a-18' || (model as any).canvas_template === 'function_quadratic_vieta') {
+    canvasTemplate = 'function_quadratic_vieta';
+  } else if (
     carrierId.includes('parabola') ||
     carrierId.includes('para_') ||
     carrierId.includes('rect_') ||
@@ -516,8 +527,32 @@ export function compileMorphingSandboxConfig(
     modelId === 'lm-9b-34'
   ) {
     canvasTemplate = 'function_inverse';
+  } else if (
+    modelId === 'lm-9b-29' ||
+    carrierId.includes('k_shape') ||
+    carrierId.includes('similarity')
+  ) {
+    canvasTemplate = 'geometry_similarity_template';
+  } else if (
+    modelId === 'lm-8b-14' ||
+    carrierId.includes('midpoint_quad')
+  ) {
+    canvasTemplate = 'geometry_midpoint_quad_template';
+  } else if (
+    modelId === 'lm-9a-24' ||
+    carrierId.includes('tangent')
+  ) {
+    canvasTemplate = 'geometry_tangent_segment_carrier';
   } else if (currentCarrier?.isAxis) {
     canvasTemplate = 'axis';
+  }
+
+  // 提取声明式 carrier elements (若有)
+  let carrierJson: string | undefined = undefined;
+  if ((model as any).carrier) {
+    carrierJson = JSON.stringify((model as any).carrier);
+  } else if ((currentCarrier as any).elements) {
+    carrierJson = JSON.stringify({ elements: (currentCarrier as any).elements });
   }
 
   return {
@@ -527,6 +562,7 @@ export function compileMorphingSandboxConfig(
     drag_points_json: JSON.stringify(dragPointsJson),
     param_sliders_json: paramSlidersJson,
     invariants_display_json: invariantsDisplayJson,
+    carrier_json: carrierJson,
   };
 }
 

@@ -6,6 +6,8 @@
  * 2. 完备边界防呆: 严格处理除以零 (d2=0)、共线 (0°/180°/S=0)、退化点、跨象限计算。
  */
 
+import { evaluateSafeExpression } from './safeExpression';
+
 export interface Point2D {
   x: number;
   y: number;
@@ -30,12 +32,15 @@ export type InvariantType =
 
 export interface InvariantSpec {
   id?: string;
-  type: InvariantType | string;
-  deps: string[]; // 依赖的点或对象 key
-  formula?: string; // 展示模板，如 "∠AOB = {val}°" 或 "PA / PB = {val}"
+  type?: InvariantType | string;
+  deps?: string[]; // 依赖的点或对象 key 或参数 key
+  formula?: string; // 公式或展示模板
   label?: string;
   labelZh?: string;
   labelEn?: string;
+  condition?: string; // 显隐条件，如 "Delta >= 0"
+  state_label?: string; // 状态描述公式，如 "Delta > 0 ? '两个不相等实根' : ..."
+  isConstant?: boolean;
   x?: number;
   y?: number;
 }
@@ -230,8 +235,26 @@ export function evaluateInvariantValue(
 export function formatInvariantText(
   spec: InvariantSpec,
   pointMap: Record<string, Point2D>,
-  locale: string = 'zh-CN'
-): string {
+  locale: string = 'zh-CN',
+  scopeVars: Record<string, any> = {}
+): string | null {
+  // 合并 pointMap 坐标与 scopeVars
+  const currentScope: Record<string, any> = { ...scopeVars };
+  Object.keys(pointMap).forEach((k) => {
+    const pt = pointMap[k];
+    currentScope[k] = pt;
+    currentScope[`${k}_x`] = pt.x;
+    currentScope[`${k}_y`] = pt.y;
+  });
+
+  // 1. condition 条件显隐
+  if (spec.condition) {
+    const condResult = evaluateSafeExpression(spec.condition, currentScope);
+    if (!condResult) {
+      return null; // 平滑隐藏
+    }
+  }
+
   const label = (locale === 'en' ? spec.labelEn : spec.labelZh) || spec.label || spec.labelZh || '';
   const formula = spec.formula || '{val}';
 
@@ -264,14 +287,44 @@ export function formatInvariantText(
     return label ? `${label}: ${formula}` : formula;
   }
 
+  // 2. 纯几何不变量计算
   const val = evaluateInvariantValue(spec, pointMap);
 
-  if (val === null) {
-    return label ? `${label}: ${formula}` : formula;
+  if (val !== null) {
+    // 角度保留 1 位小数，距离/面积/比值保留 2 位小数
+    const formattedVal = spec.type === 'angle' ? val.toFixed(1) : val.toFixed(2);
+    const text = formula.replace('{val}', formattedVal);
+    return label ? `${label}: ${text}` : text;
   }
 
-  // 角度保留 1 位小数，距离/面积/比值保留 2 位小数
-  const formattedVal = spec.type === 'angle' ? val.toFixed(1) : val.toFixed(2);
-  const text = formula.replace('{val}', formattedVal);
-  return label ? `${label}: ${text}` : text;
+  // 3. 代数/遥测公式安全求值 (如 Delta = b^2 - 4ac, sum_roots = -b/a)
+  if (spec.formula) {
+    let stateSuffix = '';
+    if (spec.state_label) {
+      const st = evaluateSafeExpression(spec.state_label, currentScope);
+      if (st) stateSuffix = ` (${st})`;
+    }
+
+    // 如果包含 {val} 占位符
+    if (formula.includes('{val}')) {
+      const numVal = evaluateSafeExpression(formula.replace(/\{val\}/g, '0'), currentScope);
+      const formatted = Number.isFinite(numVal) ? Number(numVal).toFixed(2) : String(numVal);
+      const text = formula.replace('{val}', formatted);
+      return label ? `${label}: ${text}${stateSuffix}` : `${text}${stateSuffix}`;
+    }
+
+    // 否则直接对 formula 表达式求值
+    const numVal = evaluateSafeExpression(spec.formula, currentScope);
+    const formatted = typeof numVal === 'number'
+      ? (Number.isInteger(numVal) ? numVal.toString() : numVal.toFixed(2))
+      : String(numVal);
+
+    if (label) {
+      return `${label} = ${formatted}${stateSuffix}`;
+    }
+    return `${formula} = ${formatted}${stateSuffix}`;
+  }
+
+  return label || null;
 }
+

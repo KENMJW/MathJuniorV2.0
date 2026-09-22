@@ -574,9 +574,15 @@ export const LeapLab: React.FC<LeapLabProps> = ({
                   夹角实测：直线 AC 与 BD 夹角 = <span style={{ fontWeight: 700 }}>{rotationAngle}</span>° (恒等于 α)
                 </span>
               </>
+            ) : invariants.length > 0 ? (
+              invariants.map((inv) => (
+                <span key={inv.id} className="telemetry-tag-invariant" style={{ marginRight: '6px' }}>
+                  {inv.text}
+                </span>
+              ))
             ) : (
               <span className="telemetry-tag-invariant">
-                {invariants[0]?.text || '动态几何欧氏保距性守恒'}
+                动态几何欧氏保距性守恒
               </span>
             )}
           </div>

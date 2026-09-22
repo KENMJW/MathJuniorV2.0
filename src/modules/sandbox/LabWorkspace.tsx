@@ -508,12 +508,17 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
 
               <div className="sandbox-guide-15">
                 <div className="telemetry-readings">
-                  <span className="telemetry-tag-invariant">
-                    几何不变量：{invariants[0]?.text || '面积与线段比例守恒'}
-                  </span>
-                  <span className="telemetry-tag-secondary">
-                    状态：{invariants[0]?.isConstant ? '[绝对恒定]' : '[动态观测中]'}
-                  </span>
+                  {invariants.length > 0 ? (
+                    invariants.map((inv) => (
+                      <span key={inv.id} className="telemetry-tag-invariant" style={{ marginRight: '6px' }}>
+                        {inv.text}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="telemetry-tag-invariant">
+                      几何不变量：面积与线段比例守恒
+                    </span>
+                  )}
                 </div>
                 <div className="telemetry-tag-conclusion">
                   结论：几何直观验证通过
