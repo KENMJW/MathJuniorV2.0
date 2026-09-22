@@ -1,7 +1,7 @@
 ---
 id: TASK-FE-0014
 line: frontend
-status: done
+status: accepted
 attempt: 1
 created_by: Kiro
 exec_machine: 另一台执行机（非主控机）
