@@ -1,0 +1,105 @@
+{
+  "shard_stats": [
+    {
+      "shard": 1,
+      "file": "tmp/data0009/part1.jsonl",
+      "count": 70
+    },
+    {
+      "shard": 2,
+      "file": "tmp/data0009/part2.jsonl",
+      "count": 70
+    },
+    {
+      "shard": 3,
+      "file": "tmp/data0009/part3.jsonl",
+      "count": 70
+    },
+    {
+      "shard": 4,
+      "file": "tmp/data0009/part4.jsonl",
+      "count": 70
+    },
+    {
+      "shard": 5,
+      "file": "tmp/data0009/part5.jsonl",
+      "count": 70
+    },
+    {
+      "shard": 6,
+      "file": "tmp/data0009/part6.jsonl",
+      "count": 69
+    }
+  ],
+  "total_backfilled": 419,
+  "kp_counts_unique": 83,
+  "top10_kps": [
+    {
+      "point_id": "KP-015",
+      "name_zh": "二次根式的化简与运算",
+      "count": 46
+    },
+    {
+      "point_id": "KP-028",
+      "name_zh": "一元一次不等式的解法",
+      "count": 17
+    },
+    {
+      "point_id": "KP-031",
+      "name_zh": "平面直角坐标系与点的坐标",
+      "count": 17
+    },
+    {
+      "point_id": "KP-048",
+      "name_zh": "平行线的判定与性质",
+      "count": 16
+    },
+    {
+      "point_id": "KP-029",
+      "name_zh": "一元一次不等式组的解法",
+      "count": 13
+    },
+    {
+      "point_id": "KP-020",
+      "name_zh": "二元一次方程组",
+      "count": 13
+    },
+    {
+      "point_id": "KP-019",
+      "name_zh": "一元一次方程的解法与应用",
+      "count": 13
+    },
+    {
+      "point_id": "KP-036",
+      "name_zh": "反比例函数的图象与性质",
+      "count": 11
+    },
+    {
+      "point_id": "KP-034",
+      "name_zh": "一次函数图象的性质",
+      "count": 11
+    },
+    {
+      "point_id": "KP-009",
+      "name_zh": "代数式的概念与求值",
+      "count": 10
+    }
+  ],
+  "difficulty_distribution": {
+    "1": 46,
+    "2": 161,
+    "3": 109,
+    "4": 68,
+    "5": 16,
+    "6": 14,
+    "7": 1,
+    "8": 3,
+    "9": 1
+  },
+  "combination_hit_count": 419,
+  "combination_hit_rate": 100.0,
+  "pre_total": 2483,
+  "post_total": 2483,
+  "stem_zh_sha256": "2e376579e17f8dda941ef010d13baba0a20294a830c34df283011224c7c228ca",
+  "done_sha256": "a58a9dc60a72f6d2eb140a58acf7629325b15fbd7cd76e5e90a9a5dc2b9778ee"
+}
