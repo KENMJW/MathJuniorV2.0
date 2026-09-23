@@ -108,7 +108,7 @@
 | **03** | `fe0015_03_line_g4_concept.png` | 557,473 bytes | `b568623866bc8cdfd294ef9ca1b6e946` | PASS | 选中 G4 谱系，四段论精讲与右侧 G4 竖向 6 学期泳道图联动更新 |
 | **04** | `fe0015_04_linked_sandbox_g4.png` | 381,330 bytes | `5eedba78c9320eb40b178f004cc5821f` | PASS | 切换至「链接沙盒」Tab，锁定 LM-9A-24，无抽屉按钮，4D 变异控制条可用 |
 | **05** | `fe0015_05_line_master_stepped.png` | 421,234 bytes | `af38634eb736a2394853ce310e970f0d` | PASS | 切换至「谱系母题」Tab，点击第一维解锁按钮，步进解锁展开 |
-| **06** | `fe0015_06_quick_practice_eval.png` | 289,547 bytes | `09c6f4e672c80da8486dfbbd8bc58d68` | PASS | 切换至「专项测评」Tab，限 3 题即答即判，选项交互及解析上屏渲染 |
+| **06** | `fe0015_06_quick_practice_eval.png` | 403,475 bytes | `c4034427dee1184dcbd81d33c1726edb` | PASS | 切换至「专项测评」Tab，限 3 题即答即判，选项交互及解析上屏渲染 |
 
 ---
 

@@ -277,15 +277,12 @@ export const GraphNav: React.FC<GraphNavProps> = ({
         const placeholders = linePointIds.map(() => '?').join(',');
         const rows = await dbClient.query<any>(
           'questions',
-          `SELECT * FROM questions WHERE primary_point_id IN (${placeholders}) ORDER BY RANDOM() LIMIT 20`,
+          `SELECT * FROM questions WHERE primary_point_id IN (${placeholders}) AND question_type = 'single_choice' AND difficulty_level BETWEEN 4 AND 6 ORDER BY RANDOM() LIMIT 20`,
           linePointIds
         );
         if (active && rows && rows.length > 0) {
           const mapped = mapRawRowsToQuestions(rows);
-          const valid = mapped.filter(
-            (q) => q.difficulty_level >= 4 && q.difficulty_level <= 6 && q.question_type === 'single_choice'
-          );
-          if (valid.length >= 3) {
+          if (mapped.length >= 3) {
             setDbPracticeQuestions(mapped);
             return;
           }

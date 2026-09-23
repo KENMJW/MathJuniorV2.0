@@ -63,14 +63,14 @@ export const LineQuickPractice: React.FC<LineQuickPracticeProps> = ({
       if (!isL4L6 || !isSingleChoice) return false;
 
       if (pointIds && pointIds.length > 0) {
-        return pointIds.includes(q.primary_point_id);
+        return pointIds.includes(q.primary_point_id) || q.question_id.startsWith(`Q-LINE-${lineId}`);
       }
       if (cliqueIds && cliqueIds.length > 0 && (q as any).combination_id) {
         return cliqueIds.includes((q as any).combination_id);
       }
       return true;
     });
-  }, [allQuestions, pointIds, cliqueIds]);
+  }, [allQuestions, pointIds, cliqueIds, lineId]);
 
   const [currentQuestions, setCurrentQuestions] = useState<QuickPracticeQuestion[]>(() => {
     if (initialQuestions && initialQuestions.length > 0) {
@@ -125,8 +125,12 @@ export const LineQuickPractice: React.FC<LineQuickPracticeProps> = ({
     [presentedIds, currentBatchIds, clearPresentedIds, addPresentedId]
   );
 
-  // 监听 lineId 变化更新题目
+  // 监听 lineId 切换重置
   useEffect(() => {
+    setCurrentIndex(0);
+    setSelectedAnswers({});
+    setIsSubmitted({});
+    setBatchFinished(false);
     if (initialQuestions && initialQuestions.length > 0) {
       const valid = initialQuestions.filter(
         (q) => q.difficulty_level >= 4 && q.difficulty_level <= 6 && q.question_type === 'single_choice'
@@ -134,10 +138,20 @@ export const LineQuickPractice: React.FC<LineQuickPracticeProps> = ({
       setCurrentQuestions(valid);
       setCurrentBatchIds(valid.map((q) => q.question_id));
       valid.forEach((q) => addPresentedId(q.question_id));
-    } else {
+    } else if (linePool.length >= 3) {
       drawNewBatch(linePool);
+    } else {
+      setCurrentQuestions([]);
+      setCurrentBatchIds([]);
     }
   }, [lineId]);
+
+  // 当异步题目数据池到达且当前题目不足 3 题时补抽
+  useEffect(() => {
+    if (!initialQuestions && linePool.length >= 3 && currentQuestions.length < 3) {
+      drawNewBatch(linePool);
+    }
+  }, [linePool, currentQuestions.length, initialQuestions, drawNewBatch]);
 
   // 题库不足 3 题时的友好提示 (§5.1 门禁：严禁默默返回不足题量)
   if (linePool.length < 3) {
@@ -336,6 +350,8 @@ export const LineQuickPractice: React.FC<LineQuickPracticeProps> = ({
                 <button
                   key={opt.key}
                   type="button"
+                  data-testid={`option-${opt.key}`}
+                  className="practice-option-btn"
                   disabled={submitted}
                   onClick={() => handleSelectOption(opt.key)}
                   style={{
