@@ -360,6 +360,21 @@ input[type=range].apple-slider::-webkit-slider-thumb:hover {
   color: var(--ios-blue, #0071e3);
 }
 
+.model-drawer-static-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill, 9999px);
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-subtle, rgba(0, 0, 0, 0.12));
+  color: var(--text-primary, #1d1d1f);
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  user-select: none;
+}
+
 .model-drawer-panel {
   background: var(--bg-card, #ffffff);
   border: 1px solid var(--border-subtle, rgba(0, 0, 0, 0.1));

@@ -4,4 +4,6 @@ export * from './FocusBeam';
 export * from './CombinationPanel';
 export * from './LineQuickPractice';
 export * from './LineClosedLoop';
+export * from './LineSwimlane';
+export * from './GraphNav';
 export * from './mockGraphData';

@@ -166,4 +166,26 @@ describe('4D Morphing Controllers & X-Ray (Task 11.4 & 铁律 1/3 校验)', () =
     expect(config.canvas_template).toBe('euclidean');
     expect(config.drag_points_json).toBe('[]');
   });
+
+  it('8. TASK-FE-0015: LeapLab hideModelDrawer 属性与向后兼容测试', () => {
+    // 默认行为：hideModelDrawer 未传 (缺省为 false)
+    const defaultHtml = renderToString(<LeapLab model={testModel} />);
+    expect(defaultHtml).toContain('model-drawer-trigger-btn');
+    expect(defaultHtml).not.toContain('model-drawer-static-title');
+
+    // 显式 hideModelDrawer={false} 行为与展开测试
+    const openHtml = renderToString(<LeapLab model={testModel} hideModelDrawer={false} isDrawerOpen={true} />);
+    expect(openHtml).toContain('model-drawer-trigger-btn');
+    expect(openHtml).toContain('model-drawer-panel');
+    expect(openHtml).toContain('drawer-search-wrapper');
+
+    // hideModelDrawer={true} 静态胶囊标题且绝不展开抽屉面板
+    const lockedHtml = renderToString(<LeapLab model={testModel} hideModelDrawer={true} isDrawerOpen={true} />);
+    expect(lockedHtml).toContain('model-drawer-static-title');
+    expect(lockedHtml).not.toContain('model-drawer-trigger-btn');
+    expect(lockedHtml).not.toContain('model-drawer-panel');
+    expect(lockedHtml).not.toContain('drawer-search-wrapper');
+    expect(lockedHtml).toContain('LM-8A-01');
+    expect(lockedHtml).toContain('手拉手全等与勾股跃迁模型');
+  });
 });

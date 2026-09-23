@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ConceptNav } from "./ConceptNav";
-import { SubwayMap, LineClosedLoop, mockLogicLines } from "./modules/graph";
+import { GraphNav, mockLogicLines } from "./modules/graph";
 import { mockLeapSandboxModels } from "./modules/sandbox";
 import { LabWorkspace } from "./modules/sandbox/LabWorkspace";
 import {
@@ -22,8 +22,6 @@ import { dbClient } from "./engine/db/dbClient";
 import {
   GraphKnowledgePoint,
   LogicLine,
-  GraphNode,
-  KnowledgeCombination,
 } from "./modules/graph/types";
 import { LeapSandboxModel } from "./modules/sandbox/morphControllers";
 
@@ -74,18 +72,12 @@ export const MathJuniorHome: React.FC = () => {
   const deviceProfile = currentOverride || responsive.device;
 
   // 模块内部状态
-  const [graphSubView, setGraphSubView] = useState<"map" | "line_loop">("map");
-  const [selectedGraphPointId, setSelectedGraphPointId] = useState<string | null>(null);
   const [labSubView, setLabSubView] = useState<"concept_sandbox" | "leap_4d">("concept_sandbox");
   const [selectedLeapModelId, setSelectedLeapModelId] = useState<string>("LM-9A-19");
-  const [selectedLineId, setSelectedLineId] = useState<string>("G4");
-  const [lineLoopTargetTab, setLineLoopTargetTab] = useState<'lecture' | 'master' | 'practice'>('lecture');
       
-  // 异步真库数据状态 (core.db 107 考点 + 12 主线 + 图谱连通 + 组合题)
+  // 异步真库数据状态 (core.db 107 考点 + 12 主线)
   const [dbLines, setDbLines] = useState<LogicLine[] | null>(null);
   const [dbPoints, setDbPoints] = useState<GraphKnowledgePoint[] | null>(null);
-  const [dbGraphNodes, setDbGraphNodes] = useState<GraphNode[] | null>(null);
-  const [dbCombinations, setDbCombinations] = useState<KnowledgeCombination[] | null>(null);
 
   // 异步真库沙盒数据状态 (sandbox.db 46 概念沙盒 + 36 跃迁模型)
   const [dbConceptSandboxes, setDbConceptSandboxes] = useState<Array<{
@@ -102,61 +94,18 @@ export const MathJuniorHome: React.FC = () => {
     let active = true;
     async function loadCoreData() {
       try {
-        const [lineRows, kpRows, nodeRows, comboRows] = await Promise.all([
+        const [lineRows, kpRows] = await Promise.all([
           dbClient.query<any>('core', 'SELECT * FROM logic_lines ORDER BY line_id ASC'),
           dbClient.query<any>(
             'core',
             'SELECT point_id, name_zh, name_en, grade, semester, domain, subcategory, primary_line_id, is_mandatory FROM knowledge_points ORDER BY point_id ASC'
           ),
-          dbClient.query<any>('core', 'SELECT * FROM knowledge_graph_semesters ORDER BY node_id ASC'),
-          dbClient.query<any>('core', 'SELECT * FROM knowledge_combinations'),
         ]);
 
         if (!active) return;
 
         if (lineRows && lineRows.length > 0) setDbLines(lineRows);
         if (kpRows && kpRows.length > 0) setDbPoints(kpRows);
-
-        if (nodeRows && nodeRows.length > 0) {
-          const parsedNodes: GraphNode[] = nodeRows.map((r: any) => ({
-            node_id: String(r.node_id),
-            point_id: String(r.point_id),
-            grade_semester: String(r.grade_semester),
-            module_name: String(r.module_name || ''),
-            predecessors:
-              typeof r.predecessors === 'string'
-                ? JSON.parse(r.predecessors || '[]')
-                : r.predecessors || [],
-            successors:
-              typeof r.successors === 'string'
-                ? JSON.parse(r.successors || '[]')
-                : r.successors || [],
-            is_milestone: Number(r.is_milestone || 0),
-          }));
-          setDbGraphNodes(parsedNodes);
-        }
-
-        if (comboRows && comboRows.length > 0) {
-          const parsedCombos: KnowledgeCombination[] = comboRows.map((r: any) => ({
-            combination_id: String(r.combination_id),
-            kp_ids:
-              typeof r.kp_ids === 'string'
-                ? JSON.parse(r.kp_ids || '[]')
-                : r.kp_ids || [],
-            kp_count: Number(r.kp_count || 1),
-            directed_order:
-              typeof r.directed_order === 'string'
-                ? JSON.parse(r.directed_order || '[]')
-                : r.directed_order,
-            question_hint_zh: String(r.question_hint_zh || ''),
-            question_hint_en: String(r.question_hint_en || ''),
-            question_types:
-              typeof r.question_types === 'string'
-                ? JSON.parse(r.question_types || '[]')
-                : r.question_types || [],
-          }));
-          setDbCombinations(parsedCombos);
-        }
       } catch (err) {
         console.warn('[MathJuniorHome] Failed to load core DB data, using fallback:', err);
       }
@@ -853,175 +802,11 @@ export const MathJuniorHome: React.FC = () => {
 
       case "graph":
         return (
-          <div
-            className="graph-stage-wrapper"
-            data-testid="graph-stage-wrapper"
-            style={{
-              maxWidth: "1240px",
-              margin: "0 auto",
-              width: "100%",
-              boxSizing: "border-box",
-            }}
-          >
-            <div
-              className="workspace-stage-card"
-              data-testid="workspace-stage-card"
-              style={{
-                background: "var(--bg-card, #ffffff)",
-                border: "1px solid var(--border-subtle, rgba(0, 0, 0, 0.07))",
-                borderRadius: "var(--radius-lg, 22px)",
-                padding: "24px 28px",
-                boxShadow: "0 2px 16px rgba(0, 0, 0, 0.03)",
-                display: "flex",
-                flexDirection: "column",
-                gap: "16px",
-                boxSizing: "border-box",
-                width: "100%",
-              }}
-            >
-              {/* 顶部分段切换控制条 (Apple HIG standard - 吸顶固定常驻) */}
-              <div
-                className="graph-subnav-sticky-header"
-                style={{
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 40,
-                  background: "var(--bg-card, #ffffff)",
-                  padding: "16px 28px",
-                  margin: "-24px -28px 0 -28px",
-                  borderTopLeftRadius: "var(--radius-lg, 22px)",
-                  borderTopRightRadius: "var(--radius-lg, 22px)",
-                  borderBottom: "1px solid rgba(0, 0, 0, 0.05)",
-                  boxShadow: "0 2px 10px rgba(0, 0, 0, 0.02)",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  flexWrap: "wrap",
-                  gap: "10px",
-                }}
-              >
-                <div
-                  className="stage-segmented-control"
-                  style={{
-                    position: "relative",
-                    display: "inline-flex",
-                    background: "rgba(0, 0, 0, 0.04)",
-                    padding: "3px",
-                    borderRadius: "var(--radius-pill, 9999px)",
-                    border: "1px solid rgba(0, 0, 0, 0.03)",
-                    gap: "2px",
-                  }}
-                >
-                  <button
-                    type="button"
-                    data-testid="graph-view-map"
-                    onClick={() => setGraphSubView("map")}
-                    style={{
-                      border: "none",
-                      padding: "6px 16px",
-                      borderRadius: "var(--radius-pill, 9999px)",
-                      background: graphSubView === "map" ? "var(--bg-card, #ffffff)" : "transparent",
-                      color: graphSubView === "map" ? "var(--ios-blue)" : "var(--text-secondary)",
-                      fontWeight: graphSubView === "map" ? 700 : 500,
-                      fontSize: "12px",
-                      cursor: "pointer",
-                      boxShadow: graphSubView === "map" ? "0 2px 8px rgba(0,0,0,0.06)" : "none",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      transition: "all 0.18s ease",
-                    }}
-                  >
-                    <Icon name="graph" size={13} />
-                    <span>6×12 泳道地铁图</span>
-                  </button>
-                  <button
-                    type="button"
-                    data-testid="graph-view-line_loop"
-                    onClick={() => setGraphSubView("line_loop")}
-                    style={{
-                      border: "none",
-                      padding: "6px 16px",
-                      borderRadius: "var(--radius-pill, 9999px)",
-                      background: graphSubView === "line_loop" ? "var(--bg-card, #ffffff)" : "transparent",
-                      color: graphSubView === "line_loop" ? "var(--ios-blue)" : "var(--text-secondary)",
-                      fontWeight: graphSubView === "line_loop" ? 700 : 500,
-                      fontSize: "12px",
-                      cursor: "pointer",
-                      boxShadow: graphSubView === "line_loop" ? "0 2px 8px rgba(0,0,0,0.06)" : "none",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      transition: "all 0.18s ease",
-                    }}
-                  >
-                    <Icon name="refresh" size={13} />
-                    <span>主线四位一体闭环</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* 模块内双视图常驻挂载以维持状态不丢失 */}
-              <div
-                style={{
-                  width: "100%",
-                  display: graphSubView === "map" ? "block" : "none",
-                  boxSizing: "border-box",
-                }}
-              >
-                <SubwayMap
-                  lines={effectiveLines}
-                  points={dbPoints || undefined}
-                  graphNodes={dbGraphNodes || undefined}
-                  combinations={dbCombinations || undefined}
-                  selectedPointId={selectedGraphPointId}
-                  onSelectPoint={setSelectedGraphPointId}
-                  onSelectLineClosedLoop={(lineId, targetTab = "lecture") => {
-                    setSelectedLineId(lineId);
-                    setLineLoopTargetTab(targetTab);
-                    setGraphSubView("line_loop");
-                  }}
-                  onOpenFlagshipModel={(_lineId, modelId) => {
-                    const targetModel = modelId || "LM-9A-19";
-                    setSelectedLeapModelId(targetModel);
-                    handleSelectSubModule("lab");
-                    setLabSubView("leap_4d");
-                  }}
-                  onNavigate={(dest, _pointId) => {
-                    if (dest === "concept") handleSelectSubModule("concept");
-                    else if (dest === "sandbox") {
-                      handleSelectSubModule("lab");
-                      setLabSubView("leap_4d");
-                    } else if (dest === "exam") {
-                      handleSelectSubModule("exam");
-                    }
-                  }}
-                />
-              </div>
-
-              <div
-                style={{
-                  width: "100%",
-                  display: graphSubView === "line_loop" ? "block" : "none",
-                  boxSizing: "border-box",
-                }}
-              >
-                <LineClosedLoop
-                  lines={effectiveLines}
-                  selectedLineId={selectedLineId}
-                  onSelectLineId={setSelectedLineId}
-                  activeTab={lineLoopTargetTab}
-                  onTabChange={setLineLoopTargetTab}
-                  onOpenFlagshipModel={(modelId) => {
-                    setSelectedLeapModelId(modelId);
-                    handleSelectSubModule("lab");
-                    setLabSubView("leap_4d");
-                  }}
-                  onBackToMap={() => setGraphSubView("map")}
-                />
-              </div>
-            </div>
-          </div>
+          <GraphNav
+            lines={effectiveLines}
+            knowledgePoints={dbPoints || undefined}
+            leapModels={effectiveLeapModels}
+          />
         );
 
       case "lab":

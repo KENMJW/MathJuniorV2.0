@@ -5,7 +5,13 @@ const JXG =
   typeof window !== 'undefined' && (window as any).JXG?.JSXGraph
     ? (window as any).JXG
     : JXGModule;
-import { calculateViewport, parseViewboxSpec } from '../../engine/sandbox/viewport';
+import {
+  parseViewboxSpec,
+  calculateAdaptiveViewport,
+  isValidBoundingBox,
+  computeBoundingBoxFromPoints,
+  BoundingBox,
+} from '../../engine/sandbox/viewport';
 import { formatInvariantText, Point2D } from './invariants';
 import { evaluateSafeExpression } from './safeExpression';
 import { DiscreteOrthographicRenderer } from './DiscreteOrthographicRenderer';
@@ -44,6 +50,294 @@ export interface SandboxRendererProps {
  * 4. 10 大类数学模型特化渲染：圆图元落地、三视图正交投影、双三角形拓扑分离、特殊四边形向量闭环、连续函数实时重绘；
  * 5. 安全公式求值：零 eval / 零 Function。
  */
+/**
+ * 提取沙盒模型所有实际图元与动点的包围盒 (TASK-FE-0015 块 A)
+ * 支持声明式 carrier elements (point, circle, segment, polygon, line, etc.)
+ * 以及基于模板特化计算的 drag_points (直角三角形, 等腰三角形, 圆, 抛物线, 双曲线, 四边形等)
+ */
+export function computeSandboxBoundingBox(
+  config: SandboxConfig,
+  paramValues: Record<string, number> = {}
+): BoundingBox | null {
+  const points: Array<{ x: number; y: number }> = [];
+
+  const addPoint = (x: any, y: any) => {
+    const nx = Number(x);
+    const ny = Number(y);
+    if (Number.isFinite(nx) && Number.isFinite(ny)) {
+      points.push({ x: nx, y: ny });
+    }
+  };
+
+  const addCircleBounds = (cx: number, cy: number, r: number) => {
+    if (Number.isFinite(cx) && Number.isFinite(cy) && Number.isFinite(r) && r > 0) {
+      points.push({ x: cx - r, y: cy });
+      points.push({ x: cx + r, y: cy });
+      points.push({ x: cx, y: cy - r });
+      points.push({ x: cx, y: cy + r });
+    }
+  };
+
+  // 1. 构建参数求值作用域
+  const scope: Record<string, any> = { ...paramValues };
+  const a = paramValues['param_a'] ?? paramValues['a_coeff'] ?? paramValues['a'] ?? 1;
+  const b = paramValues['param_b'] ?? paramValues['intercept_b'] ?? paramValues['b'] ?? -2;
+  const c = paramValues['param_c'] ?? paramValues['c'] ?? -3;
+  const k = paramValues['slope_k'] ?? paramValues['inv_k'] ?? paramValues['rect_k'] ?? paramValues['k'] ?? 1;
+
+  scope['param_a'] = a;
+  scope['a'] = a;
+  scope['param_b'] = b;
+  scope['b'] = b;
+  scope['param_c'] = c;
+  scope['c'] = c;
+  scope['k'] = k;
+  scope['slope_k'] = k;
+  scope['Delta'] = b * b - 4 * a * c;
+  scope['delta_val'] = b * b - 4 * a * c;
+
+  // 2. 检查是否有声明式 carrier
+  let declarativeCarrier: any = null;
+  if (config.carrier_json) {
+    try {
+      declarativeCarrier = JSON.parse(config.carrier_json);
+    } catch (e) {}
+  } else if ((config as any).carrier) {
+    declarativeCarrier = (config as any).carrier;
+  }
+
+  const pointMap: Record<string, { x: number; y: number }> = {};
+
+  if (declarativeCarrier && Array.isArray(declarativeCarrier.elements) && declarativeCarrier.elements.length > 0) {
+    const carrierElements = declarativeCarrier.elements;
+
+    carrierElements.forEach((elemDef: any) => {
+      // 条件显隐评估
+      if (elemDef.condition) {
+        try {
+          const isSatisfied = evaluateSafeExpression(elemDef.condition, scope);
+          if (!isSatisfied) return;
+        } catch (e) {
+          return;
+        }
+      }
+
+      switch (elemDef.type) {
+        case 'point': {
+          if (Array.isArray(elemDef.coord) && elemDef.coord.length >= 2) {
+            try {
+              const ptX = Number(evaluateSafeExpression(String(elemDef.coord[0]), scope));
+              const ptY = Number(evaluateSafeExpression(String(elemDef.coord[1]), scope));
+              if (Number.isFinite(ptX) && Number.isFinite(ptY)) {
+                addPoint(ptX, ptY);
+                const key = elemDef.id || elemDef.name;
+                if (key) pointMap[key] = { x: ptX, y: ptY };
+              }
+            } catch (e) {}
+          }
+          break;
+        }
+
+        case 'circle': {
+          try {
+            let center = { x: 0, y: 0 };
+            if (elemDef.center && pointMap[elemDef.center]) {
+              center = pointMap[elemDef.center];
+            } else if (pointMap['O']) {
+              center = pointMap['O'];
+            } else if (pointMap['Origin']) {
+              center = pointMap['Origin'];
+            }
+            const r = elemDef.radius !== undefined
+              ? Number(evaluateSafeExpression(String(elemDef.radius), scope))
+              : 4;
+            addCircleBounds(center.x, center.y, r);
+          } catch (e) {}
+          break;
+        }
+
+        case 'segment': {
+          if (Array.isArray(elemDef.endpoints)) {
+            elemDef.endpoints.forEach((ep: any) => {
+              if (Array.isArray(ep) && ep.length >= 2) {
+                addPoint(ep[0], ep[1]);
+              }
+            });
+          }
+          break;
+        }
+
+        case 'polygon': {
+          if (Array.isArray(elemDef.vertices)) {
+            elemDef.vertices.forEach((v: any) => {
+              if (Array.isArray(v) && v.length >= 2) {
+                addPoint(v[0], v[1]);
+              }
+            });
+          }
+          break;
+        }
+
+        case 'line': {
+          if (elemDef.fn && typeof elemDef.fn === 'string' && elemDef.fn.includes('x =')) {
+            try {
+              const xExpr = elemDef.fn.replace('x =', '').trim();
+              const lineX = Number(evaluateSafeExpression(xExpr, scope));
+              if (Number.isFinite(lineX)) {
+                addPoint(lineX, 0);
+              }
+            } catch (e) {}
+          }
+          break;
+        }
+
+        default:
+          break;
+      }
+    });
+  }
+
+  // 3. 解析标准 drag_points_json
+  let dragPoints: any[] = [];
+  try {
+    dragPoints = JSON.parse(config.drag_points_json || '[]');
+  } catch (e) {}
+
+  const tpl = config.canvas_template || '';
+  const isCircleTemplate =
+    tpl.includes('circle') ||
+    tpl.includes('inscribed') ||
+    tpl.includes('chord') ||
+    tpl.includes('tangent') ||
+    tpl.includes('sector') ||
+    tpl.includes('incircle') ||
+    config.sandbox_id === 'SB-KP073';
+
+  // 具名滑块驱动动点坐标
+  dragPoints = dragPoints.map((ptDef) => {
+    let x = ptDef.x ?? 0;
+    let y = ptDef.y ?? 0;
+
+    if (tpl.startsWith('number_axis')) {
+      const x0 = Number(paramValues['param_x0'] ?? 0);
+      const v = Number(paramValues['param_v'] ?? 1);
+      const t = Number(paramValues['param_t'] ?? 0);
+      const pVal = paramValues['pos_p'] ?? paramValues['point_x'] ?? paramValues['pt_x'] ?? paramValues['val'];
+
+      if (pVal !== undefined && (ptDef.id === 'P' || ptDef.name === 'P')) {
+        x = Number(pVal);
+      } else if (paramValues['param_t'] !== undefined && (ptDef.id === 'P' || ptDef.name === 'P')) {
+        x = x0 + v * t;
+      }
+
+      if (ptDef.id === 'A' && (paramValues['point_a'] !== undefined || paramValues['interval_a'] !== undefined)) {
+        x = Number(paramValues['point_a'] ?? paramValues['interval_a']);
+      }
+      if (ptDef.id === 'B' && (paramValues['point_b'] !== undefined || paramValues['interval_b'] !== undefined)) {
+        x = Number(paramValues['point_b'] ?? paramValues['interval_b']);
+      }
+    }
+
+    if (tpl.includes('right_triangle') || tpl.includes('pythagorean')) {
+      const legA = paramValues['leg_a'];
+      const legB = paramValues['leg_b'];
+      if (legA !== undefined && (ptDef.id === 'B' || ptDef.name === 'B')) x = Number(legA);
+      if (legB !== undefined && (ptDef.id === 'A' || ptDef.name === 'A')) y = Number(legB);
+    }
+
+    if (tpl.includes('isosceles') && paramValues['base_w'] !== undefined) {
+      const half = Number(paramValues['base_w']) / 2;
+      if (ptDef.id === 'B' || ptDef.name === 'B') x = -half;
+      if (ptDef.id === 'C' || ptDef.name === 'C') x = half;
+    }
+
+    if (isCircleTemplate) {
+      const cr = paramValues['r'] ?? paramValues['radius_r'] ?? paramValues['circle_r'] ?? paramValues['circle_r1'];
+      if (cr !== undefined && ptDef.id !== 'O' && ptDef.id !== 'Origin') {
+        const curDist = Math.hypot(x, y);
+        if (curDist > 0.1) {
+          const ratio = Number(cr) / curDist;
+          x = x * ratio;
+          y = y * ratio;
+        }
+      }
+    }
+
+    return { ...ptDef, x, y };
+  });
+
+  dragPoints.forEach((ptDef) => {
+    addPoint(ptDef.x, ptDef.y);
+  });
+
+  // 4. 特化数学图元极值与衍生点计算
+  if (isCircleTemplate) {
+    const centerPt = dragPoints.find((p) => p.id === 'O' || p.id === 'Origin') || dragPoints[0];
+    const cx = centerPt?.x ?? 0;
+    const cy = centerPt?.y ?? 0;
+    const radiusVal = Number(
+      paramValues['r'] ?? paramValues['radius_r'] ?? paramValues['circle_r'] ?? 4
+    );
+    addCircleBounds(cx, cy, radiusVal);
+  } else if (
+    tpl.includes('parallelogram') ||
+    tpl.includes('rectangle') ||
+    tpl.includes('rhombus') ||
+    tpl.includes('square') ||
+    tpl.includes('midpoint_quad')
+  ) {
+    if (dragPoints.length >= 3) {
+      const ptA = dragPoints[0];
+      const ptB = dragPoints[1];
+      const ptC = dragPoints[2];
+      const dX = ptA.x + ptC.x - ptB.x;
+      const dY = ptA.y + ptC.y - ptB.y;
+      addPoint(dX, dY);
+    }
+  } else if (tpl.includes('quadratic') || tpl.includes('parabola') || tpl.includes('vieta')) {
+    const qa = scope['a'];
+    const qb = scope['b'];
+    const qc = scope['c'];
+    const qDelta = scope['Delta'];
+    if (typeof qa === 'number' && qa !== 0 && typeof qb === 'number' && typeof qc === 'number') {
+      const symX = -qb / (2 * qa);
+      const vertY = (4 * qa * qc - qb * qb) / (4 * qa);
+      addPoint(symX, vertY);
+      if (typeof qDelta === 'number' && qDelta >= 0) {
+        const x1 = (-qb - Math.sqrt(qDelta)) / (2 * qa);
+        const x2 = (-qb + Math.sqrt(qDelta)) / (2 * qa);
+        addPoint(x1, 0);
+        addPoint(x2, 0);
+      }
+      addPoint(0, qc);
+    }
+  } else if (tpl.includes('inverse') || tpl.includes('hyperbola')) {
+    const invK = Number(paramValues['inv_k'] ?? paramValues['rect_k'] ?? paramValues['k'] ?? 6);
+    const tVal = Number(paramValues['x_pos'] ?? paramValues['x_pt'] ?? paramValues['param_t'] ?? 3);
+    const ptX = tVal !== 0 ? tVal : 1;
+    const ptY = invK / ptX;
+    addPoint(ptX, ptY);
+    addPoint(-ptX, -ptY);
+    addPoint(ptX, 0);
+    addPoint(0, ptY);
+    addPoint(0, 0);
+  } else if (tpl.includes('linear')) {
+    const k1 = Number(paramValues['slope_k'] ?? paramValues['k1'] ?? paramValues['k_prop'] ?? 1);
+    const b1 = Number(paramValues['intercept_b'] ?? paramValues['b1'] ?? 0);
+    if (paramValues['slope_k2'] !== undefined || paramValues['k2'] !== undefined) {
+      const k2 = Number(paramValues['slope_k2'] ?? paramValues['k2'] ?? -1);
+      const b2 = Number(paramValues['intercept_b2'] ?? paramValues['b2'] ?? 3);
+      if (Math.abs(k1 - k2) > 1e-6) {
+        const interX = (b2 - b1) / (k1 - k2);
+        const interY = k1 * interX + b1;
+        addPoint(interX, interY);
+      }
+    }
+  }
+
+  return computeBoundingBoxFromPoints(points);
+}
+
 export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
   config,
   className,
@@ -73,9 +367,18 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // 1. 解析视口包围盒
+    // 1. 解析视口包围盒并执行紧凑内容自适应 (TASK-FE-0015 块 A)
     const viewboxSpec = parseViewboxSpec(config.viewbox_spec_json);
-    const boundingbox = calculateViewport(viewboxSpec);
+    const contentBox = computeSandboxBoundingBox(config, paramValues);
+    const boundingbox = calculateAdaptiveViewport(viewboxSpec, contentBox, {
+      minSpan: 0.5,
+      marginPercent:
+        typeof viewboxSpec.marginPercent === 'number' && Number.isFinite(viewboxSpec.marginPercent)
+          ? Math.max(0.12, Math.min(0.15, viewboxSpec.marginPercent))
+          : 0.15,
+    });
+    const isAdaptive = isValidBoundingBox(contentBox, 0.5);
+    const keepaspectratio = isAdaptive ? true : viewboxSpec.preserveAspectRatio;
 
     // 2. 判断是否显示直角坐标轴 (axis)
     const isAxis =
@@ -116,7 +419,7 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
       },
       showCopyright: false,
       showNavigation: false,
-      keepaspectratio: viewboxSpec.preserveAspectRatio,
+      keepaspectratio,
       pan: { enabled: false },
       zoom: { wheel: false, pinch: false },
     });

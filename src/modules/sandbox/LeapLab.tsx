@@ -23,6 +23,7 @@ export interface LeapLabProps {
   style?: React.CSSProperties;
   isDrawerOpen?: boolean;
   onToggleDrawer?: (open: boolean) => void;
+  hideModelDrawer?: boolean;
 }
 
 export const SEMESTER_CONFIG = [
@@ -57,6 +58,7 @@ export const LeapLab: React.FC<LeapLabProps> = ({
   locale = 'zh-CN',
   isDrawerOpen: controlledDrawerOpen,
   onToggleDrawer,
+  hideModelDrawer = false,
 }) => {
   // 内部维护受控/非受控激活模型 ID
   const [activeModelId, setActiveModelId] = useState<string>(modelId);
@@ -298,17 +300,26 @@ export const LeapLab: React.FC<LeapLabProps> = ({
       {/* 头部标题行与模型抽屉展开入口 */}
       <div className="sandbox-header-line">
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-          <button
-            type="button"
-            className="model-drawer-trigger-btn"
-            onClick={() => setIsDrawerOpen(!isDrawerOpen)}
-          >
-            <Icon name="layers" size={14} />
-            <span style={{ fontWeight: 700 }}>
-              {currentModel.model_id} · {locale === 'en' ? currentModel.model_name_en : currentModel.model_name_zh}
-            </span>
-            <Icon name={isDrawerOpen ? 'chevron-up' : 'chevron-down'} size={14} />
-          </button>
+          {hideModelDrawer ? (
+            <div className="model-drawer-static-title">
+              <Icon name="layers" size={14} />
+              <span style={{ fontWeight: 700 }}>
+                {currentModel.model_id} · {locale === 'en' ? currentModel.model_name_en : currentModel.model_name_zh}
+              </span>
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="model-drawer-trigger-btn"
+              onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+            >
+              <Icon name="layers" size={14} />
+              <span style={{ fontWeight: 700 }}>
+                {currentModel.model_id} · {locale === 'en' ? currentModel.model_name_en : currentModel.model_name_zh}
+              </span>
+              <Icon name={isDrawerOpen ? 'chevron-up' : 'chevron-down'} size={14} />
+            </button>
+          )}
 
           <span style={{ fontSize: '12px', color: 'var(--text-tertiary)', fontWeight: 500 }}>
             (主线 {currentModel.primary_line} · {formatSemesterZh(currentModel.unlocked_semester)})
@@ -341,7 +352,7 @@ export const LeapLab: React.FC<LeapLabProps> = ({
       </div>
 
       {/* 2 级抽屉盒模型切换面板 */}
-      {isDrawerOpen && (
+      {isDrawerOpen && !hideModelDrawer && (
         <div className="model-drawer-panel">
           {/* 顶部搜索框 */}
           <div className="drawer-search-wrapper">
