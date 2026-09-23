@@ -1,0 +1,62 @@
+[
+  {
+    "question_id": "Q-2025-0AECBD-0002",
+    "question_type": "fill_blank",
+    "difficulty_level": 2,
+    "primary_point_id": "KP-060",
+    "stem_zh": "如图，点 $O$ 是 $AC$ 与 $BD$ 的交点，则 $\\triangle ABO$ 与 $\\triangle CDO$ 是位似图形（填“一定”或“不一定”）。\n\n[[IMG:0]]",
+    "stem_en": "As shown in the figure, point $O$ is the intersection of $AC$ and $BD$. Then $\\triangle ABO$ and $\\triangle CDO$ are homothetic figures (fill in \"certainly\" or \"not necessarily\").\n\n[[IMG:0]]",
+    "answer_standard": "不一定",
+    "options_json": null
+  },
+  {
+    "question_id": "Q-2025-26F4DA-0002",
+    "question_type": "solution",
+    "difficulty_level": 4,
+    "primary_point_id": "KP-057",
+    "stem_zh": "某校将一块形状为直角三角形的废地开辟为生物园，如图所示，$\\angle ACB = 90^{\\circ}$，$AC = 80$米，$BC = 60$米。若线段$CD$是一条小渠，且$D$点在边$AB$上，已知水渠的造价为$10$元/米，问$D$点位于距$A$点多远时，水渠的造价最低？最低造价是多少？\n\n[[IMG:0]]",
+    "stem_en": "A school transformed a piece of waste land in the shape of a right triangle into a biological garden, as shown in the figure, $\\angle ACB = 90^{\\circ}$, $AC = 80$ meters, $BC = 60$ meters. If line segment $CD$ is a ditch, and point $D$ is on side $AB$, and the construction cost of the ditch is 10 yuan/meter, how far is point $D$ from point $A$ when the construction cost of the ditch is the lowest? What is the lowest construction cost?\n\n[[IMG:0]]",
+    "answer_standard": "当点D距点A为64米时，水渠造价最低，最低造价是480元。",
+    "options_json": null
+  },
+  {
+    "question_id": "Q-2025-64486A-0004",
+    "question_type": "fill_blank",
+    "difficulty_level": 2,
+    "primary_point_id": "KP-025",
+    "stem_zh": "方程 $(x - 3)(x + 2) = 0$ 的根是______。",
+    "stem_en": "The roots of the equation $(x - 3)(x + 2) = 0$ are ______.",
+    "answer_standard": "$x_{1} = 3, x_{2} = -2$",
+    "options_json": null
+  },
+  {
+    "question_id": "Q-2025-7AE16F-0016",
+    "question_type": "fill_blank",
+    "difficulty_level": 3,
+    "primary_point_id": "KP-031",
+    "stem_zh": "在平面直角坐标系 xOy 中，对于点 P(x,y)，我们把点 P/(-y+1,x+1)叫做点 P\n的伴随点，已知点 A\\_{1} 的伴随点为 A\\_{2}, 点 A\\_{2} 的伴随点为 A\\_{3},\n点 A\\_{3} 的伴随点为 A\\_{4}, ...，这样依次得到 A\\_{1}, A\\_{2}, A\\_{3},\nA\\_{4}, .... 若点 A\\_{1} 的坐标为(3,1)，则点 A\\_{2019} 的坐标为\\_。",
+    "stem_en": "In the plane rectangular coordinate system $xOy$, for a point $P(x, y)$, we define point $P'(-y+1, x+1)$ as the adjoint point of $P$. Given that the adjoint point of $A_1$ is $A_2$, the adjoint point of $A_2$ is $A_3$, ..., and so on. If $A_1(3, 1)$, then the coordinates of $A_{2019}$ are \\_.",
+    "answer_standard": "(-3, 1)",
+    "options_json": null
+  },
+  {
+    "question_id": "Q-2026-MINERU-0018",
+    "question_type": "fill_blank",
+    "difficulty_level": 2,
+    "primary_point_id": "KP-031",
+    "stem_zh": "如图，点",
+    "stem_en": "As shown in the figure, point",
+    "answer_standard": "A",
+    "options_json": null
+  },
+  {
+    "question_id": "Q-2026-SUZ-0021",
+    "question_type": "solution",
+    "difficulty_level": 2,
+    "primary_point_id": "KP-004",
+    "stem_zh": "计算： $(\\pi - 1)^{0} + \\sqrt{9} + | - 5|$ .",
+    "stem_en": "Calculate: $(\\pi - 1)^{0} + \\sqrt{9} + | - 5|$.",
+    "answer_standard": "9",
+    "options_json": null
+  }
+]
