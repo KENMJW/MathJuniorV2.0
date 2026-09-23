@@ -31,13 +31,16 @@ DATA-0009 后抽样发现旧切题器遗留污染，本任务一次性清完（K
 
 ---
 
-## [进行中] TASK-DATA-0011 = 任务C 四合一（2026-09-22 下发，本机执行/并发10/Flash/A全库）
-四个子目标一次全做，覆盖全库 2565 题：
-- 子1 主考点重分配（19个<3题考点从大考点重标细分，保守只在确有更贴切时改）
-- 子2 生成补缺（Q-GEN- 前缀、content_status='generated'，补到每考点≥3题）
-- 子3 全库完整考点集合 all_point_ids + max_grade（ALTER TABLE 加两列，含老题）
-- 子4 combination_id 全库回填（老2028题从2%覆盖率补齐）
-- 任务书：`inbox/TASK-DATA-0011.md`。验收通过后任务C闭环。
+## [✅ 已完成] TASK-DATA-0011 = 任务C 四合一（2026-09-22 验收归档，本机/并发10/Flash）
+四子目标全库 2565→2582 题完成并验收（Kiro 独立查库+git基准复核）：
+- 子1 主考点重分配 89 题（大考点→细分，保守；grade/semester 随新KP对齐）
+- 子2 生成补缺 17 题（Q-GEN- 前缀、content_status='generated'，每考点≥3题达标、107考点全覆盖）
+- 子3 all_point_ids + max_grade 加列，全库 100% 覆盖（含primary、值域7~9）
+- 子4 combination_id 全库回填 100%（老题从2%→100%，0非法组合）
+- 红线：原2565题 stem_zh 零篡改(git基准复核)、零DELETE、双库同步、212测试全绿
+- **验收发现并由Kiro直接修正**：6道生成题(Q-GEN-KP013/KP096)学段错标7年级(实为8年级)，已按core.db修正grade/semester/max_grade
+- 报告：`archive/RESULT-DATA-0011.md`
+- **任务C 至此闭环。**
 
 ---
 
