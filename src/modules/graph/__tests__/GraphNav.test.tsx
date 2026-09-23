@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { renderToString } from 'react-dom/server';
 import fs from 'fs';
 import path from 'path';
+import { execSync } from 'child_process';
 import { GraphNav } from '../GraphNav';
 import { mockLogicLines } from '../mockGraphData';
 import { useSessionStore } from '../../../store/sessionStore';
@@ -77,5 +78,45 @@ describe('GraphNav (TASK-FE-0015 模块二知识谱系重构核心验证)', () =
     expect(html).toContain('line-swimlane');
     expect(html).toContain('data-testid="line-swimlane"');
     expect(html).toContain('演进泳道');
+  });
+
+  it('4. 验证真库中 12 条知识主线每条均具备至少 3 道 L4~L6 单选真题', () => {
+    const coreDbPath = path.resolve(__dirname, '../../../../public/data/core.db');
+    const questionsDbPath = path.resolve(__dirname, '../../../../public/data/questions.db');
+
+    if (!fs.existsSync(coreDbPath) || !fs.existsSync(questionsDbPath)) {
+      return;
+    }
+
+    const linesRaw = execSync(
+      `sqlite3 -json "${coreDbPath}" "SELECT line_id, name_zh FROM logic_lines ORDER BY line_id"`,
+      { encoding: 'utf-8' }
+    );
+    const lines = JSON.parse(linesRaw);
+    expect(lines.length).toBe(12);
+
+    const ptsRaw = execSync(
+      `sqlite3 -json "${coreDbPath}" "SELECT point_id, primary_line_id FROM knowledge_points"`,
+      { encoding: 'utf-8' }
+    );
+    const pts = JSON.parse(ptsRaw);
+
+    const ptsByLine: Record<string, string[]> = {};
+    for (const p of pts) {
+      if (!ptsByLine[p.primary_line_id]) ptsByLine[p.primary_line_id] = [];
+      ptsByLine[p.primary_line_id].push(p.point_id);
+    }
+
+    for (const line of lines) {
+      const linePts = ptsByLine[line.line_id] || [];
+      expect(linePts.length).toBeGreaterThan(0);
+      const inClause = linePts.map((id: string) => `'${id}'`).join(',');
+      const countRaw = execSync(
+        `sqlite3 -json "${questionsDbPath}" "SELECT count(*) as count FROM questions WHERE primary_point_id IN (${inClause}) AND question_type = 'single_choice' AND difficulty_level BETWEEN 4 AND 6"`,
+        { encoding: 'utf-8' }
+      );
+      const [{ count }] = JSON.parse(countRaw);
+      expect(count).toBeGreaterThanOrEqual(3);
+    }
   });
 });
