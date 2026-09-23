@@ -1,0 +1,68 @@
+[
+  {
+    "question_id": "Q-GEN-KP013-001",
+    "primary_point_id": "KP-013",
+    "grade_level": 7,
+    "semester": 2,
+    "all_point_ids": "[\"KP-013\"]",
+    "max_grade": 7,
+    "combination_id": "C1-0013",
+    "content_status": "generated",
+    "stem_zh": "计算 $8a^6b^4 \\div (-2a^2b)$ 的结果是（　　）"
+  },
+  {
+    "question_id": "Q-GEN-KP013-002",
+    "primary_point_id": "KP-013",
+    "grade_level": 7,
+    "semester": 2,
+    "all_point_ids": "[\"KP-013\"]",
+    "max_grade": 7,
+    "combination_id": "C1-0013",
+    "content_status": "generated",
+    "stem_zh": "计算 $(12x^3y^2 - 8x^2y) \\div 4x^2y$ 的结果是（　　）"
+  },
+  {
+    "question_id": "Q-2024-JS-0011",
+    "primary_point_id": "KP-024",
+    "grade_level": 9,
+    "semester": 1,
+    "all_point_ids": "[\"KP-024\"]",
+    "max_grade": 9,
+    "combination_id": "C1-0024",
+    "content_status": "done",
+    "stem_zh": "某商店6月份的利润是2500元，要使8月份的利润达到3600元，设平均每月利润增长的百分率为$x$，则可列方程为\\_\\_\\_\\_\\_\\_."
+  },
+  {
+    "question_id": "Q-2026-SD-0002",
+    "primary_point_id": "KP-079",
+    "grade_level": 8,
+    "semester": 1,
+    "all_point_ids": "[\"KP-079\", \"KP-082\"]",
+    "max_grade": 8,
+    "combination_id": "C2-0401",
+    "content_status": "done",
+    "stem_zh": "下列图形中，既是轴对称图形又是中心对称图形的是（ ）"
+  },
+  {
+    "question_id": "Q-2026-SD-0013",
+    "primary_point_id": "KP-021",
+    "grade_level": 9,
+    "semester": 1,
+    "all_point_ids": "[\"KP-021\", \"KP-025\"]",
+    "max_grade": 9,
+    "combination_id": "C2-0116",
+    "content_status": "done",
+    "stem_zh": "若关于 $x$ 的一元二次方程 $(x-2)(x-m) = 0$ 的一个根是 10，则另一个根是 ______．"
+  },
+  {
+    "question_id": "Q-2026-SD-0005",
+    "primary_point_id": "KP-011",
+    "grade_level": 8,
+    "semester": 1,
+    "all_point_ids": "[\"KP-011\"]",
+    "max_grade": 8,
+    "combination_id": "C1-0011",
+    "content_status": "done",
+    "stem_zh": "下列运算正确的是（ ）"
+  }
+]

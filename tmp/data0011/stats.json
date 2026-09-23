@@ -1,0 +1,16 @@
+{
+  "initial_count": 2565,
+  "final_count": 2582,
+  "backup_path": "/Users/annette/aidev/全科核心素养提分系统V2.0/data/questions.db.bak_before_task0011",
+  "backup_size_bytes": 7335936,
+  "backup_count": 2565,
+  "stem_zh_sha256": "3ce44a5ba6a12534ace9c1a2c681f0191079312a1c2ca92c61689235149a44c4",
+  "reallocated_count": 89,
+  "generated_count": 17,
+  "total_kps": 107,
+  "kps_under_3_count": 0,
+  "all_point_ids_coverage": "2582/2582 (100.0%)",
+  "max_grade_coverage": "2582/2582 (100.0%)",
+  "combination_id_coverage": "2582/2582 (100.0%)",
+  "db_sha256": "aaa26e0d1d5415a1ebf1f711fd9e8fc17cd60f89886a10842ef877249cfe5269"
+}
