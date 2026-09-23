@@ -187,5 +187,13 @@ describe('4D Morphing Controllers & X-Ray (Task 11.4 & 铁律 1/3 校验)', () =
     expect(lockedHtml).not.toContain('drawer-search-wrapper');
     expect(lockedHtml).toContain('LM-8A-01');
     expect(lockedHtml).toContain('手拉手全等与勾股跃迁模型');
+
+    // hideDrawerTrigger={true} 删除左侧按钮，渲染标准标题且不渲染内部抽屉面板
+    const triggerHiddenHtml = renderToString(<LeapLab model={testModel} hideDrawerTrigger={true} isDrawerOpen={true} />);
+    expect(triggerHiddenHtml).not.toContain('model-drawer-trigger-btn');
+    expect(triggerHiddenHtml).not.toContain('model-drawer-panel');
+    expect(triggerHiddenHtml).toContain('sandbox-title-text');
+    expect(triggerHiddenHtml).toContain('LM-8A-01');
+    expect(triggerHiddenHtml).toContain('手拉手全等与勾股跃迁模型');
   });
 });

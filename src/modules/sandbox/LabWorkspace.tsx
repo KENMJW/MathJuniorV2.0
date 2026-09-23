@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { SandboxRenderer } from './SandboxRenderer';
-import { LeapLab } from './LeapLab';
+import { LeapLab, SEMESTER_CONFIG as LEAP_SEMESTER_CONFIG, formatSemesterZh } from './LeapLab';
 import { Icon } from '../../components/common/Icon';
 import './sandbox.css';
 
@@ -211,233 +211,369 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
     setConceptParamValues(initial);
   }, [currentSandbox?.id, conceptSliders]);
 
+  const [leapSearchQuery, setLeapSearchQuery] = useState<string>('');
+  const [leapSelectedSem, setLeapSelectedSem] = useState<string>(
+    currentLeapModel?.unlocked_semester || '8A'
+  );
+
+  useEffect(() => {
+    if (currentLeapModel?.unlocked_semester) {
+      setLeapSelectedSem(currentLeapModel.unlocked_semester);
+    }
+  }, [currentLeapModel?.model_id, currentLeapModel?.unlocked_semester]);
+
+  const leapModelsBySemester = useMemo(() => {
+    const map: Record<string, any[]> = {
+      '7A': [],
+      '7B': [],
+      '8A': [],
+      '8B': [],
+      '9A': [],
+      '9B': [],
+    };
+    effectiveLeapModels.forEach((m) => {
+      const sem = m.unlocked_semester || '8A';
+      if (!map[sem]) map[sem] = [];
+      if (!map[sem].some((existing) => existing.model_id === m.model_id)) {
+        map[sem].push(m);
+      }
+    });
+    return map;
+  }, [effectiveLeapModels]);
+
+  const filteredLeapModels = useMemo(() => {
+    const q = leapSearchQuery.trim().toLowerCase();
+    if (!q) {
+      return leapModelsBySemester[leapSelectedSem] || [];
+    }
+    return effectiveLeapModels.filter((m) => {
+      const idMatch = m.model_id.toLowerCase().includes(q);
+      const nameZhMatch = (m.model_name_zh || '').toLowerCase().includes(q);
+      const nameEnMatch = (m.model_name_en || '').toLowerCase().includes(q);
+      const briefZhMatch = (m.model_brief_zh || '').toLowerCase().includes(q);
+      return idMatch || nameZhMatch || nameEnMatch || briefZhMatch;
+    });
+  }, [effectiveLeapModels, leapModelsBySemester, leapSelectedSem, leapSearchQuery]);
+
+  const handleSelectLeapModel = (modelId: string) => {
+    setSelectedLeapModelId(modelId);
+    setIsLeapDrawerOpen(false);
+    setLeapSearchQuery('');
+    const stage = document.querySelector('.workspace-stage-card') || document.querySelector('.sandbox-stage-wrapper');
+    if (stage) {
+      stage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   const handleSelectSandbox = (id: string) => {
     setSelectedSandboxId(id);
     setIsConceptDrawerOpen(false);
     setConceptSearchQuery('');
+    setConceptParamValues({});
+    setInvariants([]);
+    const stage = document.querySelector('.workspace-stage-card') || document.querySelector('.sandbox-stage-wrapper');
+    if (stage) {
+      stage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  const toggleConceptDrawer = () => {
+    setIsConceptDrawerOpen((prev) => !prev);
+    setIsLeapDrawerOpen(false);
+  };
+
+  const toggleLeapDrawer = () => {
+    setIsLeapDrawerOpen((prev) => !prev);
+    setIsConceptDrawerOpen(false);
   };
 
   return (
     <div className="sandbox-stage-wrapper">
       <div className="workspace-stage-card">
-        {/* 顶部统一实验室切换器 - 吸顶固定常驻 */}
+        {/* 顶部统一实验室切换器与抽屉选择面板 - 吸顶固定常驻 */}
         <div
-          className="sandbox-top-bar"
-          style={{
-            position: "sticky",
-            top: 0,
-            zIndex: 40,
-            background: "var(--bg-card, #ffffff)",
-            padding: "16px 28px",
-            margin: "-24px -28px 0 -28px",
-            borderTopLeftRadius: "var(--radius-lg, 22px)",
-            borderTopRightRadius: "var(--radius-lg, 22px)",
-            borderBottom: "1px solid rgba(0, 0, 0, 0.05)",
-            boxShadow: "0 2px 10px rgba(0, 0, 0, 0.02)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: "12px",
-          }}
+          className={`sandbox-sticky-header-container ${(isConceptDrawerOpen || isLeapDrawerOpen) ? 'drawer-open' : ''}`}
         >
-          <div className="stage-segmented-control">
-            <button
-              type="button"
-              onClick={() => {
-                setLabSubView("concept_sandbox");
-                setIsLeapDrawerOpen(false);
-              }}
-              className={`seg-item ${labSubView === "concept_sandbox" ? "active" : ""}`}
-            >
-              <Icon name="flask" size={13} className="seg-icon" />
-              <span>概念具象沙盒 (实验室一 · {effectiveSandboxes.length})</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setLabSubView("leap_4d");
-                setIsConceptDrawerOpen(false);
-              }}
-              className={`seg-item ${labSubView === "leap_4d" ? "active" : ""}`}
-            >
-              <Icon name="rocket" size={13} className="seg-icon" />
-              <span>4D 跃迁模型 (实验室二 · {effectiveLeapModels.length})</span>
-            </button>
-          </div>
-
-          {/* 统一模型/沙盒选择抽屉入口 (固定在二级菜单右侧) */}
-          {labSubView === "concept_sandbox" ? (
-            <button
-              type="button"
-              className="model-drawer-trigger-btn"
-              onClick={() => setIsConceptDrawerOpen(!isConceptDrawerOpen)}
-            >
-              <Icon name="menu" size={13} />
-              <span>选择沙盒: {currentSandbox?.nameZh || currentSandbox?.id}</span>
-              <Icon name={isConceptDrawerOpen ? "chevron-up" : "chevron-down"} size={13} />
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="model-drawer-trigger-btn"
-              onClick={() => setIsLeapDrawerOpen(!isLeapDrawerOpen)}
-            >
-              <Icon name="layers" size={13} />
-              <span>选择模型: {currentLeapModel?.model_id} · {locale === 'en' ? currentLeapModel?.model_name_en : currentLeapModel?.model_name_zh}</span>
-              <Icon name={isLeapDrawerOpen ? "chevron-up" : "chevron-down"} size={13} />
-            </button>
-          )}
-        </div>
-
-        {/* 概念沙盒 4 级抽屉盒选择面板 */}
-        {labSubView === "concept_sandbox" && isConceptDrawerOpen && (
-          <div className="model-drawer-panel" style={{ marginBottom: '10px' }}>
-            {/* 顶部搜索条 */}
-            <div className="drawer-search-wrapper">
-              <div className="drawer-search-input-box">
-                <Icon name="search" size={14} style={{ color: 'var(--text-tertiary)' }} />
-                <input
-                  type="text"
-                  value={conceptSearchQuery}
-                  onChange={(e) => setConceptSearchQuery(e.target.value)}
-                  placeholder="搜索 46 个概念沙盒 (如 一次函数 / 勾股 / 反比例)..."
-                  className="drawer-search-field"
-                />
-                {conceptSearchQuery && (
-                  <button
-                    type="button"
-                    onClick={() => setConceptSearchQuery('')}
-                    className="drawer-search-clear"
-                  >
-                    <Icon name="x" size={12} />
-                  </button>
-                )}
-              </div>
+          <div className="sandbox-top-bar">
+            <div className="stage-segmented-control">
               <button
                 type="button"
-                className="drawer-close-btn"
-                onClick={() => setIsConceptDrawerOpen(false)}
+                onClick={() => {
+                  setLabSubView("concept_sandbox");
+                  setIsLeapDrawerOpen(false);
+                }}
+                className={`seg-item ${labSubView === "concept_sandbox" ? "active" : ""}`}
               >
-                <Icon name="x" size={14} />
+                <Icon name="flask" size={13} className="seg-icon" />
+                <span>概念具象沙盒 (实验室一 · {effectiveSandboxes.length})</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setLabSubView("leap_4d");
+                  setIsConceptDrawerOpen(false);
+                }}
+                className={`seg-item ${labSubView === "leap_4d" ? "active" : ""}`}
+              >
+                <Icon name="rocket" size={13} className="seg-icon" />
+                <span>4D 跃迁模型 (实验室二 · {effectiveLeapModels.length})</span>
               </button>
             </div>
 
-            {!conceptSearchQuery && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {/* 1 级：年级选择 */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-secondary)' }}>
-                    ① 年级:
-                  </span>
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    {GRADES.map((g) => (
-                      <button
-                        key={g}
-                        type="button"
-                        className={`drawer-sem-chip ${filterGrade === g ? 'active' : ''}`}
-                        onClick={() => {
-                          setFilterGrade(g);
-                          setFilterCategory('all');
-                        }}
-                      >
-                        {g}年级
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* 2 级：学期选择 */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-secondary)' }}>
-                    ② 学期:
-                  </span>
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    {SEMESTERS.map((s) => (
-                      <button
-                        key={s.val}
-                        type="button"
-                        className={`drawer-sem-chip ${filterSemester === s.val ? 'active' : ''}`}
-                        onClick={() => {
-                          setFilterSemester(s.val);
-                          setFilterCategory('all');
-                        }}
-                      >
-                        {s.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* 3 级：课程 / 知识模块 */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-secondary)' }}>
-                    ③ 课程模块:
-                  </span>
-                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                    <button
-                      type="button"
-                      className={`drawer-sem-chip ${filterCategory === 'all' ? 'active' : ''}`}
-                      onClick={() => setFilterCategory('all')}
-                    >
-                      全部模块
-                    </button>
-                    {availableCategories.map((cat) => (
-                      <button
-                        key={cat}
-                        type="button"
-                        className={`drawer-sem-chip ${filterCategory === cat ? 'active' : ''}`}
-                        onClick={() => setFilterCategory(cat)}
-                      >
-                        {cat}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
+            {/* 统一模型/沙盒选择抽屉入口 (固定在二级菜单右侧) */}
+            {labSubView === "concept_sandbox" ? (
+              <button
+                type="button"
+                className="model-drawer-trigger-btn"
+                onClick={toggleConceptDrawer}
+              >
+                <Icon name="menu" size={13} />
+                <span>选择沙盒: {currentSandbox?.nameZh || currentSandbox?.id}</span>
+                <Icon name={isConceptDrawerOpen ? "chevron-up" : "chevron-down"} size={13} />
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="model-drawer-trigger-btn"
+                onClick={toggleLeapDrawer}
+              >
+                <Icon name="layers" size={13} />
+                <span>选择模型: {currentLeapModel?.model_id} · {locale === 'en' ? currentLeapModel?.model_name_en : currentLeapModel?.model_name_zh}</span>
+                <Icon name={isLeapDrawerOpen ? "chevron-up" : "chevron-down"} size={13} />
+              </button>
             )}
-
-            {/* 4 级：概念沙盒卡片列表 */}
-            <div className="drawer-model-grid">
-              {filteredSandboxes.length > 0 ? (
-                filteredSandboxes.map((s) => {
-                  const isSelected = s.id === currentSandbox.id;
-                  return (
-                    <button
-                      key={s.id}
-                      type="button"
-                      className={`drawer-model-card ${isSelected ? 'active' : ''}`}
-                      onClick={() => handleSelectSandbox(s.id)}
-                    >
-                      <div className="drawer-card-header">
-                        <span className="drawer-card-code">{s.id}</span>
-                        <span className="drawer-card-sem">{s.grade}年级{s.semester === 1 ? '上' : '下'}</span>
-                        {isSelected && <Icon name="check" size={12} style={{ color: 'var(--ios-blue)', marginLeft: 'auto' }} />}
-                      </div>
-                      <div className="drawer-card-name">{s.nameZh}</div>
-                      <div className="drawer-card-brief">{s.desc || '动态几何与参数不变量探究'}</div>
-                    </button>
-                  );
-                })
-              ) : (
-                <div className="drawer-empty-tip">未检索到匹配的概念沙盒</div>
-              )}
-            </div>
           </div>
-        )}
+
+          {/* 概念沙盒 4 级抽屉盒选择面板 */}
+          {labSubView === "concept_sandbox" && isConceptDrawerOpen && (
+            <div className="model-drawer-panel" style={{ marginTop: '12px', marginBottom: '4px' }}>
+              {/* 顶部搜索条 */}
+              <div className="drawer-search-wrapper">
+                <div className="drawer-search-input-box">
+                  <Icon name="search" size={14} style={{ color: 'var(--text-tertiary)' }} />
+                  <input
+                    type="text"
+                    value={conceptSearchQuery}
+                    onChange={(e) => setConceptSearchQuery(e.target.value)}
+                    placeholder="搜索 46 个概念沙盒 (如 一次函数 / 勾股 / 反比例)..."
+                    className="drawer-search-field"
+                  />
+                  {conceptSearchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setConceptSearchQuery('')}
+                      className="drawer-search-clear"
+                    >
+                      <Icon name="x" size={12} />
+                    </button>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  className="drawer-close-btn"
+                  onClick={() => setIsConceptDrawerOpen(false)}
+                >
+                  <Icon name="x" size={14} />
+                </button>
+              </div>
+
+              {!conceptSearchQuery && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {/* 1 级：年级选择 */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-secondary)' }}>
+                      ① 年级:
+                    </span>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      {GRADES.map((g) => (
+                        <button
+                          key={g}
+                          type="button"
+                          className={`drawer-sem-chip ${filterGrade === g ? 'active' : ''}`}
+                          onClick={() => {
+                            setFilterGrade(g);
+                            setFilterCategory('all');
+                          }}
+                        >
+                          {g}年级
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 2 级：学期选择 */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-secondary)' }}>
+                      ② 学期:
+                    </span>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      {SEMESTERS.map((s) => (
+                        <button
+                          key={s.val}
+                          type="button"
+                          className={`drawer-sem-chip ${filterSemester === s.val ? 'active' : ''}`}
+                          onClick={() => {
+                            setFilterSemester(s.val);
+                            setFilterCategory('all');
+                          }}
+                        >
+                          {s.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 3 级：课程 / 知识模块 */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-secondary)' }}>
+                      ③ 课程模块:
+                    </span>
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        className={`drawer-sem-chip ${filterCategory === 'all' ? 'active' : ''}`}
+                        onClick={() => setFilterCategory('all')}
+                      >
+                        全部模块
+                      </button>
+                      {availableCategories.map((cat) => (
+                        <button
+                          key={cat}
+                          type="button"
+                          className={`drawer-sem-chip ${filterCategory === cat ? 'active' : ''}`}
+                          onClick={() => setFilterCategory(cat)}
+                        >
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 4 级：概念沙盒卡片列表 */}
+              <div className="drawer-model-grid">
+                {filteredSandboxes.length > 0 ? (
+                  filteredSandboxes.map((s) => {
+                    const isSelected = s.id === currentSandbox.id;
+                    return (
+                      <button
+                        key={s.id}
+                        type="button"
+                        className={`drawer-model-card ${isSelected ? 'active' : ''}`}
+                        onClick={() => handleSelectSandbox(s.id)}
+                      >
+                        <div className="drawer-card-header">
+                          <span className="drawer-card-code">{s.id}</span>
+                          <span className="drawer-card-sem">{s.grade}年级{s.semester === 1 ? '上' : '下'}</span>
+                          {isSelected && <Icon name="check" size={12} style={{ color: 'var(--ios-blue)', marginLeft: 'auto' }} />}
+                        </div>
+                        <div className="drawer-card-name">{s.nameZh}</div>
+                        <div className="drawer-card-brief">{s.desc || '动态几何与参数不变量探究'}</div>
+                      </button>
+                    );
+                  })
+                ) : (
+                  <div className="drawer-empty-tip">未检索到匹配的概念沙盒</div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* 4D 跃迁模型 2 级抽屉盒模型切换面板 */}
+          {labSubView === "leap_4d" && isLeapDrawerOpen && (
+            <div className="model-drawer-panel" style={{ marginTop: '12px', marginBottom: '4px' }}>
+              {/* 顶部搜索框 */}
+              <div className="drawer-search-wrapper">
+                <div className="drawer-search-input-box">
+                  <Icon name="search" size={14} style={{ color: 'var(--text-tertiary)' }} />
+                  <input
+                    type="text"
+                    value={leapSearchQuery}
+                    onChange={(e) => setLeapSearchQuery(e.target.value)}
+                    placeholder="搜索 36 个跃迁模型 (如 手拉手 / LM-7A-01 / 抛物线)..."
+                    className="drawer-search-field"
+                  />
+                  {leapSearchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setLeapSearchQuery('')}
+                      className="drawer-search-clear"
+                    >
+                      <Icon name="x" size={12} />
+                    </button>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  className="drawer-close-btn"
+                  onClick={() => setIsLeapDrawerOpen(false)}
+                >
+                  <Icon name="x" size={14} />
+                </button>
+              </div>
+
+              {/* 1 级：年级学期选择标签 (全中文) */}
+              {!leapSearchQuery && (
+                <div className="drawer-sem-tabs">
+                  {LEAP_SEMESTER_CONFIG.map((cfg) => {
+                    const count = leapModelsBySemester[cfg.key]?.length || 0;
+                    const active = leapSelectedSem === cfg.key;
+                    return (
+                      <button
+                        key={cfg.key}
+                        type="button"
+                        className={`drawer-sem-chip ${active ? 'active' : ''}`}
+                        onClick={() => setLeapSelectedSem(cfg.key)}
+                      >
+                        <span>{cfg.label}</span>
+                        <span className="drawer-sem-count">({count})</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* 2 级：模型卡片列表 */}
+              <div className="drawer-model-grid">
+                {filteredLeapModels.length > 0 ? (
+                  filteredLeapModels.map((m) => {
+                    const isSelected = m.model_id === currentLeapModel.model_id;
+                    const isFlagship = m.model_id.includes('9A-19') || m.model_id.includes('7A-01');
+                    return (
+                      <button
+                        key={m.model_id}
+                        type="button"
+                        className={`drawer-model-card ${isSelected ? 'active' : ''}`}
+                        onClick={() => handleSelectLeapModel(m.model_id)}
+                      >
+                        <div className="drawer-card-header">
+                          <span className="drawer-card-code">{m.model_id}</span>
+                          <span className="drawer-card-sem">{formatSemesterZh(m.unlocked_semester)}</span>
+                          {isFlagship && <span className="drawer-card-flagship">重点模型</span>}
+                          {isSelected && <Icon name="check" size={12} style={{ color: 'var(--ios-blue)', marginLeft: 'auto' }} />}
+                        </div>
+                        <div className="drawer-card-name">{m.model_name_zh}</div>
+                        <div className="drawer-card-brief">{m.model_brief_zh}</div>
+                      </button>
+                    );
+                  })
+                ) : (
+                  <div className="drawer-empty-tip">未检索到匹配的跃迁模型</div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* 主舞台展示区 */}
         {labSubView === "leap_4d" ? (
           <LeapLab
             modelId={selectedLeapModelId}
-            onSelectModelId={(id) => {
-              setSelectedLeapModelId(id);
-              setIsLeapDrawerOpen(false);
-            }}
+            onSelectModelId={handleSelectLeapModel}
             allModels={effectiveLeapModels}
             locale={locale}
-            isDrawerOpen={isLeapDrawerOpen}
-            onToggleDrawer={setIsLeapDrawerOpen}
+            hideDrawerTrigger={true}
           />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%' }}>

@@ -24,6 +24,7 @@ export interface LeapLabProps {
   isDrawerOpen?: boolean;
   onToggleDrawer?: (open: boolean) => void;
   hideModelDrawer?: boolean;
+  hideDrawerTrigger?: boolean;
 }
 
 export const SEMESTER_CONFIG = [
@@ -59,6 +60,7 @@ export const LeapLab: React.FC<LeapLabProps> = ({
   isDrawerOpen: controlledDrawerOpen,
   onToggleDrawer,
   hideModelDrawer = false,
+  hideDrawerTrigger = false,
 }) => {
   // 内部维护受控/非受控激活模型 ID
   const [activeModelId, setActiveModelId] = useState<string>(modelId);
@@ -307,6 +309,14 @@ export const LeapLab: React.FC<LeapLabProps> = ({
                 {currentModel.model_id} · {locale === 'en' ? currentModel.model_name_en : currentModel.model_name_zh}
               </span>
             </div>
+          ) : hideDrawerTrigger ? (
+            <h3 className="sandbox-title-text" style={{ margin: 0 }}>
+              <Icon name="layers" size={16} />
+              <span>{locale === 'en' ? currentModel.model_name_en : currentModel.model_name_zh}</span>
+              <span style={{ fontSize: '13px', color: 'var(--text-tertiary)', fontWeight: 400 }}>
+                ({currentModel.model_id} · 主线 {currentModel.primary_line} · {formatSemesterZh(currentModel.unlocked_semester)})
+              </span>
+            </h3>
           ) : (
             <button
               type="button"
@@ -321,9 +331,11 @@ export const LeapLab: React.FC<LeapLabProps> = ({
             </button>
           )}
 
-          <span style={{ fontSize: '12px', color: 'var(--text-tertiary)', fontWeight: 500 }}>
-            (主线 {currentModel.primary_line} · {formatSemesterZh(currentModel.unlocked_semester)})
-          </span>
+          {!hideDrawerTrigger && (
+            <span style={{ fontSize: '12px', color: 'var(--text-tertiary)', fontWeight: 500 }}>
+              (主线 {currentModel.primary_line} · {formatSemesterZh(currentModel.unlocked_semester)})
+            </span>
+          )}
         </div>
 
         <div className="tier-pill-group">
@@ -352,7 +364,7 @@ export const LeapLab: React.FC<LeapLabProps> = ({
       </div>
 
       {/* 2 级抽屉盒模型切换面板 */}
-      {isDrawerOpen && !hideModelDrawer && (
+      {isDrawerOpen && !hideModelDrawer && !hideDrawerTrigger && (
         <div className="model-drawer-panel">
           {/* 顶部搜索框 */}
           <div className="drawer-search-wrapper">
