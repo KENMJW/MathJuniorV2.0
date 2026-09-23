@@ -27,6 +27,7 @@ import {
 } from '../../engine/judge/calculateSolutionScore';
 import { normalizeOptionAnswer } from '../../engine/judge/normalizeOptionAnswer';
 import { useSessionStore } from '../../store/sessionStore';
+import { getSafeStem } from '../../engine/i18n/stemGuard';
 
 export { normalizeOptionAnswer };
 
@@ -610,7 +611,7 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                 </div>
                 <div style={{ fontSize: '0.8125rem', color: 'var(--text-primary)', lineHeight: 1.5 }}>
                   <QuestionContent
-                    content={(isEn ? r.question.stem_en : r.question.stem_zh) || r.question.stem_zh}
+                    content={getSafeStem(r.question, isEn)}
                     images={r.question.image_paths_json}
                   />
                 </div>
@@ -718,7 +719,7 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                 </div>
                 <div style={{ fontSize: '0.8125rem', color: 'var(--text-primary)', lineHeight: 1.5 }}>
                   <QuestionContent
-                    content={(isEn ? r.question.stem_en : r.question.stem_zh) || r.question.stem_zh}
+                    content={getSafeStem(r.question, isEn)}
                     images={r.question.image_paths_json}
                   />
                 </div>
@@ -851,7 +852,7 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                 {/* 题干 (支持图锚点混合渲染) */}
                 <div style={{ fontSize: '0.875rem', color: 'var(--text-primary)', lineHeight: 1.6 }}>
                   <QuestionContent
-                    content={(isEn ? r.question.stem_en : r.question.stem_zh) || r.question.stem_zh}
+                    content={getSafeStem(r.question, isEn)}
                     images={r.question.image_paths_json}
                   />
                 </div>

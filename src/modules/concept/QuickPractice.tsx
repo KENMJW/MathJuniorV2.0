@@ -11,6 +11,7 @@ import {
 } from './quickPractice.machine';
 import { normalizeOptionAnswer } from '../../engine/judge/normalizeOptionAnswer';
 import { useSessionStore } from '../../store/sessionStore';
+import { getSafeStem } from '../../engine/i18n/stemGuard';
 
 export interface QuickPracticeProps {
   pointId: string;
@@ -240,7 +241,7 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
             const userChoice = selectedAnswers[q.question_id];
             const isAnswered = !!userChoice;
             const isCorrect = normalizeOptionAnswer(userChoice) === normalizeOptionAnswer(q.answer_standard);
-            const stem = locale === 'en' ? q.stem_en || q.stem_zh : q.stem_zh;
+            const stem = getSafeStem(q, String(locale).toLowerCase().startsWith('en'));
 
             return (
               <div

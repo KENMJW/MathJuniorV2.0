@@ -12,6 +12,7 @@ import { SolutionList } from '../exam/SolutionList';
 import { Icon } from '../../components/common/Icon';
 import { useSessionStore } from '../../store/sessionStore';
 import { normalizeOptionAnswer } from '../../engine/judge/normalizeOptionAnswer';
+import { getSafeStem } from '../../engine/i18n/stemGuard';
 
 export interface LineQuickPracticeProps {
   lineId: string;
@@ -317,9 +318,9 @@ export const LineQuickPractice: React.FC<LineQuickPracticeProps> = ({
               第 {currentIndex + 1} 题 (L{currentQ.difficulty_level} · {currentQ.score_default || 3}分)
             </div>
             <QuestionContent
-              content={locale === 'en' ? currentQ.stem_en : currentQ.stem_zh}
+              content={getSafeStem(currentQ, locale?.startsWith('en') ?? false)}
               images={currentQ.image_paths_json}
-              locale={locale.startsWith('en') ? 'en' : 'zh'}
+              locale={locale?.startsWith('en') ? 'en' : 'zh'}
             />
           </div>
 

@@ -16,6 +16,7 @@ import { SourceTag } from '../../components/common/SourceTag';
 import { Icon } from '../../components/common/Icon';
 import { normalizeOptionAnswer } from '../../engine/judge/normalizeOptionAnswer';
 import { useSessionStore } from '../../store/sessionStore';
+import { getSafeStem } from '../../engine/i18n/stemGuard';
 
 export interface MasterExampleItem {
   example_id: string;
@@ -248,7 +249,7 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
             maxWidth: '100%',
           }}
         >
-          <QuestionContent content={(isEn && example.stem_en) ? example.stem_en : example.stem_zh} images={example.image_paths_json} />
+          <QuestionContent content={getSafeStem(example, isEn)} images={example.image_paths_json} />
         </div>
 
         {/* 若有备选选项 */}

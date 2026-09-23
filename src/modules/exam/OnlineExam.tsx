@@ -22,6 +22,7 @@ import { MathKeyboard } from './MathKeyboard';
 import { ScorePanel } from './ScorePanel';
 import { Icon } from '../../components/common/Icon';
 import { useSessionStore } from '../../store/sessionStore';
+import { getSafeStem } from '../../engine/i18n/stemGuard';
 
 export interface OnlineExamProps {
   paper: GeneratedPaper;
@@ -524,7 +525,7 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
 
                       {/* 题干 (支持图锚点混合渲染) */}
                       <div style={{ fontSize: '0.9375rem', color: 'var(--text-primary)', lineHeight: 1.6 }}>
-                        <QuestionContent content={(isEn ? q.stem_en : q.stem_zh) || q.stem_zh} images={q.image_paths_json} />
+                        <QuestionContent content={getSafeStem(q, isEn)} images={q.image_paths_json} />
                       </div>
 
                       {/* 选项网格 */}
@@ -696,7 +697,7 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
 
                       {/* 题干 (支持图锚点混合渲染) */}
                       <div style={{ fontSize: '0.9375rem', color: 'var(--text-primary)', lineHeight: 1.6 }}>
-                        <QuestionContent content={(isEn ? q.stem_en : q.stem_zh) || q.stem_zh} images={q.image_paths_json} />
+                        <QuestionContent content={getSafeStem(q, isEn)} images={q.image_paths_json} />
                       </div>
 
                       {/* 填空作答输入区 */}
@@ -883,7 +884,7 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
 
                       {/* 题干 (支持图锚点混合渲染) */}
                       <div style={{ fontSize: '0.9375rem', color: 'var(--text-primary)', lineHeight: 1.6 }}>
-                        <QuestionContent content={(isEn ? q.stem_en : q.stem_zh) || q.stem_zh} images={q.image_paths_json} />
+                        <QuestionContent content={getSafeStem(q, isEn)} images={q.image_paths_json} />
                       </div>
 
                       {/* 解答草稿输入框 */}

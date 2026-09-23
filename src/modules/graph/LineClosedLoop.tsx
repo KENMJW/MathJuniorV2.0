@@ -6,6 +6,7 @@ import { LineQuickPractice } from './LineQuickPractice';
 import { mockLogicLines } from './mockGraphData';
 import { useSessionStore } from '../../store/sessionStore';
 import { dbClient } from '../../engine/db/dbClient';
+import { getSafeStem } from '../../engine/i18n/stemGuard';
 
 export interface LineCategoryGroup {
   domain: string;
@@ -805,7 +806,7 @@ export const LineClosedLoop: React.FC<LineClosedLoopProps> = ({
               {/* 母题题干 (MathRenderer) */}
               <div style={{ fontSize: '0.96rem', color: 'var(--text-primary)', lineHeight: 1.6, marginBottom: '1.25rem' }}>
                 <MathRenderer
-                  content={locale === 'en' ? resolvedMasterExample.stem_en : resolvedMasterExample.stem_zh}
+                  content={getSafeStem(resolvedMasterExample, String(locale).toLowerCase().startsWith('en'))}
                 />
               </div>
 

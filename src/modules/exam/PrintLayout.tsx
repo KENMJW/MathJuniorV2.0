@@ -17,6 +17,7 @@ import { QuestionImage } from '../../components/common/QuestionImage';
 import { SolutionList } from './SolutionList';
 import { Icon } from '../../components/common/Icon';
 import { useSessionStore } from '../../store/sessionStore';
+import { getSafeStem } from '../../engine/i18n/stemGuard';
 import './print.css';
 
 export interface PrintLayoutProps {
@@ -434,7 +435,7 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.35rem' }}>
                           <span style={{ fontWeight: 700 }}>{questionIndex}.</span>
                           <div style={{ flex: 1 }}>
-                            <QuestionContent content={(isEn ? q.stem_en : q.stem_zh) || q.stem_zh} images={q.image_paths_json} eager={true} />
+                            <QuestionContent content={getSafeStem(q, isEn)} images={q.image_paths_json} eager={true} />
                           </div>
                         </div>
 
@@ -567,7 +568,7 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.35rem' }}>
                           <span style={{ fontWeight: 700 }}>{questionIndex}.</span>
                           <div style={{ flex: 1 }}>
-                            <QuestionContent content={(isEn ? q.stem_en : q.stem_zh) || q.stem_zh} images={q.image_paths_json} eager={true} />
+                            <QuestionContent content={getSafeStem(q, isEn)} images={q.image_paths_json} eager={true} />
                           </div>
                         </div>
 
@@ -655,7 +656,7 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
                             {isEn ? `(${q.score_default || 8} Pts)` : `(${q.score_default || 8} 分)`}
                           </span>
                           <div style={{ flex: 1 }}>
-                            <QuestionContent content={(isEn ? q.stem_en : q.stem_zh) || q.stem_zh} images={q.image_paths_json} eager={true} />
+                            <QuestionContent content={getSafeStem(q, isEn)} images={q.image_paths_json} eager={true} />
                           </div>
                         </div>
 
