@@ -270,7 +270,7 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
         </div>
 
         {/* 主体区：搜索结果 OR 4级级联筛选 */}
-        <div style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+        <div className="concept-drawer-body" style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}>
           {searchQuery ? (
             /* 搜索模式：直接展示全局匹配考点 */
             <div
@@ -355,9 +355,10 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
             </div>
           ) : (
             /* 正常 4 级下钻盒模式 */
-            <div style={{ display: 'flex', width: '100%', minHeight: '380px' }}>
+            <div className="concept-drawer-columns" style={{ display: 'flex', width: '100%', minHeight: '380px' }}>
               {/* 左侧控制栏：1级年级 + 2级学期 + 3级领域/单元 */}
               <div
+                className="concept-drawer-left-col"
                 style={{
                   width: '280px',
                   minWidth: '280px',
@@ -504,7 +505,7 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
                   </div>
 
                   {/* 课程单元列表 (15 个 subcategory) */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                  <div className="concept-drawer-subcat-list" style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                     {availableSubcategories.map((subcat) => {
                       const active = selectedSubcategory === subcat;
                       const count = knowledgePoints.filter(
@@ -552,6 +553,7 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
 
               {/* 右侧大纲考点列表 (4级大纲考点) */}
               <div
+                className="concept-drawer-right-col"
                 style={{
                   flex: 1,
                   padding: '1rem',

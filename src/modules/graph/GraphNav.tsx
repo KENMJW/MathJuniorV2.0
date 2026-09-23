@@ -421,9 +421,23 @@ export const GraphNav: React.FC<GraphNavProps> = ({
 
         {/* 12 谱系选择器抽屉面板 (按大类分组) */}
         {isDrawerOpen && (
-          <div
-            className="graph-line-drawer-panel"
-            data-testid="graph-line-drawer-panel"
+          <>
+            <div
+              data-testid="graph-line-drawer-backdrop"
+              onClick={() => setIsDrawerOpen(false)}
+              style={{
+                position: 'fixed',
+                inset: 0,
+                zIndex: 45,
+                background: 'rgba(0, 0, 0, 0.18)',
+                backdropFilter: 'blur(4px)',
+                WebkitBackdropFilter: 'blur(4px)',
+                animation: 'fadeIn 0.2s ease',
+              }}
+            />
+            <div
+              className="graph-line-drawer-panel"
+              data-testid="graph-line-drawer-panel"
             style={{
               position: 'absolute',
               top: 'calc(100% + 8px)',
@@ -519,7 +533,8 @@ export const GraphNav: React.FC<GraphNavProps> = ({
               ))}
             </div>
           </div>
-        )}
+        </>
+      )}
 
         {/* 中间自适应留白 */}
         <div style={{ flex: 1 }} />

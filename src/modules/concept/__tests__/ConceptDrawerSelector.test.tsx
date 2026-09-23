@@ -86,5 +86,35 @@ describe('ConceptDrawerSelector (4级抽屉盒选择器)', () => {
     );
 
     expect(html).toContain('concept-tree-sidebar');
+    expect(html).toContain('is-closed');
+  });
+
+  it('4. 挂载移动端响应式布局类名 (Bottom Sheet 与自适应双栏)', () => {
+    const html = renderToString(
+      <ConceptDrawerSelector
+        isOpen={true}
+        onClose={vi.fn()}
+        knowledgePoints={ALL_107_KNOWLEDGE_POINTS}
+        currentPoint={mockCurrentPoint}
+        selectedGrade={9}
+        selectedSemester={1}
+        selectedDomain="数与代数"
+        selectedSubcategory="方程组"
+        onSelectGrade={vi.fn()}
+        onSelectSemester={vi.fn()}
+        onSelectDomain={vi.fn()}
+        onSelectSubcategory={vi.fn()}
+        onSelectPoint={vi.fn()}
+        locale="zh-CN"
+      />
+    );
+
+    expect(html).toContain('concept-drawer-panel is-open');
+    expect(html).toContain('concept-drawer-body');
+    expect(html).toContain('concept-drawer-columns');
+    expect(html).toContain('concept-drawer-left-col');
+    expect(html).toContain('concept-drawer-subcat-list');
+    expect(html).toContain('concept-drawer-right-col');
+    expect(html).toContain('data-testid="concept-drawer-backdrop"');
   });
 });
