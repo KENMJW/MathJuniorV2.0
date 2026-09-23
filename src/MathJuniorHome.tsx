@@ -396,6 +396,7 @@ export const MathJuniorHome: React.FC = () => {
             {/* 语言切换 */}
             <button
               type="button"
+              data-testid="math-lang-toggle"
               onClick={() => setLocale(locale === "zh-CN" ? "en" : "zh-CN")}
               style={{
                 height: "30px",

@@ -255,7 +255,8 @@ export function formatInvariantText(
     }
   }
 
-  const label = (locale === 'en' ? spec.labelEn : spec.labelZh) || spec.label || spec.labelZh || '';
+  const isEn = String(locale).toLowerCase().startsWith('en');
+  const label = (isEn ? spec.labelEn : spec.labelZh) || spec.label || spec.labelZh || '';
   const formula = spec.formula || '{val}';
 
   // 处理中点坐标展示: formula = "Mid(AC) = ({x}, {y})"

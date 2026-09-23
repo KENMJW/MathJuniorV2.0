@@ -37,6 +37,7 @@ export interface SandboxRendererProps {
   locale?: string;
   paramValues?: Record<string, number>;
   onInvariantsChange?: (invariants: Array<{ id: string; text: string; isConstant: boolean }>) => void;
+  onParamChange?: (patch: Record<string, number>) => void;
   xrayActive?: boolean;
 }
 
@@ -50,6 +51,356 @@ export interface SandboxRendererProps {
  * 4. 10 大类数学模型特化渲染：圆图元落地、三视图正交投影、双三角形拓扑分离、特殊四边形向量闭环、连续函数实时重绘；
  * 5. 安全公式求值：零 eval / 零 Function。
  */
+
+/**
+ * 颜色安全兜底纯工具函数 (TASK-FE-0016 块 C)
+ *
+ * 判定规则：
+ * 1. 若 color 为空/未定义，返回 defaultColor (默认为 #38bdf8 亮天蓝)；
+ * 2. 若 color 为深色/暗色：包括 black, #000, #0000, #000000, #111, #111111, #222, #333, #0f172a, #1e293b, rgb(0,0,0),
+ *    var(--text-primary), 以及十六进制/rgb解析亮度 (R*0.299 + G*0.587 + B*0.114) 低于 60 的深灰色；
+ * 3. 遇到上述暗色时，自动防御性替换为高对比度亮色 (默认 #38bdf8，若为圆心则优先保留 #34c759)；
+ * 4. 若为亮色 (如 #ffffff, #fbbf24, #f59e0b, #34c759, #38bdf8, red 等)，保持原样。
+ */
+export function ensureVisibleOnDark(
+  color?: string | null,
+  defaultColor: string = '#38bdf8'
+): string {
+  if (!color || typeof color !== 'string') {
+    return defaultColor;
+  }
+
+  const trimmed = color.trim();
+  if (!trimmed) {
+    return defaultColor;
+  }
+
+  const lower = trimmed.toLowerCase();
+
+  // 1. 显式暗色关键字及深色视口/文本变量
+  const EXPLICIT_DARK_SET = new Set([
+    'black',
+    '#000',
+    '#0000',
+    '#000000',
+    '#00000000',
+    '#111',
+    '#111111',
+    '#222',
+    '#222222',
+    '#333',
+    '#333333',
+    '#0f172a',
+    '#1e293b',
+    '#020617',
+    'var(--text-primary)',
+  ]);
+
+  if (EXPLICIT_DARK_SET.has(lower) || lower.startsWith('var(--text-primary')) {
+    return defaultColor;
+  }
+
+  // 2. rgb / rgba 格式匹配并计算加权感知亮度
+  const rgbMatch = lower.match(/^rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})/);
+  if (rgbMatch) {
+    const r = parseInt(rgbMatch[1], 10);
+    const g = parseInt(rgbMatch[2], 10);
+    const b = parseInt(rgbMatch[3], 10);
+    const luminance = r * 0.299 + g * 0.587 + b * 0.114;
+    if (luminance < 60) {
+      return defaultColor;
+    }
+    return trimmed;
+  }
+
+  // 3. 十六进制 (#rgb, #rgba, #rrggbb, #rrggbbaa) 感知亮度解析
+  const hexMatch = lower.match(/^#([0-9a-f]{3,8})$/);
+  if (hexMatch) {
+    const hex = hexMatch[1];
+    let r = 0;
+    let g = 0;
+    let b = 0;
+
+    if (hex.length === 3 || hex.length === 4) {
+      r = parseInt(hex[0] + hex[0], 16);
+      g = parseInt(hex[1] + hex[1], 16);
+      b = parseInt(hex[2] + hex[2], 16);
+    } else if (hex.length >= 6) {
+      r = parseInt(hex.substring(0, 2), 16);
+      g = parseInt(hex.substring(2, 4), 16);
+      b = parseInt(hex.substring(4, 6), 16);
+    }
+
+    const luminance = r * 0.299 + g * 0.587 + b * 0.114;
+    if (luminance < 60) {
+      return defaultColor;
+    }
+    return trimmed;
+  }
+
+  // 4. 其他常规/亮色或预设有效色彩 (如 red, blue, #ffffff, #fbbf24 等) 保持原样
+  return trimmed;
+}
+
+/**
+ * 识别能够明确反解参数的模型与主控动点 (TASK-FE-0016 块 A)
+ * 严格遵循保守原则：对无法明确反解参数的 (如二次函数抛物线顶点)，返回 false，保持 fixed: true
+ */
+export function canInvertParam(
+  tpl: string,
+  ptDef: any,
+  isCircleTemplate: boolean,
+  config?: SandboxConfig
+): boolean {
+  if (!ptDef || ptDef.isFixed || ptDef.isDistractor) return false;
+  const id = ptDef.id;
+  const name = ptDef.name || '';
+  if (id === 'O' || id === 'Origin') return false;
+
+  // 保守原则 1：二次函数/抛物线/韦达模型，顶点与交点由 a/b/c 共同决定，严禁随意反解造成参数矛盾
+  if (tpl.includes('quadratic') || tpl.includes('parabola') || tpl.includes('vieta')) {
+    return false;
+  }
+
+  // 保守原则 2：反比例函数/双曲线模型，双支及渐近线保持固定
+  if (tpl.includes('inverse') || tpl.includes('hyperbola')) {
+    return false;
+  }
+
+  // 保守原则 3：三视图正交投影，离散积木模型不适用连续拖拽反解
+  if (tpl.includes('discrete_orthographic') || tpl.includes('three_view')) {
+    return false;
+  }
+
+  // 保守原则 4：中点四边形衍生中点，由顶点衍生，不可直接反解
+  if (id?.startsWith('M') && tpl.includes('midpoint')) {
+    return false;
+  }
+
+  // 场景 1：圆模型 (isCircleTemplate 或包含 circle/inscribed/chord/tangent 等)
+  // 圆周上的动点 A/B/C/P 可反解半径
+  if (isCircleTemplate || tpl.includes('circle')) {
+    return true;
+  }
+
+  // 场景 2：直角三角形 / 勾股定理模型
+  // 顶点 B 反解直角边 leg_a / a，顶点 A 反解直角边 leg_b / b
+  if (
+    tpl.includes('right_triangle') ||
+    tpl.includes('pythagorean') ||
+    (config?.sandbox_id && config.sandbox_id.includes('PYTHAGOREAN'))
+  ) {
+    if (id === 'B' || name === 'B' || id === 'A' || name === 'A') {
+      return true;
+    }
+  }
+
+  // 场景 3：数轴模型
+  // 动点 P 反解 pos_p / x_p / param_t，动点 A/B 反解区间端点
+  if (
+    tpl.startsWith('number_axis') ||
+    tpl.includes('number_line') ||
+    config?.sandbox_id === 'LM-7A-01'
+  ) {
+    if (id === 'P' || name.includes('P') || id === 'A' || id === 'B') {
+      return true;
+    }
+  }
+
+  // 场景 4：动点 t 参数模型
+  // 具有明确 param_t 的模型，且属于动点 (非锚点)
+  if (id === 'P' || name.includes('动点') || id === 'M1' || id === 'M2') {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * 在拖动事件中反解对应参数并触发 onParamChange (TASK-FE-0016 块 A)
+ */
+export function handleParamInversion(
+  tpl: string,
+  ptDef: any,
+  pt: any,
+  isCircleTemplate: boolean,
+  paramValues: Record<string, number>,
+  allPoints: any[],
+  elements: Record<string, any>,
+  board: any,
+  onParamChange: (patch: Record<string, number>) => void,
+  config?: SandboxConfig
+) {
+  const patch: Record<string, number> = {};
+  const id = ptDef.id;
+  const name = ptDef.name || '';
+
+  // 1. 圆模型：计算 Math.hypot(pt.X() - centerX, pt.Y() - centerY) 反解 r / radius_r / circle_r
+  if (isCircleTemplate || tpl.includes('circle')) {
+    const centerDef = allPoints.find((p) => p.id === 'O' || p.id === 'Origin') || { x: 0, y: 0 };
+    const cx = centerDef.x ?? 0;
+    const cy = centerDef.y ?? 0;
+    const dist = Math.hypot(pt.X() - cx, pt.Y() - cy);
+    const newR = Math.max(0.5, Math.round(dist * 10) / 10);
+
+    const rKey =
+      paramValues['radius_r'] !== undefined
+        ? 'radius_r'
+        : paramValues['r'] !== undefined
+        ? 'r'
+        : paramValues['circle_r'] !== undefined
+        ? 'circle_r'
+        : paramValues['circle_r1'] !== undefined
+        ? 'circle_r1'
+        : 'r';
+
+    patch[rKey] = newR;
+
+    // 实时更新已创建的圆图元半径，提供零延迟视觉反馈
+    Object.keys(elements).forEach((k) => {
+      const el = elements[k];
+      if (el && el.elType === 'circle' && typeof el.setRadius === 'function') {
+        el.setRadius(newR);
+      }
+    });
+    if (board && typeof board.update === 'function') {
+      board.update();
+    }
+
+    onParamChange(patch);
+    return;
+  }
+
+  // 2. 直角三角形：根据 B 点坐标反解直角边 leg_a / a，根据 A 点反解 leg_b / b
+  if (
+    tpl.includes('right_triangle') ||
+    tpl.includes('pythagorean') ||
+    (config?.sandbox_id && config.sandbox_id.includes('PYTHAGOREAN'))
+  ) {
+    if (id === 'B' || name === 'B') {
+      const legA = Math.max(0.5, Math.round(Math.abs(pt.X()) * 10) / 10);
+      const keyA =
+        paramValues['leg_a'] !== undefined
+          ? 'leg_a'
+          : paramValues['a'] !== undefined
+          ? 'a'
+          : 'leg_a';
+      patch[keyA] = legA;
+      onParamChange(patch);
+      return;
+    }
+    if (id === 'A' || name === 'A') {
+      const legB = Math.max(0.5, Math.round(Math.abs(pt.Y()) * 10) / 10);
+      const keyB =
+        paramValues['leg_b'] !== undefined
+          ? 'leg_b'
+          : paramValues['b'] !== undefined
+          ? 'b'
+          : 'leg_b';
+      patch[keyB] = legB;
+      onParamChange(patch);
+      return;
+    }
+  }
+
+  // 3. 数轴模型：根据动点 P 的 X 坐标反解 pos_p / x_p / param_t
+  if (
+    tpl.startsWith('number_axis') ||
+    tpl.includes('number_line') ||
+    config?.sandbox_id === 'LM-7A-01'
+  ) {
+    if (id === 'P' || name.includes('P')) {
+      const curX = pt.X();
+      // 保证吸附于数轴 y = 0
+      if (typeof pt.setPosition === 'function' && Math.abs(pt.Y()) > 1e-4) {
+        const coordsMode =
+          typeof window !== 'undefined' && (window as any).JXG?.COORDS_BY_USER !== undefined
+            ? (window as any).JXG.COORDS_BY_USER
+            : typeof JXG?.COORDS_BY_USER !== 'undefined'
+            ? JXG.COORDS_BY_USER
+            : 1;
+        pt.setPosition(coordsMode, [curX, 0]);
+      }
+
+      if (paramValues['pos_p'] !== undefined) {
+        patch['pos_p'] = Math.round(curX * 10) / 10;
+      } else if (paramValues['x_p'] !== undefined) {
+        patch['x_p'] = Math.round(curX * 10) / 10;
+      } else if (paramValues['point_x'] !== undefined) {
+        patch['point_x'] = Math.round(curX * 10) / 10;
+      } else if (paramValues['pt_x'] !== undefined) {
+        patch['pt_x'] = Math.round(curX * 10) / 10;
+      } else if (paramValues['val'] !== undefined) {
+        patch['val'] = Math.round(curX * 10) / 10;
+      } else if (paramValues['param_t'] !== undefined) {
+        const x0 = Number(paramValues['param_x0'] ?? 0);
+        const v = Number(paramValues['param_v'] ?? 1);
+        const tVal = v !== 0 ? (curX - x0) / v : curX;
+        patch['param_t'] = Math.max(0, Math.min(10, Math.round(tVal * 10) / 10));
+      } else {
+        patch['pos_p'] = Math.round(curX * 10) / 10;
+      }
+      onParamChange(patch);
+      return;
+    }
+
+    if (id === 'A') {
+      const key =
+        paramValues['point_a'] !== undefined
+          ? 'point_a'
+          : paramValues['interval_a'] !== undefined
+          ? 'interval_a'
+          : null;
+      if (key) {
+        patch[key] = Math.round(pt.X() * 10) / 10;
+        onParamChange(patch);
+        return;
+      }
+    }
+
+    if (id === 'B') {
+      const key =
+        paramValues['point_b'] !== undefined
+          ? 'point_b'
+          : paramValues['interval_b'] !== undefined
+          ? 'interval_b'
+          : null;
+      if (key) {
+        patch[key] = Math.round(pt.X() * 10) / 10;
+        onParamChange(patch);
+        return;
+      }
+    }
+  }
+
+  // 4. 动点 t：根据点在固定线段上的比例反解 param_t
+  if (paramValues['param_t'] !== undefined) {
+    const fixedPts = allPoints.filter((p) => p.isFixed && p.id !== 'O' && p.id !== 'Origin');
+    let tVal: number;
+    if (fixedPts.length >= 2) {
+      const p1 = fixedPts[0];
+      const p2 = fixedPts[1];
+      const segDx = p2.x - p1.x;
+      const segDy = p2.y - p1.y;
+      const lenSq = segDx * segDx + segDy * segDy;
+      if (lenSq > 1e-6) {
+        const proj = ((pt.X() - p1.x) * segDx + (pt.Y() - p1.y) * segDy) / lenSq;
+        const ratio = Math.max(0, Math.min(1, proj));
+        tVal = ratio * 10;
+      } else {
+        tVal = 5;
+      }
+    } else {
+      const baseX = ptDef.x ?? 0;
+      tVal = 5 + (pt.X() - baseX) * 2;
+    }
+
+    patch['param_t'] = Math.max(0, Math.min(10, Math.round(tVal * 10) / 10));
+    onParamChange(patch);
+    return;
+  }
+}
+
 /**
  * 提取沙盒模型所有实际图元与动点的包围盒 (TASK-FE-0015 块 A)
  * 支持声明式 carrier elements (point, circle, segment, polygon, line, etc.)
@@ -344,11 +695,13 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
   style,
   paramValues = {},
   onInvariantsChange,
+  onParamChange,
   xrayActive = false,
   locale = 'zh-CN',
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const boardRef = useRef<any>(null);
+  const isDraggingRef = useRef<boolean>(false);
 
   const tpl = config.canvas_template || '';
 
@@ -360,12 +713,18 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
         className={className}
         style={style}
         onInvariantsChange={onInvariantsChange}
+        locale={locale}
       />
     );
   }
 
   useEffect(() => {
     if (!containerRef.current) return;
+
+    // 正在拖拽中，保持当前 board 实例与 DOM 拓扑，避免拖动手势中断
+    if (isDraggingRef.current && boardRef.current) {
+      return;
+    }
 
     // 1. 解析视口包围盒并执行紧凑内容自适应 (TASK-FE-0015 块 A)
     const viewboxSpec = parseViewboxSpec(config.viewbox_spec_json);
@@ -474,7 +833,8 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
           }
         }
 
-        const color = elemDef.color || '#38bdf8';
+        const color = ensureVisibleOnDark(elemDef.color, '#38bdf8');
+        const strokeColor = ensureVisibleOnDark(elemDef.strokeColor || elemDef.color, '#38bdf8');
         const strokeWidth = elemDef.strokeWidth || (xrayActive ? 3.5 : 2.5);
 
         switch (elemDef.type) {
@@ -505,7 +865,7 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
                   20,
                 ],
                 {
-                  strokeColor: color,
+                  strokeColor: strokeColor,
                   strokeWidth,
                 }
               );
@@ -526,7 +886,7 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
                   [lineX, 20],
                 ],
                 {
-                  strokeColor: color,
+                  strokeColor: strokeColor,
                   strokeWidth: elemDef.strokeWidth || 1.8,
                   dash: elemDef.dash || 2,
                 }
@@ -540,13 +900,23 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
             if (Array.isArray(elemDef.coord)) {
               const ptX = Number(evaluateSafeExpression(String(elemDef.coord[0]), currentScope));
               const ptY = Number(evaluateSafeExpression(String(elemDef.coord[1]), currentScope));
+              const isCenter = elemDef.id === 'O' || elemDef.id === 'Origin';
+              const ptColor = isCenter ? '#34c759' : color;
+              const ptStroke = elemDef.strokeColor ? ensureVisibleOnDark(elemDef.strokeColor, '#ffffff') : '#ffffff';
+              const isMaster =
+                Boolean(onParamChange) &&
+                elemDef.isFixed === false &&
+                !isCenter &&
+                !elemDef.isDistractor &&
+                canInvertParam(tpl, elemDef, tpl.includes('circle'), config);
+
               const pt = board.create('point', [ptX, ptY], {
                 name: elemDef.name || elemDef.id || '',
                 size: elemDef.size || 5,
-                fillColor: color,
-                strokeColor: '#ffffff',
+                fillColor: ptColor,
+                strokeColor: ptStroke,
                 strokeWidth: 2,
-                fixed: true,
+                fixed: isMaster ? false : true,
                 label: {
                   color: '#ffffff',
                   fontSize: 12,
@@ -556,6 +926,30 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
                 },
               });
               elements[elemDef.id || 'pt'] = pt;
+
+              if (isMaster && onParamChange) {
+                pt.on('down', () => {
+                  isDraggingRef.current = true;
+                });
+                pt.on('drag', () => {
+                  isDraggingRef.current = true;
+                  handleParamInversion(
+                    tpl,
+                    elemDef,
+                    pt,
+                    tpl.includes('circle'),
+                    paramValues,
+                    declarativeCarrier?.elements || [],
+                    elements,
+                    board,
+                    onParamChange,
+                    config
+                  );
+                });
+                pt.on('up', () => {
+                  isDraggingRef.current = false;
+                });
+              }
             }
             break;
           }
@@ -566,7 +960,7 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
               const p2 = elements[elemDef.endpoints[1]];
               if (p1 && p2) {
                 const seg = board.create('segment', [p1, p2], {
-                  strokeColor: color,
+                  strokeColor: strokeColor,
                   strokeWidth: elemDef.strokeWidth || (xrayActive ? 3.5 : 2.5),
                 });
                 elements[elemDef.id || 'seg'] = seg;
@@ -581,11 +975,45 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
             const r = elemDef.radius ? Number(evaluateSafeExpression(String(elemDef.radius), currentScope)) : 4;
             if (centerPt) {
               const c = board.create('circle', [centerPt, r], {
-                strokeColor: color,
+                strokeColor: strokeColor,
                 strokeWidth,
                 fillColor: 'rgba(56, 189, 248, 0.08)',
               });
               elements[elemDef.id || 'circle'] = c;
+            }
+            break;
+          }
+
+          case 'polygon': {
+            let pts: any[] = [];
+            if (Array.isArray(elemDef.vertices)) {
+              pts = elemDef.vertices.map((v: any) => {
+                if (typeof v === 'string') {
+                  return elements[v];
+                }
+                if (Array.isArray(v) && v.length >= 2) {
+                  return board.create(
+                    'point',
+                    [
+                      Number(evaluateSafeExpression(String(v[0]), currentScope)),
+                      Number(evaluateSafeExpression(String(v[1]), currentScope)),
+                    ],
+                    { visible: false, fixed: true }
+                  );
+                }
+                return v;
+              }).filter(Boolean);
+            }
+            if (pts.length >= 3) {
+              const poly = board.create('polygon', pts, {
+                fillColor: color,
+                fillOpacity: elemDef.fillOpacity ?? 0.15,
+                borders: {
+                  strokeColor: strokeColor,
+                  strokeWidth: elemDef.strokeWidth || 2,
+                },
+              });
+              elements[elemDef.id || 'poly'] = poly;
             }
             break;
           }
@@ -667,7 +1095,14 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
       // 创建动点
       dragPoints.forEach((ptDef) => {
         const isCenter = ptDef.id === 'O' || ptDef.id === 'Origin';
-        const ptColor = isCenter ? '#34c759' : ptDef.color || '#38bdf8';
+        const ptColor = isCenter ? '#34c759' : ensureVisibleOnDark(ptDef.color, '#38bdf8');
+        const isMaster =
+          Boolean(onParamChange) &&
+          !ptDef.isFixed &&
+          !isCenter &&
+          !ptDef.isDistractor &&
+          canInvertParam(tpl, ptDef, isCircleTemplate, config);
+        const isPtFixed = isMaster ? false : (ptDef.isFixed !== undefined ? !!ptDef.isFixed : true);
 
         const pt = board.create('point', [ptDef.x ?? 0, ptDef.y ?? 0], {
           name: ptDef.name || ptDef.id,
@@ -675,7 +1110,7 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
           fillColor: ptColor,
           strokeColor: '#ffffff',
           strokeWidth: 2,
-          fixed: !!ptDef.isFixed,
+          fixed: isPtFixed,
           label: {
             color: '#ffffff',
             fontSize: 12,
@@ -685,6 +1120,30 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
           },
         });
         elements[ptDef.id] = pt;
+
+        if (isMaster && onParamChange) {
+          pt.on('down', () => {
+            isDraggingRef.current = true;
+          });
+          pt.on('drag', () => {
+            isDraggingRef.current = true;
+            handleParamInversion(
+              tpl,
+              ptDef,
+              pt,
+              isCircleTemplate,
+              paramValues,
+              dragPoints,
+              elements,
+              board,
+              onParamChange,
+              config
+            );
+          });
+          pt.on('up', () => {
+            isDraggingRef.current = false;
+          });
+        }
       });
 
       const primaryPoints = Object.keys(elements)
@@ -1049,6 +1508,9 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
     setTimeout(updateInvariants, 80);
 
     return () => {
+      if (isDraggingRef.current) {
+        return;
+      }
       if (boardRef.current) {
         try {
           JXG.JSXGraph.freeBoard(boardRef.current);
@@ -1056,7 +1518,32 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
         boardRef.current = null;
       }
     };
-  }, [config, paramValues, xrayActive, locale, onInvariantsChange]);
+  }, [config, paramValues, xrayActive, locale, onInvariantsChange, onParamChange]);
+
+  // 全局鼠标释放兜底重置手势状态
+  useEffect(() => {
+    const handleGlobalUp = () => {
+      isDraggingRef.current = false;
+    };
+    window.addEventListener('pointerup', handleGlobalUp);
+    window.addEventListener('mouseup', handleGlobalUp);
+    return () => {
+      window.removeEventListener('pointerup', handleGlobalUp);
+      window.removeEventListener('mouseup', handleGlobalUp);
+    };
+  }, []);
+
+  // 组件真正卸载时彻底释放 JSXGraph 资源
+  useEffect(() => {
+    return () => {
+      if (boardRef.current) {
+        try {
+          JXG.JSXGraph.freeBoard(boardRef.current);
+        } catch (e) {}
+        boardRef.current = null;
+      }
+    };
+  }, []);
 
   const containerId = `jsxgraph-container-${config.sandbox_id || 'canvas'}`;
 

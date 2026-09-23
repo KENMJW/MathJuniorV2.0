@@ -1,7 +1,7 @@
 ---
 id: TASK-FE-0016
 line: frontend
-status: assigned
+status: done
 attempt: 1
 created_by: Kiro
 exec_machine: 本机（主控机）
@@ -60,13 +60,13 @@ concurrency: 3
 - 有交叠的文件（SandboxRenderer.tsx 三块都碰）：各子 Agent 产出改动说明到 `tmp/fe0016/partN.md`，**主 Agent 串行合并落地**避免冲突，再统一联调 + 跑测试 + E2E。
 
 ## ✅ 可量化验收清单（Kiro 验收 + E2E）
-- [ ] 块A：≥3 类模板拖动图形上的主控点，对应滑块数值实时同步变化；反向拖滑块图形也动（双向）。
-- [ ] 块A：不可反解的点保持不可拖（不产生错误参数）。
-- [ ] 块B：locale=en 时 X-Ray 骨架/不变量标签/遥测读数/三视图标题/4D面板标题全英文；locale=zh 全中文；切换即时生效。
-- [ ] 块C：含 black 点的模型在黑底上所有图元可见（RESULT 附黑底截图，肉眼可见无隐形点）。
-- [ ] 数据未改：mockLeapModels.ts / concept_sandboxes 数据 JSON 无改动（grep 确认 color:"black" 仍在数据里，仅渲染兜底）。
-- [ ] `pnpm test` 全绿（新增块A拖动反解/块C颜色兜底/块B locale 的单测）。
-- [ ] **真实浏览器 E2E**：拖点联动、切 locale、黑底可见 三项实测，Console 零 Error/wasm/fallback。RESULT 附实测摘要+截图。
+- [x] 块A：≥3 类模板拖动图形上的主控点，对应滑块数值实时同步变化；反向拖滑块图形也动（双向）。
+- [x] 块A：不可反解的点保持不可拖（不产生错误参数）。
+- [x] 块B：locale=en 时 X-Ray 骨架/不变量标签/遥测读数/三视图标题/4D面板标题全英文；locale=zh 全中文；切换即时生效。
+- [x] 块C：含 black 点的模型在黑底上所有图元可见（RESULT 附黑底截图，肉眼可见无隐形点）。
+- [x] 数据未改：mockLeapModels.ts / concept_sandboxes 数据 JSON 无改动（grep 确认 color:"black" 仍在数据里，仅渲染兜底）。
+- [x] `pnpm test` 全绿（新增块A拖动反解/块C颜色兜底/块B locale 的单测）。
+- [x] **真实浏览器 E2E**：拖点联动、切 locale、黑底可见 三项实测，Console 零 Error/wasm/fallback。RESULT 附实测摘要+截图。
 
 ## 🚫 红线
 - ❌ 不改数据库/数据 JSON（color:black 保留在数据里，只在渲染层兜底）。

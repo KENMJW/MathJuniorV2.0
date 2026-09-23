@@ -62,6 +62,7 @@ export const LeapLab: React.FC<LeapLabProps> = ({
   hideModelDrawer = false,
   hideDrawerTrigger = false,
 }) => {
+  const isEn = String(locale).toLowerCase().startsWith('en');
   // 内部维护受控/非受控激活模型 ID
   const [activeModelId, setActiveModelId] = useState<string>(modelId);
 
@@ -306,15 +307,15 @@ export const LeapLab: React.FC<LeapLabProps> = ({
             <div className="model-drawer-static-title">
               <Icon name="layers" size={14} />
               <span style={{ fontWeight: 700 }}>
-                {currentModel.model_id} · {locale === 'en' ? currentModel.model_name_en : currentModel.model_name_zh}
+                {currentModel.model_id} · {(isEn ? currentModel.model_name_en : currentModel.model_name_zh) || currentModel.model_name_zh}
               </span>
             </div>
           ) : hideDrawerTrigger ? (
             <h3 className="sandbox-title-text" style={{ margin: 0 }}>
               <Icon name="layers" size={16} />
-              <span>{locale === 'en' ? currentModel.model_name_en : currentModel.model_name_zh}</span>
+              <span>{(isEn ? currentModel.model_name_en : currentModel.model_name_zh) || currentModel.model_name_zh}</span>
               <span style={{ fontSize: '13px', color: 'var(--text-tertiary)', fontWeight: 400 }}>
-                ({currentModel.model_id} · 主线 {currentModel.primary_line} · {formatSemesterZh(currentModel.unlocked_semester)})
+                ({currentModel.model_id} · {isEn ? 'Primary Line' : '主线'} {currentModel.primary_line} · {formatSemesterZh(currentModel.unlocked_semester)})
               </span>
             </h3>
           ) : (
@@ -325,7 +326,7 @@ export const LeapLab: React.FC<LeapLabProps> = ({
             >
               <Icon name="layers" size={14} />
               <span style={{ fontWeight: 700 }}>
-                {currentModel.model_id} · {locale === 'en' ? currentModel.model_name_en : currentModel.model_name_zh}
+                {currentModel.model_id} · {(isEn ? currentModel.model_name_en : currentModel.model_name_zh) || currentModel.model_name_zh}
               </span>
               <Icon name={isDrawerOpen ? 'chevron-up' : 'chevron-down'} size={14} />
             </button>
@@ -580,6 +581,13 @@ export const LeapLab: React.FC<LeapLabProps> = ({
               paramValues={morphState.parameterValues}
               xrayActive={morphState.xrayActive}
               onInvariantsChange={setInvariants}
+              onParamChange={(patch) =>
+                setMorphState((prev) => ({
+                  ...prev,
+                  parameterValues: { ...prev.parameterValues, ...patch },
+                }))
+              }
+              locale={locale}
               style={{ width: '100%', height: '100%' }}
             />
           )}
@@ -591,10 +599,26 @@ export const LeapLab: React.FC<LeapLabProps> = ({
             {isHandInHand ? (
               <>
                 <span className="telemetry-tag-invariant">
-                  不变量实测：AC = BD = <span style={{ fontWeight: 700 }}>{normalizedCm}</span> cm (恒等)
+                  {isEn ? (
+                    <>
+                      Invariant telemetry: AC = BD = <span style={{ fontWeight: 700 }}>{normalizedCm}</span> cm (Equal)
+                    </>
+                  ) : (
+                    <>
+                      不变量实测：AC = BD = <span style={{ fontWeight: 700 }}>{normalizedCm}</span> cm (恒等)
+                    </>
+                  )}
                 </span>
                 <span className="telemetry-tag-secondary">
-                  夹角实测：直线 AC 与 BD 夹角 = <span style={{ fontWeight: 700 }}>{rotationAngle}</span>° (恒等于 α)
+                  {isEn ? (
+                    <>
+                      Angle telemetry: line AC & BD angle = <span style={{ fontWeight: 700 }}>{rotationAngle}</span>° (= α)
+                    </>
+                  ) : (
+                    <>
+                      夹角实测：直线 AC 与 BD 夹角 = <span style={{ fontWeight: 700 }}>{rotationAngle}</span>° (恒等于 α)
+                    </>
+                  )}
                 </span>
               </>
             ) : invariants.length > 0 ? (
@@ -605,12 +629,14 @@ export const LeapLab: React.FC<LeapLabProps> = ({
               ))
             ) : (
               <span className="telemetry-tag-invariant">
-                动态几何欧氏保距性守恒
+                {isEn ? 'Dynamic geometry isometric conservation' : '动态几何欧氏保距性守恒'}
               </span>
             )}
           </div>
           <div className="telemetry-tag-conclusion">
-            {isHandInHand ? '结论：△OAB ≌ △OCD 旋转恒全等' : '结论：刚体变异保距性成立'}
+            {isHandInHand
+              ? (isEn ? 'Conclusion: △OAB ≌ △OCD rotation congruent' : '结论：△OAB ≌ △OCD 旋转恒全等')
+              : (isEn ? 'Conclusion: Rigid transformation isometry holds' : '结论：刚体变异保距性成立')}
           </div>
         </div>
       </div>
@@ -621,7 +647,7 @@ export const LeapLab: React.FC<LeapLabProps> = ({
           <>
             <div className="slider-group">
               <label htmlFor="sandbox-slider" style={{ whiteSpace: 'nowrap' }}>
-                旋转角 α: <strong style={{ color: 'var(--ios-blue)' }}>{rotationAngle}°</strong>
+                {isEn ? 'Rotation α: ' : '旋转角 α: '}<strong style={{ color: 'var(--ios-blue)' }}>{rotationAngle}°</strong>
               </label>
               <input
                 id="sandbox-slider"
@@ -643,7 +669,7 @@ export const LeapLab: React.FC<LeapLabProps> = ({
 
             <div className="slider-group" style={{ minWidth: '180px' }}>
               <label htmlFor="param-t-slider" style={{ whiteSpace: 'nowrap' }}>
-                动点参数 t: <strong style={{ color: 'var(--ios-blue)' }}>{morphState.parameterValues['param_t'] ?? 5}</strong>
+                {isEn ? 'Point Param t: ' : '动点参数 t: '}<strong style={{ color: 'var(--ios-blue)' }}>{morphState.parameterValues['param_t'] ?? 5}</strong>
               </label>
               <input
                 id="param-t-slider"
@@ -664,28 +690,28 @@ export const LeapLab: React.FC<LeapLabProps> = ({
                   className={`preset-btn ${rotationAngle === 0 ? 'active' : ''}`}
                   onClick={() => setRotationAngle(0)}
                 >
-                  0° 重合
+                  {isEn ? '0° Coincident' : '0° 重合'}
                 </button>
                 <button
                   type="button"
                   className={`preset-btn ${rotationAngle === 60 ? 'active' : ''}`}
                   onClick={() => setRotationAngle(60)}
                 >
-                  60° 等边
+                  {isEn ? '60° Equilateral' : '60° 等边'}
                 </button>
                 <button
                   type="button"
                   className={`preset-btn ${rotationAngle === 90 ? 'active' : ''}`}
                   onClick={() => setRotationAngle(90)}
                 >
-                  90° 垂直
+                  {isEn ? '90° Perpendicular' : '90° 垂直'}
                 </button>
                 <button
                   type="button"
                   className={`preset-btn ${rotationAngle === 180 ? 'active' : ''}`}
                   onClick={() => setRotationAngle(180)}
                 >
-                  180° 反向共线
+                  {isEn ? '180° Opposite Collinear' : '180° 反向共线'}
                 </button>
               </div>
 
@@ -701,7 +727,11 @@ export const LeapLab: React.FC<LeapLabProps> = ({
                 }}
               >
                 <Icon name={isAutoPlaying ? 'refresh' : 'rocket'} size={12} />
-                <span>{isAutoPlaying ? '暂停演示' : '自动旋转演示'}</span>
+                <span>
+                  {isEn
+                    ? (isAutoPlaying ? 'Pause Demo' : 'Auto Rotate Demo')
+                    : (isAutoPlaying ? '暂停演示' : '自动旋转演示')}
+                </span>
               </button>
             </div>
           </>
@@ -712,7 +742,7 @@ export const LeapLab: React.FC<LeapLabProps> = ({
               return (
                 <div key={s.id} className="slider-group">
                   <label htmlFor={`slider-${s.id}`} style={{ whiteSpace: 'nowrap' }}>
-                    {s.nameZh || '动点参数'}: <strong style={{ color: 'var(--ios-blue)' }}>{val}{s.unit || ''}</strong>
+                    {(isEn ? s.nameEn : s.nameZh) || s.nameZh || (isEn ? 'Point Param' : '动点参数')}: <strong style={{ color: 'var(--ios-blue)' }}>{val}{s.unit || ''}</strong>
                   </label>
                   <input
                     id={`slider-${s.id}`}
@@ -735,7 +765,9 @@ export const LeapLab: React.FC<LeapLabProps> = ({
       <div className="sandbox-4d-shelf">
         {/* 1D 载体变异 */}
         <div className="dim-card">
-          <span className="dim-card-title">① 载体变异 (Carrier)</span>
+          <span className="dim-card-title">
+            {isEn ? '① Carrier Variation' : '① 载体变异 (Carrier)'}
+          </span>
           <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
             {isHandInHand ? (
               handInHandCarrierOptions.map((opt) => (
@@ -745,7 +777,7 @@ export const LeapLab: React.FC<LeapLabProps> = ({
                   className={`preset-btn ${morphState.carrierId === opt.id ? 'active' : ''}`}
                   onClick={() => handleSelectCarrier(opt.id)}
                 >
-                  {opt.nameZh}
+                  {(isEn ? opt.nameEn : opt.nameZh) || opt.nameZh}
                 </button>
               ))
             ) : carrierSpec.options.length > 0 ? (
@@ -756,7 +788,7 @@ export const LeapLab: React.FC<LeapLabProps> = ({
                   className={`preset-btn ${morphState.carrierId === opt.id ? 'active' : ''}`}
                   onClick={() => handleSelectCarrier(opt.id)}
                 >
-                  {opt.nameZh}
+                  {(isEn ? opt.nameEn : opt.nameZh) || opt.nameZh}
                 </button>
               ))
             ) : (
@@ -766,21 +798,21 @@ export const LeapLab: React.FC<LeapLabProps> = ({
                   className={`preset-btn ${morphState.carrierId === 'free_triangle' ? 'active' : ''}`}
                   onClick={() => handleSelectCarrier('free_triangle')}
                 >
-                  自由三角形
+                  {isEn ? 'Free Triangle' : '自由三角形'}
                 </button>
                 <button
                   type="button"
                   className={`preset-btn ${morphState.carrierId === 'quadrilateral' ? 'active' : ''}`}
                   onClick={() => handleSelectCarrier('quadrilateral')}
                 >
-                  正方形载体
+                  {isEn ? 'Square Carrier' : '正方形载体'}
                 </button>
                 <button
                   type="button"
                   className={`preset-btn ${morphState.carrierId === 'coordinate_grid' ? 'active' : ''}`}
                   onClick={() => handleSelectCarrier('coordinate_grid')}
                 >
-                  直角坐标系
+                  {isEn ? 'Coordinate Grid' : '直角坐标系'}
                 </button>
               </>
             )}
@@ -789,17 +821,23 @@ export const LeapLab: React.FC<LeapLabProps> = ({
 
         {/* 2D 参数变异 */}
         <div className="dim-card">
-          <span className="dim-card-title">② 参数变异 (Parameter)</span>
+          <span className="dim-card-title">
+            {isEn ? '② Parameter Variation' : '② 参数变异 (Parameter)'}
+          </span>
           <div style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
             {isHandInHand
-              ? `相似比 k = 1.0，旋转角 α = ${rotationAngle}°，动点参数 t = ${morphState.parameterValues['param_t'] ?? 5}`
-              : parameterSpec.sliders.map((s) => `${s.nameZh || '参数'}: ${morphState.parameterValues[s.id] ?? s.default ?? 5}`).join(' · ')}
+              ? (isEn
+                  ? `Ratio k = 1.0, Rotation α = ${rotationAngle}°, Param t = ${morphState.parameterValues['param_t'] ?? 5}`
+                  : `相似比 k = 1.0，旋转角 α = ${rotationAngle}°，动点参数 t = ${morphState.parameterValues['param_t'] ?? 5}`)
+              : parameterSpec.sliders.map((s) => `${(isEn ? s.nameEn : s.nameZh) || s.nameZh || (isEn ? 'Param' : '参数')}: ${morphState.parameterValues[s.id] ?? s.default ?? 5}`).join(' · ')}
           </div>
         </div>
 
         {/* 3D 姿态变异 */}
         <div className="dim-card">
-          <span className="dim-card-title">③ 姿态变异 (Posture)</span>
+          <span className="dim-card-title">
+            {isEn ? '③ Posture Variation' : '③ 姿态变异 (Posture)'}
+          </span>
           <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
             {postureSpec.modes.length > 0 ? (
               postureSpec.modes.map((mode) => (
@@ -809,7 +847,7 @@ export const LeapLab: React.FC<LeapLabProps> = ({
                   className={`preset-btn ${morphState.postureId === mode.id ? 'active' : ''}`}
                   onClick={() => handleSelectPosture(mode.id, mode.rotationDeg)}
                 >
-                  {mode.nameZh}
+                  {(isEn ? mode.nameEn : mode.nameZh) || mode.nameZh}
                 </button>
               ))
             ) : (
@@ -819,21 +857,21 @@ export const LeapLab: React.FC<LeapLabProps> = ({
                   className={`preset-btn ${morphState.postureId === 'standard' ? 'active' : ''}`}
                   onClick={() => handleSelectPosture('standard', 60)}
                 >
-                  标准正向 (0°)
+                  {isEn ? 'Standard (0°)' : '标准正向 (0°)'}
                 </button>
                 <button
                   type="button"
                   className={`preset-btn ${morphState.postureId === 'rotated_90' ? 'active' : ''}`}
                   onClick={() => handleSelectPosture('rotated_90', 90)}
                 >
-                  正交旋转 90°
+                  {isEn ? 'Rotated 90°' : '正交旋转 90°'}
                 </button>
                 <button
                   type="button"
                   className={`preset-btn ${morphState.postureId === 'reflected_x' ? 'active' : ''}`}
                   onClick={() => handleSelectPosture('reflected_x', 180)}
                 >
-                  轴对称翻折
+                  {isEn ? 'Axial Reflection' : '轴对称翻折'}
                 </button>
               </>
             )}
@@ -842,7 +880,9 @@ export const LeapLab: React.FC<LeapLabProps> = ({
 
         {/* 4D 干扰加壳与 X-Ray 透视 */}
         <div className="dim-card">
-          <span className="dim-card-title">④ 干扰加壳 (Camouflage) & X-Ray</span>
+          <span className="dim-card-title">
+            {isEn ? '④ Camouflage & X-Ray' : '④ 干扰加壳 (Camouflage) & X-Ray'}
+          </span>
           <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
             {camouflageSpec.distractorLayers.length > 0 ? (
               camouflageSpec.distractorLayers.map((layer) => {
@@ -857,7 +897,7 @@ export const LeapLab: React.FC<LeapLabProps> = ({
                     style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                   >
                     <Icon name={active ? 'eye' : 'eye-off'} size={12} />
-                    <span>{layer.nameZh}</span>
+                    <span>{(isEn ? layer.nameEn : layer.nameZh) || layer.nameZh}</span>
                   </button>
                 );
               })
@@ -874,7 +914,7 @@ export const LeapLab: React.FC<LeapLabProps> = ({
                 style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
               >
                 <Icon name={morphState.activeCamouflageIds.length > 0 ? 'eye' : 'eye-off'} size={12} />
-                <span>干扰线网格</span>
+                <span>{isEn ? 'Distractor Mesh' : '干扰线网格'}</span>
               </button>
             )}
 
@@ -893,7 +933,11 @@ export const LeapLab: React.FC<LeapLabProps> = ({
               }}
             >
               <Icon name="xray" size={12} />
-              <span>{morphState.xrayActive ? 'X-Ray 透视 (开)' : 'X-Ray 透视 (关)'}</span>
+              <span>
+                {isEn
+                  ? (morphState.xrayActive ? 'X-Ray Vision (ON)' : 'X-Ray Vision (OFF)')
+                  : (morphState.xrayActive ? 'X-Ray 透视 (开)' : 'X-Ray 透视 (关)')}
+              </span>
             </button>
           </div>
         </div>
@@ -913,11 +957,11 @@ export const LeapLab: React.FC<LeapLabProps> = ({
       >
         <div style={{ fontWeight: 700, color: 'var(--ios-blue)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
           <Icon name="bulb" size={14} />
-          <span>思维跃迁探究指南：</span>
+          <span>{isEn ? 'Thinking Leap Exploration Guide:' : '思维跃迁探究指南：'}</span>
         </div>
         <MathRenderer
           content={
-            locale === 'en'
+            isEn
               ? currentModel.model_brief_en || 'Hand-in-hand rotational congruence invariant exploration.'
               : currentModel.model_brief_zh || '共顶等线成旋转，全等导引勾股现。开启 X-Ray 可一键隐去干扰线，聚焦共顶旋转骨架。'
           }

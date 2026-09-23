@@ -5,6 +5,7 @@ export interface DiscreteOrthographicProps {
   className?: string;
   style?: React.CSSProperties;
   onInvariantsChange?: (invariants: Array<{ id: string; text: string; isConstant: boolean }>) => void;
+  locale?: string;
 }
 
 /**
@@ -21,7 +22,9 @@ export const DiscreteOrthographicRenderer: React.FC<DiscreteOrthographicProps> =
   className = '',
   style = {},
   onInvariantsChange,
+  locale = 'zh-CN',
 }) => {
+  const isEn = String(locale).toLowerCase().startsWith('en');
   // 读取 3x3 积木网格高度 (默认以经典 2x2/3x3 积木堆叠为例)
   // 行 r=0,1,2 (从上到下/从后到前), 列 c=0,1,2 (从左到右)
   const grid: number[][] = useMemo(() => {
@@ -74,26 +77,32 @@ export const DiscreteOrthographicRenderer: React.FC<DiscreteOrthographicProps> =
     onInvariantsChange([
       {
         id: 'total_cubes',
-        text: `正方体积木总数: ${totalBlocks} 块`,
+        text: isEn ? `Total unit cubes: ${totalBlocks}` : `正方体积木总数: ${totalBlocks} 块`,
         isConstant: false,
       },
       {
         id: 'ortho_front',
-        text: `主视图列高度向量: [${frontViewCols.join(', ')}] (长对正)`,
+        text: isEn
+          ? `Front view column heights: [${frontViewCols.join(', ')}] (length alignment)`
+          : `主视图列高度向量: [${frontViewCols.join(', ')}] (长对正)`,
         isConstant: false,
       },
       {
         id: 'ortho_left',
-        text: `左视图行高度向量: [${leftViewRows.join(', ')}] (高平齐)`,
+        text: isEn
+          ? `Left view row heights: [${leftViewRows.join(', ')}] (height alignment)`
+          : `左视图行高度向量: [${leftViewRows.join(', ')}] (高平齐)`,
         isConstant: false,
       },
       {
         id: 'ortho_rule',
-        text: '正交投影公理: 长对正、高平齐、宽相等 校验通过',
+        text: isEn
+          ? 'Orthographic projection axioms: length, height, and width verified'
+          : '正交投影公理: 长对正、高平齐、宽相等 校验通过',
         isConstant: true,
       },
     ]);
-  }, [totalBlocks, frontViewCols, leftViewRows, onInvariantsChange]);
+  }, [totalBlocks, frontViewCols, leftViewRows, onInvariantsChange, isEn]);
 
   const maxH = 3;
 
@@ -142,7 +151,7 @@ export const DiscreteOrthographicRenderer: React.FC<DiscreteOrthographicProps> =
             color: '#38bdf8',
           }}
         >
-          ① 主视图 (正投影·长对正)
+          {isEn ? '① Front View (Orthographic · Length Alignment)' : '① 主视图 (正投影·长对正)'}
         </span>
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: '4px', marginTop: '14px' }}>
           {frontViewCols.map((colH, cIdx) => (
@@ -202,7 +211,7 @@ export const DiscreteOrthographicRenderer: React.FC<DiscreteOrthographicProps> =
             color: '#818cf8',
           }}
         >
-          ② 左视图 (侧投影·高平齐)
+          {isEn ? '② Left View (Side Projection · Height Alignment)' : '② 左视图 (侧投影·高平齐)'}
         </span>
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: '4px', marginTop: '14px' }}>
           {leftViewRows.map((rowH, rIdx) => (
@@ -262,7 +271,7 @@ export const DiscreteOrthographicRenderer: React.FC<DiscreteOrthographicProps> =
             color: '#34c759',
           }}
         >
-          ③ 俯视图 (水平投影·宽相等)
+          {isEn ? '③ Top View (Horizontal Projection · Width Equality)' : '③ 俯视图 (水平投影·宽相等)'}
         </span>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', marginTop: '14px' }}>
           {topView.map((row, rIdx) => (
@@ -316,7 +325,7 @@ export const DiscreteOrthographicRenderer: React.FC<DiscreteOrthographicProps> =
             color: '#f59e0b',
           }}
         >
-          ④ 3D 等轴测立体积木 (Σ={totalBlocks})
+          {isEn ? `④ 3D Isometric View (Σ=${totalBlocks})` : `④ 3D 等轴测立体积木 (Σ=${totalBlocks})`}
         </span>
         <svg
           viewBox="0 0 200 130"
