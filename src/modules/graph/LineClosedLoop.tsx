@@ -193,7 +193,7 @@ export const LineClosedLoop: React.FC<LineClosedLoopProps> = ({
   const locale = propLocale || sessionLocale;
 
   // 主线 ID 状态：支持外部受控与内部自管
-  const [internalLineId, setInternalLineId] = useState<string>(line?.line_id || 'G4');
+  const [internalLineId, setInternalLineId] = useState<string>(line?.line_id || 'A1');
   const currentLineId = propSelectedLineId !== undefined ? propSelectedLineId : internalLineId;
 
   const handleLineChange = (newLineId: string) => {
@@ -229,7 +229,7 @@ export const LineClosedLoop: React.FC<LineClosedLoopProps> = ({
   const fallbackModelInfo: FlagshipModelInfo =
     (currentLine.flagship_model_id && (FLAGSHIP_MODELS_BY_LINE[currentLine.flagship_model_id] || EXTRA_FLAGSHIP_MODELS[currentLine.flagship_model_id])) ||
     FLAGSHIP_MODELS_BY_LINE[currentLine.line_id] ||
-    FLAGSHIP_MODELS_BY_LINE['G4'];
+    FLAGSHIP_MODELS_BY_LINE['A1'];
 
   const [dbModelInfo, setDbModelInfo] = useState<FlagshipModelInfo | null>(null);
 

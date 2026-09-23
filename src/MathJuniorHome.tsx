@@ -805,6 +805,7 @@ export const MathJuniorHome: React.FC = () => {
         return (
           <GraphNav
             lines={effectiveLines}
+            initialLineId="A1"
             knowledgePoints={dbPoints || undefined}
             leapModels={effectiveLeapModels}
           />

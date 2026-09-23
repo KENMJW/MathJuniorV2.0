@@ -104,9 +104,9 @@ export const GraphNav: React.FC<GraphNavProps> = ({
     return dbLeapModels || mockLeapSandboxModels;
   }, [propLeapModels, dbLeapModels]);
 
-  // 当前选中谱系 ID：优先外部 prop > 默认 G1
+  // 当前选中谱系 ID：优先外部 prop > 默认 A1 (实数与数轴)
   const [currentLineId, setCurrentLineId] = useState<string>(
-    initialLineId || 'G1'
+    initialLineId || 'A1'
   );
 
   const currentLine = useMemo(() => {

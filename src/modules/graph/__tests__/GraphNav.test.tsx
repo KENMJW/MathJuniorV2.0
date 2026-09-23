@@ -119,4 +119,18 @@ describe('GraphNav (TASK-FE-0015 模块二知识谱系重构核心验证)', () =
       expect(count).toBeGreaterThanOrEqual(3);
     }
   });
+
+  it('5. GraphNav 缺省 initialLineId 时默认选中 A1 (实数与数轴模型)', () => {
+    const html = renderToString(
+      <GraphNav
+        lines={mockLogicLines}
+      />
+    );
+
+    // 默认展示 A1 知识主线
+    expect(html).toContain('A1');
+    expect(html).toContain('数与代数');
+    expect(html).toContain('实数与数轴模型');
+  });
 });
+
