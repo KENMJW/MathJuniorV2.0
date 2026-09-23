@@ -26,7 +26,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import {
   FullScoreSystem,
   FULL_SCORE_SYSTEMS,
-  GRADE_7_KP_IDS,
+  GRADE_7_1_KP_IDS,
 } from './presetPapers';
 import {
   PaperConfig,
@@ -73,8 +73,8 @@ export const PaperWorkbench: React.FC = () => {
   const [scoreSystem, setScoreSystem] = useState<FullScoreSystem>('100');
 
   // 第二层：学期向后覆盖与考点勾选
-  const [selectedSemesterKey, setSelectedSemesterKey] = useState<string>('7-2');
-  const [selectedKpIds, setSelectedKpIds] = useState<string[]>(GRADE_7_KP_IDS);
+  const [selectedSemesterKey, setSelectedSemesterKey] = useState<string>('7-1');
+  const [selectedKpIds, setSelectedKpIds] = useState<string[]>(GRADE_7_1_KP_IDS);
   const [isKpGridExpanded, setIsKpGridExpanded] = useState<boolean>(true);
   const [kpSearchText, setKpSearchText] = useState<string>('');
 
@@ -150,9 +150,11 @@ export const PaperWorkbench: React.FC = () => {
 
         if (kps && kps.length > 0) {
           setDbKpDirectory(kps);
-          // 初始默认七年级：筛选 grade <= 7 的考点 (涵盖 7上 + 7下)
-          const grade7KpIds = kps.filter((k: any) => k.grade <= 7).map((k: any) => k.id);
-          setSelectedKpIds(grade7KpIds);
+          // 初始默认七年级上学期：筛选 grade < 7 || (grade === 7 && semester <= 1) 的考点
+          const grade71KpIds = kps
+            .filter((k: any) => k.grade < 7 || (k.grade === 7 && k.semester <= 1))
+            .map((k: any) => k.id);
+          setSelectedKpIds(grade71KpIds);
         }
       } catch (err) {
         console.warn('[PaperWorkbench] Failed to load questions/kps from DB, using fallback:', err);

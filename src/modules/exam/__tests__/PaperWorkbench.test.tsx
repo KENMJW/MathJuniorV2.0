@@ -6,7 +6,7 @@ import { PaperWorkbench } from '../PaperWorkbench';
 import { PrintLayout } from '../PrintLayout';
 import { drawQuestions } from '../drawQuestions';
 import { testExamQuestions } from './testExamQuestions';
-import { FULL_SCORE_SYSTEMS, PRESET_PAPERS, GRADE_7_KP_IDS } from '../presetPapers';
+import { FULL_SCORE_SYSTEMS, PRESET_PAPERS, GRADE_7_KP_IDS, GRADE_7_1_KP_IDS } from '../presetPapers';
 
 describe('PaperWorkbench & PrintLayout (Tasks 17.1 ~ 17.4 & 铁律 3/9/10 门禁校验)', () => {
   it('1. 满分制体系规范契约严格遵照 PRD 5.4 设定', () => {
@@ -54,10 +54,11 @@ describe('PaperWorkbench & PrintLayout (Tasks 17.1 ~ 17.4 & 铁律 3/9/10 门禁
     expect(html).toContain('生成中考全真模拟试卷');
     expect(html).toContain('全真题库');
 
-    // 默认值检验：试卷标题、第一层 100分、第二层 七年级
+    // 默认值检验：试卷标题、第一层 100分、第二层 七年级上学期
     expect(html).toContain('value="初中数学全真模拟综合测试卷"');
     expect(html).toContain('100分标准制');
-    expect(html).toContain('7年级 下学期');
+    expect(html).toContain('7年级 上学期');
+    expect(GRADE_7_1_KP_IDS.length).toBe(19);
     expect(GRADE_7_KP_IDS.length).toBe(32);
   });
 
