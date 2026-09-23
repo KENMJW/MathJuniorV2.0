@@ -255,6 +255,10 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
             dim2_essence: row.dim2_essence,
             dim3_rigor: row.dim3_rigor,
             dim4_traps: row.dim4_traps,
+            dim1_origin_en: row.dim1_origin_en,
+            dim2_essence_en: row.dim2_essence_en,
+            dim3_rigor_en: row.dim3_rigor_en,
+            dim4_traps_en: row.dim4_traps_en,
             available_dimensions: 4,
             image_paths_json: row.image_paths_json,
           });
@@ -550,6 +554,7 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
               config={sandboxConfig}
               pointNameZh={currentPoint.name_zh}
               height={600}
+              locale={locale}
             />
           )}
 

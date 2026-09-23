@@ -21,6 +21,7 @@ export interface LinkedSandboxSlotProps {
   className?: string;
   style?: React.CSSProperties;
   pointNameZh?: string;
+  locale?: string;
 }
 
 export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
@@ -30,8 +31,10 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
   className = '',
   style = {},
   pointNameZh: _pointNameZh = '当前知识考点',
+  locale = 'zh-CN',
 }) => {
   const containerHeight = typeof height === 'number' ? `${height}px` : height;
+  const isEn = String(locale).toLowerCase().startsWith('en');
 
   // 解析当前沙盒的参数滑块规格
   const sliders: Array<{
@@ -49,7 +52,7 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
         if (Array.isArray(parsed) && parsed.length > 0) {
           return parsed.map((s: any) => ({
             id: String(s.id),
-            name: String(s.name || s.nameZh || s.id),
+            name: String((isEn ? s.nameEn : s.nameZh) || s.name || s.nameZh || s.id),
             min: s.min !== undefined ? Number(s.min) : 0,
             max: s.max !== undefined ? Number(s.max) : 10,
             default: s.default !== undefined ? Number(s.default) : 5,
@@ -61,9 +64,9 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
     } catch (e) {}
 
     return [
-      { id: 'scale', name: '几何缩放', min: 0.5, max: 2.5, default: 1.0, step: 0.1, unit: '' },
+      { id: 'scale', name: isEn ? 'Geometric Scale' : '几何缩放', min: 0.5, max: 2.5, default: 1.0, step: 0.1, unit: '' },
     ];
-  }, [config]);
+  }, [config, isEn]);
 
   const [paramValues, setParamValues] = useState<Record<string, number>>({});
   const [invariants, setInvariants] = useState<Array<{ id: string; text: string; isConstant: boolean }>>([]);
@@ -107,6 +110,7 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
               config={config}
               paramValues={paramValues}
               onInvariantsChange={setInvariants}
+              locale={locale}
               style={{ height: '100%', width: '100%' }}
             />
           </div>
@@ -114,14 +118,14 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
           <div className="sandbox-guide-15" style={{ width: '220px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <div className="telemetry-readings">
               <span className="telemetry-tag-invariant">
-                几何不变量：{invariants[0]?.text || '面积与线段比例守恒'}
+                {isEn ? 'Invariant: ' : '几何不变量：'}{invariants[0]?.text || (isEn ? 'Area and segment ratio conserved' : '面积与线段比例守恒')}
               </span>
               <span className="telemetry-tag-secondary">
-                状态：{invariants[0]?.isConstant ? '[绝对恒定]' : '[动态观测中]'}
+                {isEn ? 'Status: ' : '状态：'}{invariants[0]?.isConstant ? (isEn ? '[Absolute Invariant]' : '[绝对恒定]') : (isEn ? '[Dynamic Observation]' : '[动态观测中]')}
               </span>
             </div>
             <div className="telemetry-tag-conclusion">
-              结论：几何直观验证通过
+              {isEn ? 'Conclusion: Geometric intuitive verification passed' : '结论：几何直观验证通过'}
             </div>
           </div>
         </div>

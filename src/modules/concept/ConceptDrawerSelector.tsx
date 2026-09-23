@@ -4,6 +4,30 @@ import { EnrichedKnowledgePoint } from './allPointsData';
 import { Icon } from '../../components/common/Icon';
 import { t, Locale } from '../../engine/i18n/i18n';
 
+export const SUBCATEGORY_NAMES_EN: Record<string, string> = {
+  '三角形': 'Triangles',
+  '不等式': 'Inequalities',
+  '代数式': 'Algebraic Expressions',
+  '几何基础': 'Geometric Foundations',
+  '函数': 'Functions',
+  '分式': 'Rational Expressions',
+  '四边形': 'Quadrilaterals',
+  '图形变换': 'Geometric Transformations',
+  '圆': 'Circles',
+  '实数': 'Real Numbers',
+  '数据分析': 'Data Analysis',
+  '数据收集整理': 'Data Collection & Organization',
+  '方程组': 'Systems of Equations',
+  '概率': 'Probability',
+  '锐角三角函数': 'Trigonometric Functions',
+};
+
+export function getSubcategoryName(subcat?: string, isEn: boolean = false): string {
+  if (!subcat) return '';
+  if (!isEn) return subcat;
+  return SUBCATEGORY_NAMES_EN[subcat] || subcat;
+}
+
 export interface ConceptDrawerSelectorProps {
   isOpen: boolean;
   onClose: () => void;
@@ -37,7 +61,8 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
   onSelectPoint,
   locale = 'zh-CN',
 }) => {
-  const effectiveLocale = (locale === 'en' ? 'en' : 'zh-CN') as Locale;
+  const isEn = String(locale).toLowerCase().startsWith('en');
+  const effectiveLocale = (isEn ? 'en' : 'zh-CN') as Locale;
   const [searchQuery, setSearchQuery] = useState('');
 
   // 1. 所有可用年级
@@ -304,8 +329,8 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
                             color: 'var(--text-secondary)',
                           }}
                         >
-                          {locale === 'en'
-                            ? `Grade ${pt.grade} Sem ${pt.semester} · ${pt.subcategory}`
+                          {isEn
+                            ? `Grade ${pt.grade} Sem ${pt.semester} · ${(pt as any).subcategory_en || getSubcategoryName(pt.subcategory, true)}`
                             : `${pt.grade}年级${pt.semester === 1 ? '上' : '下'} · ${pt.subcategory}`}
                         </span>
                         {pt.is_mandatory ? (
@@ -514,9 +539,9 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
                             textAlign: 'left',
                           }}
                         >
-                          <span>{subcat}</span>
+                          <span>{isEn ? getSubcategoryName(subcat, true) : subcat}</span>
                           <span style={{ fontSize: '0.7rem', opacity: 0.65 }}>
-                            {count} {locale === 'en' ? 'Points' : '考点'}
+                            {count} {isEn ? 'Points' : '考点'}
                           </span>
                         </button>
                       );

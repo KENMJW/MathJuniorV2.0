@@ -30,9 +30,13 @@ export interface LineMasterExample {
   options_json?: string | null;
   correct_option?: string | null;
   dim1_origin?: string | null;
+  dim1_origin_en?: string | null;
   dim2_essence?: string | null;
+  dim2_essence_en?: string | null;
   dim3_rigor: string; // 维度三：严密推导（必填）
+  dim3_rigor_en?: string | null;
   dim4_traps?: string | null;
+  dim4_traps_en?: string | null;
   bound_line_id: string;
   empirical_scoring_rate?: number | null; // e.g. 0.26
 }

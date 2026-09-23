@@ -194,7 +194,7 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
         if (Array.isArray(parsed) && parsed.length > 0) {
           return parsed.map((s: any) => ({
             id: String(s.id),
-            name: String(s.name || s.nameZh || s.id),
+            name: String((isEn ? s.nameEn : s.nameZh) || s.name || s.nameZh || s.id),
             min: s.min !== undefined ? Number(s.min) : 0,
             max: s.max !== undefined ? Number(s.max) : 10,
             default: s.default !== undefined ? Number(s.default) : 5,
@@ -207,9 +207,9 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
 
     // 默认兜底参数
     return [
-      { id: 'scale', name: '几何缩放', min: 0.5, max: 2.5, default: 1.0, step: 0.1, unit: '' },
+      { id: 'scale', name: isEn ? 'Geometric Scale' : '几何缩放', min: 0.5, max: 2.5, default: 1.0, step: 0.1, unit: '' },
     ];
-  }, [currentSandbox]);
+  }, [currentSandbox, isEn]);
 
   // 概念沙盒参数值状态管理
   const [conceptParamValues, setConceptParamValues] = useState<Record<string, number>>({});

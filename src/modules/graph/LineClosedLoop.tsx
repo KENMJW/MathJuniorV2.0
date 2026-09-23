@@ -196,6 +196,7 @@ export const LineClosedLoop: React.FC<LineClosedLoopProps> = ({
 }) => {
   const sessionLocale = useSessionStore((state) => state.locale);
   const locale = propLocale || sessionLocale;
+  const isEn = String(locale).toLowerCase().startsWith('en');
 
   // 主线 ID 状态：支持外部受控与内部自管
   const [internalLineId, setInternalLineId] = useState<string>(line?.line_id || 'A1');
@@ -291,9 +292,13 @@ export const LineClosedLoop: React.FC<LineClosedLoopProps> = ({
             options_json: row.options_json,
             correct_option: row.correct_option,
             dim1_origin: row.dim1_origin,
+            dim1_origin_en: row.dim1_origin_en,
             dim2_essence: row.dim2_essence,
+            dim2_essence_en: row.dim2_essence_en,
             dim3_rigor: String(row.dim3_rigor || ''),
+            dim3_rigor_en: row.dim3_rigor_en ? String(row.dim3_rigor_en) : undefined,
             dim4_traps: row.dim4_traps,
+            dim4_traps_en: row.dim4_traps_en,
             bound_line_id: String(row.bound_line_id || currentLine.line_id),
             empirical_scoring_rate: row.empirical_scoring_rate,
           });
@@ -798,7 +803,8 @@ export const LineClosedLoop: React.FC<LineClosedLoopProps> = ({
                         fontWeight: 700,
                       }}
                     >
-                      官方实测得分率: {(resolvedMasterExample.empirical_scoring_rate * 100).toFixed(0)}%
+                      {isEn ? 'Official Empirical Scoring Rate: ' : '官方实测得分率: '}
+                      {(resolvedMasterExample.empirical_scoring_rate * 100).toFixed(0)}%
                     </div>
                   )}
               </div>
@@ -806,13 +812,13 @@ export const LineClosedLoop: React.FC<LineClosedLoopProps> = ({
               {/* 母题题干 (MathRenderer) */}
               <div style={{ fontSize: '0.96rem', color: 'var(--text-primary)', lineHeight: 1.6, marginBottom: '1.25rem' }}>
                 <MathRenderer
-                  content={getSafeStem(resolvedMasterExample, String(locale).toLowerCase().startsWith('en'))}
+                  content={getSafeStem(resolvedMasterExample, isEn)}
                 />
               </div>
 
               {/* 1~4 维自适应解剖 */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                {resolvedMasterExample.dim1_origin && (
+                {(resolvedMasterExample.dim1_origin || resolvedMasterExample.dim1_origin_en) && (
                   <div
                     style={{
                       padding: '0.75rem 1rem',
@@ -822,15 +828,21 @@ export const LineClosedLoop: React.FC<LineClosedLoopProps> = ({
                     }}
                   >
                     <div style={{ fontWeight: 700, fontSize: '0.82rem', color: 'var(--ios-blue)', marginBottom: '0.25rem' }}>
-                      ① 维度一：原点建模 / 题眼挖掘
+                      {isEn ? '① Dimension 1: Origin Modeling & Core Insight' : '① 维度一：原点建模 / 题眼挖掘'}
                     </div>
                     <div style={{ fontSize: '0.86rem', color: 'var(--text-primary)' }}>
-                      <MathRenderer content={resolvedMasterExample.dim1_origin} />
+                      <MathRenderer
+                        content={
+                          (isEn && resolvedMasterExample.dim1_origin_en)
+                            ? resolvedMasterExample.dim1_origin_en
+                            : (resolvedMasterExample.dim1_origin || '')
+                        }
+                      />
                     </div>
                   </div>
                 )}
 
-                {resolvedMasterExample.dim2_essence && (
+                {(resolvedMasterExample.dim2_essence || resolvedMasterExample.dim2_essence_en) && (
                   <div
                     style={{
                       padding: '0.75rem 1rem',
@@ -840,10 +852,16 @@ export const LineClosedLoop: React.FC<LineClosedLoopProps> = ({
                     }}
                   >
                     <div style={{ fontWeight: 700, fontSize: '0.82rem', color: 'var(--ios-green)', marginBottom: '0.25rem' }}>
-                      ② 维度二：几何不变 / 本质直观
+                      {isEn ? '② Dimension 2: Geometric Invariance & Essential Intuition' : '② 维度二：几何不变 / 本质直观'}
                     </div>
                     <div style={{ fontSize: '0.86rem', color: 'var(--text-primary)' }}>
-                      <MathRenderer content={resolvedMasterExample.dim2_essence} />
+                      <MathRenderer
+                        content={
+                          (isEn && resolvedMasterExample.dim2_essence_en)
+                            ? resolvedMasterExample.dim2_essence_en
+                            : (resolvedMasterExample.dim2_essence || '')
+                        }
+                      />
                     </div>
                   </div>
                 )}
@@ -858,14 +876,20 @@ export const LineClosedLoop: React.FC<LineClosedLoopProps> = ({
                   }}
                 >
                   <div style={{ fontWeight: 700, fontSize: '0.82rem', color: 'var(--ios-indigo)', marginBottom: '0.25rem' }}>
-                    ③ 维度三：严密推导与生死红线 (必填推导)
+                    {isEn ? '③ Dimension 3: Rigorous Derivation & Critical Boundary (Required)' : '③ 维度三：严密推导与生死红线 (必填推导)'}
                   </div>
                   <div style={{ fontSize: '0.86rem', color: 'var(--text-primary)' }}>
-                    <MathRenderer content={resolvedMasterExample.dim3_rigor} />
+                    <MathRenderer
+                      content={
+                        (isEn && resolvedMasterExample.dim3_rigor_en)
+                          ? resolvedMasterExample.dim3_rigor_en
+                          : resolvedMasterExample.dim3_rigor
+                      }
+                    />
                   </div>
                 </div>
 
-                {resolvedMasterExample.dim4_traps && (
+                {(resolvedMasterExample.dim4_traps || resolvedMasterExample.dim4_traps_en) && (
                   <div
                     style={{
                       padding: '0.75rem 1rem',
@@ -875,10 +899,16 @@ export const LineClosedLoop: React.FC<LineClosedLoopProps> = ({
                     }}
                   >
                     <div style={{ fontWeight: 700, fontSize: '0.82rem', color: 'var(--ios-orange)', marginBottom: '0.25rem' }}>
-                      ④ 维度四：极端反例与致命变式
+                      {isEn ? '④ Dimension 4: Extreme Counterexamples & Critical Variations' : '④ 维度四：极端反例与致命变式'}
                     </div>
                     <div style={{ fontSize: '0.86rem', color: 'var(--text-primary)' }}>
-                      <MathRenderer content={resolvedMasterExample.dim4_traps} />
+                      <MathRenderer
+                        content={
+                          (isEn && resolvedMasterExample.dim4_traps_en)
+                            ? resolvedMasterExample.dim4_traps_en
+                            : (resolvedMasterExample.dim4_traps || '')
+                        }
+                      />
                     </div>
                   </div>
                 )}
@@ -886,7 +916,7 @@ export const LineClosedLoop: React.FC<LineClosedLoopProps> = ({
             </div>
           ) : (
             <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
-              未找到该主线的经典压轴母题数据。
+              {isEn ? 'No flagship master example found for this logic line.' : '未找到该主线的经典压轴母题数据。'}
             </div>
           )}
         </div>

@@ -179,9 +179,13 @@ export const GraphNav: React.FC<GraphNavProps> = ({
             correct_option: row.correct_option,
             answer_standard: row.answer_standard,
             dim1_origin: row.dim1_origin || currentLine.origin_foundation_zh,
+            dim1_origin_en: row.dim1_origin_en || currentLine.origin_foundation_en,
             dim2_essence: row.dim2_essence || currentLine.spiral_leaps_zh,
+            dim2_essence_en: row.dim2_essence_en || currentLine.spiral_leaps_en,
             dim3_rigor: String(row.dim3_rigor || currentLine.methodology_zh || '由公理体系严密推导可得。'),
+            dim3_rigor_en: row.dim3_rigor_en ? String(row.dim3_rigor_en) : (currentLine.methodology_en || 'Rigorously derived from axiomatic systems and definitions.'),
             dim4_traps: row.dim4_traps || currentLine.exam_matrix_zh,
+            dim4_traps_en: row.dim4_traps_en || currentLine.exam_matrix_en,
             available_dimensions: 4,
           });
           return;
@@ -199,9 +203,13 @@ export const GraphNav: React.FC<GraphNavProps> = ({
           stem_zh: `已知关于【${currentLine.name_zh}】的典型综合应用模型：试运用本谱系核心公理与思想方法进行严格推导求解。`,
           stem_en: `Standard master example on ${currentLine.name_en || currentLine.name_zh}.`,
           dim1_origin: currentLine.origin_foundation_zh,
+          dim1_origin_en: currentLine.origin_foundation_en,
           dim2_essence: currentLine.spiral_leaps_zh,
+          dim2_essence_en: currentLine.spiral_leaps_en,
           dim3_rigor: currentLine.methodology_zh || '由相关公理体系与定义严格推导可得。',
+          dim3_rigor_en: currentLine.methodology_en || 'Rigorously derived from axiomatic systems and definitions.',
           dim4_traps: currentLine.exam_matrix_zh || '注意临界边界与反例检验。',
+          dim4_traps_en: currentLine.exam_matrix_en || 'Pay attention to critical boundary conditions and counterexamples.',
           available_dimensions: 4,
         });
       }

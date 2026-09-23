@@ -30,15 +30,20 @@ export interface MasterExampleItem {
   correct_option?: string | null;
   answer_standard?: string;
   dim1_origin?: string | null;
+  dim1_origin_en?: string | null;
   dim2_essence?: string | null;
+  dim2_essence_en?: string | null;
   dim3_rigor: string; // 严谨证明：非空，必展示
+  dim3_rigor_en?: string | null;
   dim4_traps?: string | null;
+  dim4_traps_en?: string | null;
   available_dimensions?: number; // 默认 4
   image_paths_json?: string | null;
 }
 
 export interface PointMasterExampleProps {
   example: MasterExampleItem;
+  locale?: string;
   className?: string;
   style?: React.CSSProperties;
 }
@@ -60,10 +65,12 @@ const DIMENSIONS_META: DimensionMeta[] = [
 
 export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
   example,
+  locale: propLocale,
   className = '',
   style = {},
 }) => {
-  const locale = useSessionStore((state) => state.locale);
+  const sessionLocale = useSessionStore((state) => state.locale);
+  const locale = propLocale || sessionLocale;
   const isEn = String(locale).toLowerCase().startsWith('en');
 
   // 可用维度上限 (默认 4)
@@ -97,13 +104,13 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
   const getDimensionContent = (index: number): string => {
     switch (index) {
       case 1:
-        return example.dim1_origin || (isEn ? '(Intuitive origin pending)' : '（待补充直观源头）');
+        return (isEn && example.dim1_origin_en) ? example.dim1_origin_en : (example.dim1_origin || (isEn ? '(Intuitive origin pending)' : '（待补充直观源头）'));
       case 2:
-        return example.dim2_essence || (isEn ? '(Core essence pending)' : '（待补充数学本质）');
+        return (isEn && example.dim2_essence_en) ? example.dim2_essence_en : (example.dim2_essence || (isEn ? '(Core essence pending)' : '（待补充数学本质）'));
       case 3:
-        return example.dim3_rigor; // 严谨证明 (必填必展示)
+        return (isEn && example.dim3_rigor_en) ? example.dim3_rigor_en : example.dim3_rigor; // 严谨证明 (必填必展示)
       case 4:
-        return example.dim4_traps || (isEn ? '(Variations pending)' : '（待补充易错变式）');
+        return (isEn && example.dim4_traps_en) ? example.dim4_traps_en : (example.dim4_traps || (isEn ? '(Variations pending)' : '（待补充易错变式）'));
       default:
         return '';
     }

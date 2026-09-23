@@ -231,4 +231,36 @@ describe('LineClosedLoop & LineQuickPractice (Task 10.4 & 铁律 3/4 门禁校�
     expect(practiceCode).not.toContain('--pulse-track');
     expect(practiceCode).not.toContain('traceRootCause');
   });
+
+  it('6. LineClosedLoop 在英文环境下正确展示主线母题四维英文标题与解析', () => {
+    const enMaster = {
+      ...testMaster,
+      dim1_origin_en: 'Geometric measurement foundation of circles',
+      dim2_essence_en: 'Perpendicular chord and tangent essence',
+      dim3_rigor_en: 'Rigorous geometric derivation and boundary lines',
+      dim4_traps_en: 'Double tangents and hidden circles traps',
+    };
+
+    const html = renderToString(
+      <LineClosedLoop
+        line={testLine}
+        masterExample={enMaster}
+        activeTab="master"
+        locale="en"
+      />
+    );
+
+    // 英文标题
+    expect(html).toContain('Dimension 1: Origin Modeling &amp; Core Insight');
+    expect(html).toContain('Dimension 2: Geometric Invariance &amp; Essential Intuition');
+    expect(html).toContain('Dimension 3: Rigorous Derivation &amp; Critical Boundary (Required)');
+    expect(html).toContain('Dimension 4: Extreme Counterexamples &amp; Critical Variations');
+
+    // 英文内容
+    expect(html).toContain('Geometric measurement foundation of circles');
+    expect(html).toContain('Perpendicular chord and tangent essence');
+    expect(html).toContain('Rigorous geometric derivation and boundary lines');
+    expect(html).toContain('Double tangents and hidden circles traps');
+    expect(html).toContain('Official Empirical Scoring Rate:');
+  });
 });

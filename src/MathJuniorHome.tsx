@@ -350,7 +350,7 @@ export const MathJuniorHome: React.FC = () => {
                   border: "1px solid rgba(0, 113, 227, 0.2)",
                 }}
               >
-                {locale === "en" ? "Junior Math V2.0.1beta" : "初中数学 V2.0.1beta"}
+                {locale === "en" ? "Junior Math V2.0.2beta" : "初中数学 V2.0.2beta"}
               </span>
             </div>
           </div>

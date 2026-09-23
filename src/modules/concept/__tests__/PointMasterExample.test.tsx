@@ -1,10 +1,14 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { renderToString } from 'react-dom/server';
 import fs from 'fs';
 import path from 'path';
 import { PointMasterExample, MasterExampleItem } from '../PointMasterExample';
+import { useSessionStore } from '../../../store/sessionStore';
 
 describe('PointMasterExample (Task 9.3 & dim3 必展示验收)', () => {
+  beforeEach(() => {
+    useSessionStore.getState().resetAll();
+  });
   const mockMasterExample: MasterExampleItem = {
     example_id: 'ME-KP023',
     example_type: 'point_master',
@@ -53,5 +57,26 @@ describe('PointMasterExample (Task 9.3 & dim3 必展示验收)', () => {
 
     expect(content).toContain('MathRenderer');
     expect(content).not.toContain('dangerouslySetInnerHTML');
+  });
+
+  it('4. 英文环境下正确展示四维英文标签与解析', () => {
+    const enMasterExample: MasterExampleItem = {
+      ...mockMasterExample,
+      dim1_origin_en: 'Origins in completing the square.',
+      dim2_essence_en: 'Essence of completing the square is geometric square completion.',
+      dim3_rigor_en: 'Rigorous derivation via discriminant and Vieta formulas.',
+      dim4_traps_en: 'Forgetting to divide by a when leading coefficient is not 1.',
+    };
+
+    const html = renderToString(<PointMasterExample example={enMasterExample} locale="en" />);
+
+    // 英文标题与状态
+    expect(html).toContain('Dimension 1 · Intuitive Origin');
+    expect(html).toContain('Dimension 2 · Core Essence');
+    expect(html).toContain('Dimension 3 · Rigor &amp; Proof');
+    expect(html).toContain('Dimension 4 · Traps &amp; Variations');
+    expect(html).toContain('Progress:');
+    expect(html).toContain('Click card or button above to unlock');
+    expect(html).toContain('4D Cognitive Evolution');
   });
 });
