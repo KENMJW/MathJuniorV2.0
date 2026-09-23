@@ -350,7 +350,7 @@ export const MathJuniorHome: React.FC = () => {
                   border: "1px solid rgba(0, 113, 227, 0.2)",
                 }}
               >
-                初中数学 V2.0.0beta
+                初中数学 V2.0.1beta
               </span>
             </div>
           </div>
