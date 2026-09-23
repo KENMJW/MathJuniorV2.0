@@ -73,7 +73,7 @@ export const MathJuniorHome: React.FC = () => {
 
   // 模块内部状态
   const [labSubView, setLabSubView] = useState<"concept_sandbox" | "leap_4d">("concept_sandbox");
-  const [selectedLeapModelId, setSelectedLeapModelId] = useState<string>("LM-9A-19");
+  const [selectedLeapModelId, setSelectedLeapModelId] = useState<string>("LM-7A-01");
       
   // 异步真库数据状态 (core.db 107 考点 + 12 主线)
   const [dbLines, setDbLines] = useState<LogicLine[] | null>(null);

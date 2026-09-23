@@ -62,4 +62,18 @@ describe('LabWorkspace (Module 3) Unified Drawer & Sticky Scroll Tests', () => {
     expect(html).toContain('选择沙盒:');
     expect(html).toContain('平行线的性质与判定');
   });
+
+  it('3. 4D 跃迁模型视图：缺省 selectedLeapModelId 时默认选中 LM-7A-01 (数轴与动点追及模型)', () => {
+    const html = renderToString(
+      <LabWorkspace
+        effectiveSandboxes={mockSandboxes}
+        effectiveLeapModels={mockLeapSandboxModels}
+        labSubView="leap_4d"
+      />
+    );
+
+    // 默认展示 LM-7A-01
+    expect(html).toContain('LM-7A-01');
+    expect(html).toContain('数轴动点与绝对值几何距离模型');
+  });
 });
