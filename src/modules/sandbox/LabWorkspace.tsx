@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { SandboxRenderer } from './SandboxRenderer';
 import { LeapLab, SEMESTER_CONFIG as LEAP_SEMESTER_CONFIG, formatSemesterZh } from './LeapLab';
 import { Icon } from '../../components/common/Icon';
@@ -201,6 +201,34 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
 
   // 概念沙盒参数值状态管理
   const [conceptParamValues, setConceptParamValues] = useState<Record<string, number>>({});
+  const [sandboxResetCount, setSandboxResetCount] = useState<number>(0);
+  const [isViewportLocked, setIsViewportLocked] = useState<boolean>(true);
+  const [toastMessage, setToastMessage] = useState<string>('');
+
+  // 概念沙盒重置为标准基准态
+  const handleResetConcept = useCallback(() => {
+    const initial: Record<string, number> = {};
+    conceptSliders.forEach((s) => {
+      initial[s.id] = s.default;
+    });
+    setConceptParamValues(initial);
+    setSandboxResetCount((prev) => prev + 1);
+    setToastMessage('已恢复考点标准具象态');
+    setTimeout(() => setToastMessage(''), 2000);
+  }, [conceptSliders]);
+
+  // 视口阻尼锁定开关与复位
+  const handleToggleViewportLock = useCallback(() => {
+    setIsViewportLocked((prev) => !prev);
+    setSandboxResetCount((prev) => prev + 1);
+    setToastMessage(!isViewportLocked ? '视口阻尼保护已锁定' : '视口已开启自由漫游模式');
+    setTimeout(() => setToastMessage(''), 2000);
+  }, [isViewportLocked]);
+
+  // 双向动点参数回写
+  const handleConceptParamChange = useCallback((patch: Record<string, number>) => {
+    setConceptParamValues((prev) => ({ ...prev, ...patch }));
+  }, []);
 
   // 切换沙盒时重置为初始默认值
   useEffect(() => {
@@ -587,57 +615,94 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
               </h3>
 
               <div className="tier-pill-group" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <span
+                <button
+                  type="button"
                   data-testid="badge-concept-concrete"
+                  onClick={handleResetConcept}
+                  title="点击恢复当前考点的标准具象基准态"
+                  className="nav-pill-btn"
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '4px',
                     padding: '3px 10px',
+                    height: '26px',
                     borderRadius: 'var(--radius-pill, 9999px)',
                     fontSize: '11px',
                     fontWeight: 600,
                     background: 'rgba(0, 113, 227, 0.08)',
                     color: 'var(--ios-blue, #0071e3)',
-                    border: '1px solid rgba(0, 113, 227, 0.18)',
-                    cursor: 'default',
+                    border: '1px solid rgba(0, 113, 227, 0.25)',
+                    cursor: 'pointer',
                     userSelect: 'none',
+                    transition: 'all 0.18s cubic-bezier(0.16, 1, 0.3, 1)',
                   }}
                 >
                   <Icon name="check-circle" size={11} />
-                  概念具象化
-                </span>
-                <span
+                  <span>概念具象化</span>
+                </button>
+                <button
+                  type="button"
                   data-testid="badge-viewport-locked"
+                  onClick={handleToggleViewportLock}
+                  title={isViewportLocked ? '视口物理阻尼锁定中，点击复位并居中' : '视口自由缩放中，点击重新锁定阻尼'}
+                  className="nav-pill-btn"
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '4px',
                     padding: '3px 10px',
+                    height: '26px',
                     borderRadius: 'var(--radius-pill, 9999px)',
                     fontSize: '11px',
                     fontWeight: 600,
-                    background: 'rgba(52, 199, 89, 0.08)',
-                    color: '#2e7d32',
-                    border: '1px solid rgba(52, 199, 89, 0.2)',
-                    cursor: 'default',
+                    background: isViewportLocked ? 'rgba(52, 199, 89, 0.08)' : 'var(--bg-card-subtle)',
+                    color: isViewportLocked ? '#2e7d32' : 'var(--text-secondary)',
+                    border: isViewportLocked ? '1px solid rgba(52, 199, 89, 0.25)' : '1px solid var(--border-subtle)',
+                    cursor: 'pointer',
                     userSelect: 'none',
+                    transition: 'all 0.18s cubic-bezier(0.16, 1, 0.3, 1)',
                   }}
                 >
-                  <Icon name="lock" size={11} />
-                  视口阻尼锁定
-                </span>
+                  <Icon name={isViewportLocked ? 'lock' : 'unlock'} size={11} />
+                  <span>{isViewportLocked ? '视口阻尼锁定' : '视口自由漫游'}</span>
+                </button>
               </div>
             </div>
 
             {/* 85% Canvas + 15% Telemetry */}
-            <div className="sandbox-split-box">
+            <div className="sandbox-split-box" style={{ position: 'relative' }}>
+              {toastMessage && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '12px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    background: 'rgba(15, 23, 42, 0.9)',
+                    color: '#ffffff',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    padding: '5px 14px',
+                    borderRadius: '20px',
+                    fontSize: '11px',
+                    fontWeight: 500,
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+                    zIndex: 30,
+                    pointerEvents: 'none',
+                    backdropFilter: 'blur(8px)',
+                  }}
+                >
+                  {toastMessage}
+                </div>
+              )}
               <div className="sandbox-viewport-85">
                 <SandboxRenderer
-                  key={currentSandbox.id}
+                  key={`${currentSandbox.id}-${sandboxResetCount}`}
                   config={currentSandbox.config}
                   paramValues={conceptParamValues}
                   onInvariantsChange={setInvariants}
+                  onParamChange={handleConceptParamChange}
+                  locale={locale}
                   style={{ width: '100%', height: '100%' }}
                 />
               </div>

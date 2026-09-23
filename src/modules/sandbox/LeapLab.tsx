@@ -162,11 +162,125 @@ export const LeapLab: React.FC<LeapLabProps> = ({
     currentModel.model_id.includes('9A-19') ||
     currentModel.model_name_zh.includes('手拉手');
 
+  // 主线同谱系模型与梯次映射
+  const lineModels = useMemo(() => {
+    const line = currentModel.primary_line;
+    if (!line) return [currentModel];
+    return allModels.filter((m) => m.primary_line === line);
+  }, [allModels, currentModel.primary_line]);
+
+  // 根据当前模型推导当前梯次 (1=原型, 2=变式, 3=综合)
+  const currentModelTier = useMemo(() => {
+    if (lineModels.length >= 3) {
+      const sorted = [...lineModels].sort((a, b) => a.model_id.localeCompare(b.model_id));
+      const idx = sorted.findIndex((m) => m.model_id === currentModel.model_id);
+      if (idx === 0) return 1;
+      if (idx === sorted.length - 1) return 3;
+      return 2;
+    } else if (lineModels.length === 2) {
+      return currentModel.tier_level === 2 ? 2 : 1;
+    }
+    return currentModel.tier_level || 1;
+  }, [lineModels, currentModel]);
+
   // 手拉手专用动画与交互状态
   const [rotationAngle, setRotationAngle] = useState<number>(60);
   const [isAutoPlaying, setIsAutoPlaying] = useState<boolean>(false);
-  const [tierLevel, setTierLevel] = useState<number>(1);
+  const [tierLevel, setTierLevel] = useState<number>(() => currentModelTier);
   const [invariants, setInvariants] = useState<Array<{ id: string; text: string; isConstant: boolean }>>([]);
+
+  // 模型改变时自动同步高亮梯次
+  useEffect(() => {
+    setTierLevel(currentModelTier);
+  }, [currentModelTier]);
+
+  // 梯次点击处理（同主线跨模型切换 + 4D 梯次认知预设双驱动）
+  const handleTierChange = (targetTier: number) => {
+    setTierLevel(targetTier);
+
+    // 1. 尝试在同主线中寻找对应梯次的目标模型
+    let targetModel: LeapSandboxModel | undefined;
+    if (lineModels.length >= 3) {
+      const sorted = [...lineModels].sort((a, b) => a.model_id.localeCompare(b.model_id));
+      if (targetTier === 1) targetModel = sorted[0];
+      else if (targetTier === 3) targetModel = sorted[sorted.length - 1];
+      else targetModel = sorted[Math.floor((sorted.length - 1) / 2)] || sorted[1];
+    } else if (lineModels.length === 2) {
+      if (targetTier === 1) targetModel = lineModels.find((m) => m.tier_level === 1) || lineModels[0];
+      else if (targetTier === 2) targetModel = lineModels.find((m) => m.tier_level === 2) || lineModels[1];
+    }
+
+    if (targetModel && targetModel.model_id !== currentModel.model_id) {
+      handleSelectModel(targetModel.model_id);
+      return;
+    }
+
+    // 2. 若留在当前模型，执行 4D 梯次认知预设（原型/变式/综合形态切换）
+    if (isHandInHand) {
+      if (targetTier === 1) {
+        setRotationAngle(60);
+        setMorphState((prev) => ({
+          ...prev,
+          carrierId: 'free_triangle',
+          postureId: 'standard',
+          activeCamouflageIds: [],
+          xrayActive: true,
+          parameterValues: { ...prev.parameterValues, param_scale: 1.0, param_t: 5 },
+        }));
+      } else if (targetTier === 2) {
+        setRotationAngle(90);
+        setMorphState((prev) => ({
+          ...prev,
+          carrierId: 'opt2',
+          postureId: 'rotated_90',
+          activeCamouflageIds: [],
+          xrayActive: false,
+          parameterValues: { ...prev.parameterValues, param_scale: 1.2, param_t: 6 },
+        }));
+      } else {
+        setRotationAngle(180);
+        setMorphState((prev) => ({
+          ...prev,
+          carrierId: 'quadrilateral',
+          postureId: 'collinear_degraded',
+          activeCamouflageIds: camouflageSpec.distractorLayers.map((l) => l.id),
+          xrayActive: false,
+          parameterValues: { ...prev.parameterValues, param_scale: 1.5, param_t: 8 },
+        }));
+      }
+    } else {
+      if (targetTier === 1) {
+        setMorphState((prev) => ({
+          ...prev,
+          carrierId: carrierSpec.options[0]?.id || 'default',
+          postureId: postureSpec.modes[0]?.id || 'standard',
+          activeCamouflageIds: [],
+          xrayActive: true,
+          parameterValues: {},
+        }));
+      } else if (targetTier === 2) {
+        const opt2 = carrierSpec.options[1]?.id || carrierSpec.options[0]?.id || 'default';
+        const mode2 = postureSpec.modes[1]?.id || postureSpec.modes[0]?.id || 'standard';
+        setMorphState((prev) => ({
+          ...prev,
+          carrierId: opt2,
+          postureId: mode2,
+          activeCamouflageIds: [],
+          xrayActive: false,
+        }));
+      } else {
+        const optLast = carrierSpec.options[carrierSpec.options.length - 1]?.id || 'default';
+        const modeLast = postureSpec.modes[postureSpec.modes.length - 1]?.id || 'standard';
+        setMorphState((prev) => ({
+          ...prev,
+          carrierId: optLast,
+          postureId: modeLast,
+          activeCamouflageIds: camouflageSpec.distractorLayers.map((l) => l.id),
+          xrayActive: false,
+        }));
+      }
+    }
+  };
 
   // 自动旋转播放器
   useEffect(() => {
@@ -350,21 +464,24 @@ export const LeapLab: React.FC<LeapLabProps> = ({
           <button
             type="button"
             className={`nav-pill-btn ${tierLevel === 1 ? 'active' : ''}`}
-            onClick={() => setTierLevel(1)}
+            onClick={() => handleTierChange(1)}
+            title="L1 原型：核心基础骨架与本质不变性"
           >
             原型
           </button>
           <button
             type="button"
             className={`nav-pill-btn ${tierLevel === 2 ? 'active' : ''}`}
-            onClick={() => setTierLevel(2)}
+            onClick={() => handleTierChange(2)}
+            title="L2 变式：姿态翻折旋转与载体拓展"
           >
             变式
           </button>
           <button
             type="button"
             className={`nav-pill-btn ${tierLevel === 3 ? 'active' : ''}`}
-            onClick={() => setTierLevel(3)}
+            onClick={() => handleTierChange(3)}
+            title="L3 综合：中考压轴加壳与极限综合态"
           >
             综合
           </button>
