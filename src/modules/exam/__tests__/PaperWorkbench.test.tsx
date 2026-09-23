@@ -41,14 +41,18 @@ describe('PaperWorkbench & PrintLayout (Tasks 17.1 ~ 17.4 & 铁律 3/9/10 门禁
     expect(semesterPapers.length).toBe(6); // 七上到九下 6 学期
   });
 
-  it('3. PaperWorkbench 能够成功挂载并渲染工作台界面', () => {
+  it('3. PaperWorkbench 能够成功挂载并渲染单轨四层工作台界面', () => {
     const html = renderToString(<PaperWorkbench />);
-    expect(html).toContain('中考实战与全真组卷工作台');
-    expect(html).toContain('100分制');
-    expect(html).toContain('120分制');
-    expect(html).toContain('150分制');
-    expect(html).toContain('考点细粒度复选');
+    expect(html).toContain('模块四 · 实战测评 · 智能组卷中心');
+    expect(html).toContain('第一层 · 满分制基准');
+    expect(html).toContain('100分标准制');
+    expect(html).toContain('120分中考制');
+    expect(html).toContain('150分大考制');
+    expect(html).toContain('第二层 · 学期向后覆盖与考点子集');
+    expect(html).toContain('第三层 · 题型题量与分值配置');
+    expect(html).toContain('第四层 · 试卷难度配比');
     expect(html).toContain('生成中考全真模拟试卷');
+    expect(html).toContain('全真题库');
   });
 
   it('4. PrintLayout 完整渲染试卷头部、三大题型与左侧密封线', () => {

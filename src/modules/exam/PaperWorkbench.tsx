@@ -1,21 +1,31 @@
 /**
- * 模块四·精准出题中心工作台 (任务 17.1, PRD §5.4, 设计文档 §7.4 子系统 A, 任务 21.3 UI 重做)
+ * 模块四·精准出题中心工作台 (任务 17.1, PRD §5.4, 任务 21.3)
  *
- * 核心功能：
- * 1. 满分制一键套用 (100 分标准制 / 120 分中考制 / 150 分大考制) - 3 张可视化卡片
- * 2. 预设卷库选择入口 (难度梯度卷、全真考卷库、6 学期期末标准卷) - 卡片网格布局
- * 3. 自定义组卷工作台 (考点网格复选、学期批处理勾选、L1~L5 难度滑块)
- * 4. 方案 A 库存预警拦截 (实时调用 verifyPaperInventory，库存不足标红并禁用生成按钮)
- * 5. 生成试卷一键直达双栏 A4 打印预览
- * 6. [铁律 3] (全文本走 MathRenderer) + [铁律 10] (iOS 27 设计 tokens) + [铁律 11] (全单色 SVG Icon，零 emoji)
+ * 核心架构：
+ * 1. 单轨四层垂直递进架构（已彻底移除预设卷库）：
+ *    - 顶部真实题量动态徽章 (直连 questions.db，展示实际题量)
+ *    - 第一层：满分制基准选择 (100分标准制 / 120分中考制 / 150分大考制)
+ *    - 第二层：学期一键向后覆盖 + 考点子集闭包微调网格
+ *    - 第三层：题型题量与分值配置 (选择/填空可配，解答题按中考标准阶梯自动倒推)
+ *    - 第四层：试卷难度配比 (L1~L5 波浪级联外向传导，和恒等于 100%)
+ * 2. 方案 A 智能防御底座：
+ *    - 实时子集闭包题量统计与越界拦截
+ *    - 保证格式：“所选考点内可用真题总数：{totalAvailable} 题（选择 {availC}/{reqC}，填空 {availF}/{reqF}，解答 {availS}/{reqS}）。”
+ * 3. 双轨输出：
+ *    - 一键直达 A4 双栏排版打印 (PrintLayout)
+ *    - 一键开启在线全真测评 (OnlineExam)
+ * 4. 铁律遵循：
+ *    - [铁律 2 考完即焚]：全内存状态，零持久化
+ *    - [铁律 3 数学公式]：全公式走 MathRenderer
+ *    - [铁律 9 物理隔离]：仅查 questions 表，绝不触碰 master_examples
+ *    - [铁律 10 设计规约]：iOS 27 设计 Token
+ *    - [铁律 11 符号纯洁]：纯单色 SVG Icon，零 emoji
  */
 
 import React, { useState, useMemo, useEffect } from 'react';
 import {
   FullScoreSystem,
   FULL_SCORE_SYSTEMS,
-  PRESET_PAPERS,
-  PresetPaper,
   ALL_CORE_KP_IDS,
 } from './presetPapers';
 import {
@@ -23,14 +33,24 @@ import {
   verifyPaperInventoryFromPool,
   InventoryCheckResult,
 } from './verifyPaperInventory';
-import { drawQuestions, drawQuestionsFromDb, GeneratedPaper, QuestionItem } from './drawQuestions';
+import {
+  drawQuestions,
+  drawQuestionsFromDb,
+  generateSolutionScoreLadder,
+  GeneratedPaper,
+  QuestionItem,
+} from './drawQuestions';
+import {
+  adjustDifficultyWeights,
+  DEFAULT_DIFFICULTY_WEIGHTS,
+  DifficultyWeights,
+} from './difficultyRipple';
 import { PrintLayout } from './PrintLayout';
 import { OnlineExam } from './OnlineExam';
 import { MathRenderer } from '../../components/math/MathRenderer';
 import { Icon } from '../../components/common/Icon';
 import { dbClient } from '../../engine/db/dbClient';
 
-// 考点元数据清单 (按学期组织)
 interface KpMeta {
   id: string;
   nameZh: string;
@@ -39,53 +59,38 @@ interface KpMeta {
   line: string;
 }
 
-const KP_DIRECTORY: KpMeta[] = [
-  { id: 'KP-001', nameZh: '有理数的概念与数轴绝对值', grade: 7, semester: 1, line: 'A1' },
-  { id: 'KP-005', nameZh: '有理数加减乘除乘方混合运算', grade: 7, semester: 1, line: 'A1' },
-  { id: 'KP-008', nameZh: '整式的加减与同类项合并', grade: 7, semester: 1, line: 'A2' },
-  { id: 'KP-009', nameZh: '一元一次方程的解法与应用', grade: 7, semester: 1, line: 'A3' },
-  { id: 'KP-010', nameZh: '平行线的判定与性质', grade: 7, semester: 2, line: 'G1' },
-  { id: 'KP-012', nameZh: '整式乘法与因式分解', grade: 7, semester: 2, line: 'A2' },
-  { id: 'KP-015', nameZh: '全等三角形判定(SAS/ASA/AAS/SSS)', grade: 7, semester: 2, line: 'G2' },
-  { id: 'KP-018', nameZh: '轴对称与等腰三角形', grade: 8, semester: 1, line: 'G2' },
-  { id: 'KP-020', nameZh: '一次函数的图象与性质', grade: 8, semester: 1, line: 'A4' },
-  { id: 'KP-023', nameZh: '配方法', grade: 9, semester: 1, line: 'A3' },
-  { id: 'KP-024', nameZh: '求根公式法', grade: 9, semester: 1, line: 'A3' },
-  { id: 'KP-028', nameZh: '一元二次方程根与系数关系', grade: 8, semester: 2, line: 'A3' },
-  { id: 'KP-030', nameZh: '平行四边形与矩形菱形性质', grade: 8, semester: 2, line: 'G3' },
-  { id: 'KP-032', nameZh: '相似三角形判定与性质', grade: 8, semester: 2, line: 'G2' },
-  { id: 'KP-035', nameZh: '反比例函数的图象与性质', grade: 8, semester: 2, line: 'A4' },
-  { id: 'KP-040', nameZh: '二次函数图象与顶点式', grade: 9, semester: 1, line: 'A4' },
-  { id: 'KP-042', nameZh: '解直角三角形与锐角三角函数', grade: 9, semester: 1, line: 'G6' },
-  { id: 'KP-045', nameZh: '旋转变换与手拉手模型', grade: 9, semester: 1, line: 'G5' },
-  { id: 'KP-050', nameZh: '圆的切线判定与性质', grade: 9, semester: 2, line: 'G4' },
-];
+const SEMESTERS = [
+  { grade: 7, semester: 1, key: '7-1', label: '7年级 上学期' },
+  { grade: 7, semester: 2, key: '7-2', label: '7年级 下学期' },
+  { grade: 8, semester: 1, key: '8-1', label: '8年级 上学期' },
+  { grade: 8, semester: 2, key: '8-2', label: '8年级 下学期' },
+  { grade: 9, semester: 1, key: '9-1', label: '9年级 上学期' },
+  { grade: 9, semester: 2, key: '9-2', label: '9年级 下学期 (中考总复习)' },
+] as const;
 
 export const PaperWorkbench: React.FC = () => {
-  // 当前满分制体系 ('100' | '120' | '150')
+  // 第一层：当前满分制体系 ('100' | '120' | '150')
   const [scoreSystem, setScoreSystem] = useState<FullScoreSystem>('120');
 
-  // 当前勾选的考点集合 (默认全选)
+  // 第二层：学期向后覆盖与考点勾选
+  const [selectedSemesterKey, setSelectedSemesterKey] = useState<string>('9-2');
   const [selectedKpIds, setSelectedKpIds] = useState<string[]>(ALL_CORE_KP_IDS);
+  const [isKpGridExpanded, setIsKpGridExpanded] = useState<boolean>(true);
+  const [kpSearchText, setKpSearchText] = useState<string>('');
 
-  // 题目配比 (依据满分制预设初始化，可微调)
-  const [customChoiceCount, setCustomChoiceCount] = useState<number>(10);
-  const [customFillCount, setCustomFillCount] = useState<number>(6);
-  const [customSolutionCount, setCustomSolutionCount] = useState<number>(8);
+  // 第三层：题型、题量与分值配置
+  const [choiceCount, setChoiceCount] = useState<number>(10);
+  const [choiceScore, setChoiceScore] = useState<number>(3);
+  const [fillCount, setFillCount] = useState<number>(6);
+  const [fillScore, setFillScore] = useState<number>(3);
 
-  // L1~L5 难度滑块权重
-  const [diffWeights, setDiffWeights] = useState<[number, number, number, number, number]>([
-    25, 30, 25, 15, 5,
+  // 第四层：L1~L5 试卷难度波浪联动权重
+  const [diffWeights, setDiffWeights] = useState<DifficultyWeights>([
+    ...DEFAULT_DIFFICULTY_WEIGHTS,
   ]);
 
   // 试卷标题
   const [paperTitle, setPaperTitle] = useState<string>('2024年中考数学全真模拟综合测试卷');
-
-  // 当前选中的预设卷 ID (可选)
-  const [activePresetId, setActivePresetId] = useState<string>('PAPER-GRAD-STANDARD');
-
-  // 预设卷分类筛选
-  const [presetTab, setPresetTab] = useState<'all' | 'gradient' | 'standard' | 'semester'>('all');
 
   // 已生成的试卷对象
   const [generatedPaper, setGeneratedPaper] = useState<GeneratedPaper | null>(null);
@@ -93,11 +98,12 @@ export const PaperWorkbench: React.FC = () => {
   // 当前视图模式: 'workbench' | 'print' | 'online_exam'
   const [activeView, setActiveView] = useState<'workbench' | 'print' | 'online_exam'>('workbench');
 
-  // 真库 2064 题目池状态与 107 考点录 (初始为空，从 questions.db 异步加载)
+  // 真题库状态与考点目录
   const [questionPool, setQuestionPool] = useState<QuestionItem[]>([]);
   const [dbKpDirectory, setDbKpDirectory] = useState<KpMeta[] | null>(null);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
 
+  // 1. 异步加载 questions.db 与 core.db 全量数据
   useEffect(() => {
     let active = true;
     async function loadWorkbenchData() {
@@ -105,7 +111,7 @@ export const PaperWorkbench: React.FC = () => {
         const [questions, kps] = await Promise.all([
           dbClient.query<any>(
             'questions',
-            'SELECT question_id, source, exam_year, region, exam_type, grade_level, semester, primary_point_id, combination_id, difficulty_level, question_type, score_default, stem_zh, stem_en, options_json, answer_standard, rubric_checklist_json, solutions_json, image_paths_json FROM questions'
+            'SELECT question_id, source, exam_year, region, exam_type, grade_level, semester, primary_point_id, combination_id, difficulty_level, question_type, score_default, stem_zh, stem_en, options_json, answer_standard, rubric_checklist_json, solutions_json, image_paths_json, all_point_ids, max_grade FROM questions'
           ),
           dbClient.query<any>(
             'core',
@@ -136,12 +142,16 @@ export const PaperWorkbench: React.FC = () => {
             rubric_checklist_json: r.rubric_checklist_json ?? null,
             solutions_json: r.solutions_json ?? null,
             image_paths_json: r.image_paths_json ?? null,
+            all_point_ids: r.all_point_ids ? String(r.all_point_ids) : null,
+            max_grade: r.max_grade ? Number(r.max_grade) : undefined,
           }));
           setQuestionPool(mappedQuestions);
         }
 
         if (kps && kps.length > 0) {
           setDbKpDirectory(kps);
+          // 初始若为 9-2，全选所有知识点
+          setSelectedKpIds(kps.map((k: any) => k.id));
         }
       } catch (err) {
         console.warn('[PaperWorkbench] Failed to load questions/kps from DB, using fallback:', err);
@@ -153,71 +163,139 @@ export const PaperWorkbench: React.FC = () => {
     };
   }, []);
 
-  const effectiveKpDirectory = dbKpDirectory || KP_DIRECTORY;
+  const effectiveKpDirectory = useMemo(() => {
+    return dbKpDirectory || [];
+  }, [dbKpDirectory]);
 
-  // 切换满分制时联动更新题量与分值
+  // 当前满分制规格
+  const spec = FULL_SCORE_SYSTEMS[scoreSystem];
+
+  // 第一层满分制切换联动
   const handleScoreSystemChange = (sys: FullScoreSystem) => {
     setScoreSystem(sys);
-    const spec = FULL_SCORE_SYSTEMS[sys];
-    setCustomChoiceCount(spec.choiceCount);
-    setCustomFillCount(spec.fillCount);
-    setCustomSolutionCount(spec.solutionCount);
+    if (sys === '100') {
+      setChoiceCount(10);
+      setChoiceScore(3);
+      setFillCount(6);
+      setFillScore(3);
+    } else if (sys === '120') {
+      setChoiceCount(10);
+      setChoiceScore(3);
+      setFillCount(6);
+      setFillScore(3);
+    } else if (sys === '150') {
+      setChoiceCount(10);
+      setChoiceScore(4);
+      setFillCount(6);
+      setFillScore(4);
+    }
   };
 
-  // 一键加载预设卷
-  const handleSelectPreset = (preset: PresetPaper) => {
-    setActivePresetId(preset.id);
-    handleScoreSystemChange(preset.scoreSystem);
-    setDiffWeights(preset.difficultyDistribution);
-    setSelectedKpIds(preset.selectedKpIds);
-    setPaperTitle(preset.titleZh);
+  // 第二层：学期一键向后覆盖考点
+  const handleSemesterSelect = (targetGrade: number, targetSemester: number) => {
+    const key = `${targetGrade}-${targetSemester}`;
+    setSelectedSemesterKey(key);
+
+    if (effectiveKpDirectory.length === 0) return;
+
+    // 覆盖所有 <= 当前学期的考点
+    const coveredKpIds = effectiveKpDirectory
+      .filter((kp) => {
+        if (kp.grade < targetGrade) return true;
+        if (kp.grade === targetGrade && kp.semester <= targetSemester) return true;
+        return false;
+      })
+      .map((kp) => kp.id);
+
+    setSelectedKpIds(coveredKpIds);
   };
 
-  // 考点勾选批量辅助
+  // 考点单选/反选
   const toggleKp = (id: string) => {
     setSelectedKpIds((prev) =>
       prev.includes(id) ? prev.filter((k) => k !== id) : [...prev, id]
     );
   };
 
-  const selectAllKps = () => setSelectedKpIds(ALL_CORE_KP_IDS);
-  const clearAllKps = () => setSelectedKpIds([]);
-
-  const selectSemesterKps = (grade: number, sem: number) => {
-    const semKps = effectiveKpDirectory.filter((k) => k.grade === grade && k.semester === sem).map(
-      (k) => k.id
-    );
-    setSelectedKpIds((prev) => Array.from(new Set([...prev, ...semKps])));
+  const handleSelectAllKps = () => {
+    setSelectedKpIds(effectiveKpDirectory.map((kp) => kp.id));
   };
 
-  // 组装当前 PaperConfig
+  const handleClearAllKps = () => {
+    setSelectedKpIds([]);
+  };
+
+  // 第三层：解答题分值与题数阶梯自动倒推
+  const totalChoiceScore = choiceCount * choiceScore;
+  const totalFillScore = fillCount * fillScore;
+  const remainingSolutionScore = spec.totalScore - (totalChoiceScore + totalFillScore);
+  const solutionScoreLadder = useMemo(() => {
+    return generateSolutionScoreLadder(Math.max(0, remainingSolutionScore));
+  }, [remainingSolutionScore]);
+  const derivedSolutionCount = solutionScoreLadder.length;
+
+  // 第四层：难度波浪级联联动
+  const handleDiffWeightChange = (index: number, newVal: number) => {
+    setDiffWeights((prev) => adjustDifficultyWeights(prev, index, newVal));
+  };
+
+  // 过滤用于展示的考点列表
+  const filteredKps = useMemo(() => {
+    if (!kpSearchText.trim()) return effectiveKpDirectory;
+    const query = kpSearchText.trim().toLowerCase();
+    return effectiveKpDirectory.filter(
+      (kp) =>
+        kp.id.toLowerCase().includes(query) ||
+        kp.nameZh.toLowerCase().includes(query)
+    );
+  }, [effectiveKpDirectory, kpSearchText]);
+
+  // 组装当前组卷配置并调用方案 A 库存校验
   const currentConfig: PaperConfig = useMemo(() => {
     return {
       selectedKpIds,
-      choiceCount: customChoiceCount,
-      fillCount: customFillCount,
-      solutionCount: customSolutionCount,
+      choiceCount,
+      fillCount,
+      solutionCount: derivedSolutionCount,
+      choiceScore,
+      fillScore,
+      fullScore: spec.totalScore,
       difficultyDistribution: diffWeights,
     };
-  }, [selectedKpIds, customChoiceCount, customFillCount, customSolutionCount, diffWeights]);
+  }, [
+    selectedKpIds,
+    choiceCount,
+    fillCount,
+    derivedSolutionCount,
+    choiceScore,
+    fillScore,
+    spec.totalScore,
+    diffWeights,
+  ]);
 
-  // 方案 A 实时库存校验 (基于题库真实数据池)
+  // 方案 A 实时库存校验判定
   const inventoryResult: InventoryCheckResult = useMemo(() => {
-    return verifyPaperInventoryFromPool(questionPool, currentConfig);
-  }, [questionPool, currentConfig]);
+    if (questionPool.length > 0) {
+      return verifyPaperInventoryFromPool(questionPool, currentConfig);
+    }
+    return {
+      canGenerate: false,
+      availableChoice: 0,
+      availableFill: 0,
+      availableSolution: 0,
+      requiredChoice: choiceCount,
+      requiredFill: fillCount,
+      requiredSolution: derivedSolutionCount,
+      totalAvailable: 0,
+      totalRequired: choiceCount + fillCount + derivedSolutionCount,
+      shortageWarningZh: '正在同步题库资源...',
+    };
+  }, [questionPool, currentConfig, choiceCount, fillCount, derivedSolutionCount]);
 
-  // 筛选预设卷
-  const filteredPresets = useMemo(() => {
-    if (presetTab === 'all') return PRESET_PAPERS;
-    return PRESET_PAPERS.filter((p) => p.category === presetTab);
-  }, [presetTab]);
-
-  // 点击生成试卷 (A4 打印预览，优先异步走 questions.db 真库)
+  // 生成试卷并跳转排版/打印视图
   const handleGeneratePaper = async () => {
-    if (!inventoryResult.canGenerate || isGenerating) return;
+    if (!inventoryResult.canGenerate) return;
     setIsGenerating(true);
-
-    const spec = FULL_SCORE_SYSTEMS[scoreSystem];
     try {
       const paper = await drawQuestionsFromDb(dbClient, currentConfig, {
         titleZh: paperTitle,
@@ -239,12 +317,10 @@ export const PaperWorkbench: React.FC = () => {
     }
   };
 
-  // 点击开启在线全真测评 (优先异步走 questions.db 真库)
+  // 生成试卷并开启在线全真测评
   const handleStartOnlineExam = async () => {
-    if (!inventoryResult.canGenerate || isGenerating) return;
+    if (!inventoryResult.canGenerate) return;
     setIsGenerating(true);
-
-    const spec = FULL_SCORE_SYSTEMS[scoreSystem];
     try {
       const paper = await drawQuestionsFromDb(dbClient, currentConfig, {
         titleZh: paperTitle,
@@ -266,7 +342,7 @@ export const PaperWorkbench: React.FC = () => {
     }
   };
 
-  // 若已生成试卷，按视图模式渲染对应界面
+  // 视图分发
   if (generatedPaper && activeView === 'online_exam') {
     return (
       <OnlineExam
@@ -291,8 +367,6 @@ export const PaperWorkbench: React.FC = () => {
     );
   }
 
-  const spec = FULL_SCORE_SYSTEMS[scoreSystem];
-
   return (
     <div
       className="paper-workbench-container"
@@ -301,14 +375,14 @@ export const PaperWorkbench: React.FC = () => {
         width: '100%',
         maxWidth: '1240px',
         margin: '0 auto',
-        padding: '0 0 2rem 0',
+        padding: '0 0 2.5rem 0',
         display: 'flex',
         flexDirection: 'column',
-        gap: '1rem',
+        gap: '1.25rem',
         fontFamily: 'var(--font-family-system)',
       }}
     >
-      {/* 模块四固定的吸顶二级菜单 (Apple HIG standard - 对齐模块一、二、三) */}
+      {/* 顶部吸顶状态栏与动态题量徽章 */}
       <div
         className="exam-subnav-sticky-header"
         style={{
@@ -316,10 +390,9 @@ export const PaperWorkbench: React.FC = () => {
           top: 0,
           zIndex: 40,
           background: 'var(--bg-card, #ffffff)',
-          padding: '16px 28px',
-          borderRadius: 'var(--radius-lg, 22px)',
+          padding: '14px 24px',
+          borderRadius: 'var(--radius-lg, 20px)',
           border: '1px solid var(--border-subtle, rgba(0, 0, 0, 0.07))',
-          borderBottom: '1px solid rgba(0, 0, 0, 0.05)',
           boxShadow: '0 2px 10px rgba(0, 0, 0, 0.02)',
           display: 'flex',
           alignItems: 'center',
@@ -330,18 +403,7 @@ export const PaperWorkbench: React.FC = () => {
           width: '100%',
         }}
       >
-        <div
-          className="stage-segmented-control"
-          style={{
-            position: 'relative',
-            display: 'inline-flex',
-            background: 'rgba(0, 0, 0, 0.04)',
-            padding: '3px',
-            borderRadius: 'var(--radius-pill, 9999px)',
-            border: '1px solid rgba(0, 0, 0, 0.03)',
-            gap: '2px',
-          }}
-        >
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
           <span
             style={{
               padding: '6px 16px',
@@ -354,359 +416,126 @@ export const PaperWorkbench: React.FC = () => {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
-              letterSpacing: '-0.2px',
             }}
           >
             <Icon name="bolt" size={13} style={{ color: 'var(--ios-blue)' }} />
-            <span>精准出题中心</span>
+            <span>模块四 · 实战测评 · 智能组卷中心</span>
           </span>
-        </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span
+            className="exam-status-tag"
             style={{
-              fontSize: '12px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '11px',
+              fontWeight: 600,
               color: 'var(--text-secondary)',
-              padding: '4px 10px',
               background: 'rgba(0, 0, 0, 0.03)',
-              borderRadius: 'var(--radius-pill)',
-              border: '1px solid var(--border-subtle, rgba(0,0,0,0.05))',
+              padding: '4px 10px',
+              borderRadius: 'var(--radius-pill, 9999px)',
             }}
           >
-            全真题库 2064 题已就绪
+            <Icon name="layers" size={12} />
+            <span>全真题库 {questionPool.length > 0 ? questionPool.length : 2582} 题已就绪</span>
           </span>
         </div>
-      </div>
 
-      {/* 头部导航与满分制 3 卡片体系选择器 */}
-      <div
-        style={{
-          padding: '24px 28px',
-          borderRadius: 'var(--radius-lg, 22px)',
-          backgroundColor: 'var(--bg-card, #ffffff)',
-          border: '1px solid var(--border-subtle, rgba(0, 0, 0, 0.07))',
-          boxShadow: '0 2px 16px rgba(0, 0, 0, 0.03)',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '1.5rem',
-        }}
-      >
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
-          <div>
-            <h1
-              style={{
-                fontSize: '1.75rem',
-                fontWeight: 900,
-                color: 'var(--text-primary)',
-                letterSpacing: '-0.02em',
-                margin: '0.25rem 0',
-              }}
-            >
-              中考实战与全真组卷工作台
-            </h1>
-            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', margin: 0 }}>
-              一键套用满分制与预设卷库 · 方案 A 实时题库库存校验 · 环保双栏 A4 印刷排版
-            </p>
-          </div>
-        </div>
-
-        {/* 满分制体系选择：3 张高品质产品卡片 */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          <div
+        {/* 试卷标题编辑 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ fontSize: '12px', color: 'var(--text-tertiary)', fontWeight: 600 }}>
+            试卷标题：
+          </span>
+          <input
+            type="text"
+            value={paperTitle}
+            onChange={(e) => setPaperTitle(e.target.value)}
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              fontSize: '0.75rem',
+              padding: '6px 12px',
+              fontSize: '12px',
               fontWeight: 700,
               color: 'var(--text-primary)',
+              background: 'var(--bg-input, #f1f5f9)',
+              border: '1px solid var(--border-subtle, rgba(0,0,0,0.1))',
+              borderRadius: '8px',
+              width: '260px',
+              outline: 'none',
             }}
-          >
-            <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-              <Icon name="settings" size={14} />
-              满分制标准套用（严格遵照 PRD §5.4 题量与分值模型）
-            </span>
-            <span style={{ color: 'var(--text-tertiary)', fontWeight: 400 }}>点击切换满分制及题型标准预设</span>
-          </div>
-
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-              gap: '1rem',
-            }}
-          >
-            {(['100', '120', '150'] as FullScoreSystem[]).map((sys) => {
-              const isCur = scoreSystem === sys;
-              const s = FULL_SCORE_SYSTEMS[sys];
-              const badgeText =
-                sys === '120' ? '省市中考主流' : sys === '100' ? '学期期末标准' : '自招与拔高大考';
-
-              return (
-                <div
-                  key={sys}
-                  onClick={() => handleScoreSystemChange(sys)}
-                  style={{
-                    padding: '1.25rem',
-                    borderRadius: 'var(--radius-lg)',
-                    border: isCur ? '2px solid var(--ios-blue)' : '1px solid var(--border-subtle)',
-                    backgroundColor: isCur ? 'rgba(0, 122, 255, 0.08)' : 'var(--glass-bg-card)',
-                    boxShadow: isCur ? '0 4px 14px rgba(0, 122, 255, 0.15)' : 'none',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    position: 'relative',
-                    userSelect: 'none',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <div
-                        style={{
-                          width: '1rem',
-                          height: '1rem',
-                          borderRadius: '50%',
-                          border: isCur ? '2px solid var(--ios-blue)' : '2px solid var(--border-subtle)',
-                          backgroundColor: isCur ? 'var(--ios-blue)' : 'transparent',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                      >
-                        {isCur && (
-                          <div style={{ width: '0.375rem', height: '0.375rem', borderRadius: '50%', backgroundColor: '#ffffff' }} />
-                        )}
-                      </div>
-                      <span style={{ fontSize: '1.125rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-                        {`${sys}分制`}
-                      </span>
-                    </div>
-                    <span
-                      style={{
-                        fontSize: '0.625rem',
-                        fontWeight: 600,
-                        padding: '0.125rem 0.5rem',
-                        borderRadius: '9999px',
-                        backgroundColor: isCur ? 'var(--ios-blue)' : 'var(--border-subtle)',
-                        color: isCur ? '#ffffff' : 'var(--text-secondary)',
-                      }}
-                    >
-                      {badgeText}
-                    </span>
-                  </div>
-
-                  <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: '0.5rem 0 0.75rem 0', fontWeight: 500 }}>
-                    {s.nameZh} · 限时 {s.timeLimitMinutes} 分钟
-                  </p>
-
-                  <div
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(3, 1fr)',
-                      gap: '0.375rem',
-                      textAlign: 'center',
-                      fontSize: '0.6875rem',
-                      paddingTop: '0.75rem',
-                      borderTop: '1px solid var(--border-subtle)',
-                    }}
-                  >
-                    <div style={{ padding: '0.375rem', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--glass-bg)', border: '1px solid var(--border-subtle)' }}>
-                      <span style={{ display: 'block', fontSize: '0.625rem', color: 'var(--text-tertiary)' }}>选择题</span>
-                      <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
-                        {s.choiceCount} 题 ({s.choiceTotalScore}分)
-                      </span>
-                    </div>
-                    <div style={{ padding: '0.375rem', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--glass-bg)', border: '1px solid var(--border-subtle)' }}>
-                      <span style={{ display: 'block', fontSize: '0.625rem', color: 'var(--text-tertiary)' }}>填空题</span>
-                      <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
-                        {s.fillCount} 题 ({s.fillTotalScore}分)
-                      </span>
-                    </div>
-                    <div style={{ padding: '0.375rem', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--glass-bg)', border: '1px solid var(--border-subtle)' }}>
-                      <span style={{ display: 'block', fontSize: '0.625rem', color: 'var(--text-tertiary)' }}>解答题</span>
-                      <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
-                        {s.solutionCount} 题 ({s.solutionTotalScore}分)
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          />
         </div>
       </div>
 
-      {/* 快捷选卷预设卷库 */}
+      {/* 第一层：满分制基准选择卡片 */}
       <div
+        className="workbench-section-card"
         style={{
-          padding: '24px 28px',
-          borderRadius: 'var(--radius-lg, 22px)',
-          backgroundColor: 'var(--bg-card, #ffffff)',
-          border: '1px solid var(--border-subtle, rgba(0, 0, 0, 0.07))',
-          boxShadow: '0 2px 16px rgba(0, 0, 0, 0.03)',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '1.25rem',
+          background: 'var(--bg-card, #ffffff)',
+          borderRadius: 'var(--radius-lg, 20px)',
+          padding: '20px 24px',
+          border: '1px solid var(--border-subtle, rgba(0,0,0,0.07))',
+          boxShadow: '0 2px 12px rgba(0,0,0,0.02)',
         }}
       >
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
-          <h2 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
-            <Icon name="bolt" size={18} style={{ color: 'var(--ios-amber)' }} />
-            快速选卷 · 预设卷库 (包含梯度卷、全真卷与 6 学期期末卷)
-          </h2>
-
-          {/* 分类切换药丸按钮 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
           <div
             style={{
+              width: '22px',
+              height: '22px',
+              borderRadius: '50%',
+              background: 'var(--ios-blue)',
+              color: '#ffffff',
               display: 'flex',
               alignItems: 'center',
-              gap: '0.375rem',
-              padding: '0.25rem',
-              borderRadius: 'var(--radius-md)',
-              backgroundColor: 'var(--glass-bg-card)',
-              border: '1px solid var(--border-subtle)',
-              fontSize: '0.75rem',
-              fontWeight: 600,
+              justifyContent: 'center',
+              fontSize: '11px',
+              fontWeight: 800,
             }}
           >
-            {[
-              { key: 'all', label: '全部预设' },
-              { key: 'gradient', label: '难度梯度卷' },
-              { key: 'standard', label: '全真中考卷' },
-              { key: 'semester', label: '期末综合卷' },
-            ].map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setPresetTab(tab.key as any)}
-                style={{
-                  padding: '0.375rem 0.75rem',
-                  borderRadius: 'var(--radius-sm)',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  border: 'none',
-                  backgroundColor: presetTab === tab.key ? 'var(--ios-blue)' : 'transparent',
-                  color: presetTab === tab.key ? '#ffffff' : 'var(--text-secondary)',
-                }}
-              >
-                {tab.label}
-              </button>
-            ))}
+            1
           </div>
+          <h2 style={{ fontSize: '15px', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
+            第一层 · 满分制基准
+          </h2>
+          <span style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>
+            (决定整卷满分与初始考场规格)
+          </span>
         </div>
 
-        {/* 预设试卷卡片网格 */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-            gap: '1rem',
-          }}
-        >
-          {filteredPresets.map((preset) => {
-            const isSelected = activePresetId === preset.id;
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px' }}>
+          {(['100', '120', '150'] as FullScoreSystem[]).map((sysId) => {
+            const sysSpec = FULL_SCORE_SYSTEMS[sysId];
+            const isSelected = scoreSystem === sysId;
             return (
               <div
-                key={preset.id}
-                onClick={() => handleSelectPreset(preset)}
+                key={sysId}
+                onClick={() => handleScoreSystemChange(sysId)}
                 style={{
-                  padding: '1.25rem',
-                  borderRadius: 'var(--radius-lg)',
-                  border: isSelected ? '2px solid var(--ios-blue)' : '1px solid var(--border-subtle)',
-                  backgroundColor: isSelected ? 'rgba(0, 122, 255, 0.08)' : 'var(--glass-bg-card)',
-                  boxShadow: isSelected ? '0 4px 12px rgba(0, 122, 255, 0.12)' : 'none',
+                  padding: '16px 20px',
+                  borderRadius: '16px',
+                  border: isSelected
+                    ? '2px solid var(--ios-blue, #0071e3)'
+                    : '1px solid var(--border-subtle, rgba(0,0,0,0.08))',
+                  background: isSelected
+                    ? 'rgba(0, 113, 227, 0.04)'
+                    : 'var(--glass-bg-card, #fafafa)',
+                  boxShadow: isSelected ? '0 4px 14px rgba(0, 113, 227, 0.12)' : 'none',
                   cursor: 'pointer',
-                  textAlign: 'left',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  transition: 'all 0.2s',
+                  transition: 'all 0.18s ease',
+                  position: 'relative',
                 }}
               >
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0 }}>
-                      <div
-                        style={{
-                          padding: '0.5rem',
-                          borderRadius: 'var(--radius-md)',
-                          backgroundColor: isSelected ? 'var(--ios-blue)' : 'var(--glass-bg)',
-                          color: isSelected ? '#ffffff' : 'var(--text-primary)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                      >
-                        <Icon name={preset.icon} size={16} />
-                      </div>
-                      <h3
-                        style={{
-                          fontSize: '0.875rem',
-                          fontWeight: 700,
-                          color: 'var(--text-primary)',
-                          margin: 0,
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        {preset.titleZh}
-                      </h3>
-                    </div>
-                    <span
-                      style={{
-                        padding: '0.125rem 0.5rem',
-                        fontSize: '0.625rem',
-                        fontWeight: 600,
-                        borderRadius: '4px',
-                        backgroundColor: 'var(--border-subtle)',
-                        color: 'var(--text-secondary)',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {preset.scoreSystem}分制
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '16px', fontWeight: 800, color: isSelected ? 'var(--ios-blue)' : 'var(--text-primary)' }}>
+                    {sysSpec.nameZh}
+                  </span>
+                  {isSelected && (
+                    <span style={{ color: 'var(--ios-blue)', fontSize: '12px', fontWeight: 700 }}>
+                      <Icon name="check" size={14} /> 已选基准
                     </span>
-                  </div>
-
-                  <p
-                    style={{
-                      fontSize: '0.75rem',
-                      color: 'var(--text-secondary)',
-                      margin: '0.5rem 0 0.75rem 0',
-                      lineHeight: 1.4,
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    {preset.descriptionZh}
-                  </p>
+                  )}
                 </div>
-
-                <div
-                  style={{
-                    paddingTop: '0.75rem',
-                    borderTop: '1px solid var(--border-subtle)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    fontSize: '0.6875rem',
-                  }}
-                >
-                  <span style={{ color: 'var(--text-tertiary)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                    <Icon name="book" size={12} />
-                    考点数: {preset.selectedKpIds.length} 个
-                  </span>
-                  <span
-                    style={{
-                      fontWeight: 600,
-                      padding: '0.125rem 0.5rem',
-                      borderRadius: '4px',
-                      backgroundColor: 'rgba(0, 122, 255, 0.1)',
-                      color: 'var(--ios-blue)',
-                    }}
-                  >
-                    {preset.difficultyTagZh}
-                  </span>
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '8px', lineHeight: 1.5 }}>
+                  满分 {sysSpec.totalScore} 分 · 限时 {sysSpec.timeLimitMinutes} 分钟 · 共 {sysSpec.totalQuestions} 题
                 </div>
               </div>
             );
@@ -714,460 +543,608 @@ export const PaperWorkbench: React.FC = () => {
         </div>
       </div>
 
-      {/* 自定义工作台配置区 */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', alignItems: 'flex-start' }}>
-        {/* 左侧：考点细粒度复选 */}
-        <div
-          style={{
-            flex: '1 1 580px',
-            minWidth: '320px',
-            padding: '24px 28px',
-            borderRadius: 'var(--radius-lg, 22px)',
-            backgroundColor: 'var(--bg-card, #ffffff)',
-            border: '1px solid var(--border-subtle, rgba(0, 0, 0, 0.07))',
-            boxShadow: '0 2px 16px rgba(0, 0, 0, 0.03)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '1.25rem',
-          }}
-        >
-          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
-            <h2 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
-              <Icon name="book" size={18} style={{ color: 'var(--ios-blue)' }} />
-              考点细粒度复选 (已选 {selectedKpIds.length} / {ALL_CORE_KP_IDS.length})
-            </h2>
-
-            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.375rem', fontSize: '0.75rem' }}>
-              <button
-                onClick={selectAllKps}
-                style={{
-                  padding: '0.375rem 0.75rem',
-                  borderRadius: 'var(--radius-sm)',
-                  backgroundColor: 'rgba(0, 122, 255, 0.1)',
-                  color: 'var(--ios-blue)',
-                  border: '1px solid rgba(0, 122, 255, 0.25)',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  transition: 'background-color 0.2s',
-                }}
-              >
-                全选
-              </button>
-              <button
-                onClick={clearAllKps}
-                style={{
-                  padding: '0.375rem 0.75rem',
-                  borderRadius: 'var(--radius-sm)',
-                  backgroundColor: 'var(--glass-bg-card)',
-                  color: 'var(--text-secondary)',
-                  border: '1px solid var(--border-subtle)',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  transition: 'background-color 0.2s',
-                }}
-              >
-                清空
-              </button>
-              <span style={{ color: 'var(--border-subtle)', margin: '0 0.125rem' }}>|</span>
-              {[
-                { g: 7, s: 1, name: '七上' },
-                { g: 7, s: 2, name: '七下' },
-                { g: 8, s: 1, name: '八上' },
-                { g: 8, s: 2, name: '八下' },
-                { g: 9, s: 1, name: '九上' },
-                { g: 9, s: 2, name: '九下' },
-              ].map((term) => (
-                <button
-                  key={term.name}
-                  onClick={() => selectSemesterKps(term.g, term.s)}
-                  style={{
-                    padding: '0.375rem 0.625rem',
-                    borderRadius: 'var(--radius-sm)',
-                    backgroundColor: 'var(--glass-bg-card)',
-                    color: 'var(--text-primary)',
-                    border: '1px solid var(--border-subtle)',
-                    cursor: 'pointer',
-                    fontSize: '0.75rem',
-                  }}
-                >
-                  +{term.name}
-                </button>
-              ))}
+      {/* 第二层：学期向后覆盖与考点子集闭包 */}
+      <div
+        className="workbench-section-card"
+        style={{
+          background: 'var(--bg-card, #ffffff)',
+          borderRadius: 'var(--radius-lg, 20px)',
+          padding: '20px 24px',
+          border: '1px solid var(--border-subtle, rgba(0,0,0,0.07))',
+          boxShadow: '0 2px 12px rgba(0,0,0,0.02)',
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div
+              style={{
+                width: '22px',
+                height: '22px',
+                borderRadius: '50%',
+                background: 'var(--ios-blue)',
+                color: '#ffffff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '11px',
+                fontWeight: 800,
+              }}
+            >
+              2
             </div>
+            <h2 style={{ fontSize: '15px', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
+              第二层 · 学期向后覆盖与考点子集
+            </h2>
+            <span style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>
+              (考题组合考点必须是所选考点子集，杜绝超前知识点泄漏)
+            </span>
           </div>
 
-          {/* 考点复选卡片网格 */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <input
+              type="text"
+              placeholder="搜索考点..."
+              value={kpSearchText}
+              onChange={(e) => setKpSearchText(e.target.value)}
+              style={{
+                padding: '4px 10px',
+                fontSize: '11px',
+                borderRadius: '6px',
+                border: '1px solid var(--border-subtle, rgba(0,0,0,0.15))',
+                background: 'var(--bg-input, #f8fafc)',
+                color: 'var(--text-primary)',
+                width: '120px',
+                outline: 'none',
+              }}
+            />
+            <button
+              type="button"
+              onClick={handleSelectAllKps}
+              style={{
+                fontSize: '12px',
+                color: 'var(--ios-blue)',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontWeight: 600,
+              }}
+            >
+              全选考点
+            </button>
+            <span style={{ color: 'var(--border-subtle)' }}>|</span>
+            <button
+              type="button"
+              onClick={handleClearAllKps}
+              style={{
+                fontSize: '12px',
+                color: 'var(--text-tertiary)',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontWeight: 600,
+              }}
+            >
+              清空
+            </button>
+            <span style={{ color: 'var(--border-subtle)' }}>|</span>
+            <button
+              type="button"
+              onClick={() => setIsKpGridExpanded((prev) => !prev)}
+              style={{
+                fontSize: '12px',
+                color: 'var(--text-secondary)',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontWeight: 600,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+              }}
+            >
+              <span>{isKpGridExpanded ? '收起考点网格' : '展开考点网格'}</span>
+              <Icon name={isKpGridExpanded ? 'chevron-up' : 'chevron-down'} size={12} />
+            </button>
+          </div>
+        </div>
+
+        {/* 6 个学期药丸胶囊 */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '14px' }}>
+          {SEMESTERS.map((sem) => {
+            const isCurrentSem = selectedSemesterKey === sem.key;
+            return (
+              <button
+                key={sem.key}
+                type="button"
+                onClick={() => handleSemesterSelect(sem.grade, sem.semester)}
+                style={{
+                  padding: '7px 16px',
+                  borderRadius: 'var(--radius-pill, 9999px)',
+                  fontSize: '12px',
+                  fontWeight: isCurrentSem ? 700 : 500,
+                  border: isCurrentSem
+                    ? '1.5px solid var(--ios-blue, #0071e3)'
+                    : '1px solid var(--border-subtle, rgba(0,0,0,0.1))',
+                  background: isCurrentSem
+                    ? 'var(--ios-blue, #0071e3)'
+                    : 'var(--bg-card, #ffffff)',
+                  color: isCurrentSem ? '#ffffff' : 'var(--text-secondary)',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                  boxShadow: isCurrentSem ? '0 2px 8px rgba(0, 113, 227, 0.25)' : 'none',
+                }}
+              >
+                {sem.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* 考点勾选统计与网格 */}
+        <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+          已选定 <strong>{selectedKpIds.length}</strong> / {effectiveKpDirectory.length} 个考点
+        </div>
+
+        {isKpGridExpanded && (
           <div
             style={{
+              maxHeight: '260px',
+              overflowY: 'auto',
+              padding: '12px',
+              borderRadius: '12px',
+              background: 'rgba(0, 0, 0, 0.02)',
+              border: '1px solid var(--border-subtle, rgba(0,0,0,0.06))',
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-              gap: '0.75rem',
-              maxHeight: '420px',
-              overflowY: 'auto',
-              paddingRight: '0.25rem',
+              gap: '8px',
             }}
           >
-            {effectiveKpDirectory.map((kp) => {
-              const checked = selectedKpIds.includes(kp.id);
+            {filteredKps.map((kp) => {
+              const isChecked = selectedKpIds.includes(kp.id);
               return (
-                <div
+                <label
                   key={kp.id}
-                  onClick={() => toggleKp(kp.id)}
                   style={{
                     display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: '0.625rem',
-                    padding: '0.75rem',
-                    borderRadius: 'var(--radius-md)',
-                    border: checked ? '1px solid var(--ios-blue)' : '1px solid var(--border-subtle)',
-                    backgroundColor: checked ? 'rgba(0, 122, 255, 0.08)' : 'var(--glass-bg-card)',
-                    color: checked ? 'var(--text-primary)' : 'var(--text-secondary)',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '6px 10px',
+                    borderRadius: '8px',
+                    background: isChecked ? 'rgba(0, 113, 227, 0.05)' : 'transparent',
                     cursor: 'pointer',
-                    textAlign: 'left',
-                    userSelect: 'none',
-                    transition: 'all 0.15s',
+                    fontSize: '12px',
+                    color: isChecked ? 'var(--text-primary)' : 'var(--text-tertiary)',
                   }}
                 >
                   <input
                     type="checkbox"
-                    checked={checked}
-                    onChange={() => {}}
-                    style={{ marginTop: '0.125rem', cursor: 'pointer' }}
+                    checked={isChecked}
+                    onChange={() => toggleKp(kp.id)}
+                    style={{ accentColor: 'var(--ios-blue)' }}
                   />
-                  <div style={{ minWidth: 0, flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-                      <span
-                        style={{
-                          fontSize: '0.625rem',
-                          fontWeight: 700,
-                          padding: '0.125rem 0.375rem',
-                          borderRadius: '4px',
-                          backgroundColor: 'var(--border-subtle)',
-                          color: 'var(--text-secondary)',
-                        }}
-                      >
-                        {kp.grade}{kp.semester === 1 ? 'A' : 'B'}
-                      </span>
-                      <span style={{ fontSize: '0.625rem', color: 'var(--ios-blue)', fontFamily: 'monospace', fontWeight: 600 }}>
-                        {kp.line}
-                      </span>
-                    </div>
-                    <p
-                      style={{
-                        fontSize: '0.75rem',
-                        fontWeight: 600,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                        margin: '0.25rem 0 0 0',
-                        color: checked ? 'var(--text-primary)' : 'var(--text-secondary)',
-                      }}
-                    >
-                      {kp.nameZh}
-                    </p>
-                  </div>
-                </div>
+                  <span style={{ fontWeight: isChecked ? 700 : 400 }}>
+                    {kp.id} · {kp.nameZh}
+                  </span>
+                </label>
               );
             })}
           </div>
-        </div>
+        )}
+      </div>
 
-        {/* 右侧：题型配置与难度滑块 */}
-        <div style={{ flex: '1 1 340px', minWidth: '300px', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          {/* 题型与分值参数 */}
+      {/* 第三层：题型、题量与分值配置 */}
+      <div
+        className="workbench-section-card"
+        style={{
+          background: 'var(--bg-card, #ffffff)',
+          borderRadius: 'var(--radius-lg, 20px)',
+          padding: '20px 24px',
+          border: '1px solid var(--border-subtle, rgba(0,0,0,0.07))',
+          boxShadow: '0 2px 12px rgba(0,0,0,0.02)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
           <div
             style={{
-              padding: '24px 28px',
-              borderRadius: 'var(--radius-lg, 22px)',
-              backgroundColor: 'var(--bg-card, #ffffff)',
-              border: '1px solid var(--border-subtle, rgba(0, 0, 0, 0.07))',
-              boxShadow: '0 2px 16px rgba(0, 0, 0, 0.03)',
+              width: '22px',
+              height: '22px',
+              borderRadius: '50%',
+              background: 'var(--ios-blue)',
+              color: '#ffffff',
               display: 'flex',
-              flexDirection: 'column',
-              gap: '1rem',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '11px',
+              fontWeight: 800,
             }}
           >
-            <h2 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
-              <Icon name="settings" size={18} />
-              题型题量与分值配置
-            </h2>
+            3
+          </div>
+          <h2 style={{ fontSize: '15px', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
+            第三层 · 题型题量与分值配置
+          </h2>
+          <span style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>
+            (选择、填空可自由微调，解答题数量与分值依中考阶梯自动倒推)
+          </span>
+        </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.75rem' }}>
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '0.875rem',
-                  borderRadius: 'var(--radius-lg)',
-                  backgroundColor: 'var(--glass-bg-card)',
-                  border: '1px solid var(--border-subtle)',
-                }}
-              >
-                <div>
-                  <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>选择题</span>
-                  <p style={{ fontSize: '0.625rem', color: 'var(--text-tertiary)', margin: '0.125rem 0 0 0' }}>
-                    单选 · 每题 {spec.choiceTotalScore / spec.choiceCount} 分
-                  </p>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px' }}>
+          {/* 选择题配置 */}
+          <div
+            style={{
+              padding: '16px',
+              borderRadius: '16px',
+              background: 'var(--glass-bg-card, #fafafa)',
+              border: '1px solid var(--border-subtle, rgba(0,0,0,0.06))',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                一、单项选择题
+              </span>
+              <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--ios-blue)' }}>
+                小计 {totalChoiceScore} 分
+              </span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>题目数量：</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setChoiceCount((prev) => Math.max(0, prev - 1))}
+                    style={{ width: '26px', height: '26px', borderRadius: '6px', border: '1px solid var(--border-subtle)', background: '#ffffff', cursor: 'pointer' }}
+                  >
+                    -
+                  </button>
                   <input
                     type="number"
-                    min={0}
-                    max={30}
-                    value={customChoiceCount}
-                    onChange={(e) => setCustomChoiceCount(parseInt(e.target.value) || 0)}
-                    style={{
-                      width: '4rem',
-                      padding: '0.25rem',
-                      borderRadius: 'var(--radius-sm)',
-                      border: '1px solid var(--border-subtle)',
-                      backgroundColor: 'var(--glass-bg)',
-                      color: 'var(--text-primary)',
-                      textAlign: 'center',
-                      fontWeight: 700,
-                    }}
+                    value={choiceCount}
+                    onChange={(e) => setChoiceCount(Math.max(0, parseInt(e.target.value) || 0))}
+                    style={{ width: '42px', textAlign: 'center', padding: '4px', borderRadius: '6px', border: '1px solid var(--border-subtle)', fontWeight: 700 }}
                   />
-                  <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>题</span>
+                  <button
+                    type="button"
+                    onClick={() => setChoiceCount((prev) => prev + 1)}
+                    style={{ width: '26px', height: '26px', borderRadius: '6px', border: '1px solid var(--border-subtle)', background: '#ffffff', cursor: 'pointer' }}
+                  >
+                    +
+                  </button>
+                  <span style={{ color: 'var(--text-tertiary)', fontSize: '11px' }}>题</span>
                 </div>
               </div>
-
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '0.875rem',
-                  borderRadius: 'var(--radius-lg)',
-                  backgroundColor: 'var(--glass-bg-card)',
-                  border: '1px solid var(--border-subtle)',
-                }}
-              >
-                <div>
-                  <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>填空题</span>
-                  <p style={{ fontSize: '0.625rem', color: 'var(--text-tertiary)', margin: '0.125rem 0 0 0' }}>
-                    填空 · 每题 {spec.fillTotalScore / spec.fillCount} 分
-                  </p>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>每题分值：</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setChoiceScore((prev) => Math.max(1, prev - 1))}
+                    style={{ width: '26px', height: '26px', borderRadius: '6px', border: '1px solid var(--border-subtle)', background: '#ffffff', cursor: 'pointer' }}
+                  >
+                    -
+                  </button>
                   <input
                     type="number"
-                    min={0}
-                    max={20}
-                    value={customFillCount}
-                    onChange={(e) => setCustomFillCount(parseInt(e.target.value) || 0)}
-                    style={{
-                      width: '4rem',
-                      padding: '0.25rem',
-                      borderRadius: 'var(--radius-sm)',
-                      border: '1px solid var(--border-subtle)',
-                      backgroundColor: 'var(--glass-bg)',
-                      color: 'var(--text-primary)',
-                      textAlign: 'center',
-                      fontWeight: 700,
-                    }}
+                    value={choiceScore}
+                    onChange={(e) => setChoiceScore(Math.max(1, parseInt(e.target.value) || 1))}
+                    style={{ width: '42px', textAlign: 'center', padding: '4px', borderRadius: '6px', border: '1px solid var(--border-subtle)', fontWeight: 700 }}
                   />
-                  <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>题</span>
-                </div>
-              </div>
-
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '0.875rem',
-                  borderRadius: 'var(--radius-lg)',
-                  backgroundColor: 'var(--glass-bg-card)',
-                  border: '1px solid var(--border-subtle)',
-                }}
-              >
-                <div>
-                  <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>解答题</span>
-                  <p style={{ fontSize: '0.625rem', color: 'var(--text-tertiary)', margin: '0.125rem 0 0 0' }}>
-                    综合证明与大题 · 共 {spec.solutionTotalScore} 分
-                  </p>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <input
-                    type="number"
-                    min={0}
-                    max={15}
-                    value={customSolutionCount}
-                    onChange={(e) => setCustomSolutionCount(parseInt(e.target.value) || 0)}
-                    style={{
-                      width: '4rem',
-                      padding: '0.25rem',
-                      borderRadius: 'var(--radius-sm)',
-                      border: '1px solid var(--border-subtle)',
-                      backgroundColor: 'var(--glass-bg)',
-                      color: 'var(--text-primary)',
-                      textAlign: 'center',
-                      fontWeight: 700,
-                    }}
-                  />
-                  <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>题</span>
+                  <button
+                    type="button"
+                    onClick={() => setChoiceScore((prev) => prev + 1)}
+                    style={{ width: '26px', height: '26px', borderRadius: '6px', border: '1px solid var(--border-subtle)', background: '#ffffff', cursor: 'pointer' }}
+                  >
+                    +
+                  </button>
+                  <span style={{ color: 'var(--text-tertiary)', fontSize: '11px' }}>分</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* L1~L5 难度滑块 */}
+          {/* 填空题配置 */}
           <div
             style={{
-              padding: '24px 28px',
-              borderRadius: 'var(--radius-lg, 22px)',
-              backgroundColor: 'var(--bg-card, #ffffff)',
-              border: '1px solid var(--border-subtle, rgba(0, 0, 0, 0.07))',
-              boxShadow: '0 2px 16px rgba(0, 0, 0, 0.03)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '1rem',
-              fontSize: '0.75rem',
+              padding: '16px',
+              borderRadius: '16px',
+              background: 'var(--glass-bg-card, #fafafa)',
+              border: '1px solid var(--border-subtle, rgba(0,0,0,0.06))',
             }}
           >
-            <h2 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: 0 }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Icon name="chart" size={18} style={{ color: 'var(--ios-purple)' }} />
-                L1~L5 难度梯度占比
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                二、填空题
               </span>
-              <span style={{ fontSize: '0.75rem', color: 'var(--ios-blue)', fontFamily: 'monospace', fontWeight: 700 }}>
-                Σ={diffWeights.reduce((a, b) => a + b, 0)}%
+              <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--ios-blue)' }}>
+                小计 {totalFillScore} 分
               </span>
-            </h2>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
-              {[
-                { label: 'L1 基础概念', idx: 0 },
-                { label: 'L2 核心巩固', idx: 1 },
-                { label: 'L3 综合拔高', idx: 2 },
-                { label: 'L4 分类培优', idx: 3 },
-                { label: 'L5 中考压轴', idx: 4 },
-              ].map(({ label, idx }) => (
-                <div key={label} style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.6875rem', color: 'var(--text-secondary)' }}>
-                    <span>{label}</span>
-                    <span style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--text-primary)' }}>
-                      {diffWeights[idx]}%
-                    </span>
-                  </div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>题目数量：</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setFillCount((prev) => Math.max(0, prev - 1))}
+                    style={{ width: '26px', height: '26px', borderRadius: '6px', border: '1px solid var(--border-subtle)', background: '#ffffff', cursor: 'pointer' }}
+                  >
+                    -
+                  </button>
                   <input
-                    type="range"
-                    min={0}
-                    max={100}
-                    step={5}
-                    value={diffWeights[idx]}
-                    onChange={(e) => {
-                      const val = parseInt(e.target.value) || 0;
-                      const next = [...diffWeights] as [number, number, number, number, number];
-                      next[idx] = val;
-                      setDiffWeights(next);
-                    }}
-                    style={{
-                      width: '100%',
-                      accentColor: 'var(--ios-blue)',
-                      cursor: 'pointer',
-                      height: '0.375rem',
-                      borderRadius: '9999px',
-                    }}
+                    type="number"
+                    value={fillCount}
+                    onChange={(e) => setFillCount(Math.max(0, parseInt(e.target.value) || 0))}
+                    style={{ width: '42px', textAlign: 'center', padding: '4px', borderRadius: '6px', border: '1px solid var(--border-subtle)', fontWeight: 700 }}
                   />
+                  <button
+                    type="button"
+                    onClick={() => setFillCount((prev) => prev + 1)}
+                    style={{ width: '26px', height: '26px', borderRadius: '6px', border: '1px solid var(--border-subtle)', background: '#ffffff', cursor: 'pointer' }}
+                  >
+                    +
+                  </button>
+                  <span style={{ color: 'var(--text-tertiary)', fontSize: '11px' }}>题</span>
                 </div>
-              ))}
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>每题分值：</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setFillScore((prev) => Math.max(1, prev - 1))}
+                    style={{ width: '26px', height: '26px', borderRadius: '6px', border: '1px solid var(--border-subtle)', background: '#ffffff', cursor: 'pointer' }}
+                  >
+                    -
+                  </button>
+                  <input
+                    type="number"
+                    value={fillScore}
+                    onChange={(e) => setFillScore(Math.max(1, parseInt(e.target.value) || 1))}
+                    style={{ width: '42px', textAlign: 'center', padding: '4px', borderRadius: '6px', border: '1px solid var(--border-subtle)', fontWeight: 700 }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setFillScore((prev) => prev + 1)}
+                    style={{ width: '26px', height: '26px', borderRadius: '6px', border: '1px solid var(--border-subtle)', background: '#ffffff', cursor: 'pointer' }}
+                  >
+                    +
+                  </button>
+                  <span style={{ color: 'var(--text-tertiary)', fontSize: '11px' }}>分</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 解答题动态倒推看板 (只读) */}
+          <div
+            style={{
+              padding: '16px',
+              borderRadius: '16px',
+              background: remainingSolutionScore >= 20 ? 'rgba(52, 199, 89, 0.04)' : 'rgba(255, 59, 48, 0.05)',
+              border: remainingSolutionScore >= 20
+                ? '1px solid rgba(52, 199, 89, 0.2)'
+                : '1px solid rgba(255, 59, 48, 0.25)',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                三、解答题 (动态倒推)
+              </span>
+              <span
+                style={{
+                  fontSize: '13px',
+                  fontWeight: 800,
+                  color: remainingSolutionScore >= 20 ? 'var(--ios-green)' : 'var(--ios-red)',
+                }}
+              >
+                小计 {remainingSolutionScore} 分
+              </span>
+            </div>
+
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+              <div>
+                题量推导：<strong>{derivedSolutionCount}</strong> 道大题
+              </div>
+              <div style={{ marginTop: '4px' }}>
+                中考标准分值阶梯：
+                <div style={{ fontWeight: 700, color: 'var(--text-primary)', marginTop: '2px' }}>
+                  [{solutionScoreLadder.join(', ')}] 分
+                </div>
+              </div>
+              <div style={{ marginTop: '6px', fontSize: '11px', color: 'var(--text-tertiary)' }}>
+                整卷满分 {spec.totalScore} - 选择 {totalChoiceScore} - 填空 {totalFillScore} = 剩余 {remainingSolutionScore} 分
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 方案 A 库存校验与生成行动栏 */}
+      {/* 第四层：试卷难度配比 (L1~L5) */}
       <div
+        className="workbench-section-card"
         style={{
-          padding: '1.75rem',
-          borderRadius: 'var(--radius-xl)',
-          border: inventoryResult.canGenerate ? '1px solid rgba(52, 199, 89, 0.4)' : '1px solid rgba(255, 59, 48, 0.4)',
-          backgroundColor: inventoryResult.canGenerate ? 'rgba(52, 199, 89, 0.08)' : 'rgba(255, 59, 48, 0.08)',
-          boxShadow: 'var(--shadow-sm)',
+          background: 'var(--bg-card, #ffffff)',
+          borderRadius: 'var(--radius-lg, 20px)',
+          padding: '20px 24px',
+          border: '1px solid var(--border-subtle, rgba(0,0,0,0.07))',
+          boxShadow: '0 2px 12px rgba(0,0,0,0.02)',
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div
+              style={{
+                width: '22px',
+                height: '22px',
+                borderRadius: '50%',
+                background: 'var(--ios-blue)',
+                color: '#ffffff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '11px',
+                fontWeight: 800,
+              }}
+            >
+              4
+            </div>
+            <h2 style={{ fontSize: '15px', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
+              第四层 · 试卷难度配比 (L1 ~ L5)
+            </h2>
+            <span style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>
+              (波浪级联外向传导算法，就近吸收，总和严格等于 100%)
+            </span>
+          </div>
+
+          <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--ios-blue)' }}>
+            总和: {diffWeights.reduce((a, b) => a + b, 0)}%
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '12px' }}>
+          {[
+            { label: 'L1 送分基础', tip: '对应题库 L1+L2 (415题)' },
+            { label: 'L2 常规理解', tip: '对应题库 L3+L4 (1117题)' },
+            { label: 'L3 迁移中档', tip: '对应题库 L5+L6 (743题)' },
+            { label: 'L4 思维探究', tip: '对应题库 L7+L8 (246题)' },
+            { label: 'L5 综合压轴', tip: '对应题库 L9 (61题)' },
+          ].map((d, idx) => (
+            <div
+              key={idx}
+              style={{
+                padding: '12px 14px',
+                borderRadius: '14px',
+                background: 'var(--glass-bg-card, #fafafa)',
+                border: '1px solid var(--border-subtle, rgba(0,0,0,0.06))',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                  {d.label}
+                </span>
+                <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--ios-blue)' }}>
+                  {diffWeights[idx]}%
+                </span>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={diffWeights[idx]}
+                onChange={(e) => handleDiffWeightChange(idx, parseInt(e.target.value) || 0)}
+                style={{ width: '100%', accentColor: 'var(--ios-blue)' }}
+              />
+              <span style={{ fontSize: '10px', color: 'var(--text-tertiary)' }}>
+                {d.tip}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 底部：方案 A 实时库存预警与出卷栏 */}
+      <div
+        className="workbench-bottom-bar"
+        style={{
+          background: 'var(--bg-card, #ffffff)',
+          borderRadius: 'var(--radius-lg, 20px)',
+          padding: '18px 24px',
+          border: '1px solid var(--border-subtle, rgba(0,0,0,0.08))',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
           display: 'flex',
           flexWrap: 'wrap',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: '1.5rem',
+          gap: '16px',
         }}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxWidth: '650px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Icon
-              name={inventoryResult.canGenerate ? 'check' : 'alert'}
-              size={22}
-              style={{ color: inventoryResult.canGenerate ? 'var(--ios-green)' : 'var(--ios-red)' }}
+              name={inventoryResult.canGenerate ? 'check-circle' : 'alert-triangle'}
+              size={18}
+              style={{
+                color: inventoryResult.canGenerate ? 'var(--ios-green)' : 'var(--ios-red)',
+              }}
             />
-            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+            <h3 style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
               {inventoryResult.canGenerate
                 ? '题库库存充足 · 满足出题要求'
                 : '题库库存预警 · 无法生成试卷 (方案 A 拦截)'}
             </h3>
           </div>
 
-          {/* 提示文案通过 MathRenderer 渲染 (铁律 3) */}
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+          <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
             {inventoryResult.canGenerate ? (
-              <p style={{ margin: 0 }}>
+              <span>
                 所选考点内可用真题总数：{inventoryResult.totalAvailable} 题（选择 {inventoryResult.availableChoice}/{inventoryResult.requiredChoice}，填空 {inventoryResult.availableFill}/{inventoryResult.requiredFill}，解答 {inventoryResult.availableSolution}/{inventoryResult.requiredSolution}）。
-              </p>
+              </span>
             ) : (
-              <div style={{ color: 'var(--ios-red)', fontWeight: 500 }}>
+              <span style={{ color: 'var(--ios-red)', fontWeight: 600 }}>
                 <MathRenderer content={inventoryResult.shortageWarningZh || ''} />
-              </div>
+              </span>
             )}
           </div>
         </div>
 
-        {/* 按钮组 */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.75rem' }}>
-          {/* 生成试卷按钮 (库存不足时禁用，满足 Property 16) */}
+        {/* 出卷按钮组 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <button
-            disabled={!inventoryResult.canGenerate}
+            type="button"
+            disabled={!inventoryResult.canGenerate || isGenerating}
             onClick={handleGeneratePaper}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '0.5rem',
-              padding: '0.75rem 1.25rem',
-              borderRadius: 'var(--radius-lg)',
-              fontWeight: 800,
-              fontSize: '0.8125rem',
-              backgroundColor: inventoryResult.canGenerate ? 'var(--glass-bg-card)' : 'var(--border-subtle)',
-              color: inventoryResult.canGenerate ? 'var(--text-primary)' : 'var(--text-tertiary)',
-              border: '1px solid var(--border-subtle)',
+              gap: '6px',
+              padding: '10px 18px',
+              borderRadius: 'var(--radius-pill, 9999px)',
+              fontWeight: 700,
+              fontSize: '13px',
+              backgroundColor: inventoryResult.canGenerate
+                ? 'var(--glass-bg-card, #ffffff)'
+                : 'var(--border-subtle, rgba(0,0,0,0.06))',
+              color: inventoryResult.canGenerate
+                ? 'var(--text-primary)'
+                : 'var(--text-tertiary)',
+              border: '1px solid var(--border-subtle, rgba(0,0,0,0.1))',
               cursor: inventoryResult.canGenerate ? 'pointer' : 'not-allowed',
-              boxShadow: inventoryResult.canGenerate ? 'var(--shadow-sm)' : 'none',
-              transition: 'all 0.2s',
+              boxShadow: inventoryResult.canGenerate ? '0 2px 6px rgba(0,0,0,0.04)' : 'none',
+              transition: 'all 0.18s ease',
             }}
           >
-            <Icon name="print" size={16} />
+            <Icon name="print" size={15} />
             <span>生成中考全真模拟试卷 (A4双栏排版)</span>
           </button>
 
-          {/* 开启全真在线测评按钮 */}
           <button
-            disabled={!inventoryResult.canGenerate}
+            type="button"
+            disabled={!inventoryResult.canGenerate || isGenerating}
             onClick={handleStartOnlineExam}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '0.5rem',
-              padding: '0.75rem 1.5rem',
-              borderRadius: 'var(--radius-lg)',
-              fontWeight: 800,
-              fontSize: '0.8125rem',
-              backgroundColor: inventoryResult.canGenerate ? 'var(--ios-blue)' : 'var(--border-subtle)',
+              gap: '6px',
+              padding: '10px 22px',
+              borderRadius: 'var(--radius-pill, 9999px)',
+              fontWeight: 700,
+              fontSize: '13px',
+              backgroundColor: inventoryResult.canGenerate
+                ? 'var(--ios-blue, #0071e3)'
+                : 'var(--border-subtle, rgba(0,0,0,0.06))',
               color: inventoryResult.canGenerate ? '#ffffff' : 'var(--text-tertiary)',
               border: 'none',
               cursor: inventoryResult.canGenerate ? 'pointer' : 'not-allowed',
-              boxShadow: inventoryResult.canGenerate ? '0 4px 12px rgba(0, 122, 255, 0.3)' : 'none',
-              transition: 'all 0.2s',
+              boxShadow: inventoryResult.canGenerate
+                ? '0 4px 14px rgba(0, 113, 227, 0.3)'
+                : 'none',
+              transition: 'all 0.18s ease',
             }}
           >
-            <Icon name="rocket" size={16} />
+            <Icon name="rocket" size={15} />
             <span>开启在线全真测评 (限时答题)</span>
           </button>
         </div>

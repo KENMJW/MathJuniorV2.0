@@ -2,8 +2,10 @@
  * 组卷库存方案 A 预警拦截算法 (任务 17.2, 设计文档 §7.4/§10.3, Property 16)
  *
  * 核心不变量：
- * 当且仅当任一题型 (单选 / 填空 / 解答) 的需求数超过其在勾选考点范围内的可用库存时，
- * canGenerate 严格等于 false，并在界面生成标红警示、禁用生成试卷按钮，杜绝生成空卷。
+ * 1. 考点子集闭包：题目的所有考点 (all_point_ids) 必须严格属于用户已勾选考点集合 (selectedKpIds)。
+ * 2. 当且仅当任一题型 (单选 / 填空 / 解答) 的需求数超过其在勾选考点范围内的可用库存时，
+ *    或者解答题总分低于出卷基本要求 (< 20 分) 时，
+ *    canGenerate 严格等于 false，并在界面生成标红警示、禁用生成试卷按钮，杜绝生成残卷与非法卷。
  */
 
 export interface PaperConfig {
@@ -13,6 +15,9 @@ export interface PaperConfig {
   choiceCount: number;
   fillCount: number;
   solutionCount: number;
+  choiceScore?: number;
+  fillScore?: number;
+  fullScore?: number;
   difficultyDistribution?: [number, number, number, number, number]; // L1~L5 占比
 }
 
@@ -35,6 +40,37 @@ export interface MinimalQuestionItem {
   primary_point_id: string;
   question_type: string;
   difficulty_level: number;
+  all_point_ids?: string | null;
+  grade_level?: number;
+  semester?: number;
+  max_grade?: number;
+}
+
+/**
+ * 校验单道题目所依赖的全部考点是否为已勾选考点集合的子集 (Subset 绝对约束)
+ */
+export function isQuestionSubsetAllowed(
+  q: MinimalQuestionItem,
+  selectedKpSet: Set<string>
+): boolean {
+  if (selectedKpSet.size === 0) return true;
+
+  let allPoints: string[] = [];
+  try {
+    if (q.all_point_ids) {
+      allPoints =
+        typeof q.all_point_ids === 'string'
+          ? JSON.parse(q.all_point_ids)
+          : q.all_point_ids;
+    }
+  } catch {}
+
+  if (!Array.isArray(allPoints) || allPoints.length === 0) {
+    allPoints = [q.primary_point_id];
+  }
+
+  // 每一个包含考点都必须被已选集合包含
+  return allPoints.every((ptId) => selectedKpSet.has(ptId));
 }
 
 /**
@@ -54,7 +90,32 @@ export function verifyPaperInventoryFromCounts(
   const availSolution = Math.max(0, counts.solution || 0);
   const totalAvailable = availChoice + availFill + availSolution;
 
-  // 关键判定：当且仅当任一题型需求超过库存时拦截
+  // 1. 若配置了 fullScore，检查解答题分值是否被挤占
+  if (config.fullScore !== undefined) {
+    const choiceScore = config.choiceScore || 3;
+    const fillScore = config.fillScore || 3;
+    const totalChoiceScore = reqChoice * choiceScore;
+    const totalFillScore = reqFill * fillScore;
+    const remainingSolutionScore = config.fullScore - (totalChoiceScore + totalFillScore);
+
+    if (remainingSolutionScore < 20) {
+      return {
+        canGenerate: false,
+        availableChoice: availChoice,
+        availableFill: availFill,
+        availableSolution: availSolution,
+        requiredChoice: reqChoice,
+        requiredFill: reqFill,
+        requiredSolution: reqSolution,
+        totalAvailable,
+        totalRequired,
+        shortageWarningZh: `解答题剩余总分仅 ${remainingSolutionScore} 分（低于中考出卷基本要求，至少需20分），请调小选择题或填空题数量/分值，为解答题预留合理空间。`,
+        shortageWarningEn: `Remaining score for solution questions is only ${remainingSolutionScore} (minimum 20 required). Please reduce choice/fill count or score.`,
+      };
+    }
+  }
+
+  // 2. 关键判定：当且仅当任一题型需求超过库存时拦截
   const isChoiceShort = availChoice < reqChoice;
   const isFillShort = availFill < reqFill;
   const isSolutionShort = availSolution < reqSolution;
@@ -104,7 +165,7 @@ export function verifyPaperInventoryFromCounts(
 }
 
 /**
- * 从内存真题候选池中统计并校验库存
+ * 从内存真题候选池中统计并校验库存 (执行子集闭包过滤)
  */
 export function verifyPaperInventoryFromPool(
   pool: MinimalQuestionItem[],
@@ -117,8 +178,7 @@ export function verifyPaperInventoryFromPool(
   let availSolution = 0;
 
   for (const q of pool) {
-    // 考点过滤：若未勾选任何考点则默认不命中；若勾选则检查是否属于选定考点
-    if (selectedKpSet.size > 0 && !selectedKpSet.has(q.primary_point_id)) {
+    if (!isQuestionSubsetAllowed(q, selectedKpSet)) {
       continue;
     }
 
@@ -148,7 +208,22 @@ export async function verifyPaperInventory(
     return verifyPaperInventoryFromCounts({ choice: 0, fill: 0, solution: 0 }, config);
   }
 
-  // [铁律 5]: 参数化占位防注入
+  // 优先直接通过内存候选池统计确保子集闭包完全生效
+  if (db && typeof db.query === 'function') {
+    try {
+      const rows = await db.query(
+        'questions',
+        'SELECT question_id, primary_point_id, question_type, difficulty_level, all_point_ids FROM questions'
+      );
+      if (Array.isArray(rows)) {
+        return verifyPaperInventoryFromPool(rows, config);
+      }
+    } catch (e) {
+      console.warn('[verifyPaperInventory] Failed to query questions:', e);
+    }
+  }
+
+  // 参数化占位防注入兜底
   const placeholders = config.selectedKpIds.map(() => '?').join(',');
   const query = `
     SELECT question_type, COUNT(*) as count 
