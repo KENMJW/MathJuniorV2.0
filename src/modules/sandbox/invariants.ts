@@ -298,6 +298,11 @@ export function formatInvariantText(
     return label ? `${label}: ${text}` : text;
   }
 
+  // 2.5 关系型守恒定理（直接展示几何关系结论，避免非数值方程被代数求值为 0）
+  if (spec.type === 'relation') {
+    return label || formula || null;
+  }
+
   // 3. 代数/遥测公式安全求值 (如 Delta = b^2 - 4ac, sum_roots = -b/a)
   if (spec.formula) {
     let stateSuffix = '';

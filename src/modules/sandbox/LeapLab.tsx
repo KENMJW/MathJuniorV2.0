@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   LeapSandboxModel,
   MorphingState,
@@ -207,6 +207,13 @@ export const LeapLab: React.FC<LeapLabProps> = ({
       parameterValues: { ...prev.parameterValues, [sliderId]: val },
     }));
   };
+
+  const handleParamChange = useCallback((patch: Record<string, number>) => {
+    setMorphState((prev) => ({
+      ...prev,
+      parameterValues: { ...prev.parameterValues, ...patch },
+    }));
+  }, []);
 
   const handleSelectPosture = (postureId: string, rotDeg?: number) => {
     setMorphState((prev) => ({ ...prev, postureId }));
@@ -581,12 +588,7 @@ export const LeapLab: React.FC<LeapLabProps> = ({
               paramValues={morphState.parameterValues}
               xrayActive={morphState.xrayActive}
               onInvariantsChange={setInvariants}
-              onParamChange={(patch) =>
-                setMorphState((prev) => ({
-                  ...prev,
-                  parameterValues: { ...prev.parameterValues, ...patch },
-                }))
-              }
+              onParamChange={handleParamChange}
               locale={locale}
               style={{ width: '100%', height: '100%' }}
             />

@@ -702,6 +702,11 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const boardRef = useRef<any>(null);
   const isDraggingRef = useRef<boolean>(false);
+  const onParamChangeRef = useRef(onParamChange);
+  onParamChangeRef.current = onParamChange;
+  const onInvariantsChangeRef = useRef(onInvariantsChange);
+  onInvariantsChangeRef.current = onInvariantsChange;
+  const lastInvariantsKeyRef = useRef<string>('');
 
   const tpl = config.canvas_template || '';
 
@@ -903,15 +908,19 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
               const isCenter = elemDef.id === 'O' || elemDef.id === 'Origin';
               const ptColor = isCenter ? '#34c759' : color;
               const ptStroke = elemDef.strokeColor ? ensureVisibleOnDark(elemDef.strokeColor, '#ffffff') : '#ffffff';
+              const isDistractor = !!elemDef.isDistractor || String(elemDef.id).startsWith('distractor_');
+              const showLabel = !isDistractor && Boolean(elemDef.name);
               const isMaster =
-                Boolean(onParamChange) &&
+                Boolean(onParamChangeRef.current) &&
                 elemDef.isFixed === false &&
                 !isCenter &&
-                !elemDef.isDistractor &&
+                !isDistractor &&
                 canInvertParam(tpl, elemDef, tpl.includes('circle'), config);
 
               const pt = board.create('point', [ptX, ptY], {
-                name: elemDef.name || elemDef.id || '',
+                name: showLabel ? (elemDef.name || elemDef.id || '') : '',
+                withLabel: showLabel,
+                visible: !isDistractor,
                 size: elemDef.size || 5,
                 fillColor: ptColor,
                 strokeColor: ptStroke,
@@ -927,24 +936,26 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
               });
               elements[elemDef.id || 'pt'] = pt;
 
-              if (isMaster && onParamChange) {
+              if (isMaster) {
                 pt.on('down', () => {
                   isDraggingRef.current = true;
                 });
                 pt.on('drag', () => {
                   isDraggingRef.current = true;
-                  handleParamInversion(
-                    tpl,
-                    elemDef,
-                    pt,
-                    tpl.includes('circle'),
-                    paramValues,
-                    declarativeCarrier?.elements || [],
-                    elements,
-                    board,
-                    onParamChange,
-                    config
-                  );
+                  if (onParamChangeRef.current) {
+                    handleParamInversion(
+                      tpl,
+                      elemDef,
+                      pt,
+                      tpl.includes('circle'),
+                      paramValues,
+                      declarativeCarrier?.elements || [],
+                      elements,
+                      board,
+                      onParamChangeRef.current,
+                      config
+                    );
+                  }
                 });
                 pt.on('up', () => {
                   isDraggingRef.current = false;
@@ -1096,16 +1107,20 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
       dragPoints.forEach((ptDef) => {
         const isCenter = ptDef.id === 'O' || ptDef.id === 'Origin';
         const ptColor = isCenter ? '#34c759' : ensureVisibleOnDark(ptDef.color, '#38bdf8');
+        const isDistractor = !!ptDef.isDistractor || String(ptDef.id).startsWith('distractor_');
+        const showLabel = !isDistractor && Boolean(ptDef.name);
         const isMaster =
-          Boolean(onParamChange) &&
+          Boolean(onParamChangeRef.current) &&
           !ptDef.isFixed &&
           !isCenter &&
-          !ptDef.isDistractor &&
+          !isDistractor &&
           canInvertParam(tpl, ptDef, isCircleTemplate, config);
         const isPtFixed = isMaster ? false : (ptDef.isFixed !== undefined ? !!ptDef.isFixed : true);
 
         const pt = board.create('point', [ptDef.x ?? 0, ptDef.y ?? 0], {
-          name: ptDef.name || ptDef.id,
+          name: showLabel ? (ptDef.name || ptDef.id) : '',
+          withLabel: showLabel,
+          visible: !isDistractor,
           size: isCenter ? 6 : ptDef.size || 5,
           fillColor: ptColor,
           strokeColor: '#ffffff',
@@ -1121,24 +1136,26 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
         });
         elements[ptDef.id] = pt;
 
-        if (isMaster && onParamChange) {
+        if (isMaster) {
           pt.on('down', () => {
             isDraggingRef.current = true;
           });
           pt.on('drag', () => {
             isDraggingRef.current = true;
-            handleParamInversion(
-              tpl,
-              ptDef,
-              pt,
-              isCircleTemplate,
-              paramValues,
-              dragPoints,
-              elements,
-              board,
-              onParamChange,
-              config
-            );
+            if (onParamChangeRef.current) {
+              handleParamInversion(
+                tpl,
+                ptDef,
+                pt,
+                isCircleTemplate,
+                paramValues,
+                dragPoints,
+                elements,
+                board,
+                onParamChangeRef.current,
+                config
+              );
+            }
           });
           pt.on('up', () => {
             isDraggingRef.current = false;
@@ -1481,7 +1498,7 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
     } catch (e) {}
 
     const updateInvariants = () => {
-      if (!onInvariantsChange || invariants.length === 0) return;
+      if (!onInvariantsChangeRef.current || invariants.length === 0) return;
       const pointMap: Record<string, Point2D> = {};
       Object.keys(elements).forEach((id) => {
         const el = elements[id];
@@ -1501,7 +1518,12 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
           });
         }
       });
-      onInvariantsChange(results);
+
+      const nextKey = results.map((r) => `${r.id}:${r.text}`).join('|');
+      if (nextKey !== lastInvariantsKeyRef.current) {
+        lastInvariantsKeyRef.current = nextKey;
+        onInvariantsChangeRef.current(results);
+      }
     };
 
     board.on('update', updateInvariants);
@@ -1518,7 +1540,7 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
         boardRef.current = null;
       }
     };
-  }, [config, paramValues, xrayActive, locale, onInvariantsChange, onParamChange]);
+  }, [config, paramValues, xrayActive, locale]);
 
   // 全局鼠标释放兜底重置手势状态
   useEffect(() => {
