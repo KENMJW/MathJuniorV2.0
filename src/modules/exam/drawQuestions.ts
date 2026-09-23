@@ -245,8 +245,8 @@ export function drawQuestions(
 
   return {
     paperId,
-    titleZh: meta?.titleZh || '中考全真模拟综合测试卷',
-    titleEn: meta?.titleEn || 'Comprehensive Entrance Mock Examination',
+    titleZh: meta?.titleZh || '初中数学全真模拟综合测试卷',
+    titleEn: meta?.titleEn || 'Junior High Math Comprehensive Mock Examination',
     fullScore,
     timeLimitMinutes: meta?.timeLimitMinutes || 120,
     choiceQuestions,

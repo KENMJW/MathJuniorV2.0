@@ -26,7 +26,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import {
   FullScoreSystem,
   FULL_SCORE_SYSTEMS,
-  ALL_CORE_KP_IDS,
+  GRADE_7_KP_IDS,
 } from './presetPapers';
 import {
   PaperConfig,
@@ -70,11 +70,11 @@ const SEMESTERS = [
 
 export const PaperWorkbench: React.FC = () => {
   // 第一层：当前满分制体系 ('100' | '120' | '150')
-  const [scoreSystem, setScoreSystem] = useState<FullScoreSystem>('120');
+  const [scoreSystem, setScoreSystem] = useState<FullScoreSystem>('100');
 
   // 第二层：学期向后覆盖与考点勾选
-  const [selectedSemesterKey, setSelectedSemesterKey] = useState<string>('9-2');
-  const [selectedKpIds, setSelectedKpIds] = useState<string[]>(ALL_CORE_KP_IDS);
+  const [selectedSemesterKey, setSelectedSemesterKey] = useState<string>('7-2');
+  const [selectedKpIds, setSelectedKpIds] = useState<string[]>(GRADE_7_KP_IDS);
   const [isKpGridExpanded, setIsKpGridExpanded] = useState<boolean>(true);
   const [kpSearchText, setKpSearchText] = useState<string>('');
 
@@ -90,7 +90,7 @@ export const PaperWorkbench: React.FC = () => {
   ]);
 
   // 试卷标题
-  const [paperTitle, setPaperTitle] = useState<string>('2024年中考数学全真模拟综合测试卷');
+  const [paperTitle, setPaperTitle] = useState<string>('初中数学全真模拟综合测试卷');
 
   // 已生成的试卷对象
   const [generatedPaper, setGeneratedPaper] = useState<GeneratedPaper | null>(null);
@@ -150,8 +150,9 @@ export const PaperWorkbench: React.FC = () => {
 
         if (kps && kps.length > 0) {
           setDbKpDirectory(kps);
-          // 初始若为 9-2，全选所有知识点
-          setSelectedKpIds(kps.map((k: any) => k.id));
+          // 初始默认七年级：筛选 grade <= 7 的考点 (涵盖 7上 + 7下)
+          const grade7KpIds = kps.filter((k: any) => k.grade <= 7).map((k: any) => k.id);
+          setSelectedKpIds(grade7KpIds);
         }
       } catch (err) {
         console.warn('[PaperWorkbench] Failed to load questions/kps from DB, using fallback:', err);
