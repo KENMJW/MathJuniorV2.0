@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { KnowledgePointRecord } from './types';
 import { EnrichedKnowledgePoint } from './allPointsData';
 import { Icon } from '../../components/common/Icon';
@@ -150,7 +151,7 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
     onClose();
   };
 
-  return (
+  const drawerContent = (
     <>
       {/* 遮罩层 (桌面端点击外部自然关闭) */}
       {isOpen && (
@@ -439,88 +440,119 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
                   background: 'var(--bg-canvas, rgba(0,0,0,0.01))',
                 }}
               >
-                {/* 1级: 年级选择 */}
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '0.35rem' }}>
-                    {locale === 'en' ? 'Level 1 · Grade' : `第一级 · ${t('nav.grade', effectiveLocale, '年级')}`}
-                  </label>
-                  <div style={{ display: 'flex', gap: '0.35rem' }}>
-                    {availableGrades.map((g) => {
-                      const active = selectedGrade === g;
-                      const label = locale === 'en' ? `Grade ${g}` : g === 7 ? '七年级' : g === 8 ? '八年级' : '九年级';
-                      return (
-                        <button
-                          key={g}
-                          type="button"
-                          data-testid={`grade-btn-${g}`}
-                          onClick={() => {
-                            onSelectGrade(g);
-                            const subPoints = knowledgePoints.filter((p) => p.grade === g);
-                            if (subPoints.length > 0) {
-                              onSelectSemester(subPoints[0].semester);
-                              onSelectDomain(subPoints[0].domain);
-                              onSelectSubcategory?.(subPoints[0].subcategory);
-                            }
-                          }}
-                          style={{
-                            flex: 1,
-                            minHeight: '34px',
-                            border: active ? '1.5px solid var(--ios-blue)' : '1px solid var(--border-subtle)',
-                            borderRadius: 'var(--radius-sm, 8px)',
-                            background: active ? 'var(--ios-blue)' : 'var(--bg-card)',
-                            color: active ? '#ffffff' : 'var(--text-primary)',
-                            fontWeight: active ? 700 : 500,
-                            fontSize: '0.8rem',
-                            cursor: 'pointer',
-                            transition: 'all 0.15s ease',
-                          }}
-                        >
-                          {label}
-                        </button>
-                      );
-                    })}
+                {/* 1级与2级: 年级与学期选择 (移动端单行并排紧凑, 桌面端分块) */}
+                <div
+                  className="concept-drawer-level1-2-wrap"
+                  style={{
+                    display: 'flex',
+                    flexDirection: isMobile ? 'row' : 'column',
+                    gap: isMobile ? '0.45rem' : '0.85rem',
+                    width: '100%',
+                  }}
+                >
+                  {/* 1级: 年级选择 */}
+                  <div style={{ flex: isMobile ? 3 : undefined }}>
+                    <label
+                      className="concept-drawer-level-label"
+                      style={{
+                        display: isMobile ? 'none' : 'block',
+                        fontSize: '0.76rem',
+                        fontWeight: 700,
+                        color: 'var(--text-secondary)',
+                        marginBottom: '0.35rem',
+                      }}
+                    >
+                      {locale === 'en' ? 'Level 1 · Grade' : `第一级 · ${t('nav.grade', effectiveLocale, '年级')}`}
+                    </label>
+                    <div style={{ display: 'flex', gap: '0.35rem' }}>
+                      {availableGrades.map((g) => {
+                        const active = selectedGrade === g;
+                        const label = locale === 'en' ? `Grade ${g}` : g === 7 ? '七年级' : g === 8 ? '八年级' : '九年级';
+                        return (
+                          <button
+                            key={g}
+                            type="button"
+                            data-testid={`grade-btn-${g}`}
+                            onClick={() => {
+                              onSelectGrade(g);
+                              const subPoints = knowledgePoints.filter((p) => p.grade === g);
+                              if (subPoints.length > 0) {
+                                onSelectSemester(subPoints[0].semester);
+                                onSelectDomain(subPoints[0].domain);
+                                onSelectSubcategory?.(subPoints[0].subcategory);
+                              }
+                            }}
+                            style={{
+                              flex: 1,
+                              minHeight: isMobile ? '30px' : '34px',
+                              border: active ? '1.5px solid var(--ios-blue)' : '1px solid var(--border-subtle)',
+                              borderRadius: 'var(--radius-sm, 8px)',
+                              background: active ? 'var(--ios-blue)' : 'var(--bg-card)',
+                              color: active ? '#ffffff' : 'var(--text-primary)',
+                              fontWeight: active ? 700 : 500,
+                              fontSize: isMobile ? '0.75rem' : '0.8rem',
+                              cursor: 'pointer',
+                              transition: 'all 0.15s ease',
+                              padding: isMobile ? '0 4px' : undefined,
+                            }}
+                          >
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
 
-                {/* 2级: 学期选择 */}
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '0.35rem' }}>
-                    {locale === 'en' ? 'Level 2 · Semester' : `第二级 · ${t('nav.semester', effectiveLocale, '学期')}`}
-                  </label>
-                  <div style={{ display: 'flex', gap: '0.35rem' }}>
-                    {availableSemesters.map((s) => {
-                      const active = selectedSemester === s;
-                      const label = locale === 'en' ? (s === 1 ? 'Sem 1 (Fall)' : 'Sem 2 (Spring)') : s === 1 ? '上学期 (1)' : '下学期 (2)';
-                      return (
-                        <button
-                          key={s}
-                          type="button"
-                          data-testid={`semester-btn-${s}`}
-                          onClick={() => {
-                            onSelectSemester(s);
-                            const subPoints = knowledgePoints.filter((p) => p.grade === selectedGrade && p.semester === s);
-                            if (subPoints.length > 0) {
-                              onSelectDomain(subPoints[0].domain);
-                              onSelectSubcategory?.(subPoints[0].subcategory);
-                            }
-                          }}
-                          style={{
-                            flex: 1,
-                            minHeight: '34px',
-                            border: active ? '1.5px solid var(--ios-blue)' : '1px solid var(--border-subtle)',
-                            borderRadius: 'var(--radius-sm, 8px)',
-                            background: active ? 'var(--ios-blue)' : 'var(--bg-card)',
-                            color: active ? '#ffffff' : 'var(--text-primary)',
-                            fontWeight: active ? 700 : 500,
-                            fontSize: '0.8rem',
-                            cursor: 'pointer',
-                            transition: 'all 0.15s ease',
-                          }}
-                        >
-                          {label}
-                        </button>
-                      );
-                    })}
+                  {/* 2级: 学期选择 */}
+                  <div style={{ flex: isMobile ? 2 : undefined }}>
+                    <label
+                      className="concept-drawer-level-label"
+                      style={{
+                        display: isMobile ? 'none' : 'block',
+                        fontSize: '0.76rem',
+                        fontWeight: 700,
+                        color: 'var(--text-secondary)',
+                        marginBottom: '0.35rem',
+                      }}
+                    >
+                      {locale === 'en' ? 'Level 2 · Semester' : `第二级 · ${t('nav.semester', effectiveLocale, '学期')}`}
+                    </label>
+                    <div style={{ display: 'flex', gap: '0.35rem' }}>
+                      {availableSemesters.map((s) => {
+                        const active = selectedSemester === s;
+                        const label = locale === 'en' ? (s === 1 ? 'Sem 1 (Fall)' : 'Sem 2 (Spring)') : s === 1 ? '上学期 (1)' : '下学期 (2)';
+                        return (
+                          <button
+                            key={s}
+                            type="button"
+                            data-testid={`semester-btn-${s}`}
+                            onClick={() => {
+                              onSelectSemester(s);
+                              const subPoints = knowledgePoints.filter((p) => p.grade === selectedGrade && p.semester === s);
+                              if (subPoints.length > 0) {
+                                onSelectDomain(subPoints[0].domain);
+                                onSelectSubcategory?.(subPoints[0].subcategory);
+                              }
+                            }}
+                            style={{
+                              flex: 1,
+                              minHeight: isMobile ? '30px' : '34px',
+                              border: active ? '1.5px solid var(--ios-blue)' : '1px solid var(--border-subtle)',
+                              borderRadius: 'var(--radius-sm, 8px)',
+                              background: active ? 'var(--ios-blue)' : 'var(--bg-card)',
+                              color: active ? '#ffffff' : 'var(--text-primary)',
+                              fontWeight: active ? 700 : 500,
+                              fontSize: isMobile ? '0.75rem' : '0.8rem',
+                              cursor: 'pointer',
+                              transition: 'all 0.15s ease',
+                              padding: isMobile ? '0 4px' : undefined,
+                            }}
+                          >
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
 
@@ -531,7 +563,17 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
                   </label>
 
                   {/* 领域快速过滤 pills (保证 productShell 测试通过) */}
-                  <div style={{ display: 'flex', gap: '0.3rem', marginBottom: '0.45rem', flexWrap: 'wrap' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: '0.3rem',
+                      marginBottom: '0.35rem',
+                      flexWrap: isMobile ? 'nowrap' : 'wrap',
+                      overflowX: isMobile ? 'auto' : 'visible',
+                      WebkitOverflowScrolling: 'touch',
+                      scrollbarWidth: 'none',
+                    }}
+                  >
                     {availableDomains.map((dom) => {
                       const active = selectedDomain === dom && !selectedSubcategory;
                       const domLabel =
@@ -708,6 +750,12 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
       </aside>
     </>
   );
+
+  if (typeof document !== 'undefined' && (isMobile || isTablet) && document.body) {
+    return createPortal(drawerContent, document.body);
+  }
+
+  return drawerContent;
 };
 
 export default ConceptDrawerSelector;

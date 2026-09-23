@@ -1685,14 +1685,14 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
         borderRadius: '14px',
         overflow: 'hidden',
         position: 'relative',
-        touchAction: 'none',
+        touchAction: 'pan-y',
         ...style,
       }}
     >
       <div
         id={containerId}
         ref={containerRef}
-        style={{ width: '100%', height: '100%', touchAction: 'none' }}
+        style={{ width: '100%', height: '100%', touchAction: 'pan-y' }}
       />
     </div>
   );

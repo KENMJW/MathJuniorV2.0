@@ -610,14 +610,25 @@ input[type=range].apple-slider::-webkit-slider-thumb:hover {
   color: var(--text-tertiary, #86868b);
 }
 
-/* 触控隔离：保证沙盒画布及其 SVG/DIV 图元挂载 touch-action: none，杜绝页面上下滚动冲突 (TASK-FE-0018 判据 4) */
+/* 触控体验优化：允许在沙盒空白处/网格垂直滑屏滚动页面，仅动点与交互图元阻止滚动以供精准拖拽 */
 .sandbox-renderer,
-.sandbox-renderer div,
-.sandbox-renderer svg,
+.sandbox-renderer > div,
 .jxgbox {
-  touch-action: none !important;
+  touch-action: pan-y !important;
   -webkit-touch-callout: none !important;
   user-select: none !important;
+}
+
+/* 动点与交互图元挂载 touch-action: none 确保拖拽流畅不受页面滚动干扰 */
+.jxgbox_point,
+.jxgbox circle,
+.jxgbox [cursor*="move"],
+.jxgbox [cursor*="pointer"],
+.jxgbox path[cursor*="move"],
+.jxgbox path[cursor*="pointer"],
+.discrete-cube-interactive,
+[data-draggable="true"] {
+  touch-action: none !important;
 }
 
 /* 手机端触控与排版深度优化 (<768px) */

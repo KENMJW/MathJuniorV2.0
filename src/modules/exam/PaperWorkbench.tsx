@@ -51,6 +51,7 @@ import { MathRenderer } from '../../components/math/MathRenderer';
 import { Icon } from '../../components/common/Icon';
 import { dbClient } from '../../engine/db/dbClient';
 import { useSessionStore } from '../../store/sessionStore';
+import { useDeviceResponsive } from '../../hooks/useDeviceResponsive';
 
 interface KpMeta {
   id: string;
@@ -76,6 +77,8 @@ const DEFAULT_TITLE_EN = 'Junior High Math Full Simulation Mock Exam';
 export const PaperWorkbench: React.FC = () => {
   const locale = useSessionStore((state) => state.locale);
   const isEn = String(locale).toLowerCase().startsWith('en');
+  const responsive = useDeviceResponsive();
+  const isMobile = responsive.isMobile;
 
   // 第一层：当前满分制体系 ('100' | '120' | '150')
   const [scoreSystem, setScoreSystem] = useState<FullScoreSystem>('100');
@@ -528,7 +531,7 @@ export const PaperWorkbench: React.FC = () => {
           </span>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: '14px' }}>
           {(['100', '120', '150'] as FullScoreSystem[]).map((sysId) => {
             const sysSpec = FULL_SCORE_SYSTEMS[sysId];
             const isSelected = scoreSystem === sysId;
@@ -583,48 +586,99 @@ export const PaperWorkbench: React.FC = () => {
           boxShadow: '0 2px 12px rgba(0,0,0,0.02)',
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div
-              style={{
-                width: '22px',
-                height: '22px',
-                borderRadius: '50%',
-                background: 'var(--ios-blue)',
-                color: '#ffffff',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '11px',
-                fontWeight: 800,
-              }}
-            >
-              2
+        {/* 第二层头部 (移动端自适应换行，首行展示标题与折叠开关，次行展示搜索与操作胶囊) */}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: isMobile ? 'column' : 'row',
+            justifyContent: 'space-between',
+            alignItems: isMobile ? 'flex-start' : 'center',
+            gap: isMobile ? '10px' : '14px',
+            marginBottom: '14px',
+          }}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: isMobile ? '100%' : 'auto' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div
+                  style={{
+                    width: '22px',
+                    height: '22px',
+                    borderRadius: '50%',
+                    background: 'var(--ios-blue)',
+                    color: '#ffffff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '11px',
+                    fontWeight: 800,
+                  }}
+                >
+                  2
+                </div>
+                <h2 style={{ fontSize: '15px', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
+                  {isEn ? 'Layer 2 · Semester Coverage & Knowledge Subset' : '第二层 · 学期向后覆盖与考点子集'}
+                </h2>
+              </div>
+
+              {/* 移动端展开/收起考点网格按钮放首行右侧 */}
+              {isMobile && (
+                <button
+                  type="button"
+                  onClick={() => setIsKpGridExpanded((prev) => !prev)}
+                  style={{
+                    fontSize: '12px',
+                    color: 'var(--ios-blue)',
+                    background: 'rgba(0, 113, 227, 0.08)',
+                    border: 'none',
+                    borderRadius: 'var(--radius-pill, 9999px)',
+                    padding: '4px 10px',
+                    cursor: 'pointer',
+                    fontWeight: 600,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    minHeight: '30px',
+                  }}
+                >
+                  <span>{isKpGridExpanded ? (isEn ? 'Collapse' : '收起网格') : (isEn ? 'Expand' : '展开网格')}</span>
+                  <Icon name={isKpGridExpanded ? 'chevron-up' : 'chevron-down'} size={12} />
+                </button>
+              )}
             </div>
-            <h2 style={{ fontSize: '15px', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
-              {isEn ? 'Layer 2 · Semester Coverage & Knowledge Subset' : '第二层 · 学期向后覆盖与考点子集'}
-            </h2>
-            <span style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>
+
+            <span style={{ fontSize: '11px', color: 'var(--text-tertiary)', lineHeight: 1.4 }}>
               {isEn
                 ? '(Question points must be a subset of selected points, preventing knowledge leakage)'
                 : '(考题组合考点必须是所选考点子集，杜绝超前知识点泄漏)'}
             </span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {/* 搜索与全选清空操作区 */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              width: isMobile ? '100%' : 'auto',
+              flexWrap: isMobile ? 'nowrap' : 'wrap',
+            }}
+          >
             <input
               type="text"
               placeholder={isEn ? "Search points..." : "搜索考点..."}
               value={kpSearchText}
               onChange={(e) => setKpSearchText(e.target.value)}
               style={{
-                padding: '4px 10px',
-                fontSize: '11px',
-                borderRadius: '6px',
+                flex: isMobile ? 1 : undefined,
+                padding: '6px 12px',
+                fontSize: '12px',
+                borderRadius: 'var(--radius-pill, 9999px)',
                 border: '1px solid var(--border-subtle, rgba(0,0,0,0.15))',
                 background: 'var(--bg-input, #f8fafc)',
                 color: 'var(--text-primary)',
-                width: '120px',
+                width: isMobile ? 'auto' : '120px',
+                minHeight: isMobile ? '34px' : undefined,
                 outline: 'none',
               }}
             />
@@ -634,53 +688,77 @@ export const PaperWorkbench: React.FC = () => {
               style={{
                 fontSize: '12px',
                 color: 'var(--ios-blue)',
-                background: 'none',
+                background: isMobile ? 'rgba(0, 113, 227, 0.08)' : 'none',
                 border: 'none',
+                borderRadius: isMobile ? 'var(--radius-pill, 9999px)' : undefined,
+                padding: isMobile ? '6px 12px' : undefined,
+                minHeight: isMobile ? '34px' : undefined,
                 cursor: 'pointer',
                 fontWeight: 600,
+                whiteSpace: 'nowrap',
               }}
             >
               {isEn ? 'Select All' : '全选考点'}
             </button>
-            <span style={{ color: 'var(--border-subtle)' }}>|</span>
+            {!isMobile && <span style={{ color: 'var(--border-subtle)' }}>|</span>}
             <button
               type="button"
               onClick={handleClearAllKps}
               style={{
                 fontSize: '12px',
                 color: 'var(--text-tertiary)',
-                background: 'none',
+                background: isMobile ? 'rgba(0, 0, 0, 0.04)' : 'none',
                 border: 'none',
+                borderRadius: isMobile ? 'var(--radius-pill, 9999px)' : undefined,
+                padding: isMobile ? '6px 12px' : undefined,
+                minHeight: isMobile ? '34px' : undefined,
                 cursor: 'pointer',
                 fontWeight: 600,
+                whiteSpace: 'nowrap',
               }}
             >
               {isEn ? 'Clear' : '清空'}
             </button>
-            <span style={{ color: 'var(--border-subtle)' }}>|</span>
-            <button
-              type="button"
-              onClick={() => setIsKpGridExpanded((prev) => !prev)}
-              style={{
-                fontSize: '12px',
-                color: 'var(--text-secondary)',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                fontWeight: 600,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px',
-              }}
-            >
-              <span>{isKpGridExpanded ? (isEn ? 'Collapse Grid' : '收起考点网格') : (isEn ? 'Expand Grid' : '展开考点网格')}</span>
-              <Icon name={isKpGridExpanded ? 'chevron-up' : 'chevron-down'} size={12} />
-            </button>
+            {!isMobile && (
+              <>
+                <span style={{ color: 'var(--border-subtle)' }}>|</span>
+                <button
+                  type="button"
+                  onClick={() => setIsKpGridExpanded((prev) => !prev)}
+                  style={{
+                    fontSize: '12px',
+                    color: 'var(--text-secondary)',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontWeight: 600,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                  }}
+                >
+                  <span>{isKpGridExpanded ? (isEn ? 'Collapse Grid' : '收起考点网格') : (isEn ? 'Expand Grid' : '展开考点网格')}</span>
+                  <Icon name={isKpGridExpanded ? 'chevron-up' : 'chevron-down'} size={12} />
+                </button>
+              </>
+            )}
           </div>
         </div>
 
-        {/* 6 个学期药丸胶囊 */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '14px' }}>
+        {/* 6 个学期药丸胶囊 (移动端横向滑动，杜绝挤压换行) */}
+        <div
+          className="workbench-semester-scroll"
+          style={{
+            display: 'flex',
+            flexWrap: isMobile ? 'nowrap' : 'wrap',
+            overflowX: isMobile ? 'auto' : 'visible',
+            WebkitOverflowScrolling: 'touch',
+            scrollbarWidth: 'none',
+            gap: '8px',
+            marginBottom: '14px',
+            paddingBottom: isMobile ? '4px' : '0',
+          }}
+        >
           {SEMESTERS.map((sem) => {
             const isCurrentSem = selectedSemesterKey === sem.key;
             return (
@@ -703,6 +781,9 @@ export const PaperWorkbench: React.FC = () => {
                   cursor: 'pointer',
                   transition: 'all 0.15s ease',
                   boxShadow: isCurrentSem ? '0 2px 8px rgba(0, 113, 227, 0.25)' : 'none',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0,
+                  minHeight: isMobile ? '36px' : undefined,
                 }}
               >
                 {isEn ? sem.labelEn : sem.label}
@@ -720,16 +801,18 @@ export const PaperWorkbench: React.FC = () => {
 
         {isKpGridExpanded && (
           <div
+            className="workbench-kp-grid"
             style={{
-              maxHeight: '260px',
+              maxHeight: isMobile ? '320px' : '260px',
               overflowY: 'auto',
-              padding: '12px',
+              WebkitOverflowScrolling: 'touch',
+              padding: isMobile ? '8px' : '12px',
               borderRadius: '12px',
               background: 'rgba(0, 0, 0, 0.02)',
               border: '1px solid var(--border-subtle, rgba(0,0,0,0.06))',
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-              gap: '8px',
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(220px, 1fr))',
+              gap: isMobile ? '6px' : '8px',
             }}
           >
             {filteredKps.map((kp) => {
@@ -741,23 +824,33 @@ export const PaperWorkbench: React.FC = () => {
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '8px',
-                    padding: '6px 10px',
+                    gap: '10px',
+                    padding: isMobile ? '10px 12px' : '6px 10px',
                     borderRadius: '8px',
-                    background: isChecked ? 'rgba(0, 113, 227, 0.05)' : 'transparent',
+                    background: isChecked ? 'rgba(0, 113, 227, 0.06)' : 'rgba(255, 255, 255, 0.6)',
+                    border: isChecked ? '1px solid rgba(0, 113, 227, 0.2)' : '1px solid var(--border-subtle, rgba(0,0,0,0.04))',
                     cursor: 'pointer',
-                    fontSize: '12px',
+                    fontSize: isMobile ? '13px' : '12px',
                     color: isChecked ? 'var(--text-primary)' : 'var(--text-tertiary)',
+                    minHeight: isMobile ? '44px' : undefined,
+                    boxSizing: 'border-box',
+                    userSelect: 'none',
                   }}
                 >
                   <input
                     type="checkbox"
                     checked={isChecked}
                     onChange={() => toggleKp(kp.id)}
-                    style={{ accentColor: 'var(--ios-blue)' }}
+                    style={{
+                      accentColor: 'var(--ios-blue)',
+                      width: isMobile ? '18px' : '14px',
+                      height: isMobile ? '18px' : '14px',
+                      cursor: 'pointer',
+                    }}
                   />
-                  <span style={{ fontWeight: isChecked ? 700 : 400 }}>
-                    {kp.id} · {kpName}
+                  <span style={{ fontWeight: isChecked ? 700 : 400, flex: 1 }}>
+                    <span style={{ color: 'var(--ios-blue)', fontWeight: 700, marginRight: '4px' }}>{kp.id}</span>
+                    <span>·</span> {kpName}
                   </span>
                 </label>
               );
@@ -804,7 +897,7 @@ export const PaperWorkbench: React.FC = () => {
           </span>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: '14px' }}>
           {/* 选择题配置 */}
           <div
             style={{

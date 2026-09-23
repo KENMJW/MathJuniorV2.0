@@ -875,7 +875,7 @@ export const MathJuniorHome: React.FC = () => {
         sidebarWidth={260}
         isPortrait={responsive.orientation === "portrait"}
       >
-        <div style={{ padding: "1.25rem", height: "100%", overflowY: "auto", boxSizing: "border-box" }}>
+        <div style={{ padding: "1.25rem", width: "100%", minHeight: "100%", boxSizing: "border-box" }}>
           {renderModuleContent()}
         </div>
       </SplitBoard>

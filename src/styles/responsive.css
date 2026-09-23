@@ -132,38 +132,58 @@
     flex-direction: column !important;
     height: 100% !important;
     min-height: 0 !important;
+    overflow: hidden !important;
   }
 
+  /* 移动端顶部筛选条：紧凑轻量，彻底消灭双层嵌套滚动 */
   .concept-drawer-left-col {
     width: 100% !important;
     min-width: 0 !important;
-    max-height: 38% !important;
+    max-height: none !important;
+    height: auto !important;
     border-right: none !important;
     border-bottom: 1px solid var(--border-subtle, rgba(0, 0, 0, 0.08)) !important;
-    padding: 0.65rem 0.85rem !important;
-    gap: 0.5rem !important;
+    padding: 0.5rem 0.75rem 0.6rem 0.75rem !important;
+    gap: 0.4rem !important;
     flex-shrink: 0 !important;
-    overflow-y: auto !important;
+    overflow: visible !important;
+  }
+
+  .concept-drawer-left-col label {
+    display: none !important;
   }
 
   .concept-drawer-subcat-list {
     flex-direction: row !important;
-    flex-wrap: wrap !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
     gap: 0.35rem !important;
+    padding: 2px 0 !important;
+  }
+  .concept-drawer-subcat-list::-webkit-scrollbar {
+    display: none !important;
   }
 
   .concept-drawer-subcat-list button {
     flex: 0 0 auto !important;
-    padding: 0.3rem 0.55rem !important;
-    font-size: 0.76rem !important;
+    white-space: nowrap !important;
+    padding: 0.35rem 0.65rem !important;
+    font-size: 0.78rem !important;
+    min-height: 32px !important;
+    border-radius: var(--radius-pill, 9999px) !important;
   }
 
+  /* 移动端考点列表：获取抽屉 85% 以上空间，畅快单列滚动，底部安全避让 80px */
   .concept-drawer-right-col {
-    flex: 1 !important;
+    flex: 1 1 0% !important;
     min-height: 0 !important;
-    padding: 0.65rem 0.85rem !important;
-    padding-bottom: calc(var(--safe-area-bottom) + 16px) !important;
+    height: 100% !important;
+    padding: 0.65rem 0.75rem !important;
+    padding-bottom: calc(var(--safe-area-bottom) + 85px) !important;
     overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
   }
 
   /* 模块二：谱系抽屉在手机端适配为 Bottom Sheet */
@@ -280,36 +300,45 @@
     gap: 12px !important;
   }
 
-  .sandbox-top-bar {
-    position: relative !important;
-    margin: 0 !important;
-    padding: 6px 0 !important;
-    border-bottom: none !important;
-    box-shadow: none !important;
-    gap: 8px !important;
-  }
-
-  .graph-subnav-sticky-header {
-    position: relative !important;
-    margin: 0 !important;
-    padding: 6px 0 !important;
-    border-bottom: none !important;
-    box-shadow: none !important;
+  /* 全模块二级菜单手机端滚动固定悬浮 (TASK-FE-0019 判据 1) */
+  .concept-nav-header,
+  .graph-nav-header,
+  .graph-subnav-sticky-header,
+  .sandbox-sticky-header-container,
+  .exam-subnav-sticky-header {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 45 !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid var(--border-subtle, rgba(0, 0, 0, 0.08)) !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08) !important;
+    border-radius: var(--radius-md, 14px) !important;
   }
 
   .concept-nav-header {
-    position: relative !important;
-    margin: 0 !important;
-    border-bottom: none !important;
-    box-shadow: none !important;
+    padding: 10px 12px !important;
+    gap: 8px !important;
+  }
+
+  .graph-nav-header {
+    padding: 10px 12px !important;
+    gap: 8px !important;
+  }
+
+  .sandbox-sticky-header-container {
+    padding: 10px 12px !important;
+    margin: -12px -10px 12px -10px !important;
+  }
+
+  .sandbox-top-bar {
+    gap: 8px !important;
   }
 
   .exam-subnav-sticky-header {
-    position: relative !important;
-    margin: 0 !important;
-    border-bottom: none !important;
-    box-shadow: none !important;
     padding: 10px 14px !important;
+    gap: 8px !important;
   }
 
   .sandbox-header-line {
@@ -339,6 +368,11 @@
   /* 模块四：实战测评在手机端上下流式排版 (TASK-FE-0018 判据 6) */
   .exam-workbench-grid {
     grid-template-columns: 1fr !important;
+  }
+
+  .workbench-section-card {
+    padding: 14px 12px !important;
+    border-radius: 16px !important;
   }
 
   .exam-split-container {
@@ -437,31 +471,20 @@
     min-height: 44px !important;
   }
 
-  .sandbox-top-bar {
-    position: relative !important;
-    margin: 0 !important;
-    border-bottom: none !important;
-    box-shadow: none !important;
-  }
-
-  .graph-subnav-sticky-header {
-    position: relative !important;
-    margin: 0 !important;
-    border-bottom: none !important;
-    box-shadow: none !important;
-  }
-
-  .concept-nav-header {
-    position: relative !important;
-    margin: 0 !important;
-    border-bottom: none !important;
-    box-shadow: none !important;
-  }
-
+  /* 全模块二级菜单平板端吸顶固定悬浮 (TASK-FE-0019 判据 1) */
+  .concept-nav-header,
+  .graph-nav-header,
+  .graph-subnav-sticky-header,
+  .sandbox-sticky-header-container,
   .exam-subnav-sticky-header {
-    position: relative !important;
-    margin: 0 !important;
-    border-bottom: none !important;
-    box-shadow: none !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 45 !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid var(--border-subtle, rgba(0, 0, 0, 0.08)) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+    border-radius: var(--radius-lg, 18px) !important;
   }
 }
