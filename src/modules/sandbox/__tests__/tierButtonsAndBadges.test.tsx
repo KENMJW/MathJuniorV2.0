@@ -3,6 +3,7 @@ import { renderToString } from 'react-dom/server';
 import { LeapLab } from '../LeapLab';
 import { LabWorkspace } from '../LabWorkspace';
 import { allLeapSandboxModels } from '../mockLeapModels';
+import { canInvertParam } from '../SandboxRenderer';
 
 describe('Tier Buttons & Header Badges Tests', () => {
   const g3Models = allLeapSandboxModels.filter((m) => m.primary_line === 'G3');
@@ -71,5 +72,15 @@ describe('Tier Buttons & Header Badges Tests', () => {
     expect(html).toMatch(/<button[^>]*data-testid="badge-concept-concrete"[^>]*>[\s\S]*?概念具象化[\s\S]*?<\/button>/);
     expect(html).toMatch(/<button[^>]*data-testid="badge-viewport-locked"[^>]*>[\s\S]*?视口阻尼锁定[\s\S]*?<\/button>/);
     expect(html).toContain('nav-pill-btn');
+  });
+
+  it('4. SB-KP001 number_axis_rational_template Point P is dynamic and can invert p_num', () => {
+    const ptP = { id: 'P', name: 'P(p/q)' };
+    const ptO = { id: 'O', name: 'O', isFixed: true };
+    const ptU = { id: 'U', name: '1', isFixed: true };
+
+    expect(canInvertParam('number_axis_rational_template', ptP, false)).toBe(true);
+    expect(canInvertParam('number_axis_rational_template', ptO, false)).toBe(false);
+    expect(canInvertParam('number_axis_rational_template', ptU, false)).toBe(false);
   });
 });

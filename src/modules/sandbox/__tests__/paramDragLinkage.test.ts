@@ -151,6 +151,88 @@ describe('TASK-FE-0016 Part A: Parameter Box <-> Graph Two-way Linkage', () => {
     expect(onParamChange).toHaveBeenCalledWith({ param_t: 5 });
   });
 
+  it('Scenario 6: SB-KP001 Rational Number Axis - Point P drag inverts p_num', () => {
+    const onParamChange = vi.fn();
+    const setPosition = vi.fn();
+    const ptDef = { id: 'P', name: 'P(p/q)' };
+    // p = (curX / unit_scale) * q_den = (2.5 / 1) * 2 = 5
+    const pt = { X: () => 2.5, Y: () => 0, setPosition };
+
+    expect(canInvertParam('number_axis_rational_template', ptDef, false)).toBe(true);
+
+    handleParamInversion(
+      'number_axis_rational_template',
+      ptDef,
+      pt,
+      false,
+      { p_num: 3, q_den: 2, unit_scale: 1 },
+      [],
+      {},
+      null,
+      onParamChange
+    );
+
+    expect(onParamChange).toHaveBeenCalledWith({ p_num: 5 });
+  });
+
+  it('Scenario 7: SB-KP047 Perpendicular Model - Point P inverts param_y_p, Point C inverts param_x_c', () => {
+    const onParamChangeP = vi.fn();
+    const ptPDef = { id: 'P', name: 'P' };
+    const ptP = { X: () => 0, Y: () => 5.2 };
+
+    expect(canInvertParam('geometry_perpendicular_template', ptPDef, false)).toBe(true);
+    handleParamInversion(
+      'geometry_perpendicular_template',
+      ptPDef,
+      ptP,
+      false,
+      { param_x_c: 3, param_y_p: 4 },
+      [],
+      {},
+      null,
+      onParamChangeP
+    );
+    expect(onParamChangeP).toHaveBeenCalledWith({ param_y_p: 5.2 });
+
+    const onParamChangeC = vi.fn();
+    const ptCDef = { id: 'C', name: 'C(斜足)' };
+    const ptC = { X: () => 4.3, Y: () => 0 };
+
+    expect(canInvertParam('geometry_perpendicular_template', ptCDef, false)).toBe(true);
+    handleParamInversion(
+      'geometry_perpendicular_template',
+      ptCDef,
+      ptC,
+      false,
+      { param_x_c: 3, param_y_p: 4 },
+      [],
+      {},
+      null,
+      onParamChangeC
+    );
+    expect(onParamChangeC).toHaveBeenCalledWith({ param_x_c: 4.3 });
+  });
+
+  it('Scenario 8: Function Models - Point P drag inverts x_pos', () => {
+    const onParamChange = vi.fn();
+    const ptDef = { id: 'p1', name: 'P' };
+    const pt = { X: () => 3.4, Y: () => 6.8 };
+
+    expect(canInvertParam('function_direct_template', ptDef, false)).toBe(true);
+    handleParamInversion(
+      'function_direct_template',
+      ptDef,
+      pt,
+      false,
+      { k_prop: 2, x_pos: 2 },
+      [],
+      {},
+      null,
+      onParamChange
+    );
+    expect(onParamChange).toHaveBeenCalledWith({ x_pos: 3.4 });
+  });
+
   it('Scenario 5: Conservative Principle - Parabola vertex V cannot be inverted', () => {
     const ptV = { id: 'V', name: 'V', isFixed: false };
     expect(canInvertParam('function_quadratic_parabola', ptV, false)).toBe(false);

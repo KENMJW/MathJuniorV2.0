@@ -213,6 +213,20 @@ export function canInvertParam(
     return true;
   }
 
+  // 场景 5：垂线段最短模型 (SB-KP047)
+  if (tpl.includes('perpendicular')) {
+    if (id === 'P' || name.includes('P') || id === 'C' || name.includes('C')) {
+      return true;
+    }
+  }
+
+  // 场景 6：函数模型动点 P (SB-KP032, SB-KP036, SB-KP037)
+  if (tpl.includes('direct') || tpl.includes('linear') || tpl.includes('inverse')) {
+    if (id === 'p1' || id === 'P' || id === 'p' || name.includes('P')) {
+      return true;
+    }
+  }
+
   return false;
 }
 
@@ -322,7 +336,12 @@ export function handleParamInversion(
         pt.setPosition(coordsMode, [curX, 0]);
       }
 
-      if (paramValues['pos_p'] !== undefined) {
+      if (paramValues['p_num'] !== undefined) {
+        const q = Number(paramValues['q_den'] ?? 1);
+        const u = Number(paramValues['unit_scale'] ?? 1);
+        const newP = Math.round((curX / u) * q);
+        patch['p_num'] = Math.max(-10, Math.min(10, newP));
+      } else if (paramValues['pos_p'] !== undefined) {
         patch['pos_p'] = Math.round(curX * 10) / 10;
       } else if (paramValues['x_p'] !== undefined) {
         patch['x_p'] = Math.round(curX * 10) / 10;
@@ -398,6 +417,40 @@ export function handleParamInversion(
     patch['param_t'] = Math.max(0, Math.min(10, Math.round(tVal * 10) / 10));
     onParamChange(patch);
     return;
+  }
+
+  // 5. 垂线段最短模型 (SB-KP047)
+  if (tpl.includes('perpendicular')) {
+    if (id === 'P' || name.includes('P')) {
+      patch['param_y_p'] = Math.max(1, Math.min(10, Math.round(pt.Y() * 10) / 10));
+      onParamChange(patch);
+      return;
+    }
+    if (id === 'C' || name.includes('C')) {
+      patch['param_x_c'] = Math.round(pt.X() * 10) / 10;
+      onParamChange(patch);
+      return;
+    }
+  }
+
+  // 6. 函数模型动点 P 反解 (SB-KP032, SB-KP036, SB-KP037)
+  if (tpl.includes('direct') || tpl.includes('linear')) {
+    if (id === 'p1' || id === 'P' || name.includes('P')) {
+      patch['x_pos'] = Math.round(pt.X() * 10) / 10;
+      onParamChange(patch);
+      return;
+    }
+  }
+  if (tpl.includes('inverse')) {
+    if (id === 'p1' || id === 'P' || id === 'p' || name.includes('P')) {
+      const xVal = Math.round(pt.X() * 10) / 10;
+      if (Math.abs(xVal) > 0.2) {
+        if (paramValues['x_pos'] !== undefined) patch['x_pos'] = xVal;
+        if (paramValues['x_pt'] !== undefined) patch['x_pt'] = xVal;
+        onParamChange(patch);
+        return;
+      }
+    }
   }
 }
 
@@ -910,12 +963,7 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
               const ptStroke = elemDef.strokeColor ? ensureVisibleOnDark(elemDef.strokeColor, '#ffffff') : '#ffffff';
               const isDistractor = !!elemDef.isDistractor || String(elemDef.id).startsWith('distractor_');
               const showLabel = !isDistractor && Boolean(elemDef.name);
-              const isMaster =
-                Boolean(onParamChangeRef.current) &&
-                elemDef.isFixed === false &&
-                !isCenter &&
-                !isDistractor &&
-                canInvertParam(tpl, elemDef, tpl.includes('circle'), config);
+              const isCarrierFixed = isCenter || isDistractor || elemDef.isFixed === true;
 
               const pt = board.create('point', [ptX, ptY], {
                 name: showLabel ? (elemDef.name || elemDef.id || '') : '',
@@ -925,7 +973,7 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
                 fillColor: ptColor,
                 strokeColor: ptStroke,
                 strokeWidth: 2,
-                fixed: isMaster ? false : true,
+                fixed: isCarrierFixed,
                 label: {
                   color: '#ffffff',
                   fontSize: 12,
@@ -936,13 +984,13 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
               });
               elements[elemDef.id || 'pt'] = pt;
 
-              if (isMaster) {
+              if (!isCarrierFixed) {
                 pt.on('down', () => {
                   isDraggingRef.current = true;
                 });
                 pt.on('drag', () => {
                   isDraggingRef.current = true;
-                  if (onParamChangeRef.current) {
+                  if (onParamChangeRef.current && canInvertParam(tpl, elemDef, tpl.includes('circle'), config)) {
                     handleParamInversion(
                       tpl,
                       elemDef,
@@ -1051,17 +1099,26 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
         let x = ptDef.x ?? 0;
         let y = ptDef.y ?? 0;
 
-        // 数轴模板：动点 X 坐标响应 param_x0 + param_v * param_t
-        if (tpl.startsWith('number_axis')) {
+        // 数轴模板：动点 X 坐标响应 param_x0 + param_v * param_t 或 p_num / q_den
+        if (tpl.startsWith('number_axis') || tpl.includes('number_line')) {
           const x0 = Number(paramValues['param_x0'] ?? 0);
           const v = Number(paramValues['param_v'] ?? 1);
           const t = Number(paramValues['param_t'] ?? 0);
           const pVal = paramValues['pos_p'] ?? paramValues['point_x'] ?? paramValues['pt_x'] ?? paramValues['val'];
 
-          if (pVal !== undefined && (ptDef.id === 'P' || ptDef.name === 'P')) {
+          if (paramValues['p_num'] !== undefined && (ptDef.id === 'P' || ptDef.name?.includes('P'))) {
+            const p = Number(paramValues['p_num'] ?? 0);
+            const q = Number(paramValues['q_den'] ?? 1) || 1;
+            const u = Number(paramValues['unit_scale'] ?? 1) || 1;
+            x = (p / q) * u;
+          } else if (pVal !== undefined && (ptDef.id === 'P' || ptDef.name === 'P')) {
             x = Number(pVal);
           } else if (paramValues['param_t'] !== undefined && (ptDef.id === 'P' || ptDef.name === 'P')) {
             x = x0 + v * t;
+          }
+
+          if (paramValues['unit_scale'] !== undefined && (ptDef.id === 'U' || ptDef.name === '1')) {
+            x = Number(paramValues['unit_scale'] ?? 1);
           }
 
           if (ptDef.id === 'A' && (paramValues['point_a'] !== undefined || paramValues['interval_a'] !== undefined)) {
@@ -1069,6 +1126,45 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
           }
           if (ptDef.id === 'B' && (paramValues['point_b'] !== undefined || paramValues['interval_b'] !== undefined)) {
             x = Number(paramValues['point_b'] ?? paramValues['interval_b']);
+          }
+        }
+
+        // 垂线段最短模型 (SB-KP047)
+        if (tpl.includes('perpendicular')) {
+          if (paramValues['param_x_c'] !== undefined && (ptDef.id === 'C' || ptDef.name?.includes('C'))) {
+            x = Number(paramValues['param_x_c']);
+          }
+          if (paramValues['param_y_p'] !== undefined && (ptDef.id === 'P' || ptDef.name?.includes('P'))) {
+            y = Number(paramValues['param_y_p']);
+          }
+        }
+
+        // 函数模型动点 (SB-KP032, SB-KP036, SB-KP037)
+        if (tpl.includes('direct')) {
+          const k = Number(paramValues['k_prop'] ?? paramValues['slope_k'] ?? 2);
+          const xPos = Number(paramValues['x_pos'] ?? 2);
+          if (ptDef.id === 'p1' || ptDef.name === 'P') {
+            x = xPos;
+            y = k * xPos;
+          } else if (ptDef.id === 'px') {
+            x = xPos;
+            y = 0;
+          }
+        } else if (tpl.includes('inverse')) {
+          const k = Number(paramValues['inv_k'] ?? paramValues['rect_k'] ?? 6);
+          const xPos = Number(paramValues['x_pos'] ?? paramValues['x_pt'] ?? 2);
+          if (ptDef.id === 'p1' || ptDef.id === 'p' || ptDef.name?.includes('P(x')) {
+            x = xPos;
+            y = xPos !== 0 ? k / xPos : 0;
+          } else if (ptDef.id === 'p2' || ptDef.name?.includes("P'")) {
+            x = -xPos;
+            y = xPos !== 0 ? -k / xPos : 0;
+          } else if (ptDef.id === 'px') {
+            x = xPos;
+            y = 0;
+          } else if (ptDef.id === 'py') {
+            x = 0;
+            y = xPos !== 0 ? k / xPos : 0;
           }
         }
 
@@ -1105,17 +1201,11 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
 
       // 创建动点
       dragPoints.forEach((ptDef) => {
-        const isCenter = ptDef.id === 'O' || ptDef.id === 'Origin';
+        const isCenter = ptDef.id === 'O' || ptDef.id === 'Origin' || ptDef.id === 'o';
         const ptColor = isCenter ? '#34c759' : ensureVisibleOnDark(ptDef.color, '#38bdf8');
         const isDistractor = !!ptDef.isDistractor || String(ptDef.id).startsWith('distractor_');
         const showLabel = !isDistractor && Boolean(ptDef.name);
-        const isMaster =
-          Boolean(onParamChangeRef.current) &&
-          !ptDef.isFixed &&
-          !isCenter &&
-          !isDistractor &&
-          canInvertParam(tpl, ptDef, isCircleTemplate, config);
-        const isPtFixed = isMaster ? false : (ptDef.isFixed !== undefined ? !!ptDef.isFixed : true);
+        const isPtFixed = isCenter || isDistractor || ptDef.isFixed === true;
 
         const pt = board.create('point', [ptDef.x ?? 0, ptDef.y ?? 0], {
           name: showLabel ? (ptDef.name || ptDef.id) : '',
@@ -1136,13 +1226,22 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
         });
         elements[ptDef.id] = pt;
 
-        if (isMaster) {
+        if (!isPtFixed) {
           pt.on('down', () => {
             isDraggingRef.current = true;
           });
           pt.on('drag', () => {
             isDraggingRef.current = true;
-            if (onParamChangeRef.current) {
+            if (tpl.startsWith('number_axis') || tpl.includes('number_line')) {
+              const coordsMode =
+                typeof window !== 'undefined' && (window as any).JXG?.COORDS_BY_USER !== undefined
+                  ? (window as any).JXG.COORDS_BY_USER
+                  : typeof JXG?.COORDS_BY_USER !== 'undefined'
+                  ? JXG.COORDS_BY_USER
+                  : 1;
+              pt.setPosition(coordsMode, [pt.X(), 0]);
+            }
+            if (onParamChangeRef.current && canInvertParam(tpl, ptDef, isCircleTemplate, config)) {
               handleParamInversion(
                 tpl,
                 ptDef,
