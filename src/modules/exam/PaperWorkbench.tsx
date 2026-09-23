@@ -50,25 +50,33 @@ import { OnlineExam } from './OnlineExam';
 import { MathRenderer } from '../../components/math/MathRenderer';
 import { Icon } from '../../components/common/Icon';
 import { dbClient } from '../../engine/db/dbClient';
+import { useSessionStore } from '../../store/sessionStore';
 
 interface KpMeta {
   id: string;
   nameZh: string;
+  nameEn?: string;
   grade: number;
   semester: number;
   line: string;
 }
 
 const SEMESTERS = [
-  { grade: 7, semester: 1, key: '7-1', label: '7年级 上学期' },
-  { grade: 7, semester: 2, key: '7-2', label: '7年级 下学期' },
-  { grade: 8, semester: 1, key: '8-1', label: '8年级 上学期' },
-  { grade: 8, semester: 2, key: '8-2', label: '8年级 下学期' },
-  { grade: 9, semester: 1, key: '9-1', label: '9年级 上学期' },
-  { grade: 9, semester: 2, key: '9-2', label: '9年级 下学期 (中考总复习)' },
+  { grade: 7, semester: 1, key: '7-1', label: '7年级 上学期', labelEn: 'Grade 7 Sem 1' },
+  { grade: 7, semester: 2, key: '7-2', label: '7年级 下学期', labelEn: 'Grade 7 Sem 2' },
+  { grade: 8, semester: 1, key: '8-1', label: '8年级 上学期', labelEn: 'Grade 8 Sem 1' },
+  { grade: 8, semester: 2, key: '8-2', label: '8年级 下学期', labelEn: 'Grade 8 Sem 2' },
+  { grade: 9, semester: 1, key: '9-1', label: '9年级 上学期', labelEn: 'Grade 9 Sem 1' },
+  { grade: 9, semester: 2, key: '9-2', label: '9年级 下学期 (中考总复习)', labelEn: 'Grade 9 Sem 2 (Final Review)' },
 ] as const;
 
+const DEFAULT_TITLE_ZH = '初中数学全真模拟综合测试卷';
+const DEFAULT_TITLE_EN = 'Junior High Math Full Simulation Mock Exam';
+
 export const PaperWorkbench: React.FC = () => {
+  const locale = useSessionStore((state) => state.locale);
+  const isEn = String(locale).toLowerCase().startsWith('en');
+
   // 第一层：当前满分制体系 ('100' | '120' | '150')
   const [scoreSystem, setScoreSystem] = useState<FullScoreSystem>('100');
 
@@ -90,7 +98,15 @@ export const PaperWorkbench: React.FC = () => {
   ]);
 
   // 试卷标题
-  const [paperTitle, setPaperTitle] = useState<string>('初中数学全真模拟综合测试卷');
+  const [paperTitle, setPaperTitle] = useState<string>(isEn ? DEFAULT_TITLE_EN : DEFAULT_TITLE_ZH);
+
+  useEffect(() => {
+    setPaperTitle((prev) => {
+      if (prev === DEFAULT_TITLE_ZH && isEn) return DEFAULT_TITLE_EN;
+      if (prev === DEFAULT_TITLE_EN && !isEn) return DEFAULT_TITLE_ZH;
+      return prev;
+    });
+  }, [isEn]);
 
   // 已生成的试卷对象
   const [generatedPaper, setGeneratedPaper] = useState<GeneratedPaper | null>(null);
@@ -115,7 +131,7 @@ export const PaperWorkbench: React.FC = () => {
           ),
           dbClient.query<any>(
             'core',
-            'SELECT point_id as id, name_zh as nameZh, grade, semester, primary_line_id as line FROM knowledge_points ORDER BY point_id ASC'
+            'SELECT point_id as id, name_zh as nameZh, name_en as nameEn, grade, semester, primary_line_id as line FROM knowledge_points ORDER BY point_id ASC'
           ),
         ]);
 
@@ -301,7 +317,8 @@ export const PaperWorkbench: React.FC = () => {
     setIsGenerating(true);
     try {
       const paper = await drawQuestionsFromDb(dbClient, currentConfig, {
-        titleZh: paperTitle,
+        titleZh: isEn ? DEFAULT_TITLE_ZH : paperTitle,
+        titleEn: isEn ? paperTitle : DEFAULT_TITLE_EN,
         fullScore: spec.totalScore,
         timeLimitMinutes: spec.timeLimitMinutes,
       });
@@ -309,7 +326,8 @@ export const PaperWorkbench: React.FC = () => {
       setActiveView('print');
     } catch {
       const paper = drawQuestions(questionPool, currentConfig, {
-        titleZh: paperTitle,
+        titleZh: isEn ? DEFAULT_TITLE_ZH : paperTitle,
+        titleEn: isEn ? paperTitle : DEFAULT_TITLE_EN,
         fullScore: spec.totalScore,
         timeLimitMinutes: spec.timeLimitMinutes,
       });
@@ -326,7 +344,8 @@ export const PaperWorkbench: React.FC = () => {
     setIsGenerating(true);
     try {
       const paper = await drawQuestionsFromDb(dbClient, currentConfig, {
-        titleZh: paperTitle,
+        titleZh: isEn ? DEFAULT_TITLE_ZH : paperTitle,
+        titleEn: isEn ? paperTitle : DEFAULT_TITLE_EN,
         fullScore: spec.totalScore,
         timeLimitMinutes: spec.timeLimitMinutes,
       });
@@ -334,7 +353,8 @@ export const PaperWorkbench: React.FC = () => {
       setActiveView('online_exam');
     } catch {
       const paper = drawQuestions(questionPool, currentConfig, {
-        titleZh: paperTitle,
+        titleZh: isEn ? DEFAULT_TITLE_ZH : paperTitle,
+        titleEn: isEn ? paperTitle : DEFAULT_TITLE_EN,
         fullScore: spec.totalScore,
         timeLimitMinutes: spec.timeLimitMinutes,
       });
@@ -422,7 +442,7 @@ export const PaperWorkbench: React.FC = () => {
             }}
           >
             <Icon name="bolt" size={13} style={{ color: 'var(--ios-blue)' }} />
-            <span>模块四 · 实战测评 · 智能组卷中心</span>
+            <span>{isEn ? 'Module 4 · Exam Assessment · Paper Workbench' : '模块四 · 实战测评 · 智能组卷中心'}</span>
           </span>
 
           <span
@@ -440,14 +460,18 @@ export const PaperWorkbench: React.FC = () => {
             }}
           >
             <Icon name="layers" size={12} />
-            <span>全真题库 {questionPool.length > 0 ? questionPool.length : 2582} 题已就绪</span>
+            <span>
+              {isEn
+                ? `Full Question Pool: ${questionPool.length > 0 ? questionPool.length : 2582} Items Ready`
+                : `全真题库 ${questionPool.length > 0 ? questionPool.length : 2582} 题已就绪`}
+            </span>
           </span>
         </div>
 
         {/* 试卷标题编辑 */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ fontSize: '12px', color: 'var(--text-tertiary)', fontWeight: 600 }}>
-            试卷标题：
+            {isEn ? 'Paper Title:' : '试卷标题：'}
           </span>
           <input
             type="text"
@@ -497,10 +521,10 @@ export const PaperWorkbench: React.FC = () => {
             1
           </div>
           <h2 style={{ fontSize: '15px', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
-            第一层 · 满分制基准
+            {isEn ? 'Layer 1 · Full Score Benchmark' : '第一层 · 满分制基准'}
           </h2>
           <span style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>
-            (决定整卷满分与初始考场规格)
+            {isEn ? '(Determines total score and baseline exam specifications)' : '(决定整卷满分与初始考场规格)'}
           </span>
         </div>
 
@@ -529,16 +553,18 @@ export const PaperWorkbench: React.FC = () => {
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: '16px', fontWeight: 800, color: isSelected ? 'var(--ios-blue)' : 'var(--text-primary)' }}>
-                    {sysSpec.nameZh}
+                    {isEn ? (sysSpec.nameEn || sysSpec.nameZh) : sysSpec.nameZh}
                   </span>
                   {isSelected && (
                     <span style={{ color: 'var(--ios-blue)', fontSize: '12px', fontWeight: 700 }}>
-                      <Icon name="check" size={14} /> 已选基准
+                      <Icon name="check" size={14} /> {isEn ? 'Selected' : '已选基准'}
                     </span>
                   )}
                 </div>
                 <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '8px', lineHeight: 1.5 }}>
-                  满分 {sysSpec.totalScore} 分 · 限时 {sysSpec.timeLimitMinutes} 分钟 · 共 {sysSpec.totalQuestions} 题
+                  {isEn
+                    ? `Full Score ${sysSpec.totalScore} Pts · ${sysSpec.timeLimitMinutes} Mins · ${sysSpec.totalQuestions} Questions`
+                    : `满分 ${sysSpec.totalScore} 分 · 限时 ${sysSpec.timeLimitMinutes} 分钟 · 共 ${sysSpec.totalQuestions} 题`}
                 </div>
               </div>
             );
@@ -576,17 +602,19 @@ export const PaperWorkbench: React.FC = () => {
               2
             </div>
             <h2 style={{ fontSize: '15px', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
-              第二层 · 学期向后覆盖与考点子集
+              {isEn ? 'Layer 2 · Semester Coverage & Knowledge Subset' : '第二层 · 学期向后覆盖与考点子集'}
             </h2>
             <span style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>
-              (考题组合考点必须是所选考点子集，杜绝超前知识点泄漏)
+              {isEn
+                ? '(Question points must be a subset of selected points, preventing knowledge leakage)'
+                : '(考题组合考点必须是所选考点子集，杜绝超前知识点泄漏)'}
             </span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <input
               type="text"
-              placeholder="搜索考点..."
+              placeholder={isEn ? "Search points..." : "搜索考点..."}
               value={kpSearchText}
               onChange={(e) => setKpSearchText(e.target.value)}
               style={{
@@ -612,7 +640,7 @@ export const PaperWorkbench: React.FC = () => {
                 fontWeight: 600,
               }}
             >
-              全选考点
+              {isEn ? 'Select All' : '全选考点'}
             </button>
             <span style={{ color: 'var(--border-subtle)' }}>|</span>
             <button
@@ -627,7 +655,7 @@ export const PaperWorkbench: React.FC = () => {
                 fontWeight: 600,
               }}
             >
-              清空
+              {isEn ? 'Clear' : '清空'}
             </button>
             <span style={{ color: 'var(--border-subtle)' }}>|</span>
             <button
@@ -645,7 +673,7 @@ export const PaperWorkbench: React.FC = () => {
                 gap: '4px',
               }}
             >
-              <span>{isKpGridExpanded ? '收起考点网格' : '展开考点网格'}</span>
+              <span>{isKpGridExpanded ? (isEn ? 'Collapse Grid' : '收起考点网格') : (isEn ? 'Expand Grid' : '展开考点网格')}</span>
               <Icon name={isKpGridExpanded ? 'chevron-up' : 'chevron-down'} size={12} />
             </button>
           </div>
@@ -677,7 +705,7 @@ export const PaperWorkbench: React.FC = () => {
                   boxShadow: isCurrentSem ? '0 2px 8px rgba(0, 113, 227, 0.25)' : 'none',
                 }}
               >
-                {sem.label}
+                {isEn ? sem.labelEn : sem.label}
               </button>
             );
           })}
@@ -685,7 +713,9 @@ export const PaperWorkbench: React.FC = () => {
 
         {/* 考点勾选统计与网格 */}
         <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
-          已选定 <strong>{selectedKpIds.length}</strong> / {effectiveKpDirectory.length} 个考点
+          {isEn
+            ? <>Selected <strong>{selectedKpIds.length}</strong> / {effectiveKpDirectory.length} Points</>
+            : <>已选定 <strong>{selectedKpIds.length}</strong> / {effectiveKpDirectory.length} 个考点</>}
         </div>
 
         {isKpGridExpanded && (
@@ -704,6 +734,7 @@ export const PaperWorkbench: React.FC = () => {
           >
             {filteredKps.map((kp) => {
               const isChecked = selectedKpIds.includes(kp.id);
+              const kpName = isEn ? (kp.nameEn || kp.nameZh) : kp.nameZh;
               return (
                 <label
                   key={kp.id}
@@ -726,7 +757,7 @@ export const PaperWorkbench: React.FC = () => {
                     style={{ accentColor: 'var(--ios-blue)' }}
                   />
                   <span style={{ fontWeight: isChecked ? 700 : 400 }}>
-                    {kp.id} · {kp.nameZh}
+                    {kp.id} · {kpName}
                   </span>
                 </label>
               );
@@ -764,10 +795,12 @@ export const PaperWorkbench: React.FC = () => {
             3
           </div>
           <h2 style={{ fontSize: '15px', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
-            第三层 · 题型题量与分值配置
+            {isEn ? 'Layer 3 · Question Types, Counts & Scores' : '第三层 · 题型题量与分值配置'}
           </h2>
           <span style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>
-            (选择、填空可自由微调，解答题数量与分值依中考阶梯自动倒推)
+            {isEn
+              ? '(Choice & fill-in-the-blank are customizable, solution questions auto-deduced by standard ladder)'
+              : '(选择、填空可自由微调，解答题数量与分值依中考阶梯自动倒推)'}
           </span>
         </div>
 
@@ -783,15 +816,15 @@ export const PaperWorkbench: React.FC = () => {
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
               <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>
-                一、单项选择题
+                {isEn ? 'I. Multiple Choice' : '一、单项选择题'}
               </span>
               <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--ios-blue)' }}>
-                小计 {totalChoiceScore} 分
+                {isEn ? `Subtotal: ${totalChoiceScore} Pts` : `小计 ${totalChoiceScore} 分`}
               </span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>题目数量：</span>
+                <span style={{ color: 'var(--text-secondary)' }}>{isEn ? 'Question Count:' : '题目数量：'}</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <button
                     type="button"
@@ -813,11 +846,11 @@ export const PaperWorkbench: React.FC = () => {
                   >
                     +
                   </button>
-                  <span style={{ color: 'var(--text-tertiary)', fontSize: '11px' }}>题</span>
+                  <span style={{ color: 'var(--text-tertiary)', fontSize: '11px' }}>{isEn ? 'items' : '题'}</span>
                 </div>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>每题分值：</span>
+                <span style={{ color: 'var(--text-secondary)' }}>{isEn ? 'Score per Question:' : '每题分值：'}</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <button
                     type="button"
@@ -839,7 +872,7 @@ export const PaperWorkbench: React.FC = () => {
                   >
                     +
                   </button>
-                  <span style={{ color: 'var(--text-tertiary)', fontSize: '11px' }}>分</span>
+                  <span style={{ color: 'var(--text-tertiary)', fontSize: '11px' }}>{isEn ? 'pts' : '分'}</span>
                 </div>
               </div>
             </div>
@@ -856,15 +889,15 @@ export const PaperWorkbench: React.FC = () => {
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
               <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>
-                二、填空题
+                {isEn ? 'II. Fill-in-the-Blank' : '二、填空题'}
               </span>
               <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--ios-blue)' }}>
-                小计 {totalFillScore} 分
+                {isEn ? `Subtotal: ${totalFillScore} Pts` : `小计 ${totalFillScore} 分`}
               </span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>题目数量：</span>
+                <span style={{ color: 'var(--text-secondary)' }}>{isEn ? 'Question Count:' : '题目数量：'}</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <button
                     type="button"
@@ -886,11 +919,11 @@ export const PaperWorkbench: React.FC = () => {
                   >
                     +
                   </button>
-                  <span style={{ color: 'var(--text-tertiary)', fontSize: '11px' }}>题</span>
+                  <span style={{ color: 'var(--text-tertiary)', fontSize: '11px' }}>{isEn ? 'items' : '题'}</span>
                 </div>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>每题分值：</span>
+                <span style={{ color: 'var(--text-secondary)' }}>{isEn ? 'Score per Question:' : '每题分值：'}</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <button
                     type="button"
@@ -912,7 +945,7 @@ export const PaperWorkbench: React.FC = () => {
                   >
                     +
                   </button>
-                  <span style={{ color: 'var(--text-tertiary)', fontSize: '11px' }}>分</span>
+                  <span style={{ color: 'var(--text-tertiary)', fontSize: '11px' }}>{isEn ? 'pts' : '分'}</span>
                 </div>
               </div>
             </div>
@@ -931,7 +964,7 @@ export const PaperWorkbench: React.FC = () => {
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
               <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>
-                三、解答题 (动态倒推)
+                {isEn ? 'III. Extended Solution (Auto-Deduced)' : '三、解答题 (动态倒推)'}
               </span>
               <span
                 style={{
@@ -940,22 +973,24 @@ export const PaperWorkbench: React.FC = () => {
                   color: remainingSolutionScore >= 20 ? 'var(--ios-green)' : 'var(--ios-red)',
                 }}
               >
-                小计 {remainingSolutionScore} 分
+                {isEn ? `Subtotal: ${remainingSolutionScore} Pts` : `小计 ${remainingSolutionScore} 分`}
               </span>
             </div>
 
             <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
               <div>
-                题量推导：<strong>{derivedSolutionCount}</strong> 道大题
+                {isEn ? 'Deduced Questions: ' : '题量推导：'}<strong>{derivedSolutionCount}</strong> {isEn ? 'questions' : '道大题'}
               </div>
               <div style={{ marginTop: '4px' }}>
-                中考标准分值阶梯：
+                {isEn ? 'Standard Score Ladder:' : '中考标准分值阶梯：'}
                 <div style={{ fontWeight: 700, color: 'var(--text-primary)', marginTop: '2px' }}>
-                  [{solutionScoreLadder.join(', ')}] 分
+                  [{solutionScoreLadder.join(', ')}] {isEn ? 'Pts' : '分'}
                 </div>
               </div>
               <div style={{ marginTop: '6px', fontSize: '11px', color: 'var(--text-tertiary)' }}>
-                整卷满分 {spec.totalScore} - 选择 {totalChoiceScore} - 填空 {totalFillScore} = 剩余 {remainingSolutionScore} 分
+                {isEn
+                  ? `Total ${spec.totalScore} - Choice ${totalChoiceScore} - Fill ${totalFillScore} = Remaining ${remainingSolutionScore} Pts`
+                  : `整卷满分 ${spec.totalScore} - 选择 ${totalChoiceScore} - 填空 ${totalFillScore} = 剩余 ${remainingSolutionScore} 分`}
               </div>
             </div>
           </div>
@@ -992,25 +1027,27 @@ export const PaperWorkbench: React.FC = () => {
               4
             </div>
             <h2 style={{ fontSize: '15px', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
-              第四层 · 试卷难度配比 (L1 ~ L5)
+              {isEn ? 'Layer 4 · Difficulty Ratio (L1 ~ L5)' : '第四层 · 试卷难度配比 (L1 ~ L5)'}
             </h2>
             <span style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>
-              (波浪级联外向传导算法，就近吸收，总和严格等于 100%)
+              {isEn
+                ? '(Wave cascading algorithm with outward conduction, sum strictly equals 100%)'
+                : '(波浪级联外向传导算法，就近吸收，总和严格等于 100%)'}
             </span>
           </div>
 
           <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--ios-blue)' }}>
-            总和: {diffWeights.reduce((a, b) => a + b, 0)}%
+            {isEn ? 'Total: ' : '总和: '}{diffWeights.reduce((a, b) => a + b, 0)}%
           </div>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '12px' }}>
           {[
-            { label: 'L1 送分基础', tip: '对应题库 L1+L2 (415题)' },
-            { label: 'L2 常规理解', tip: '对应题库 L3+L4 (1117题)' },
-            { label: 'L3 迁移中档', tip: '对应题库 L5+L6 (743题)' },
-            { label: 'L4 思维探究', tip: '对应题库 L7+L8 (246题)' },
-            { label: 'L5 综合压轴', tip: '对应题库 L9 (61题)' },
+            { label: isEn ? 'L1 Foundation' : 'L1 送分基础', tip: isEn ? 'Pool L1+L2 (415 Qs)' : '对应题库 L1+L2 (415题)' },
+            { label: isEn ? 'L2 Standard' : 'L2 常规理解', tip: isEn ? 'Pool L3+L4 (1117 Qs)' : '对应题库 L3+L4 (1117题)' },
+            { label: isEn ? 'L3 Intermediate' : 'L3 迁移中档', tip: isEn ? 'Pool L5+L6 (743 Qs)' : '对应题库 L5+L6 (743题)' },
+            { label: isEn ? 'L4 Advanced' : 'L4 思维探究', tip: isEn ? 'Pool L7+L8 (246 Qs)' : '对应题库 L7+L8 (246题)' },
+            { label: isEn ? 'L5 Challenge' : 'L5 综合压轴', tip: isEn ? 'Pool L9 (61 Qs)' : '对应题库 L9 (61题)' },
           ].map((d, idx) => (
             <div
               key={idx}
@@ -1075,19 +1112,27 @@ export const PaperWorkbench: React.FC = () => {
             />
             <h3 style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
               {inventoryResult.canGenerate
-                ? '题库库存充足 · 满足出题要求'
-                : '题库库存预警 · 无法生成试卷 (方案 A 拦截)'}
+                ? (isEn ? 'Sufficient Inventory · Requirements Met' : '题库库存充足 · 满足出题要求')
+                : (isEn ? 'Inventory Warning · Cannot Generate (Plan A Intercept)' : '题库库存预警 · 无法生成试卷 (方案 A 拦截)')}
             </h3>
           </div>
 
           <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
             {inventoryResult.canGenerate ? (
               <span>
-                所选考点内可用真题总数：{inventoryResult.totalAvailable} 题（选择 {inventoryResult.availableChoice}/{inventoryResult.requiredChoice}，填空 {inventoryResult.availableFill}/{inventoryResult.requiredFill}，解答 {inventoryResult.availableSolution}/{inventoryResult.requiredSolution}）。
+                {isEn
+                  ? `Available questions in selected points: ${inventoryResult.totalAvailable} (Choice ${inventoryResult.availableChoice}/${inventoryResult.requiredChoice}, Fill ${inventoryResult.availableFill}/${inventoryResult.requiredFill}, Solution ${inventoryResult.availableSolution}/${inventoryResult.requiredSolution}).`
+                  : `所选考点内可用真题总数：${inventoryResult.totalAvailable} 题（选择 ${inventoryResult.availableChoice}/${inventoryResult.requiredChoice}，填空 ${inventoryResult.availableFill}/${inventoryResult.requiredFill}，解答 ${inventoryResult.availableSolution}/${inventoryResult.requiredSolution}）。`}
               </span>
             ) : (
               <span style={{ color: 'var(--ios-red)', fontWeight: 600 }}>
-                <MathRenderer content={inventoryResult.shortageWarningZh || ''} />
+                <MathRenderer
+                  content={
+                    (isEn ? inventoryResult.shortageWarningEn : inventoryResult.shortageWarningZh) ||
+                    inventoryResult.shortageWarningZh ||
+                    ''
+                  }
+                />
               </span>
             )}
           </div>
@@ -1120,7 +1165,7 @@ export const PaperWorkbench: React.FC = () => {
             }}
           >
             <Icon name="print" size={15} />
-            <span>生成中考全真模拟试卷 (A4双栏排版)</span>
+            <span>{isEn ? 'Generate Mock Paper (A4 Dual-Column)' : '生成中考全真模拟试卷 (A4双栏排版)'}</span>
           </button>
 
           <button
@@ -1148,7 +1193,7 @@ export const PaperWorkbench: React.FC = () => {
             }}
           >
             <Icon name="rocket" size={15} />
-            <span>开启在线全真测评 (限时答题)</span>
+            <span>{isEn ? 'Start Online Timed Exam' : '开启在线全真测评 (限时答题)'}</span>
           </button>
         </div>
       </div>

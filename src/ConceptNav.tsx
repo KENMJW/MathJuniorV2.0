@@ -39,7 +39,7 @@ function getMasterExampleForPoint(point: KnowledgePointRecord): MasterExampleIte
     bound_target_id: point.point_id,
     source: `${point.name_zh} · 中考母题精解`,
     stem_zh: `已知关于【${point.name_zh}】的典型数学应用：试运用相关公理与定理进行严格推导求解。`,
-    stem_en: `Standard master example on ${point.name_en}.`,
+    stem_en: `Standard master example on ${point.name_en || point.name_zh}: apply relevant axioms and theorems for rigorous proof.`,
     dim1_origin: point.origin_story_zh,
     dim2_essence: point.intuitive_essence_zh,
     dim3_rigor: point.formal_definition_zh || "由相关公理体系与定义严格推导可得。",
@@ -416,7 +416,7 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
         >
           <Icon name="pin" size={13} />
           <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-            {locale === "en" ? currentPoint.name_en : currentPoint.name_zh} · {currentPoint.grade}年级 {currentPoint.semester === 1 ? '上学期' : '下学期'}
+            {locale === "en" ? (currentPoint.name_en || currentPoint.name_zh) : currentPoint.name_zh} · {locale === "en" ? `Grade ${currentPoint.grade} Sem ${currentPoint.semester}` : `${currentPoint.grade}年级 ${currentPoint.semester === 1 ? '上学期' : '下学期'}`}
           </span>
           <span style={{ display: "none" }}>{currentPoint.point_id}</span>
           <Icon
@@ -466,10 +466,10 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
           }}
         >
           {[
-            { key: "stages", label: "四段论精讲", icon: "book" },
-            { key: "sandbox", label: "链接沙盒", icon: "flask" },
-            { key: "master", label: "考点母题", icon: "trophy" },
-            { key: "practice", label: "单点快练", icon: "bolt" },
+            { key: "stages", label: locale === "en" ? "Concept Lecture" : "四段论精讲", icon: "book" },
+            { key: "sandbox", label: locale === "en" ? "Linked Sandbox" : "链接沙盒", icon: "flask" },
+            { key: "master", label: locale === "en" ? "Point Master" : "考点母题", icon: "trophy" },
+            { key: "practice", label: locale === "en" ? "Quick Practice" : "单点快练", icon: "bolt" },
           ].map((tab) => {
             const active = activeSubTab === tab.key;
             return (

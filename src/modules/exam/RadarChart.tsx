@@ -24,6 +24,7 @@ export interface RadarChartProps {
   scores: CognitiveRadarScores;
   size?: number;
   className?: string;
+  locale?: string;
 }
 
 interface DimensionConfig {
@@ -32,6 +33,7 @@ interface DimensionConfig {
   titleEn: string;
   color: string;
   desc: string;
+  descEn: string;
 }
 
 const DIMENSIONS: DimensionConfig[] = [
@@ -41,6 +43,7 @@ const DIMENSIONS: DimensionConfig[] = [
     titleEn: 'Knowledge Breadth',
     color: "var(--ios-blue)", // iOS Blue
     desc: '覆盖 107 个中考核心知识考点的宽度与基础熟练度',
+    descEn: 'Coverage breadth and mastery across core knowledge points',
   },
   {
     key: 'insight',
@@ -48,6 +51,7 @@ const DIMENSIONS: DimensionConfig[] = [
     titleEn: 'Deep Insight',
     color: "var(--ios-purple)", // iOS Purple
     desc: 'L4~L5 压轴题、思维拐点与旗舰动力学模型的洞察能力',
+    descEn: 'Insight into L4~L5 challenge problems and flagship models',
   },
   {
     key: 'hiddenCondition',
@@ -55,6 +59,7 @@ const DIMENSIONS: DimensionConfig[] = [
     titleEn: 'Hidden Condition Discovery',
     color: "var(--ios-orange)", // iOS Orange
     desc: '几何辅助线添加、特殊位置构造与隐含等量关系识别',
+    descEn: 'Identifying auxiliary lines, special configurations & invariants',
   },
   {
     key: 'resilience',
@@ -62,6 +67,7 @@ const DIMENSIONS: DimensionConfig[] = [
     titleEn: 'Computational Resilience',
     color: "var(--ios-green)", // iOS Green
     desc: '复杂代数运算、多步推导踩分点及无差错变形耐力',
+    descEn: 'Multi-step algebraic operations and accurate problem solving',
   },
 ];
 
@@ -69,7 +75,9 @@ export const RadarChart: React.FC<RadarChartProps> = ({
   scores,
   size = 320,
   className = '',
+  locale = 'zh-CN',
 }) => {
+  const isEn = String(locale).toLowerCase().startsWith('en');
   const cx = size / 2;
   const cy = size / 2;
   const radius = (size / 2) * 0.68; // 预留四周文本空间
@@ -219,14 +227,14 @@ export const RadarChart: React.FC<RadarChartProps> = ({
                   fontWeight="600"
                   fill="var(--text-primary)"
                 >
-                  {dim.titleZh}
+                  {isEn ? dim.titleEn : dim.titleZh}
                   <tspan
                     dx="4"
                     fontSize="11"
                     fontWeight="700"
                     fill={dim.color}
                   >
-                    {scoreVal}分
+                    {scoreVal}{isEn ? ' pts' : '分'}
                   </tspan>
                 </text>
               </g>
@@ -274,12 +282,12 @@ export const RadarChart: React.FC<RadarChartProps> = ({
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                {dim.titleZh}
+                {isEn ? dim.titleEn : dim.titleZh}
               </span>
               <span
                 style={{ fontSize: '0.75rem', fontWeight: 900, color: dim.color }}
               >
-                {scoreValues[idx]}分
+                {scoreValues[idx]}{isEn ? ' pts' : '分'}
               </span>
             </div>
             <p
@@ -293,7 +301,7 @@ export const RadarChart: React.FC<RadarChartProps> = ({
                 textOverflow: 'ellipsis',
               }}
             >
-              {dim.desc}
+              {isEn ? dim.descEn : dim.desc}
             </p>
           </div>
         ))}

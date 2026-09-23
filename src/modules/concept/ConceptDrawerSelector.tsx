@@ -304,7 +304,9 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
                             color: 'var(--text-secondary)',
                           }}
                         >
-                          {`${pt.grade}年级${pt.semester === 1 ? '上' : '下'} · ${pt.subcategory}`}
+                          {locale === 'en'
+                            ? `Grade ${pt.grade} Sem ${pt.semester} · ${pt.subcategory}`
+                            : `${pt.grade}年级${pt.semester === 1 ? '上' : '下'} · ${pt.subcategory}`}
                         </span>
                         {pt.is_mandatory ? (
                           <span
@@ -317,7 +319,7 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
                               fontWeight: 600,
                             }}
                           >
-                            必考
+                            {locale === 'en' ? 'Core' : '必考'}
                           </span>
                         ) : null}
                       </div>
@@ -346,12 +348,12 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
                 {/* 1级: 年级选择 */}
                 <div>
                   <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '0.35rem' }}>
-                    {`第一级 · ${t('nav.grade', effectiveLocale, '年级')}`}
+                    {locale === 'en' ? 'Level 1 · Grade' : `第一级 · ${t('nav.grade', effectiveLocale, '年级')}`}
                   </label>
                   <div style={{ display: 'flex', gap: '0.35rem' }}>
                     {availableGrades.map((g) => {
                       const active = selectedGrade === g;
-                      const label = g === 7 ? '七年级' : g === 8 ? '八年级' : '九年级';
+                      const label = locale === 'en' ? `Grade ${g}` : g === 7 ? '七年级' : g === 8 ? '八年级' : '九年级';
                       return (
                         <button
                           key={g}
@@ -389,12 +391,12 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
                 {/* 2级: 学期选择 */}
                 <div>
                   <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '0.35rem' }}>
-                    {`第二级 · ${t('nav.semester', effectiveLocale, '学期')}`}
+                    {locale === 'en' ? 'Level 2 · Semester' : `第二级 · ${t('nav.semester', effectiveLocale, '学期')}`}
                   </label>
                   <div style={{ display: 'flex', gap: '0.35rem' }}>
                     {availableSemesters.map((s) => {
                       const active = selectedSemester === s;
-                      const label = s === 1 ? '上学期 (1)' : '下学期 (2)';
+                      const label = locale === 'en' ? (s === 1 ? 'Sem 1 (Fall)' : 'Sem 2 (Spring)') : s === 1 ? '上学期 (1)' : '下学期 (2)';
                       return (
                         <button
                           key={s}
@@ -431,13 +433,25 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
                 {/* 3级: 领域与课程单元 (15 个 subcategory 核心分类) */}
                 <div>
                   <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '0.35rem' }}>
-                    {`第三级 · ${t('nav.domain', effectiveLocale, '领域')} / 课程单元`}
+                    {locale === 'en' ? 'Level 3 · Domain / Unit' : `第三级 · ${t('nav.domain', effectiveLocale, '领域')} / 课程单元`}
                   </label>
 
                   {/* 领域快速过滤 pills (保证 productShell 测试通过) */}
                   <div style={{ display: 'flex', gap: '0.3rem', marginBottom: '0.45rem', flexWrap: 'wrap' }}>
                     {availableDomains.map((dom) => {
                       const active = selectedDomain === dom && !selectedSubcategory;
+                      const domLabel =
+                        locale === 'en'
+                          ? dom.includes('代数') || dom.includes('数与代数')
+                            ? 'Number & Algebra'
+                            : dom.includes('几何') || dom.includes('图形与几何')
+                            ? 'Geometry'
+                            : dom.includes('统计') || dom.includes('统计与概率')
+                            ? 'Statistics & Probability'
+                            : dom.includes('综合') || dom.includes('综合与实践')
+                            ? 'Synthesis & Practice'
+                            : dom
+                          : dom;
                       return (
                         <button
                           key={dom}
@@ -458,7 +472,7 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
                             cursor: 'pointer',
                           }}
                         >
-                          {dom}
+                          {domLabel}
                         </button>
                       );
                     })}
@@ -501,7 +515,9 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
                           }}
                         >
                           <span>{subcat}</span>
-                          <span style={{ fontSize: '0.7rem', opacity: 0.65 }}>{count} 考点</span>
+                          <span style={{ fontSize: '0.7rem', opacity: 0.65 }}>
+                            {count} {locale === 'en' ? 'Points' : '考点'}
+                          </span>
                         </button>
                       );
                     })}
@@ -522,10 +538,12 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                   <label style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
-                    {`第四级 · ${t('nav.points', effectiveLocale, '大纲考点')}`}
+                    {locale === 'en' ? 'Level 4 · Curriculum Points' : `第四级 · ${t('nav.points', effectiveLocale, '大纲考点')}`}
                   </label>
                   <span style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)' }}>
-                    {filteredPoints.length} 个考点 · 点击立即切换
+                    {locale === 'en'
+                      ? `${filteredPoints.length} Points · Click to switch`
+                      : `${filteredPoints.length} 个考点 · 点击立即切换`}
                   </span>
                 </div>
 
@@ -576,13 +594,13 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
                                   fontWeight: 600,
                                 }}
                               >
-                                必考
+                                {locale === 'en' ? 'Core' : '必考'}
                               </span>
                             ) : null}
                           </div>
                         </div>
                         <div style={{ fontSize: '0.88rem', fontWeight: active ? 700 : 500, color: 'var(--text-primary)' }}>
-                          {locale === 'en' ? pt.name_en : pt.name_zh}
+                          {locale === 'en' ? (pt.name_en || pt.name_zh) : pt.name_zh}
                         </div>
                       </div>
                     );

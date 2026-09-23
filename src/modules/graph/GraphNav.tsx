@@ -379,7 +379,7 @@ export const GraphNav: React.FC<GraphNavProps> = ({
         >
           <Icon name="compass" size={14} />
           <span>
-            {currentLine.line_id} · {locale === 'en' ? currentLine.name_en : currentLine.name_zh}
+            {currentLine.line_id} · {locale === 'en' ? (currentLine.name_en || currentLine.name_zh) : currentLine.name_zh}
           </span>
           <span
             style={{
@@ -390,7 +390,15 @@ export const GraphNav: React.FC<GraphNavProps> = ({
               fontWeight: 600,
             }}
           >
-            {currentLine.domain}
+            {locale === 'en'
+              ? currentLine.domain.includes('代数')
+                ? 'Algebra'
+                : currentLine.domain.includes('几何')
+                ? 'Geometry'
+                : currentLine.domain.includes('统计')
+                ? 'Statistics'
+                : 'Synthesis'
+              : currentLine.domain}
           </span>
           <Icon
             name="chevron-down"
@@ -468,7 +476,7 @@ export const GraphNav: React.FC<GraphNavProps> = ({
                       }}
                     />
                     <span style={{ fontSize: '12px', fontWeight: 700, color: group.themeColor }}>
-                      {group.domain}
+                      {locale === 'en' ? (group.domainEn || group.domain) : group.domain}
                     </span>
                   </div>
 
@@ -494,7 +502,7 @@ export const GraphNav: React.FC<GraphNavProps> = ({
                             boxShadow: isSelected ? '0 2px 6px rgba(0,0,0,0.1)' : 'none',
                           }}
                         >
-                          {item.name}
+                          {locale === 'en' ? (item.nameEn || item.name) : item.name}
                         </button>
                       );
                     })}
@@ -524,10 +532,10 @@ export const GraphNav: React.FC<GraphNavProps> = ({
           }}
         >
           {[
-            { key: 'concept', label: '概念精讲', icon: 'book' },
-            { key: 'sandbox', label: '链接沙盒', icon: 'flask' },
-            { key: 'master', label: '谱系母题', icon: 'trophy' },
-            { key: 'practice', label: '专项测评', icon: 'bolt' },
+            { key: 'concept', label: locale === 'en' ? 'Concept Lecture' : '概念精讲', icon: 'book' },
+            { key: 'sandbox', label: locale === 'en' ? 'Linked Sandbox' : '链接沙盒', icon: 'flask' },
+            { key: 'master', label: locale === 'en' ? 'Line Master' : '谱系母题', icon: 'trophy' },
+            { key: 'practice', label: locale === 'en' ? 'Line Practice' : '专项测评', icon: 'bolt' },
           ].map((tab) => {
             const active = activeTab === tab.key;
             return (
@@ -608,33 +616,33 @@ export const GraphNav: React.FC<GraphNavProps> = ({
                 {
                   id: 'origin',
                   num: '①',
-                  title: '源头基石',
+                  title: locale === 'en' ? 'Origin Foundation' : '源头基石',
                   color: 'var(--ios-blue)',
-                  content: currentLine.origin_foundation_zh,
+                  content: (locale === 'en' && currentLine.origin_foundation_en) ? currentLine.origin_foundation_en : currentLine.origin_foundation_zh,
                   icon: 'anchor',
                 },
                 {
                   id: 'spiral',
                   num: '②',
-                  title: '螺旋跃迁路径',
+                  title: locale === 'en' ? 'Spiral Leap Path' : '螺旋跃迁路径',
                   color: 'var(--ios-purple)',
-                  content: currentLine.spiral_leaps_zh,
+                  content: (locale === 'en' && currentLine.spiral_leaps_en) ? currentLine.spiral_leaps_en : currentLine.spiral_leaps_zh,
                   icon: 'git-branch',
                 },
                 {
                   id: 'method',
                   num: '③',
-                  title: '核心思想方法',
+                  title: locale === 'en' ? 'Core Methodology' : '核心思想方法',
                   color: 'var(--ios-green)',
-                  content: currentLine.methodology_zh,
+                  content: (locale === 'en' && currentLine.methodology_en) ? currentLine.methodology_en : currentLine.methodology_zh,
                   icon: 'cpu',
                 },
                 {
                   id: 'exam',
                   num: '④',
-                  title: '中考压轴矩阵',
+                  title: locale === 'en' ? 'Exam Matrix' : '中考压轴矩阵',
                   color: 'var(--ios-orange)',
-                  content: currentLine.exam_matrix_zh,
+                  content: (locale === 'en' && currentLine.exam_matrix_en) ? currentLine.exam_matrix_en : currentLine.exam_matrix_zh,
                   icon: 'target',
                 },
               ].map((stage) => (
@@ -682,7 +690,7 @@ export const GraphNav: React.FC<GraphNavProps> = ({
                       color: 'var(--text-secondary)',
                     }}
                   >
-                    <MathRenderer content={stage.content || '暂无内容'} />
+                    <MathRenderer content={stage.content || (locale === 'en' ? 'Content in preparation' : '暂无内容')} />
                   </div>
                 </div>
               ))}
@@ -692,7 +700,7 @@ export const GraphNav: React.FC<GraphNavProps> = ({
             <div style={{ position: 'sticky', top: '90px' }}>
               <LineSwimlane
                 lineId={currentLine.line_id}
-                lineName={currentLine.name_zh}
+                lineName={locale === 'en' ? (currentLine.name_en || currentLine.name_zh) : currentLine.name_zh}
                 points={currentLinePoints}
               />
             </div>

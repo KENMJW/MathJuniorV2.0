@@ -18,83 +18,167 @@ export interface ConceptFourStagesProps {
 /**
  * 经典典籍高亮引用辅助函数 (左侧 55% 溯源引用框)
  */
-function getAncientQuote(pointId: string, stage: StageNumber, nameZh: string): { book: string; quote: string } {
+function getAncientQuote(pointId: string, stage: StageNumber, nameZh: string, locale: string = 'zh'): { book: string; quote: string } {
+  const isEn = String(locale).toLowerCase().startsWith('en');
+
   if (pointId === 'KP-023' || nameZh.includes('配方法')) {
     if (stage === 1) {
-      return {
-        book: '《代数学》（Kitāb al-Jabr wa-l-Muqābala）',
-        quote: '“若有平方与根等于数，则画一正方形表示未知数之平方，在其两边各补一矩形，补齐缺失之小正方形角块，方程自明。”',
-      };
+      return isEn
+        ? {
+            book: 'Kitāb al-Jabr wa-l-Muqābala (The Book of Algebra)',
+            quote: '"If you have a square and roots equal to numbers, construct a square representing the unknown squared, add two rectangles on its sides, and complete the missing corner square to solve the equation."',
+          }
+        : {
+            book: '《代数学》（Kitāb al-Jabr wa-l-Muqābala）',
+            quote: '“若有平方与根等于数，则画一正方形表示未知数之平方，在其两边各补一矩形，补齐缺失之小正方形角块，方程自明。”',
+          };
     }
     if (stage === 2) {
-      return {
-        book: '阿尔·花拉子米 · 几何配方法',
-        quote: '“以面积割补补齐正方形缺失之右下角，一次项系数一半之平方 $(b/2)^2$ 即为面积补丁。”',
-      };
+      return isEn
+        ? {
+            book: 'Al-Khwarizmi · Geometric Completing the Square',
+            quote: '"By dissecting and completing the area of the missing corner, the square of half the root coefficient $(b/2)^2$ serves as the exact completing tile."',
+          }
+        : {
+            book: '阿尔·花拉子米 · 几何配方法',
+            quote: '“以面积割补补齐正方形缺失之右下角，一次项系数一半之平方 $(b/2)^2$ 即为面积补丁。”',
+          };
     }
     if (stage === 3) {
-      return {
-        book: '《九章算术》· 开方篇',
-        quote: '“开方作法本算，借一算步之，超一等，配实除法，以从开平方之术。”',
-      };
+      return isEn
+        ? {
+            book: 'Nine Chapters on the Mathematical Art · Square Root Extraction',
+            quote: '"To extract the root by geometric division: step by step configure the area and align with root-extraction algorithms."',
+          }
+        : {
+            book: '《九章算术》· 开方篇',
+            quote: '“开方作法本算，借一算步之，超一等，配实除法，以从开平方之术。”',
+          };
     }
-    return {
-      book: '代数方程正逆辨正',
-      quote: '“二次项系数必先化为一，两边同加半方；审视判别式临界，辨根之虚实与最值极点。”',
-    };
+    return isEn
+      ? {
+          book: 'Algebraic Invariants & Critical Variations',
+          quote: '"Normalize the leading coefficient to one, add the square of half the linear coefficient to both sides; inspect the discriminant boundary to discern root reality and extrema."',
+        }
+      : {
+          book: '代数方程正逆辨正',
+          quote: '“二次项系数必先化为一，两边同加半方；审视判别式临界，辨根之虚实与最值极点。”',
+        };
   }
 
   if (pointId === 'KP-058' || nameZh.includes('勾股')) {
     if (stage === 1) {
-      return {
-        book: '《周髀算经》卷上',
-        quote: '“数之法出于圆方，圆出于方，方出于矩，矩出于九九八十一。故折矩，以为勾广三，股修四，径隅五。”',
-      };
+      return isEn
+        ? {
+            book: 'Zhou Bi Suan Jing (The Arithmetical Classic of the Gnomon)',
+            quote: '"Numbers originate from the circle and square; fold the carpenter’s square: breadth three, length four, diagonal five."',
+          }
+        : {
+            book: '《周髀算经》卷上',
+            quote: '“数之法出于圆方，圆出于方，方出于矩，矩出于九九八十一。故折矩，以为勾广三，股修四，径隅五。”',
+          };
     }
     if (stage === 2) {
-      return {
-        book: '《九章算术》· 卷九 勾股篇',
-        quote: '“勾股各自乘，并之，为弦实。开方除之，即弦。以盈补虚，出入相补，其积不失。”',
-      };
+      return isEn
+        ? {
+            book: 'Nine Chapters on the Mathematical Art · Base and Altitude',
+            quote: '"Multiply base and altitude each by itself, sum them to obtain the hypotenuse square. Extract its square root to yield the hypotenuse."',
+          }
+        : {
+            book: '《九章算术》· 卷九 勾股篇',
+            quote: '“勾股各自乘，并之，为弦实。开方除之，即弦。以盈补虚，出入相补，其积不失。”',
+          };
     }
     if (stage === 3) {
-      return {
-        book: '《几何原本》第一卷 命题四十七',
-        quote: '“在直角三角形中，斜边所构之正方形，等于两直角边所构之正方形的总和。”',
-      };
+      return isEn
+        ? {
+            book: 'Euclid’s Elements · Book I, Proposition 47',
+            quote: '"In right-angled triangles the square on the side subtending the right angle is equal to the squares on the sides containing the right angle."',
+          }
+        : {
+            book: '《几何原本》第一卷 命题四十七',
+            quote: '“在直角三角形中，斜边所构之正方形，等于两直角边所构之正方形的总和。”',
+          };
     }
-    return {
-      book: '《墨经》· 经下',
-      quote: '“辩也者，将以明是非之分，审治乱之纪，明同异之处。若 $a^2 + b^2 = c^2$，则此角必为直角。”',
-    };
+    return isEn
+      ? {
+          book: 'Mo Jing · Dialectics & Invariants',
+          quote: '"Disputation distinguishes truth from falsehood. If $a^2 + b^2 = c^2$, the angle subtended must strictly be a right angle."',
+        }
+      : {
+          book: '《墨经》· 经下',
+          quote: '“辩也者，将以明是非之分，审治乱之纪，明同异之处。若 $a^2 + b^2 = c^2$，则此角必为直角。”',
+        };
   }
 
   if (nameZh.includes('垂径') || nameZh.includes('圆') || pointId === 'KP-074') {
     if (stage === 1) {
-      return {
-        book: '《九章算术》方田章',
-        quote: '“弧田术曰：以弦乘矢，矢又自乘，并之，二而一。垂直平分弦与弧。”',
-      };
+      return isEn
+        ? {
+            book: 'Nine Chapters on the Mathematical Art · Field Measurement',
+            quote: '"The arc-field algorithm: multiply chord by sagitta, square the sagitta, sum and divide by two. The diameter bisects both chord and arc."',
+          }
+        : {
+            book: '《九章算术》方田章',
+            quote: '“弧田术曰：以弦乘矢，矢又自乘，并之，二而一。垂直平分弦与弧。”',
+          };
     }
     if (stage === 2) {
-      return {
-        book: '《墨子·经上》',
-        quote: '“圆，一中同长也。垂直于弦之直径，必过圆心且平分此弦与弦所对之弧。”',
-      };
+      return isEn
+        ? {
+            book: 'Mozi · Cannons',
+            quote: '"A circle has equal lengths from one center. The diameter perpendicular to a chord bisects the chord and its subtended arcs."',
+          }
+        : {
+            book: '《墨子·经上》',
+            quote: '“圆，一中同长也。垂直于弦之直径，必过圆心且平分此弦与弦所对之弧。”',
+          };
     }
     if (stage === 3) {
-      return {
-        book: '《几何原本》第三卷 命题三',
-        quote: '“若圆之一径平分一不过圆心之弦，则此径垂直于该弦；反之亦然。”',
-      };
+      return isEn
+        ? {
+            book: 'Euclid’s Elements · Book III, Proposition 3',
+            quote: '"If in a circle a straight line through the center bisects a straight line not through the center, it also cuts it at right angles; and if it cuts it at right angles, it also bisects it."',
+          }
+        : {
+            book: '《几何原本》第三卷 命题三',
+            quote: '“若圆之一径平分一不过圆心之弦，则此径垂直于该弦；反之亦然。”',
+          };
     }
-    return {
-      book: '《周髀算经》',
-      quote: '“圆出于方，方出于矩。直径与弦相交于中点，临界极值皆守于心。”',
-    };
+    return isEn
+      ? {
+          book: 'Zhou Bi Suan Jing · Circular Geometry',
+          quote: '"Circles arise from squares, and squares from rectangles. Where the diameter perpendicularly intersects the midpoint of the chord, the invariant center governs."',
+        }
+      : {
+          book: '《周髀算经》',
+          quote: '“圆出于方，方出于矩。直径与弦相交于中点，临界极值皆守于心。”',
+        };
   }
 
   // 通用理科考点古籍引用库
+  if (isEn) {
+    const defaultEnQuotes: Record<StageNumber, { book: string; quote: string }> = {
+      1: {
+        book: 'Euclid’s Elements · Axiomatic Foundation',
+        quote: '"From primitive definitions and common notions, trace the origin of concepts and measure the order of the mathematical universe."',
+      },
+      2: {
+        book: 'Liu Hui · Commentary on Nine Chapters',
+        quote: '"Clarify principles with words, dissect structures with diagrams. Complementing area and shape reveals the intrinsic essence of geometry and algebra."',
+      },
+      3: {
+        book: 'Euclid’s Elements · Formal Deductive System',
+        quote: '"Deducing rigorously from axioms and postulates, establishing exact boundaries and standard measures with pristine symbolic precision."',
+      },
+      4: {
+        book: 'Mo Jing · Dialectics & Inquiry',
+        quote: '"Investigate why a theorem holds, dissect critical variations, and discern invariants without ambiguity."',
+      },
+    };
+    return defaultEnQuotes[stage];
+  }
+
   const defaultQuotes: Record<StageNumber, { book: string; quote: string }> = {
     1: {
       book: '《九章算术》序',
@@ -160,7 +244,7 @@ export const ConceptFourStages: React.FC<ConceptFourStagesProps> = ({
 
   // 当前考点名称与阶段信息
   const kpName = getLocalizedField(knowledgePoint, 'name', locale);
-  const ancientQuote = getAncientQuote(knowledgePoint.point_id, activeStage, knowledgePoint.name_zh);
+  const ancientQuote = getAncientQuote(knowledgePoint.point_id, activeStage, knowledgePoint.name_zh, locale);
 
   // 四段论各段正文
   const stageContents = {
@@ -171,8 +255,16 @@ export const ConceptFourStages: React.FC<ConceptFourStagesProps> = ({
   };
 
   // 高清矢量图注
-  const vectorCaption =
-    knowledgePoint.point_id === 'KP-058' || knowledgePoint.name_zh.includes('勾股')
+  const isEn = String(locale).toLowerCase().startsWith('en');
+  const vectorCaption = isEn
+    ? knowledgePoint.point_id === 'KP-058' || knowledgePoint.name_zh.includes('勾股')
+      ? 'Fig 1-1 Ancient Nine Chapters Arc & Chord Geometric Dissection Model'
+      : knowledgePoint.point_id === 'KP-023' || knowledgePoint.name_zh.includes('配方法')
+      ? 'Fig 1-1 Al-Khwarizmi Geometric Completing the Square Model'
+      : knowledgePoint.name_zh.includes('垂径')
+      ? 'Fig 1-1 Ancient Nine Chapters Perpendicular Chord Geometric Model'
+      : `Fig 1-1 · Geometric model and mathematical structure of ${kpName}`
+    : knowledgePoint.point_id === 'KP-058' || knowledgePoint.name_zh.includes('勾股')
       ? '图 1-1 中国古代《九章算术》弧矢几何模型 · 几何本真割补与投影'
       : knowledgePoint.point_id === 'KP-023' || knowledgePoint.name_zh.includes('配方法')
       ? '图 1-1 阿尔·花拉子米几何配方法模型 · 几何拼补与面积投影'

@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { SandboxRenderer } from './SandboxRenderer';
-import { LeapLab, SEMESTER_CONFIG as LEAP_SEMESTER_CONFIG, formatSemesterZh } from './LeapLab';
+import { LeapLab, SEMESTER_CONFIG as LEAP_SEMESTER_CONFIG, formatSemester } from './LeapLab';
 import { Icon } from '../../components/common/Icon';
 import './sandbox.css';
 
@@ -17,9 +17,20 @@ export interface LabWorkspaceProps {
 
 const GRADES = [7, 8, 9] as const;
 const SEMESTERS = [
-  { val: 1, label: '上学期' },
-  { val: 2, label: '下学期' },
+  { val: 1, label: '上学期', labelEn: 'Sem 1' },
+  { val: 2, label: '下学期', labelEn: 'Sem 2' },
 ] as const;
+
+const CATEGORY_NAME_EN: Record<string, string> = {
+  '实数与数轴': 'Real Numbers & Number Line',
+  '实数与运算': 'Real Numbers & Operations',
+  '整式与全等三角形': 'Polynomials & Congruence',
+  '一次函数与二次根式': 'Linear Functions & Radicals',
+  '勾股定理与四边形': 'Pythagorean & Quadrilaterals',
+  '二次函数与圆': 'Quadratic Functions & Circles',
+  '相似与锐角三角函数': 'Similarity & Trigonometry',
+  '概念具象': 'Concept Models',
+};
 
 /**
  * 模块三：沙盒探究实验室统一视窗 (100% 严格对标 ios27_demo.html Image 2)
@@ -39,6 +50,7 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
   selectedLeapModelId: controlledLeapId,
   onSelectLeapModelId,
 }) => {
+  const isEn = String(locale).toLowerCase().startsWith('en');
   // 默认开启概念具象沙盒 (实验室一)
   const [internalSubView, setInternalSubView] = useState<"concept_sandbox" | "leap_4d">("concept_sandbox");
   const [selectedSandboxId, setSelectedSandboxId] = useState<string>(
@@ -213,17 +225,21 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
     });
     setConceptParamValues(initial);
     setSandboxResetCount((prev) => prev + 1);
-    setToastMessage('已恢复考点标准具象态');
+    setToastMessage(isEn ? 'Restored standard benchmark state' : '已恢复考点标准具象态');
     setTimeout(() => setToastMessage(''), 2000);
-  }, [conceptSliders]);
+  }, [conceptSliders, isEn]);
 
   // 视口阻尼锁定开关与复位
   const handleToggleViewportLock = useCallback(() => {
     setIsViewportLocked((prev) => !prev);
     setSandboxResetCount((prev) => prev + 1);
-    setToastMessage(!isViewportLocked ? '视口阻尼保护已锁定' : '视口已开启自由漫游模式');
+    setToastMessage(
+      !isViewportLocked
+        ? (isEn ? 'Viewport lock enabled' : '视口阻尼保护已锁定')
+        : (isEn ? 'Viewport free mode enabled' : '视口已开启自由漫游模式')
+    );
     setTimeout(() => setToastMessage(''), 2000);
-  }, [isViewportLocked]);
+  }, [isViewportLocked, isEn]);
 
   // 双向动点参数回写
   const handleConceptParamChange = useCallback((patch: Record<string, number>) => {
@@ -333,7 +349,11 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
                 className={`seg-item ${labSubView === "concept_sandbox" ? "active" : ""}`}
               >
                 <Icon name="flask" size={13} className="seg-icon" />
-                <span>概念具象沙盒 (实验室一 · {effectiveSandboxes.length})</span>
+                <span>
+                  {isEn
+                    ? `Concept Sandboxes (Lab 1 · ${effectiveSandboxes.length})`
+                    : `概念具象沙盒 (实验室一 · ${effectiveSandboxes.length})`}
+                </span>
               </button>
               <button
                 type="button"
@@ -344,7 +364,11 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
                 className={`seg-item ${labSubView === "leap_4d" ? "active" : ""}`}
               >
                 <Icon name="rocket" size={13} className="seg-icon" />
-                <span>4D 跃迁模型 (实验室二 · {effectiveLeapModels.length})</span>
+                <span>
+                  {isEn
+                    ? `4D Leap Models (Lab 2 · ${effectiveLeapModels.length})`
+                    : `4D 跃迁模型 (实验室二 · ${effectiveLeapModels.length})`}
+                </span>
               </button>
             </div>
 
@@ -356,7 +380,11 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
                 onClick={toggleConceptDrawer}
               >
                 <Icon name="menu" size={13} />
-                <span>选择沙盒: {currentSandbox?.nameZh || currentSandbox?.id}</span>
+                <span>
+                  {isEn
+                    ? `Select Sandbox: ${(currentSandbox?.nameEn || currentSandbox?.nameZh) || currentSandbox?.id}`
+                    : `选择沙盒: ${currentSandbox?.nameZh || currentSandbox?.id}`}
+                </span>
                 <Icon name={isConceptDrawerOpen ? "chevron-up" : "chevron-down"} size={13} />
               </button>
             ) : (
@@ -366,7 +394,11 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
                 onClick={toggleLeapDrawer}
               >
                 <Icon name="layers" size={13} />
-                <span>选择模型: {currentLeapModel?.model_id} · {locale === 'en' ? currentLeapModel?.model_name_en : currentLeapModel?.model_name_zh}</span>
+                <span>
+                  {isEn
+                    ? `Select Model: ${currentLeapModel?.model_id} · ${(currentLeapModel?.model_name_en || currentLeapModel?.model_name_zh) || ''}`
+                    : `选择模型: ${currentLeapModel?.model_id} · ${currentLeapModel?.model_name_zh}`}
+                </span>
                 <Icon name={isLeapDrawerOpen ? "chevron-up" : "chevron-down"} size={13} />
               </button>
             )}
@@ -383,7 +415,11 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
                     type="text"
                     value={conceptSearchQuery}
                     onChange={(e) => setConceptSearchQuery(e.target.value)}
-                    placeholder="搜索 46 个概念沙盒 (如 一次函数 / 勾股 / 反比例)..."
+                    placeholder={
+                      isEn
+                        ? "Search 46 concept sandboxes (e.g. Linear Function / Pythagorean)..."
+                        : "搜索 46 个概念沙盒 (如 一次函数 / 勾股 / 反比例)..."
+                    }
                     className="drawer-search-field"
                   />
                   {conceptSearchQuery && (
@@ -410,7 +446,7 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
                   {/* 1 级：年级选择 */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                     <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-secondary)' }}>
-                      ① 年级:
+                      {isEn ? '① Grade:' : '① 年级:'}
                     </span>
                     <div style={{ display: 'flex', gap: '6px' }}>
                       {GRADES.map((g) => (
@@ -423,7 +459,7 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
                             setFilterCategory('all');
                           }}
                         >
-                          {g}年级
+                          {isEn ? `Grade ${g}` : `${g}年级`}
                         </button>
                       ))}
                     </div>
@@ -432,7 +468,7 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
                   {/* 2 级：学期选择 */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                     <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-secondary)' }}>
-                      ② 学期:
+                      {isEn ? '② Semester:' : '② 学期:'}
                     </span>
                     <div style={{ display: 'flex', gap: '6px' }}>
                       {SEMESTERS.map((s) => (
@@ -445,7 +481,7 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
                             setFilterCategory('all');
                           }}
                         >
-                          {s.label}
+                          {isEn ? s.labelEn : s.label}
                         </button>
                       ))}
                     </div>
@@ -454,7 +490,7 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
                   {/* 3 级：课程 / 知识模块 */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                     <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-secondary)' }}>
-                      ③ 课程模块:
+                      {isEn ? '③ Category:' : '③ 课程模块:'}
                     </span>
                     <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                       <button
@@ -462,7 +498,7 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
                         className={`drawer-sem-chip ${filterCategory === 'all' ? 'active' : ''}`}
                         onClick={() => setFilterCategory('all')}
                       >
-                        全部模块
+                        {isEn ? 'All Categories' : '全部模块'}
                       </button>
                       {availableCategories.map((cat) => (
                         <button
@@ -471,7 +507,7 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
                           className={`drawer-sem-chip ${filterCategory === cat ? 'active' : ''}`}
                           onClick={() => setFilterCategory(cat)}
                         >
-                          {cat}
+                          {isEn ? (CATEGORY_NAME_EN[cat] || cat) : cat}
                         </button>
                       ))}
                     </div>
@@ -493,16 +529,22 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
                       >
                         <div className="drawer-card-header">
                           <span className="drawer-card-code">{s.id}</span>
-                          <span className="drawer-card-sem">{s.grade}年级{s.semester === 1 ? '上' : '下'}</span>
+                          <span className="drawer-card-sem">
+                            {isEn ? `G${s.grade}S${s.semester}` : `${s.grade}年级${s.semester === 1 ? '上' : '下'}`}
+                          </span>
                           {isSelected && <Icon name="check" size={12} style={{ color: 'var(--ios-blue)', marginLeft: 'auto' }} />}
                         </div>
-                        <div className="drawer-card-name">{s.nameZh}</div>
-                        <div className="drawer-card-brief">{s.desc || '动态几何与参数不变量探究'}</div>
+                        <div className="drawer-card-name">{(isEn ? s.nameEn : s.nameZh) || s.nameZh}</div>
+                        <div className="drawer-card-brief">
+                          {(isEn ? s.descEn : s.desc) || (isEn ? 'Dynamic geometry & parameter invariant exploration' : '动态几何与参数不变量探究')}
+                        </div>
                       </button>
                     );
                   })
                 ) : (
-                  <div className="drawer-empty-tip">未检索到匹配的概念沙盒</div>
+                  <div className="drawer-empty-tip">
+                    {isEn ? 'No matching concept sandboxes found' : '未检索到匹配的概念沙盒'}
+                  </div>
                 )}
               </div>
             </div>
@@ -519,7 +561,11 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
                     type="text"
                     value={leapSearchQuery}
                     onChange={(e) => setLeapSearchQuery(e.target.value)}
-                    placeholder="搜索 36 个跃迁模型 (如 手拉手 / LM-7A-01 / 抛物线)..."
+                    placeholder={
+                      isEn
+                        ? "Search 36 leap models (e.g. Hand-in-Hand / LM-7A-01 / Parabola)..."
+                        : "搜索 36 个跃迁模型 (如 手拉手 / LM-7A-01 / 抛物线)..."
+                    }
                     className="drawer-search-field"
                   />
                   {leapSearchQuery && (
@@ -541,7 +587,7 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
                 </button>
               </div>
 
-              {/* 1 级：年级学期选择标签 (全中文) */}
+              {/* 1 级：年级学期选择标签 */}
               {!leapSearchQuery && (
                 <div className="drawer-sem-tabs">
                   {LEAP_SEMESTER_CONFIG.map((cfg) => {
@@ -554,7 +600,7 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
                         className={`drawer-sem-chip ${active ? 'active' : ''}`}
                         onClick={() => setLeapSelectedSem(cfg.key)}
                       >
-                        <span>{cfg.label}</span>
+                        <span>{isEn ? cfg.labelEn : cfg.label}</span>
                         <span className="drawer-sem-count">({count})</span>
                       </button>
                     );
@@ -577,17 +623,19 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
                       >
                         <div className="drawer-card-header">
                           <span className="drawer-card-code">{m.model_id}</span>
-                          <span className="drawer-card-sem">{formatSemesterZh(m.unlocked_semester)}</span>
-                          {isFlagship && <span className="drawer-card-flagship">重点模型</span>}
+                          <span className="drawer-card-sem">{formatSemester(m.unlocked_semester, locale)}</span>
+                          {isFlagship && <span className="drawer-card-flagship">{isEn ? 'Flagship' : '重点模型'}</span>}
                           {isSelected && <Icon name="check" size={12} style={{ color: 'var(--ios-blue)', marginLeft: 'auto' }} />}
                         </div>
-                        <div className="drawer-card-name">{m.model_name_zh}</div>
-                        <div className="drawer-card-brief">{m.model_brief_zh}</div>
+                        <div className="drawer-card-name">{(isEn ? m.model_name_en : m.model_name_zh) || m.model_name_zh}</div>
+                        <div className="drawer-card-brief">{(isEn ? m.model_brief_en : m.model_brief_zh) || m.model_brief_zh}</div>
                       </button>
                     );
                   })
                 ) : (
-                  <div className="drawer-empty-tip">未检索到匹配的跃迁模型</div>
+                  <div className="drawer-empty-tip">
+                    {isEn ? 'No matching leap models found' : '未检索到匹配的跃迁模型'}
+                  </div>
                 )}
               </div>
             </div>
@@ -608,9 +656,9 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
             {/* 概念沙盒标题栏 */}
             <div className="sandbox-header-line">
               <h3 className="sandbox-title-text">
-                <span>{currentSandbox.nameZh}</span>
+                <span>{(isEn ? currentSandbox.nameEn : currentSandbox.nameZh) || currentSandbox.nameZh}</span>
                 <span style={{ fontSize: '13px', color: 'var(--text-tertiary)', fontWeight: 400 }}>
-                  ({currentSandbox.id} · 考点具象沙盒)
+                  ({currentSandbox.id} · {isEn ? 'Concept Sandbox' : '考点具象沙盒'})
                 </span>
               </h3>
 
@@ -619,7 +667,7 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
                   type="button"
                   data-testid="badge-concept-concrete"
                   onClick={handleResetConcept}
-                  title="点击恢复当前考点的标准具象基准态"
+                  title={isEn ? 'Click to restore standard benchmark state' : '点击恢复当前考点的标准具象基准态'}
                   className="nav-pill-btn"
                   style={{
                     display: 'inline-flex',
@@ -639,13 +687,17 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
                   }}
                 >
                   <Icon name="check-circle" size={11} />
-                  <span>概念具象化</span>
+                  <span>{isEn ? 'Concept Benchmark' : '概念具象化'}</span>
                 </button>
                 <button
                   type="button"
                   data-testid="badge-viewport-locked"
                   onClick={handleToggleViewportLock}
-                  title={isViewportLocked ? '视口物理阻尼锁定中，点击复位并居中' : '视口自由缩放中，点击重新锁定阻尼'}
+                  title={
+                    isViewportLocked
+                      ? (isEn ? 'Viewport damping locked, click to reset' : '视口物理阻尼锁定中，点击复位并居中')
+                      : (isEn ? 'Viewport free, click to lock' : '视口自由缩放中，点击重新锁定阻尼')
+                  }
                   className="nav-pill-btn"
                   style={{
                     display: 'inline-flex',
@@ -665,7 +717,7 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
                   }}
                 >
                   <Icon name={isViewportLocked ? 'lock' : 'unlock'} size={11} />
-                  <span>{isViewportLocked ? '视口阻尼锁定' : '视口自由漫游'}</span>
+                  <span>{isViewportLocked ? (isEn ? 'Viewport Locked' : '视口阻尼锁定') : (isEn ? 'Viewport Free' : '视口自由漫游')}</span>
                 </button>
               </div>
             </div>
@@ -717,12 +769,12 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
                     ))
                   ) : (
                     <span className="telemetry-tag-invariant">
-                      几何不变量：面积与线段比例守恒
+                      {isEn ? 'Geometric Invariant: Area & Segment Ratio Conserved' : '几何不变量：面积与线段比例守恒'}
                     </span>
                   )}
                 </div>
                 <div className="telemetry-tag-conclusion">
-                  结论：几何直观验证通过
+                  {isEn ? 'Conclusion: Intuitive geometric verification passed' : '结论：几何直观验证通过'}
                 </div>
               </div>
             </div>
@@ -732,10 +784,11 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
               <div style={{ display: 'flex', gap: '20px', width: '100%', flexWrap: 'wrap', alignItems: 'center' }}>
                 {conceptSliders.map((s) => {
                   const val = conceptParamValues[s.id] ?? s.default;
+                  const sliderName = isEn ? (s.name || s.id) : s.name;
                   return (
                     <div key={s.id} className="slider-group">
                       <label htmlFor={`concept-slider-${s.id}`} style={{ whiteSpace: 'nowrap' }}>
-                        {s.name}: <strong style={{ color: 'var(--ios-blue)' }}>{val}{s.unit || ''}</strong>
+                        {sliderName}: <strong style={{ color: 'var(--ios-blue)' }}>{val}{s.unit || ''}</strong>
                       </label>
                       <input
                         id={`concept-slider-${s.id}`}
@@ -770,10 +823,14 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
             >
               <div style={{ fontWeight: 700, color: 'var(--ios-blue)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <Icon name="bulb" size={14} />
-                <span>探究指南：</span>
+                <span>{isEn ? 'Exploration Guide:' : '探究指南：'}</span>
               </div>
               <p style={{ margin: 0 }}>
-                {currentSandbox.desc || '拖动控制条中的参数滑块或画布动点，实时观察函数曲线与几何图形的变化特征。'}
+                {(isEn ? currentSandbox.descEn : currentSandbox.desc) ||
+                  currentSandbox.desc ||
+                  (isEn
+                    ? 'Drag sliders or points to observe variations of curves and shapes.'
+                    : '拖动控制条中的参数滑块或画布动点，实时观察函数曲线与几何图形的变化特征。')}
               </p>
             </div>
           </div>

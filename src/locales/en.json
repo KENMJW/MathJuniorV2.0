@@ -52,5 +52,22 @@
   "nav.grade": "Grade",
   "nav.semester": "Semester",
   "nav.domain": "Domain",
-  "nav.points": "Curriculum Points"
+  "nav.points": "Curriculum Points",
+  "grade.grade7": "Grade 7",
+  "grade.grade8": "Grade 8",
+  "grade.grade9": "Grade 9",
+  "semester.sem1": "Sem 1 (Fall)",
+  "semester.sem2": "Sem 2 (Spring)",
+  "domain.algebra": "Number & Algebra",
+  "domain.geometry": "Geometry",
+  "domain.statistics": "Statistics & Probability",
+  "domain.synthesis": "Synthesis & Practice",
+  "exam.choice": "Single Choice",
+  "exam.fill": "Fill-in-the-Blank",
+  "exam.solution": "Problem Solving",
+  "exam.ladder": "Standard Score Ladder",
+  "exam.sufficient": "Question Bank Sufficient",
+  "exam.warning": "Inventory Warning",
+  "common.announcements": "Announcements",
+  "common.studentMode": "Student Mode"
 }

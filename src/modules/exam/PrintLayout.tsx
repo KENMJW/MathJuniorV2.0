@@ -16,6 +16,7 @@ import { QuestionContent } from '../../components/common/QuestionContent';
 import { QuestionImage } from '../../components/common/QuestionImage';
 import { SolutionList } from './SolutionList';
 import { Icon } from '../../components/common/Icon';
+import { useSessionStore } from '../../store/sessionStore';
 import './print.css';
 
 export interface PrintLayoutProps {
@@ -26,6 +27,9 @@ export interface PrintLayoutProps {
 export type PaperViewMode = 'paper' | 'answer_sheet' | 'teacher_key';
 
 export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkbench }) => {
+  const locale = useSessionStore((state) => state.locale);
+  const isEn = String(locale).toLowerCase().startsWith('en');
+
   const [viewMode, setViewMode] = useState<PaperViewMode>('paper');
   const [isTwoColumnPreview, setIsTwoColumnPreview] = useState(true);
 
@@ -40,7 +44,7 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
   };
 
   // 解析解答题分步踩分点
-  const parseRubricSteps = (rubricJson?: string | null): Array<{ stepIndex: number; descriptionZh: string; points: number }> => {
+  const parseRubricSteps = (rubricJson?: string | null): Array<{ stepIndex: number; descriptionZh: string; descriptionEn?: string; points: number }> => {
     if (!rubricJson) return [];
     try {
       return JSON.parse(rubricJson);
@@ -113,11 +117,13 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
                 cursor: 'pointer',
               }}
             >
-              ← 返回出题工作台
+              {isEn ? '← Back to Workbench' : '← 返回出题工作台'}
             </button>
           )}
           <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
-            共 {paper.totalQuestions} 题 · 满分 {paper.fullScore} 分 · 限时 {paper.timeLimitMinutes} 分钟
+            {isEn
+              ? `Total ${paper.totalQuestions} Questions · Full Score ${paper.fullScore} Pts · Limit ${paper.timeLimitMinutes} Mins`
+              : `共 ${paper.totalQuestions} 题 · 满分 ${paper.fullScore} 分 · 限时 ${paper.timeLimitMinutes} 分钟`}
           </span>
         </div>
 
@@ -134,9 +140,9 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
             }}
           >
             {[
-              { mode: 'paper', label: '试卷排版', icon: 'file' },
-              { mode: 'answer_sheet', label: '答题纸', icon: 'edit' },
-              { mode: 'teacher_key', label: '教师解析卷', icon: 'key' },
+              { mode: 'paper', label: isEn ? 'Exam Paper' : '试卷排版', icon: 'file' },
+              { mode: 'answer_sheet', label: isEn ? 'Answer Sheet' : '答题纸', icon: 'edit' },
+              { mode: 'teacher_key', label: isEn ? 'Teacher Key & Solutions' : '教师解析卷', icon: 'key' },
             ].map((tab) => {
               const isCur = viewMode === tab.mode;
               return (
@@ -179,9 +185,9 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
               background: 'var(--bg-card)',
               cursor: 'pointer',
             }}
-            title="切换屏幕双栏或单栏仿真"
+            title={isEn ? 'Toggle single/two column preview' : '切换屏幕双栏或单栏仿真'}
           >
-            {isTwoColumnPreview ? '切换单栏' : '切换双栏'}
+            {isTwoColumnPreview ? (isEn ? 'Single Column' : '切换单栏') : (isEn ? 'Two Columns' : '切换双栏')}
           </button>
 
           {/* 打印按钮 */}
@@ -204,7 +210,7 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
             }}
           >
             <Icon name="print" size={14} />
-            <span>打印 / 导出 PDF</span>
+            <span>{isEn ? 'Print / Export PDF' : '打印 / 导出 PDF'}</span>
           </button>
         </div>
       </div>
@@ -255,7 +261,7 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
                 marginBottom: '1rem',
               }}
             >
-              密 封 线 内 严 禁 答 题
+              {isEn ? 'DO NOT WRITE IN SEALED MARGIN' : '密 封 线 内 严 禁 答 题'}
             </span>
             <div
               style={{
@@ -266,10 +272,10 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
                 writingMode: 'vertical-rl',
               }}
             >
-              <span>姓名：__________</span>
-              <span>准考证号：__________</span>
-              <span>考场号：_____</span>
-              <span>座位号：_____</span>
+              <span>{isEn ? 'Name: __________' : '姓名：__________'}</span>
+              <span>{isEn ? 'ID / Admission: __________' : '准考证号：__________'}</span>
+              <span>{isEn ? 'Room: _____' : '考场号：_____'}</span>
+              <span>{isEn ? 'Seat: _____' : '座位号：_____'}</span>
             </div>
             <span
               className="writing-vertical-lr"
@@ -280,7 +286,7 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
                 marginTop: '1rem',
               }}
             >
-              装 订 线
+              {isEn ? 'BINDING MARGIN' : '装 订 线'}
             </span>
           </div>
 
@@ -314,9 +320,9 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
                     padding: '0.1rem 0.35rem',
                   }}
                 >
-                  绝密★启用前
+                  {isEn ? 'TOP SECRET ★ PRE-EXAM' : '绝密★启用前'}
                 </span>
-                <span>试卷类型：A</span>
+                <span>{isEn ? 'Paper Type: A' : '试卷类型：A'}</span>
               </div>
               <h1
                 style={{
@@ -327,9 +333,9 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
                   color: '#0f172a',
                 }}
               >
-                {paper.titleZh}
-                {viewMode === 'answer_sheet' && ' · 答题纸'}
-                {viewMode === 'teacher_key' && ' · 教师参考答案及评分细则'}
+                {(isEn ? paper.titleEn : paper.titleZh) || paper.titleZh}
+                {viewMode === 'answer_sheet' && (isEn ? ' · Answer Sheet' : ' · 答题纸')}
+                {viewMode === 'teacher_key' && (isEn ? ' · Reference Answers & Rubrics' : ' · 教师参考答案及评分细则')}
               </h1>
               <div
                 style={{
@@ -341,9 +347,9 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
                   fontWeight: 500,
                 }}
               >
-                <span>考试科目：初中数学</span>
-                <span>满分：{paper.fullScore} 分</span>
-                <span>考试时限：{paper.timeLimitMinutes} 分钟</span>
+                <span>{isEn ? 'Subject: Junior High Math' : '考试科目：初中数学'}</span>
+                <span>{isEn ? `Full Score: ${paper.fullScore} Pts` : `满分：${paper.fullScore} 分`}</span>
+                <span>{isEn ? `Time Limit: ${paper.timeLimitMinutes} Mins` : `考试时限：${paper.timeLimitMinutes} 分钟`}</span>
               </div>
               {viewMode === 'paper' && (
                 <div
@@ -359,10 +365,24 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
                     lineHeight: 1.5,
                   }}
                 >
-                  <p style={{ margin: '0 0 0.25rem 0', fontWeight: 700 }}>考生须知：</p>
-                  <p style={{ margin: '0 0 0.15rem 0' }}>1. 本试卷共三大题，{paper.totalQuestions} 小题。答题前，考生务必将姓名、准考证号填写在密封线内相应位置。</p>
-                  <p style={{ margin: '0 0 0.15rem 0' }}>2. 回答选择题时，选出每小题答案后，请务必工整书写在题后对应括号内或涂在答题纸上。</p>
-                  <p style={{ margin: 0 }}>3. 回答非选择题时，必须使用 0.5 毫米黑色签字笔规范书写，作图必须用 2B 铅笔画出清晰线段。</p>
+                  <p style={{ margin: '0 0 0.25rem 0', fontWeight: 700 }}>
+                    {isEn ? 'Instructions to Candidates:' : '考生须知：'}
+                  </p>
+                  <p style={{ margin: '0 0 0.15rem 0' }}>
+                    {isEn
+                      ? `1. This paper consists of three sections, ${paper.totalQuestions} questions. Candidates must write their name and exam ID in the designated areas inside the sealing margin before answering.`
+                      : `1. 本试卷共三大题，${paper.totalQuestions} 小题。答题前，考生务必将姓名、准考证号填写在密封线内相应位置。`}
+                  </p>
+                  <p style={{ margin: '0 0 0.15rem 0' }}>
+                    {isEn
+                      ? '2. For multiple-choice questions, select the best answer for each question and write it clearly in the corresponding brackets or bubble it on the answer sheet.'
+                      : '2. 回答选择题时，选出每小题答案后，请务必工整书写在题后对应括号内或涂在答题纸上。'}
+                  </p>
+                  <p style={{ margin: 0 }}>
+                    {isEn
+                      ? '3. For non-choice questions, use a 0.5mm black ink pen. Diagrams must be drawn clearly with a 2B pencil.'
+                      : '3. 回答非选择题时，必须使用 0.5 毫米黑色签字笔规范书写，作图必须用 2B 铅笔画出清晰线段。'}
+                  </p>
                 </div>
               )}
             </div>
@@ -395,7 +415,9 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
                     }}
                   >
                     <span>
-                      一、选择题（本大题共 {paper.choiceQuestions.length} 小题，每小题 {choiceScorePerQuestion} 分，共 {choiceTotalScore} 分）
+                      {isEn
+                        ? `I. Multiple Choice (Total ${paper.choiceQuestions.length} Questions, ${choiceScorePerQuestion} pts each, total ${choiceTotalScore} pts)`
+                        : `一、选择题（本大题共 ${paper.choiceQuestions.length} 小题，每小题 ${choiceScorePerQuestion} 分，共 ${choiceTotalScore} 分）`}
                     </span>
                   </div>
 
@@ -412,7 +434,7 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.35rem' }}>
                           <span style={{ fontWeight: 700 }}>{questionIndex}.</span>
                           <div style={{ flex: 1 }}>
-                            <QuestionContent content={q.stem_zh} images={q.image_paths_json} eager={true} />
+                            <QuestionContent content={(isEn ? q.stem_en : q.stem_zh) || q.stem_zh} images={q.image_paths_json} eager={true} />
                           </div>
                         </div>
 
@@ -432,9 +454,9 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
                                 <span style={{ fontWeight: 700 }}>{optKey}.</span>
                                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                                   {optVal.img ? (
-                                    <QuestionImage role="option" src={optVal.img} alt={`选项 ${optKey}`} eager={true} />
+                                    <QuestionImage role="option" src={optVal.img} alt={isEn ? `Option ${optKey}` : `选项 ${optKey}`} eager={true} />
                                   ) : (
-                                    <MathRenderer content={optVal.zh} />
+                                    <MathRenderer content={(isEn ? optVal.en : optVal.zh) || optVal.zh} />
                                   )}
                                 </div>
                               </div>
@@ -456,11 +478,11 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
                             }}
                           >
                             <p style={{ margin: 0, fontWeight: 700, color: '#047857', wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
-                              【标准答案】 <MathRenderer content={q.answer_standard || ''} />
+                              {isEn ? '【Standard Answer】 ' : '【标准答案】 '}<MathRenderer content={q.answer_standard || ''} />
                             </p>
                             {q.solutions_json && (
                               <div style={{ marginTop: '0.35rem' }}>
-                                <span style={{ fontWeight: 600 }}>【解析点睛】</span>
+                                <span style={{ fontWeight: 600 }}>{isEn ? '【Detailed Analysis】' : '【解析点睛】'}</span>
                                 <SolutionList solutions={q.solutions_json} images={q.image_paths_json} eager={true} />
                               </div>
                             )}
@@ -480,7 +502,7 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
                               color: '#64748b',
                             }}
                           >
-                            <span>填涂答案：</span>
+                            <span>{isEn ? 'Mark Answer:' : '填涂答案：'}</span>
                             {['A', 'B', 'C', 'D'].map((letter) => (
                               <span
                                 key={letter}
@@ -527,7 +549,9 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
                     }}
                   >
                     <span>
-                      二、填空题（本大题共 {paper.fillQuestions.length} 小题，每小题 {fillScorePerQuestion} 分，共 {fillTotalScore} 分）
+                      {isEn
+                        ? `II. Fill-in-the-Blank (Total ${paper.fillQuestions.length} Questions, ${fillScorePerQuestion} pts each, total ${fillTotalScore} pts)`
+                        : `二、填空题（本大题共 ${paper.fillQuestions.length} 小题，每小题 ${fillScorePerQuestion} 分，共 ${fillTotalScore} 分）`}
                     </span>
                   </div>
 
@@ -543,7 +567,7 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.35rem' }}>
                           <span style={{ fontWeight: 700 }}>{questionIndex}.</span>
                           <div style={{ flex: 1 }}>
-                            <QuestionContent content={q.stem_zh} images={q.image_paths_json} eager={true} />
+                            <QuestionContent content={(isEn ? q.stem_en : q.stem_zh) || q.stem_zh} images={q.image_paths_json} eager={true} />
                           </div>
                         </div>
 
@@ -561,7 +585,7 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
                             }}
                           >
                             <p style={{ margin: 0, fontWeight: 700, color: '#047857' }}>
-                              【参考答案】 <MathRenderer content={q.answer_standard || ''} />
+                              {isEn ? '【Reference Answer】 ' : '【参考答案】 '}<MathRenderer content={q.answer_standard || ''} />
                             </p>
                           </div>
                         )}
@@ -578,7 +602,7 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
                               fontSize: '11px',
                             }}
                           >
-                            <span>作答：</span>
+                            <span>{isEn ? 'Answer:' : '作答：'}</span>
                             <span style={{ flex: 1, borderBottom: '1px solid #64748b', height: '20px' }}></span>
                           </div>
                         )}
@@ -608,7 +632,9 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
                     }}
                   >
                     <span>
-                      三、解答题（本大题共 {paper.solutionQuestions.length} 小题，共 {solutionTotalScore} 分。要求写出文字说明、证明过程或演算步骤）
+                      {isEn
+                        ? `III. Extended Solution (Total ${paper.solutionQuestions.length} Questions, total ${solutionTotalScore} pts. Detailed derivation, proof, or calculation steps required)`
+                        : `三、解答题（本大题共 ${paper.solutionQuestions.length} 小题，共 ${solutionTotalScore} 分。要求写出文字说明、证明过程或演算步骤）`}
                     </span>
                   </div>
 
@@ -625,9 +651,11 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
                       >
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.35rem' }}>
                           <span style={{ fontWeight: 700 }}>{questionIndex}.</span>
-                          <span style={{ color: '#64748b', fontWeight: 500 }}>({q.score_default || 8} 分)</span>
+                          <span style={{ color: '#64748b', fontWeight: 500 }}>
+                            {isEn ? `(${q.score_default || 8} Pts)` : `(${q.score_default || 8} 分)`}
+                          </span>
                           <div style={{ flex: 1 }}>
-                            <QuestionContent content={q.stem_zh} images={q.image_paths_json} eager={true} />
+                            <QuestionContent content={(isEn ? q.stem_en : q.stem_zh) || q.stem_zh} images={q.image_paths_json} eager={true} />
                           </div>
                         </div>
 
@@ -649,7 +677,11 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
                               boxSizing: 'border-box',
                             }}
                           >
-                            <span>请在各题目的答题区域内作答，超出黑色边框区域的答案无效</span>
+                            <span>
+                              {isEn
+                                ? 'Please answer strictly within the designated area for each question. Answers beyond the border are invalid.'
+                                : '请在各题目的答题区域内作答，超出黑色边框区域的答案无效'}
+                            </span>
                           </div>
                         )}
 
@@ -667,35 +699,44 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
                             }}
                           >
                             <div style={{ fontWeight: 700, color: '#92400e', marginBottom: '0.4rem' }}>
-                              【中考官方踩分点 Checklist】(满分 {q.score_default || 8} 分)
+                              {isEn
+                                ? `【Official Rubric Checklist】(Full Score ${q.score_default || 8} Pts)`
+                                : `【中考官方踩分点 Checklist】(满分 ${q.score_default || 8} 分)`}
                             </div>
                             {rubricSteps.length > 0 ? (
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginBottom: '0.5rem' }}>
                                 {rubricSteps.map((step) => (
                                    <div key={step.stepIndex} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
                                      <span>
-                                       第 {step.stepIndex} 步：<MathRenderer content={step.descriptionZh} />
+                                       {isEn ? `Step ${step.stepIndex}: ` : `第 ${step.stepIndex} 步：`}
+                                       <MathRenderer content={(isEn ? step.descriptionEn : step.descriptionZh) || step.descriptionZh} />
                                      </span>
                                      <span style={{ fontWeight: 700, color: '#b45309', whiteSpace: 'nowrap' }}>
-                                       +{step.points} 分
+                                       {isEn ? `+${step.points} Pts` : `+${step.points} 分`}
                                      </span>
                                    </div>
                                  ))}
                               </div>
                             ) : (
-                              <p style={{ margin: 0, color: '#64748b' }}>本题暂无细分步骤点</p>
+                              <p style={{ margin: 0, color: '#64748b' }}>
+                                {isEn ? 'No detailed step rubrics available for this question' : '本题暂无细分步骤点'}
+                              </p>
                             )}
 
                             {q.answer_standard && (
                               <div style={{ marginTop: '0.4rem', wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
-                                <span style={{ fontWeight: 700, color: '#92400e' }}>【参考答案】</span>
+                                <span style={{ fontWeight: 700, color: '#92400e' }}>
+                                  {isEn ? '【Reference Answer】 ' : '【参考答案】 '}
+                                </span>
                                 <MathRenderer content={q.answer_standard} />
                               </div>
                             )}
 
                             {q.solutions_json && (
                               <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid #fde68a' }}>
-                                <span style={{ fontWeight: 700, color: '#78350f' }}>【推导精解】</span>
+                                <span style={{ fontWeight: 700, color: '#78350f' }}>
+                                  {isEn ? '【Full Derivation】' : '【推导精解】'}
+                                </span>
                                 <SolutionList solutions={q.solutions_json} images={q.image_paths_json} eager={true} />
                               </div>
                             )}
@@ -719,7 +760,11 @@ export const PrintLayout: React.FC<PrintLayoutProps> = ({ paper, onBackToWorkben
                 color: '#94a3b8',
               }}
             >
-              <span>— 初中数学核心素养测评系统 · 试卷印刷流水号: {paper.paperId} —</span>
+              <span>
+                {isEn
+                  ? `— Core Competency Assessment System · Paper Serial: ${paper.paperId} —`
+                  : `— 初中数学核心素养测评系统 · 试卷印刷流水号: ${paper.paperId} —`}
+              </span>
             </div>
           </div>
         </div>

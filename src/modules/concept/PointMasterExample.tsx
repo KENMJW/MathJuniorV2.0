@@ -15,6 +15,7 @@ import { QuestionImage } from '../../components/common/QuestionImage';
 import { SourceTag } from '../../components/common/SourceTag';
 import { Icon } from '../../components/common/Icon';
 import { normalizeOptionAnswer } from '../../engine/judge/normalizeOptionAnswer';
+import { useSessionStore } from '../../store/sessionStore';
 
 export interface MasterExampleItem {
   example_id: string;
@@ -61,6 +62,9 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
   className = '',
   style = {},
 }) => {
+  const locale = useSessionStore((state) => state.locale);
+  const isEn = String(locale).toLowerCase().startsWith('en');
+
   // 可用维度上限 (默认 4)
   const maxAvailable = Math.max(3, Math.min(4, example.available_dimensions ?? 4));
 
@@ -92,13 +96,13 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
   const getDimensionContent = (index: number): string => {
     switch (index) {
       case 1:
-        return example.dim1_origin || '（待补充直观源头）';
+        return example.dim1_origin || (isEn ? '(Intuitive origin pending)' : '（待补充直观源头）');
       case 2:
-        return example.dim2_essence || '（待补充数学本质）';
+        return example.dim2_essence || (isEn ? '(Core essence pending)' : '（待补充数学本质）');
       case 3:
         return example.dim3_rigor; // 严谨证明 (必填必展示)
       case 4:
-        return example.dim4_traps || '（待补充易错变式）';
+        return example.dim4_traps || (isEn ? '(Variations pending)' : '（待补充易错变式）');
       default:
         return '';
     }
@@ -159,7 +163,7 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
                 flexShrink: 0,
               }}
             >
-              ME 考点母题 · {example.example_id}
+              {isEn ? `ME Master Example · ${example.example_id}` : `ME 考点母题 · ${example.example_id}`}
             </span>
             {example.source && (
               <SourceTag source={example.source} maxWidth="220px" />
@@ -173,14 +177,14 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
               color: 'var(--text-primary)',
             }}
           >
-            压轴母题深度拆解 (四维步进透视)
+            {isEn ? 'Master Example Deep Dive (4D Progressive Perspective)' : '压轴母题深度拆解 (四维步进透视)'}
           </h2>
         </div>
 
         {/* 步进进度指示 */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
-            解锁进度：<strong style={{ color: 'var(--ios-blue)' }}>{unlockedDimensions.size}</strong> / {maxAvailable} 维
+            {isEn ? 'Progress: ' : '解锁进度：'}<strong style={{ color: 'var(--ios-blue)' }}>{unlockedDimensions.size}</strong> {isEn ? `/ ${maxAvailable} Dimensions` : `/ ${maxAvailable} 维`}
           </span>
           {nextToUnlock !== undefined && (
             <button
@@ -203,7 +207,7 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
               }}
             >
               <Icon name="unlock" size={13} />
-              <span>{`步进解锁第 ${nextToUnlock} 维`}</span>
+              <span>{isEn ? `Unlock Dimension ${nextToUnlock}` : `步进解锁第 ${nextToUnlock} 维`}</span>
             </button>
           )}
         </div>
@@ -230,7 +234,7 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
             letterSpacing: '0.05em',
           }}
         >
-          母题题干
+          {isEn ? 'Master Example Stem' : '母题题干'}
         </span>
         {/* 母题题干 (支持图锚点混合渲染) */}
         <div
@@ -244,7 +248,7 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
             maxWidth: '100%',
           }}
         >
-          <QuestionContent content={example.stem_zh} images={example.image_paths_json} />
+          <QuestionContent content={(isEn && example.stem_en) ? example.stem_en : example.stem_zh} images={example.image_paths_json} />
         </div>
 
         {/* 若有备选选项 */}
@@ -285,7 +289,7 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
                     {opt.img ? (
                       <QuestionImage role="option" src={opt.img} alt={`选项 ${k}`} />
                     ) : (
-                      <MathRenderer content={opt.zh} />
+                      <MathRenderer content={(isEn && opt.en) ? opt.en : opt.zh} />
                     )}
                   </div>
                   {isCorrect && (
@@ -301,7 +305,7 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
                       }}
                     >
                       <Icon name="check" size={12} />
-                      <span>正解</span>
+                      <span>{isEn ? 'Correct' : '正解'}</span>
                     </span>
                   )}
                 </div>
@@ -323,7 +327,7 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
             letterSpacing: '0.05em',
           }}
         >
-          四维认知透视演进
+          {isEn ? '4D Cognitive Evolution' : '四维认知透视演进'}
         </h3>
 
         <div
@@ -336,6 +340,7 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
           {DIMENSIONS_META.map((dim) => {
             const isUnlocked = unlockedDimensions.has(dim.index);
             const content = getDimensionContent(dim.index);
+            const dimTitle = isEn ? dim.titleEn : dim.titleZh;
 
             if (!isUnlocked) {
               return (
@@ -345,7 +350,7 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
                   onClick={() => handleUnlockDimension(dim.index)}
                   role="button"
                   tabIndex={0}
-                  title={`点击解锁第 ${dim.index} 维 · ${dim.titleZh}`}
+                  title={isEn ? `Click to unlock Dimension ${dim.index} · ${dimTitle}` : `点击解锁第 ${dim.index} 维 · ${dimTitle}`}
                   style={{
                     padding: '1.25rem',
                     borderRadius: 'var(--radius-md, 18px)',
@@ -370,10 +375,10 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
                 >
                   <Icon name="lock" size={24} style={{ color: 'var(--text-tertiary)', opacity: 0.5 }} />
                   <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
-                    {`第 ${dim.index} 维 · ${dim.titleZh}`}
+                    {isEn ? `Dimension ${dim.index} · ${dimTitle}` : `第 ${dim.index} 维 · ${dimTitle}`}
                   </div>
                   <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--text-tertiary)' }}>
-                    点击卡片或上方按钮解锁
+                    {isEn ? 'Click card or button above to unlock' : '点击卡片或上方按钮解锁'}
                   </p>
                 </div>
               );
@@ -412,7 +417,7 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
                         color: 'var(--text-primary)',
                       }}
                     >
-                      {`第 ${dim.index} 维 · ${dim.titleZh}`}
+                      {isEn ? `Dimension ${dim.index} · ${dimTitle}` : `第 ${dim.index} 维 · ${dimTitle}`}
                     </h4>
                   </div>
 
@@ -427,7 +432,7 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
                       border: '1px solid rgba(52, 199, 89, 0.25)',
                     }}
                   >
-                    已解锁
+                    {isEn ? 'Unlocked' : '已解锁'}
                   </span>
                 </div>
 

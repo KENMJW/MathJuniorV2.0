@@ -56,6 +56,7 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
   const setExamScore = useSessionStore((state) => state.setExamScore);
   const resetScores = useSessionStore((state) => state.resetScores);
   const locale = useSessionStore((state) => state.locale);
+  const isEn = String(locale).toLowerCase().startsWith('en');
 
   // 1. 选择题判分结果
   const choiceResults = useMemo(() => {
@@ -239,7 +240,9 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
   // 格式化用时
   const minutes = Math.floor(timeSpentSeconds / 60);
   const seconds = timeSpentSeconds % 60;
-  const timeString = `${minutes} 分 ${seconds < 10 ? '0' : ''}${seconds} 秒`;
+  const timeString = isEn
+    ? `${minutes} min ${seconds < 10 ? '0' : ''}${seconds} sec`
+    : `${minutes} 分 ${seconds < 10 ? '0' : ''}${seconds} 秒`;
   const accuracyRate = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0;
 
   return (
@@ -299,9 +302,9 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
             >
               <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                 <Icon name="target" size={13} />
-                <span>测评复盘完成</span>
+                <span>{isEn ? 'Assessment Review Completed' : '测评复盘完成'}</span>
               </span>
-              <span>中考全真测评报告</span>
+              <span>{isEn ? 'Junior High Math Mock Exam Report' : '中考全真测评报告'}</span>
             </div>
             <h1
               style={{
@@ -312,10 +315,12 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                 letterSpacing: '-0.02em',
               }}
             >
-              {paper.titleZh}
+              {(isEn ? paper.titleEn : paper.titleZh) || paper.titleZh}
             </h1>
             <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', margin: 0 }}>
-              全卷满分 {maxScore} 分 · 考场用时：{timeString} · 答题正确率：{accuracyRate}%
+              {isEn
+                ? `Full Score ${maxScore} Pts · Time Spent: ${timeString} · Accuracy Rate: ${accuracyRate}%`
+                : `全卷满分 ${maxScore} 分 · 考场用时：${timeString} · 答题正确率：${accuracyRate}%`}
             </p>
           </div>
 
@@ -336,7 +341,7 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
               {totalScore}
             </span>
             <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-tertiary)' }}>
-              / {maxScore} 分
+              / {maxScore} {isEn ? 'pts' : '分'}
             </span>
           </div>
         </div>
@@ -351,7 +356,7 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
           }}
         >
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <RadarChart scores={radarScores} size={300} />
+            <RadarChart scores={radarScores} size={300} locale={locale} />
           </div>
 
           <div
@@ -375,7 +380,7 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
               }}
             >
               <Icon name="chart" size={16} />
-              <span>四维素养量化诊断</span>
+              <span>{isEn ? 'Cognitive Dimensions Quantitative Diagnosis' : '四维素养量化诊断'}</span>
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <div
@@ -387,8 +392,12 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                   lineHeight: 1.5,
                 }}
               >
-                <span style={{ fontWeight: 700, color: 'var(--ios-blue)' }}>【知识广度】</span>
-                <span>考点覆盖掌握率 <strong>{radarScores.breadth}%</strong>。反映对中考大纲 107 核心考点的熟悉广度。</span>
+                <span style={{ fontWeight: 700, color: 'var(--ios-blue)' }}>{isEn ? '【Knowledge Breadth】' : '【知识广度】'}</span>
+                <span>
+                  {isEn
+                    ? <>Point mastery coverage <strong>{radarScores.breadth}%</strong>. Reflects familiarity across the 107 core syllabus points.</>
+                    : <>考点覆盖掌握率 <strong>{radarScores.breadth}%</strong>。反映对中考大纲 107 核心考点的熟悉广度。</>}
+                </span>
               </div>
               <div
                 style={{
@@ -399,8 +408,12 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                   lineHeight: 1.5,
                 }}
               >
-                <span style={{ fontWeight: 700, color: 'var(--ios-purple)' }}>【深度洞察】</span>
-                <span>高阶压轴突破率 <strong>{radarScores.insight}%</strong>。反映在动态几何与复杂函数极值中的思维洞察力。</span>
+                <span style={{ fontWeight: 700, color: 'var(--ios-purple)' }}>{isEn ? '【Deep Insight】' : '【深度洞察】'}</span>
+                <span>
+                  {isEn
+                    ? <>High-order challenge breakthrough rate <strong>{radarScores.insight}%</strong>. Reflects analytical depth in dynamic geometry and complex functions.</>
+                    : <>高阶压轴突破率 <strong>{radarScores.insight}%</strong>。反映在动态几何与复杂函数极值中的思维洞察力。</>}
+                </span>
               </div>
               <div
                 style={{
@@ -411,8 +424,12 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                   lineHeight: 1.5,
                 }}
               >
-                <span style={{ fontWeight: 700, color: 'var(--ios-amber)' }}>【隐蔽条件发掘】</span>
-                <span>辅助线与隐含条件识别 <strong>{radarScores.hiddenCondition}%</strong>。考查特殊位置构造与图形转化能力。</span>
+                <span style={{ fontWeight: 700, color: 'var(--ios-amber)' }}>{isEn ? '【Hidden Conditions Discovery】' : '【隐蔽条件发掘】'}</span>
+                <span>
+                  {isEn
+                    ? <>Auxiliary line & implicit condition recognition <strong>{radarScores.hiddenCondition}%</strong>. Tests geometric transformation and structure identification.</>
+                    : <>辅助线与隐含条件识别 <strong>{radarScores.hiddenCondition}%</strong>。考查特殊位置构造与图形转化能力。</>}
+                </span>
               </div>
               <div
                 style={{
@@ -423,8 +440,12 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                   lineHeight: 1.5,
                 }}
               >
-                <span style={{ fontWeight: 700, color: 'var(--ios-green)' }}>【计算耐受力】</span>
-                <span>多步运算与分式根式精准度 <strong>{radarScores.resilience}%</strong>。反映中考解答题多步骤推导无错能力。</span>
+                <span style={{ fontWeight: 700, color: 'var(--ios-green)' }}>{isEn ? '【Computational Resilience】' : '【计算耐受力】'}</span>
+                <span>
+                  {isEn
+                    ? <>Multi-step operation & radical/fraction accuracy <strong>{radarScores.resilience}%</strong>. Measures error-free rigorous algebraic derivation.</>
+                    : <>多步运算与分式根式精准度 <strong>{radarScores.resilience}%</strong>。反映中考解答题多步骤推导无错能力。</>}
+                </span>
               </div>
             </div>
 
@@ -445,8 +466,10 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
             >
               <Icon name="alert" size={15} style={{ marginTop: '0.125rem', color: 'var(--ios-amber)', flexShrink: 0 }} />
               <div>
-                <strong>[铁律 2 零持久化保护]：</strong>
-                本次模考过程数据与四维报告仅保留在当前浏览器会话内存中，退出或刷新即彻底焚毁，不向 localStorage / IndexedDB 写入任何痕迹。
+                <strong>{isEn ? '[Iron Rule 2 Zero-Persistence Protection]: ' : '[铁律 2 零持久化保护]：'}</strong>
+                {isEn
+                  ? 'Mock exam session data and cognitive reports are stored strictly in browser memory. Exiting or refreshing completely burns all records with 0 writes to localStorage or IndexedDB.'
+                  : '本次模考过程数据与四维报告仅保留在当前浏览器会话内存中，退出或刷新即彻底焚毁，不向 localStorage / IndexedDB 写入任何痕迹。'}
               </div>
             </div>
           </div>
@@ -483,7 +506,7 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
             }}
           >
             <Icon name="refresh" size={14} />
-            <span>重新作答此卷</span>
+            <span>{isEn ? 'Retake Exam' : '重新作答此卷'}</span>
           </button>
           <button
             type="button"
@@ -505,7 +528,7 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
             }}
           >
             <Icon name="trash" size={14} />
-            <span>考完即焚并离开</span>
+            <span>{isEn ? 'Burn & Leave' : '考完即焚并离开'}</span>
           </button>
         </div>
       </div>
@@ -524,7 +547,7 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
           }}
         >
           <Icon name="edit" size={20} />
-          <span>逐题深度复盘与解答题踩分自核</span>
+          <span>{isEn ? 'Item-by-Item Review & Rubric Self-Assessment' : '逐题深度复盘与解答题踩分自核'}</span>
         </h2>
 
         {/* 1. 选择题复盘 */}
@@ -539,7 +562,7 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
               margin: 0,
             }}
           >
-            一、单选题复盘 ({choiceResults.length} 题)
+            {isEn ? `I. Multiple Choice Review (${choiceResults.length} Questions)` : `一、单选题复盘 (${choiceResults.length} 题)`}
           </h3>
           <div
             style={{
@@ -566,7 +589,7 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', minWidth: 0 }}>
                     <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-tertiary)', flexShrink: 0 }}>
-                      第 {idx + 1} 题 · {r.question.score_default}分
+                      {isEn ? `Question ${idx + 1} · ${r.question.score_default} pts` : `第 ${idx + 1} 题 · ${r.question.score_default}分`}
                     </span>
                     <SourceTag source={r.question.source} exam_year={r.question.exam_year} region={r.question.region} />
                   </div>
@@ -580,11 +603,16 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                       color: r.isCorrect ? 'var(--ios-green)' : 'var(--ios-red)',
                     }}
                   >
-                    {r.isCorrect ? `✓ 满分 (+${r.score}分)` : '✗ 错误 (0分)'}
+                    {r.isCorrect
+                      ? (isEn ? `✓ Full Marks (+${r.score} pts)` : `✓ 满分 (+${r.score}分)`)
+                      : (isEn ? '✗ Incorrect (0 pts)' : '✗ 错误 (0分)')}
                   </span>
                 </div>
                 <div style={{ fontSize: '0.8125rem', color: 'var(--text-primary)', lineHeight: 1.5 }}>
-                  <QuestionContent content={r.question.stem_zh} images={r.question.image_paths_json} />
+                  <QuestionContent
+                    content={(isEn ? r.question.stem_en : r.question.stem_zh) || r.question.stem_zh}
+                    images={r.question.image_paths_json}
+                  />
                 </div>
                 <div
                   style={{
@@ -603,13 +631,13 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                   }}
                 >
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', flexWrap: 'wrap' }}>
-                    <span style={{ color: 'var(--text-tertiary)' }}>您的作答：</span>
+                    <span style={{ color: 'var(--text-tertiary)' }}>{isEn ? 'Your Answer: ' : '您的作答：'}</span>
                     <strong style={{ color: r.isCorrect ? 'var(--ios-green)' : 'var(--ios-red)' }}>
-                      <MathRenderer content={r.studentAns || (locale === 'en' ? 'Unanswered' : '未作答')} />
+                      <MathRenderer content={r.studentAns || (isEn ? 'Unanswered' : '未作答')} />
                     </strong>
                   </span>
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', flexWrap: 'wrap' }}>
-                    <span style={{ color: 'var(--text-tertiary)' }}>标准答案：</span>
+                    <span style={{ color: 'var(--text-tertiary)' }}>{isEn ? 'Standard Answer: ' : '标准答案：'}</span>
                     <strong style={{ color: 'var(--ios-blue)' }}>
                       <MathRenderer content={r.question.answer_standard || '—'} />
                     </strong>
@@ -632,7 +660,7 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
               margin: 0,
             }}
           >
-            二、填空题等价判分复盘 ({fillResults.length} 题)
+            {isEn ? `II. Fill-in-the-Blank Equivalence Review (${fillResults.length} Questions)` : `二、填空题等价判分复盘 (${fillResults.length} 题)`}
           </h3>
           <div
             style={{
@@ -659,7 +687,7 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', minWidth: 0 }}>
                     <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-tertiary)', flexShrink: 0 }}>
-                      第 {choiceResults.length + idx + 1} 题 · {r.question.score_default}分
+                      {isEn ? `Question ${choiceResults.length + idx + 1} · ${r.question.score_default} pts` : `第 ${choiceResults.length + idx + 1} 题 · ${r.question.score_default}分`}
                     </span>
                     <SourceTag source={r.question.source} exam_year={r.question.exam_year} region={r.question.region} />
                   </div>
@@ -682,14 +710,17 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                     }}
                   >
                     {r.isCorrect
-                      ? `✓ 数学等价 (+${r.score}分)`
+                      ? (isEn ? `✓ Equivalent (+${r.score} pts)` : `✓ 数学等价 (+${r.score}分)`)
                       : r.isSuspect
-                      ? `? 疑似等价 (+${r.score}分)`
-                      : '✗ 答案不符 (0分)'}
+                      ? (isEn ? `? Suspect (+${r.score} pts)` : `? 疑似等价 (+${r.score}分)`)
+                      : (isEn ? '✗ Incorrect (0 pts)' : '✗ 答案不符 (0分)')}
                   </span>
                 </div>
                 <div style={{ fontSize: '0.8125rem', color: 'var(--text-primary)', lineHeight: 1.5 }}>
-                  <QuestionContent content={r.question.stem_zh} images={r.question.image_paths_json} />
+                  <QuestionContent
+                    content={(isEn ? r.question.stem_en : r.question.stem_zh) || r.question.stem_zh}
+                    images={r.question.image_paths_json}
+                  />
                 </div>
                 <div
                   style={{
@@ -707,13 +738,13 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
-                    <span style={{ color: 'var(--text-tertiary)', flexShrink: 0 }}>您的填空：</span>
+                    <span style={{ color: 'var(--text-tertiary)', flexShrink: 0 }}>{isEn ? 'Your Fill-in: ' : '您的填空：'}</span>
                     <span style={{ fontWeight: 600, color: 'var(--text-primary)', wordBreak: 'break-word', overflowWrap: 'anywhere', flex: 1, minWidth: 0 }}>
-                      <MathRenderer content={r.studentAns || '（未填写）'} />
+                      <MathRenderer content={r.studentAns || (isEn ? '(Blank)' : '（未填写）')} />
                     </span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
-                    <span style={{ color: 'var(--text-tertiary)', flexShrink: 0 }}>标准答案：</span>
+                    <span style={{ color: 'var(--text-tertiary)', flexShrink: 0 }}>{isEn ? 'Standard Answer: ' : '标准答案：'}</span>
                     <span style={{ fontWeight: 600, color: 'var(--ios-blue)', wordBreak: 'break-word', overflowWrap: 'anywhere', flex: 1, minWidth: 0 }}>
                       <MathRenderer content={r.standardAns || '—'} />
                     </span>
@@ -745,7 +776,9 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                 margin: 0,
               }}
             >
-              三、解答题踩分点自核 (Rubric Checklist) 与多解法 ({solutionResults.length} 题)
+              {isEn
+                ? `III. Extended Solution Rubric Checklist & Multi-Solutions (${solutionResults.length} Questions)`
+                : `三、解答题踩分点自核 (Rubric Checklist) 与多解法 (${solutionResults.length} 题)`}
             </h3>
             <span
               style={{
@@ -758,7 +791,7 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
               }}
             >
               <Icon name="bulb" size={14} />
-              <span>请对照官方推导步骤，勾选您已写出的踩分项自评</span>
+              <span>{isEn ? 'Review official derivations and check the rubric steps you completed' : '请对照官方推导步骤，勾选您已写出的踩分项自评'}</span>
             </span>
           </div>
 
@@ -791,12 +824,14 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', minWidth: 0 }}>
                     <span style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)', flexShrink: 0 }}>
-                      第 {choiceResults.length + fillResults.length + idx + 1} 题 (满分 {r.maxScore} 分)
+                      {isEn
+                        ? `Question ${choiceResults.length + fillResults.length + idx + 1} (Full Score ${r.maxScore} pts)`
+                        : `第 ${choiceResults.length + fillResults.length + idx + 1} 题 (满分 ${r.maxScore} 分)`}
                     </span>
                     <SourceTag source={r.question.source} exam_year={r.question.exam_year} region={r.question.region} />
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>自核得分:</span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>{isEn ? 'Self-Score:' : '自核得分:'}</span>
                     <span
                       style={{
                         padding: '0.25rem 0.75rem',
@@ -808,14 +843,17 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                         border: '1px solid rgba(0, 122, 255, 0.25)',
                       }}
                     >
-                      {r.score} / {r.maxScore} 分
+                      {r.score} / {r.maxScore} {isEn ? 'pts' : '分'}
                     </span>
                   </div>
                 </div>
 
                 {/* 题干 (支持图锚点混合渲染) */}
                 <div style={{ fontSize: '0.875rem', color: 'var(--text-primary)', lineHeight: 1.6 }}>
-                  <QuestionContent content={r.question.stem_zh} images={r.question.image_paths_json} />
+                  <QuestionContent
+                    content={(isEn ? r.question.stem_en : r.question.stem_zh) || r.question.stem_zh}
+                    images={r.question.image_paths_json}
+                  />
                 </div>
 
                 {/* 学生作答草稿回显 */}
@@ -829,7 +867,9 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                       fontSize: '0.75rem',
                     }}
                   >
-                    <span style={{ color: 'var(--text-tertiary)', display: 'block', marginBottom: '0.25rem' }}>您的考场解答过程：</span>
+                    <span style={{ color: 'var(--text-tertiary)', display: 'block', marginBottom: '0.25rem' }}>
+                      {isEn ? 'Your Exam Derivation Steps:' : '您的考场解答过程：'}
+                    </span>
                     <div
                       style={{
                         color: 'var(--text-primary)',
@@ -866,10 +906,10 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                       }}
                     >
                       <Icon name="file" size={14} />
-                      <span>中考分步踩分点核对（点击打钩计入总分）：</span>
+                      <span>{isEn ? 'Official Rubric Checklist (Check to add points):' : '中考分步踩分点核对（点击打钩计入总分）：'}</span>
                     </span>
                     <span style={{ fontSize: '0.75rem', color: 'var(--ios-blue)' }}>
-                      已勾选 {r.checked.size} / {r.steps.length} 步
+                      {isEn ? `${r.checked.size} / ${r.steps.length} steps checked` : `已勾选 ${r.checked.size} / ${r.steps.length} 步`}
                     </span>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -877,7 +917,7 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                       const isChecked = r.checked.has(step.stepIndex);
                       return (
                         <label
-                          key={step.stepIndex}
+                          key={`step-${step.stepIndex}`}
                           style={{
                             display: 'flex',
                             alignItems: 'flex-start',
@@ -908,10 +948,10 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                           />
                           <div style={{ flex: 1, fontSize: '0.75rem' }}>
                             <span style={{ fontWeight: 700, color: 'var(--text-primary)', marginRight: '0.5rem' }}>
-                              步骤 {step.stepIndex} (+{step.points}分):
+                              {isEn ? `Step ${step.stepIndex} (+${step.points} pts):` : `步骤 ${step.stepIndex} (+${step.points}分):`}
                             </span>
                             <span style={{ color: 'var(--text-secondary)' }}>
-                              <MathRenderer content={step.descriptionZh} />
+                              <MathRenderer content={(isEn ? (step as any).descriptionEn : step.descriptionZh) || step.descriptionZh} />
                             </span>
                           </div>
                         </label>
@@ -939,7 +979,7 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                   >
                     <span style={{ fontWeight: 700, color: 'var(--ios-blue)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                       <Icon name="check" size={13} />
-                      <span>{locale === 'en' ? 'Standard Answer:' : '官方参考答案：'}</span>
+                      <span>{isEn ? 'Official Standard Answer:' : '官方参考答案：'}</span>
                     </span>
                     <div
                       style={{
@@ -979,10 +1019,10 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                       }}
                     >
                       <Icon name="bulb" size={14} />
-                      <span>官方解析与标准推导：</span>
+                      <span>{isEn ? 'Official Analysis & Derivations:' : '官方解析与标准推导：'}</span>
                     </span>
                     <div style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                      <SolutionList solutions={r.question.solutions_json} images={r.question.image_paths_json} />
+                      <SolutionList solutions={r.question.solutions_json} images={r.question.image_paths_json} locale={locale} />
                     </div>
                   </div>
                 )}
@@ -990,7 +1030,7 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                 {/* Clique 考点组合题穿透反哺双层胶囊 (PRD §5.4) */}
                 {r.question.combination_id && (
                   <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem', paddingTop: '0.5rem', fontSize: '0.75rem' }}>
-                    <span style={{ color: 'var(--text-tertiary)', fontWeight: 500 }}>穿透反哺:</span>
+                    <span style={{ color: 'var(--text-tertiary)', fontWeight: 500 }}>{isEn ? 'Penetration Link:' : '穿透反哺:'}</span>
                     <span
                       style={{
                         display: 'inline-flex',
@@ -1004,7 +1044,7 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                       }}
                     >
                       <Icon name="flask" size={12} />
-                      <span>基础攻坚: {r.question.primary_point_id}</span>
+                      <span>{isEn ? `Foundation: ${r.question.primary_point_id}` : `基础攻坚: ${r.question.primary_point_id}`}</span>
                     </span>
                     <span
                       style={{
@@ -1019,7 +1059,7 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                       }}
                     >
                       <Icon name="rocket" size={12} />
-                      <span>压轴模型: {r.question.combination_id}</span>
+                      <span>{isEn ? `Capstone Model: ${r.question.combination_id}` : `压轴模型: ${r.question.combination_id}`}</span>
                     </span>
                   </div>
                 )}

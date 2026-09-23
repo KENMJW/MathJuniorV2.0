@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Icon } from '../../components/common/Icon';
 import { MathRenderer } from '../../components/math/MathRenderer';
+import { useSessionStore } from '../../store/sessionStore';
 
 export interface LineSwimlanePoint {
   point_id: string;
@@ -23,17 +24,19 @@ interface SemesterTierConfig {
   semester: number;
   key: string;
   labelZh: string;        // e.g. "7上"
+  labelEn: string;        // e.g. "G7S1"
   semesterNameZh: string; // e.g. "七年级上册"
+  semesterNameEn: string; // e.g. "Grade 7 Semester 1"
   badgeColor: string;
 }
 
 const SEMESTER_TIERS: SemesterTierConfig[] = [
-  { grade: 7, semester: 1, key: '7-1', labelZh: '7上', semesterNameZh: '七年级上册', badgeColor: '#0071e3' },
-  { grade: 7, semester: 2, key: '7-2', labelZh: '7下', semesterNameZh: '七年级下册', badgeColor: '#0071e3' },
-  { grade: 8, semester: 1, key: '8-1', labelZh: '8上', semesterNameZh: '八年级上册', badgeColor: '#30b0c7' },
-  { grade: 8, semester: 2, key: '8-2', labelZh: '8下', semesterNameZh: '八年级下册', badgeColor: '#30b0c7' },
-  { grade: 9, semester: 1, key: '9-1', labelZh: '9上', semesterNameZh: '九年级上册', badgeColor: '#af52de' },
-  { grade: 9, semester: 2, key: '9-2', labelZh: '9下', semesterNameZh: '九年级下册', badgeColor: '#ff9500' },
+  { grade: 7, semester: 1, key: '7-1', labelZh: '7上', labelEn: 'G7S1', semesterNameZh: '七年级上册', semesterNameEn: 'Grade 7 Semester 1', badgeColor: '#0071e3' },
+  { grade: 7, semester: 2, key: '7-2', labelZh: '7下', labelEn: 'G7S2', semesterNameZh: '七年级下册', semesterNameEn: 'Grade 7 Semester 2', badgeColor: '#0071e3' },
+  { grade: 8, semester: 1, key: '8-1', labelZh: '8上', labelEn: 'G8S1', semesterNameZh: '八年级上册', semesterNameEn: 'Grade 8 Semester 1', badgeColor: '#30b0c7' },
+  { grade: 8, semester: 2, key: '8-2', labelZh: '8下', labelEn: 'G8S2', semesterNameZh: '八年级下册', semesterNameEn: 'Grade 8 Semester 2', badgeColor: '#30b0c7' },
+  { grade: 9, semester: 1, key: '9-1', labelZh: '9上', labelEn: 'G9S1', semesterNameZh: '九年级上册', semesterNameEn: 'Grade 9 Semester 1', badgeColor: '#af52de' },
+  { grade: 9, semester: 2, key: '9-2', labelZh: '9下', labelEn: 'G9S2', semesterNameZh: '九年级下册', semesterNameEn: 'Grade 9 Semester 2', badgeColor: '#ff9500' },
 ];
 
 /**
@@ -53,6 +56,9 @@ export const LineSwimlane: React.FC<LineSwimlaneProps> = ({
   className = '',
   style = {},
 }) => {
+  const locale = useSessionStore((state) => state.locale);
+  const isEn = String(locale).toLowerCase().startsWith('en');
+
   // 按 6 学期分桶考点并按 point_id 规范排序
   const tierList = useMemo(() => {
     return SEMESTER_TIERS.map((tier) => {
@@ -130,10 +136,14 @@ export const LineSwimlane: React.FC<LineSwimlaneProps> = ({
                 letterSpacing: '-0.01em',
               }}
             >
-              {lineName ? `${lineName} · 学期演进泳道` : `${lineId} · 学期演进泳道`}
+              {lineName
+                ? `${lineName} · ${isEn ? 'Semester Evolution Swimlane' : '学期演进泳道'}`
+                : `${lineId} · ${isEn ? 'Semester Evolution Swimlane' : '学期演进泳道'}`}
             </span>
             <span style={{ fontSize: '0.74rem', color: 'var(--text-secondary)' }}>
-              {`初中 6 学期纵向脉络 · 共 ${totalPointsCount} 个考点`}
+              {isEn
+                ? `Junior Math 6 Semesters · Total ${totalPointsCount} Points`
+                : `初中 6 学期纵向脉络 · 共 ${totalPointsCount} 个考点`}
             </span>
           </div>
         </div>
@@ -218,7 +228,7 @@ export const LineSwimlane: React.FC<LineSwimlaneProps> = ({
                     userSelect: 'none',
                   }}
                 >
-                  {tier.labelZh}
+                  {isEn ? tier.labelEn : tier.labelZh}
                 </div>
 
                 {/* 纵向连线轨道 (非末尾段向下延伸连接下一学期) */}
@@ -267,7 +277,7 @@ export const LineSwimlane: React.FC<LineSwimlaneProps> = ({
                         color: hasPoints ? 'var(--text-secondary)' : 'var(--text-tertiary)',
                       }}
                     >
-                      {tier.semesterNameZh}
+                      {isEn ? tier.semesterNameEn : tier.semesterNameZh}
                     </span>
                   </div>
                   {hasPoints && (
@@ -281,7 +291,7 @@ export const LineSwimlane: React.FC<LineSwimlaneProps> = ({
                         background: `${tier.badgeColor}10`,
                       }}
                     >
-                      {`${tier.points.length} 考点`}
+                      {`${tier.points.length} ${isEn ? 'Points' : '考点'}`}
                     </span>
                   )}
                 </div>
@@ -296,57 +306,60 @@ export const LineSwimlane: React.FC<LineSwimlaneProps> = ({
                       gap: '0.35rem',
                     }}
                   >
-                    {tier.points.map((pt) => (
-                      <div
-                        key={pt.point_id}
-                        className="line-swimlane-point-item"
-                        data-testid={`swimlane-point-${pt.point_id}`}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.55rem',
-                          padding: '0.45rem 0.7rem',
-                          background: 'rgba(255, 255, 255, 0.95)',
-                          border: '1px solid rgba(0, 0, 0, 0.06)',
-                          borderRadius: '8px',
-                          boxShadow: '0 1px 2px rgba(0, 0, 0, 0.02)',
-                          boxSizing: 'border-box',
-                          userSelect: 'text',
-                        }}
-                      >
-                        {/* point_id 胶囊 */}
-                        <span
-                          style={{
-                            fontFamily: 'var(--font-family-mono, monospace)',
-                            fontSize: '0.72rem',
-                            fontWeight: 700,
-                            padding: '0.12rem 0.4rem',
-                            borderRadius: '4px',
-                            background: 'rgba(0, 113, 227, 0.08)',
-                            color: 'var(--ios-blue, #0071e3)',
-                            letterSpacing: '0.02em',
-                            flexShrink: 0,
-                          }}
-                        >
-                          {pt.point_id}
-                        </span>
-
-                        {/* name_zh 中文考点名称 (MathRenderer) */}
+                    {tier.points.map((pt) => {
+                      const ptName = isEn ? (pt.name_en || pt.name_zh) : pt.name_zh;
+                      return (
                         <div
+                          key={pt.point_id}
+                          className="line-swimlane-point-item"
+                          data-testid={`swimlane-point-${pt.point_id}`}
                           style={{
-                            fontSize: '0.84rem',
-                            fontWeight: 600,
-                            color: 'var(--text-primary)',
-                            lineHeight: 1.4,
-                            overflowWrap: 'anywhere',
-                            wordBreak: 'break-word',
-                            flex: 1,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.55rem',
+                            padding: '0.45rem 0.7rem',
+                            background: 'rgba(255, 255, 255, 0.95)',
+                            border: '1px solid rgba(0, 0, 0, 0.06)',
+                            borderRadius: '8px',
+                            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.02)',
+                            boxSizing: 'border-box',
+                            userSelect: 'text',
                           }}
                         >
-                          <MathRenderer content={pt.name_zh} />
+                          {/* point_id 胶囊 */}
+                          <span
+                            style={{
+                              fontFamily: 'var(--font-family-mono, monospace)',
+                              fontSize: '0.72rem',
+                              fontWeight: 700,
+                              padding: '0.12rem 0.4rem',
+                              borderRadius: '4px',
+                              background: 'rgba(0, 113, 227, 0.08)',
+                              color: 'var(--ios-blue, #0071e3)',
+                              letterSpacing: '0.02em',
+                              flexShrink: 0,
+                            }}
+                          >
+                            {pt.point_id}
+                          </span>
+
+                          {/* name_zh / name_en 考点名称 (MathRenderer) */}
+                          <div
+                            style={{
+                              fontSize: '0.84rem',
+                              fontWeight: 600,
+                              color: 'var(--text-primary)',
+                              lineHeight: 1.4,
+                              overflowWrap: 'anywhere',
+                              wordBreak: 'break-word',
+                              flex: 1,
+                            }}
+                          >
+                            <MathRenderer content={ptName} />
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 ) : (
                   <div
@@ -366,7 +379,7 @@ export const LineSwimlane: React.FC<LineSwimlaneProps> = ({
                       userSelect: 'none',
                     }}
                   >
-                    <span>— 无本谱系考点 —</span>
+                    <span>{isEn ? '— No Points in this Semester —' : '— 无本谱系考点 —'}</span>
                   </div>
                 )}
               </div>

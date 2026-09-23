@@ -11,6 +11,7 @@
 import React, { useState } from 'react';
 import { MathRenderer } from '../../components/math/MathRenderer';
 import { Icon } from '../../components/common/Icon';
+import { useSessionStore } from '../../store/sessionStore';
 
 export interface MathKeyboardProps {
   visible: boolean;
@@ -20,6 +21,7 @@ export interface MathKeyboardProps {
   onClear: () => void;
   onClose: () => void;
   targetTitle?: string;
+  locale?: string;
 }
 
 interface SymbolKey {
@@ -29,7 +31,7 @@ interface SymbolKey {
   category: 'algebra' | 'relation' | 'geometry' | 'quick';
 }
 
-const SYMBOL_KEYS: SymbolKey[] = [
+const getSymbolKeys = (isEn: boolean): SymbolKey[] => [
   // 常用代数与分式根幂
   { label: 'x²', display: 'x^2', insert: '^2', category: 'algebra' },
   { label: 'xⁿ', display: 'x^n', insert: '^{}', category: 'algebra' },
@@ -69,8 +71,8 @@ const SYMBOL_KEYS: SymbolKey[] = [
   // 快捷规范话术
   { label: 'x = ', display: 'x=', insert: 'x = ', category: 'quick' },
   { label: 'y = ', display: 'y=', insert: 'y = ', category: 'quick' },
-  { label: ' 或 ', display: '\\text{或}', insert: ' 或 ', category: 'quick' },
-  { label: '设未知数', display: '\\text{解：设}', insert: '解：设 ', category: 'quick' },
+  { label: isEn ? ' or ' : ' 或 ', display: isEn ? '\\text{or}' : '\\text{或}', insert: isEn ? ' or ' : ' 或 ', category: 'quick' },
+  { label: isEn ? 'Let' : '设未知数', display: isEn ? '\\text{Let }' : '\\text{解：设}', insert: isEn ? 'Let ' : '解：设 ', category: 'quick' },
 ];
 
 export const MathKeyboard: React.FC<MathKeyboardProps> = ({
@@ -80,8 +82,15 @@ export const MathKeyboard: React.FC<MathKeyboardProps> = ({
   onBackspace,
   onClear,
   onClose,
-  targetTitle = '当前作答输入框',
+  targetTitle,
+  locale: propLocale,
 }) => {
+  const storeLocale = useSessionStore((s) => s.locale);
+  const activeLocale = propLocale || storeLocale;
+  const isEn = String(activeLocale).toLowerCase().startsWith('en');
+  const displayTargetTitle = targetTitle ?? (isEn ? 'Current Input' : '当前作答输入框');
+  const symbolKeys = getSymbolKeys(isEn);
+
   const [activeCategory, setActiveCategory] = useState<'all' | 'algebra' | 'relation' | 'geometry'>(
     'all'
   );
@@ -90,8 +99,8 @@ export const MathKeyboard: React.FC<MathKeyboardProps> = ({
 
   const filteredKeys =
     activeCategory === 'all'
-      ? SYMBOL_KEYS
-      : SYMBOL_KEYS.filter((k) => k.category === activeCategory);
+      ? symbolKeys
+      : symbolKeys.filter((k) => k.category === activeCategory);
 
   return (
     <div
@@ -150,7 +159,7 @@ export const MathKeyboard: React.FC<MathKeyboardProps> = ({
               }}
             >
               <Icon name="keyboard" size={13} />
-              <span>数学键盘</span>
+              <span>{isEn ? 'Math Keyboard' : '数学键盘'}</span>
             </span>
             <span
               style={{
@@ -161,7 +170,7 @@ export const MathKeyboard: React.FC<MathKeyboardProps> = ({
                 textOverflow: 'ellipsis',
               }}
             >
-              {targetTitle}
+              {displayTargetTitle}
             </span>
           </div>
 
@@ -182,10 +191,10 @@ export const MathKeyboard: React.FC<MathKeyboardProps> = ({
                 border: '1px solid var(--border-subtle)',
                 cursor: 'pointer',
               }}
-              title="退格删除"
+              title={isEn ? 'Backspace' : '退格删除'}
             >
               <Icon name="backspace" size={12} />
-              <span>退格</span>
+              <span>{isEn ? 'Backspace' : '退格'}</span>
             </button>
             <button
               type="button"
@@ -200,9 +209,9 @@ export const MathKeyboard: React.FC<MathKeyboardProps> = ({
                 border: '1px solid var(--border-subtle)',
                 cursor: 'pointer',
               }}
-              title="清空当前内容"
+              title={isEn ? 'Clear' : '清空当前内容'}
             >
-              清空
+              {isEn ? 'Clear' : '清空'}
             </button>
             <button
               type="button"
@@ -221,9 +230,9 @@ export const MathKeyboard: React.FC<MathKeyboardProps> = ({
                 cursor: 'pointer',
                 boxShadow: '0 2px 6px var(--ios-blue-glow)',
               }}
-              title="收起键盘"
+              title={isEn ? 'Done' : '收起键盘'}
             >
-              <span>完成</span>
+              <span>{isEn ? 'Done' : '完成'}</span>
               <Icon name="check" size={12} />
             </button>
           </div>
@@ -251,7 +260,7 @@ export const MathKeyboard: React.FC<MathKeyboardProps> = ({
               flexShrink: 0,
             }}
           >
-            渲染预览:
+            {isEn ? 'Preview:' : '渲染预览:'}
           </span>
           <div
             style={{
@@ -265,7 +274,7 @@ export const MathKeyboard: React.FC<MathKeyboardProps> = ({
               <MathRenderer content={currentValue} />
             ) : (
               <span style={{ color: 'var(--text-tertiary)', fontStyle: 'italic', fontSize: '0.75rem' }}>
-                光标聚焦已就绪，点击下方符号快捷插入
+                {isEn ? 'Cursor ready. Click symbols below to insert.' : '光标聚焦已就绪，点击下方符号快捷插入'}
               </span>
             )}
           </div>
@@ -283,10 +292,10 @@ export const MathKeyboard: React.FC<MathKeyboardProps> = ({
           }}
         >
           {[
-            { key: 'all', label: `全部 (${SYMBOL_KEYS.length})` },
-            { key: 'algebra', label: '代数与根幂' },
-            { key: 'relation', label: '关系与运算' },
-            { key: 'geometry', label: '几何与逻辑' },
+            { key: 'all', label: isEn ? `All (${symbolKeys.length})` : `全部 (${symbolKeys.length})` },
+            { key: 'algebra', label: isEn ? 'Algebra & Powers' : '代数与根幂' },
+            { key: 'relation', label: isEn ? 'Relations & Ops' : '关系与运算' },
+            { key: 'geometry', label: isEn ? 'Geometry & Logic' : '几何与逻辑' },
           ].map((tab) => {
             const isActive = activeCategory === tab.key;
             return (

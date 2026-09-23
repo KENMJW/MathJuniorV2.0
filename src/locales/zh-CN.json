@@ -52,5 +52,22 @@
   "nav.grade": "年级",
   "nav.semester": "学期",
   "nav.domain": "领域",
-  "nav.points": "大纲考点"
+  "nav.points": "大纲考点",
+  "grade.grade7": "七年级",
+  "grade.grade8": "八年级",
+  "grade.grade9": "九年级",
+  "semester.sem1": "上学期 (1)",
+  "semester.sem2": "下学期 (2)",
+  "domain.algebra": "数与代数",
+  "domain.geometry": "图形与几何",
+  "domain.statistics": "统计与概率",
+  "domain.synthesis": "综合与实践",
+  "exam.choice": "单项选择题",
+  "exam.fill": "填空题",
+  "exam.solution": "解答题",
+  "exam.ladder": "标准分值阶梯",
+  "exam.sufficient": "题库库存充足",
+  "exam.warning": "题库库存预警",
+  "common.announcements": "系统公告",
+  "common.studentMode": "默认学员 · 核心素养版"
 }

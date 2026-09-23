@@ -5,7 +5,7 @@ import { QuestionContent } from '../../components/common/QuestionContent';
 export interface SolutionListProps {
   solutions?: string | SolutionItem[] | null;
   images?: string[] | string | null;
-  locale?: 'zh' | 'en';
+  locale?: 'zh' | 'en' | 'zh-CN' | string;
   className?: string;
   style?: React.CSSProperties;
   eager?: boolean;
@@ -28,8 +28,10 @@ export const SolutionList: React.FC<SolutionListProps> = ({
   style,
   eager = false,
 }) => {
+  const normalizedLocale: 'zh' | 'en' = String(locale).toLowerCase().startsWith('en') ? 'en' : 'zh';
+
   const items = useMemo((): SolutionItem[] => {
-    const parsed = parseSolutions(solutions);
+    const parsed = parseSolutions(solutions, locale);
     if (parsed.length > 0) {
       return parsed;
     }
@@ -43,7 +45,7 @@ export const SolutionList: React.FC<SolutionListProps> = ({
       return [{ method: '', text: solutions.trim() }];
     }
     return [];
-  }, [solutions]);
+  }, [solutions, locale]);
 
   if (items.length === 0) {
     return null;
@@ -73,7 +75,7 @@ export const SolutionList: React.FC<SolutionListProps> = ({
           content={sol.text}
           images={images}
           role="solution"
-          locale={locale}
+          locale={normalizedLocale}
           eager={eager}
         />
       </div>
@@ -141,7 +143,7 @@ export const SolutionList: React.FC<SolutionListProps> = ({
                 content={sol.text}
                 images={images}
                 role="solution"
-                locale={locale}
+                locale={normalizedLocale}
                 eager={eager}
               />
             </div>

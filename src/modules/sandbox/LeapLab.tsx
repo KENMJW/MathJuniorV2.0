@@ -28,18 +28,26 @@ export interface LeapLabProps {
 }
 
 export const SEMESTER_CONFIG = [
-  { key: '7A', label: '7年级上学期', short: '7上' },
-  { key: '7B', label: '7年级下学期', short: '7下' },
-  { key: '8A', label: '8年级上学期', short: '8上' },
-  { key: '8B', label: '8年级下学期', short: '8下' },
-  { key: '9A', label: '9年级上学期', short: '9上' },
-  { key: '9B', label: '9年级下学期', short: '9下' },
+  { key: '7A', label: '7年级上学期', labelEn: 'G7 Sem 1', short: '7上' },
+  { key: '7B', label: '7年级下学期', labelEn: 'G7 Sem 2', short: '7下' },
+  { key: '8A', label: '8年级上学期', labelEn: 'G8 Sem 1', short: '8上' },
+  { key: '8B', label: '8年级下学期', labelEn: 'G8 Sem 2', short: '8下' },
+  { key: '9A', label: '9年级上学期', labelEn: 'G9 Sem 1', short: '9上' },
+  { key: '9B', label: '9年级下学期', labelEn: 'G9 Sem 2', short: '9下' },
 ] as const;
 
 export function formatSemesterZh(sem?: string): string {
   if (!sem) return '7年级上学期';
   const found = SEMESTER_CONFIG.find((s) => s.key === sem);
   return found ? found.label : sem;
+}
+
+export function formatSemester(sem?: string, locale: string = 'zh-CN'): string {
+  const isEn = String(locale).toLowerCase().startsWith('en');
+  if (!sem) return isEn ? 'G7 Sem 1' : '7年级上学期';
+  const found = SEMESTER_CONFIG.find((s) => s.key === sem);
+  if (!found) return sem;
+  return isEn ? found.labelEn : found.label;
 }
 
 /**
@@ -455,7 +463,7 @@ export const LeapLab: React.FC<LeapLabProps> = ({
 
           {!hideDrawerTrigger && (
             <span style={{ fontSize: '12px', color: 'var(--text-tertiary)', fontWeight: 500 }}>
-              (主线 {currentModel.primary_line} · {formatSemesterZh(currentModel.unlocked_semester)})
+              ({isEn ? 'Line' : '主线'} {currentModel.primary_line} · {formatSemester(currentModel.unlocked_semester, locale)})
             </span>
           )}
         </div>
@@ -465,25 +473,25 @@ export const LeapLab: React.FC<LeapLabProps> = ({
             type="button"
             className={`nav-pill-btn ${tierLevel === 1 ? 'active' : ''}`}
             onClick={() => handleTierChange(1)}
-            title="L1 原型：核心基础骨架与本质不变性"
+            title={isEn ? 'L1 Archetype: Core skeleton & invariant' : 'L1 原型：核心基础骨架与本质不变性'}
           >
-            原型
+            {isEn ? 'Archetype' : '原型'}
           </button>
           <button
             type="button"
             className={`nav-pill-btn ${tierLevel === 2 ? 'active' : ''}`}
             onClick={() => handleTierChange(2)}
-            title="L2 变式：姿态翻折旋转与载体拓展"
+            title={isEn ? 'L2 Variation: Posture rotation & carrier expansion' : 'L2 变式：姿态翻折旋转与载体拓展'}
           >
-            变式
+            {isEn ? 'Variation' : '变式'}
           </button>
           <button
             type="button"
             className={`nav-pill-btn ${tierLevel === 3 ? 'active' : ''}`}
             onClick={() => handleTierChange(3)}
-            title="L3 综合：中考压轴加壳与极限综合态"
+            title={isEn ? 'L3 Synthesis: Distractor camouflage & synthesis' : 'L3 综合：中考压轴加壳与极限综合态'}
           >
-            综合
+            {isEn ? 'Synthesis' : '综合'}
           </button>
         </div>
       </div>
@@ -499,7 +507,7 @@ export const LeapLab: React.FC<LeapLabProps> = ({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="搜索 36 个跃迁模型 (如 手拉手 / LM-7A-01 / 抛物线)..."
+                placeholder={isEn ? "Search 36 leap models (e.g. Hand-in-Hand / LM-7A-01 / Parabola)..." : "搜索 36 个跃迁模型 (如 手拉手 / LM-7A-01 / 抛物线)..."}
                 className="drawer-search-field"
               />
               {searchQuery && (
@@ -521,7 +529,7 @@ export const LeapLab: React.FC<LeapLabProps> = ({
             </button>
           </div>
 
-          {/* 1 级：年级学期选择标签 (全中文) */}
+          {/* 1 级：年级学期选择标签 */}
           {!searchQuery && (
             <div className="drawer-sem-tabs">
               {SEMESTER_CONFIG.map((cfg) => {
@@ -534,7 +542,7 @@ export const LeapLab: React.FC<LeapLabProps> = ({
                     className={`drawer-sem-chip ${active ? 'active' : ''}`}
                     onClick={() => setSelectedSem(cfg.key)}
                   >
-                    <span>{cfg.label}</span>
+                    <span>{isEn ? cfg.labelEn : cfg.label}</span>
                     <span className="drawer-sem-count">({count})</span>
                   </button>
                 );
@@ -557,18 +565,18 @@ export const LeapLab: React.FC<LeapLabProps> = ({
                   >
                     <div className="drawer-card-header">
                       <span className="drawer-card-code">{m.model_id}</span>
-                      <span className="drawer-card-sem">{formatSemesterZh(m.unlocked_semester)}</span>
-                      {isFlagship && <span className="drawer-card-flagship">重点模型</span>}
+                      <span className="drawer-card-sem">{formatSemester(m.unlocked_semester, locale)}</span>
+                      {isFlagship && <span className="drawer-card-flagship">{isEn ? 'Flagship' : '重点模型'}</span>}
                       {isSelected && <Icon name="check" size={12} style={{ color: 'var(--ios-blue)', marginLeft: 'auto' }} />}
                     </div>
-                    <div className="drawer-card-name">{m.model_name_zh}</div>
-                    <div className="drawer-card-brief">{m.model_brief_zh}</div>
+                    <div className="drawer-card-name">{(isEn ? m.model_name_en : m.model_name_zh) || m.model_name_zh}</div>
+                    <div className="drawer-card-brief">{(isEn ? m.model_brief_en : m.model_brief_zh) || m.model_brief_zh}</div>
                   </button>
                 );
               })
             ) : (
               <div className="drawer-empty-tip">
-                未检索到匹配的跃迁模型
+                {isEn ? 'No matching leap models found' : '未检索到匹配的跃迁模型'}
               </div>
             )}
           </div>
@@ -619,7 +627,7 @@ export const LeapLab: React.FC<LeapLabProps> = ({
               {/* 中心旋转顶点 O */}
               <circle cx="0" cy="0" r="5" fill="#34c759" stroke="#ffffff" strokeWidth="1.5" />
               <text x="-8" y="-12" fill="#ffffff" fontSize="11" fontWeight="bold">
-                O (共顶旋转轴)
+                {isEn ? 'O (Pivot Center)' : 'O (共顶旋转轴)'}
               </text>
 
               {/* 定构型 (等边三角形 / 等腰直角三角形 / 正方形) */}

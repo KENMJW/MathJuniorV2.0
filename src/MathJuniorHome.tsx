@@ -337,7 +337,7 @@ export const MathJuniorHome: React.FC = () => {
                   color: "var(--text-primary)",
                 }}
               >
-                全科核心素养提分系统
+                {t("app.title", locale, "全科核心素养提分系统")}
               </span>
               <span
                 style={{
@@ -350,7 +350,7 @@ export const MathJuniorHome: React.FC = () => {
                   border: "1px solid rgba(0, 113, 227, 0.2)",
                 }}
               >
-                初中数学 V2.0.1beta
+                {locale === "en" ? "Junior Math V2.0.1beta" : "初中数学 V2.0.1beta"}
               </span>
             </div>
           </div>
@@ -360,7 +360,7 @@ export const MathJuniorHome: React.FC = () => {
             {/* 通知铃铛 */}
             <button
               type="button"
-              title="系统公告"
+              title={t("common.announcements", locale, "系统公告")}
               style={{
                 width: "30px",
                 height: "30px",
@@ -611,7 +611,7 @@ export const MathJuniorHome: React.FC = () => {
 
       <div>
         <h1 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "var(--text-primary)", whiteSpace: "nowrap" }}>
-          初中数学核心素养工坊
+          {locale === "en" ? "Junior Math Workshop" : "初中数学核心素养工坊"}
         </h1>
       </div>
 
@@ -634,8 +634,8 @@ export const MathJuniorHome: React.FC = () => {
         type="button"
         data-testid="back-to-portal-btn"
         onClick={() => navigate("/")}
-        aria-label="返回全科门户"
-        title="返回全科门户"
+        aria-label={t("nav.backToPortal", locale, "返回全科门户")}
+        title={t("nav.backToPortal", locale, "返回全科门户")}
         style={{
           display: "inline-flex",
           alignItems: "center",
@@ -672,7 +672,7 @@ export const MathJuniorHome: React.FC = () => {
           flex: 1,
         }}
       >
-        初中数学
+        {locale === "en" ? "Junior Math" : "初中数学"}
       </span>
 
       {/* 手机端右侧语言切换：紧凑胶囊，绝无挤压 */}
@@ -716,7 +716,7 @@ export const MathJuniorHome: React.FC = () => {
       }}
     >
       <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text-secondary)", padding: "0 0.5rem 0.25rem 0.5rem" }}>
-        四大核心能力模块
+        {locale === "en" ? "Core Competency Modules" : "四大核心能力模块"}
       </div>
       {MODULE_NAV_ITEMS.map((item) => {
         const active = currentSubModule === item.key;
@@ -788,7 +788,7 @@ export const MathJuniorHome: React.FC = () => {
             }}
           >
             <Icon name={item.icon} size={20} />
-            <span style={{ whiteSpace: "nowrap" }}>{(item.labelZh.split("·")[1] || item.labelZh).trim()}</span>
+            <span style={{ whiteSpace: "nowrap" }}>{locale === "en" ? item.labelEn : (item.labelZh.split("·")[1] || item.labelZh).trim()}</span>
           </button>
         );
       })}

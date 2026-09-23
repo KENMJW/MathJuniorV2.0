@@ -15,11 +15,12 @@ export interface SolutionItem {
  * 3. 兼容老结构 { method_zh, steps } -> 映射为 { method, text }
  * 4. 兼容单对象形式 -> 包装为数组
  */
-export function parseSolutions(raw: unknown): SolutionItem[] {
+export function parseSolutions(raw: unknown, locale: string = 'zh-CN'): SolutionItem[] {
   if (raw == null) {
     return [];
   }
 
+  const isEn = String(locale).toLowerCase().startsWith('en');
   let data: unknown = raw;
 
   if (typeof raw === 'string') {
@@ -51,20 +52,29 @@ export function parseSolutions(raw: unknown): SolutionItem[] {
 
     const obj = item as Record<string, unknown>;
 
-    // 提取 method（兼容 method_zh）
-    const methodVal = obj.method ?? obj.method_zh ?? '';
+    // 提取 method（英文优先选择 method_en，回退 method / method_zh / method_name）
+    const methodVal = isEn
+      ? (obj.method_en ?? obj.method ?? obj.method_zh ?? obj.method_name ?? '')
+      : (obj.method_zh ?? obj.method ?? obj.method_name ?? obj.method_en ?? '');
     const method = typeof methodVal === 'string' ? methodVal.trim() : String(methodVal).trim();
 
-    // 提取 text（兼容 steps 数组或字符串）
+    // 提取 text（英文优先选择 text_en / steps_en，回退 text / steps）
     let text = '';
-    if (typeof obj.text === 'string') {
-      text = obj.text;
-    } else if (Array.isArray(obj.steps)) {
-      text = obj.steps.map(s => String(s ?? '')).join('\n');
-    } else if (typeof obj.steps === 'string') {
-      text = obj.steps;
-    } else if (obj.text != null) {
-      text = String(obj.text);
+    const preferredText = isEn
+      ? (obj.text_en ?? obj.text ?? obj.text_zh)
+      : (obj.text_zh ?? obj.text ?? obj.text_en);
+    const preferredSteps = isEn
+      ? (obj.steps_en ?? obj.steps ?? obj.steps_zh)
+      : (obj.steps_zh ?? obj.steps ?? obj.steps_en);
+
+    if (typeof preferredText === 'string') {
+      text = preferredText;
+    } else if (Array.isArray(preferredSteps)) {
+      text = preferredSteps.map(s => String(s ?? '')).join('\n');
+    } else if (typeof preferredSteps === 'string') {
+      text = preferredSteps;
+    } else if (preferredText != null) {
+      text = String(preferredText);
     }
 
     // 只要 method 或 text 有其一不为空，即为合法解法

@@ -9,40 +9,44 @@ import { dbClient } from '../../engine/db/dbClient';
 
 export interface LineCategoryGroup {
   domain: string;
+  domainEn?: string;
   themeColor: string;
-  lines: { id: string; name: string }[];
+  lines: { id: string; name: string; nameEn?: string }[];
 }
 
 // 主线选择器中文大类抽屉分组
 export const LINE_CATEGORY_GROUPS: LineCategoryGroup[] = [
   {
     domain: '数与代数',
+    domainEn: 'Number & Algebra',
     themeColor: 'var(--ios-blue)',
     lines: [
-      { id: 'A1', name: 'A1 实数与数轴' },
-      { id: 'A2', name: 'A2 代数式与运算' },
-      { id: 'A3', name: 'A3 方程与不等式' },
-      { id: 'A4', name: 'A4 函数与坐标系' },
+      { id: 'A1', name: 'A1 实数与数轴', nameEn: 'A1 Real Numbers & Axis' },
+      { id: 'A2', name: 'A2 代数式与运算', nameEn: 'A2 Algebraic Expressions' },
+      { id: 'A3', name: 'A3 方程与不等式', nameEn: 'A3 Equations & Inequalities' },
+      { id: 'A4', name: 'A4 函数与坐标系', nameEn: 'A4 Functions & Coordinates' },
     ],
   },
   {
     domain: '图形与几何',
+    domainEn: 'Geometry',
     themeColor: 'var(--ios-green)',
     lines: [
-      { id: 'G1', name: 'G1 几何原点' },
-      { id: 'G2', name: 'G2 全等推演' },
-      { id: 'G3', name: 'G3 四边形' },
-      { id: 'G4', name: 'G4 圆的度量' },
-      { id: 'G5', name: 'G5 刚体变换' },
-      { id: 'G6', name: 'G6 勾股与相似' },
+      { id: 'G1', name: 'G1 几何原点', nameEn: 'G1 Geometric Origins' },
+      { id: 'G2', name: 'G2 全等推演', nameEn: 'G2 Congruence Deduction' },
+      { id: 'G3', name: 'G3 四边形', nameEn: 'G3 Quadrilaterals' },
+      { id: 'G4', name: 'G4 圆的度量', nameEn: 'G4 Circles & Measures' },
+      { id: 'G5', name: 'G5 刚体变换', nameEn: 'G5 Rigid Transformations' },
+      { id: 'G6', name: 'G6 勾股与相似', nameEn: 'G6 Pythagorean & Similarity' },
     ],
   },
   {
     domain: '统计与概率',
+    domainEn: 'Statistics & Probability',
     themeColor: 'var(--ios-orange)',
     lines: [
-      { id: 'P1', name: 'P1 随机概率' },
-      { id: 'S1', name: 'S1 统计推断' },
+      { id: 'P1', name: 'P1 随机概率', nameEn: 'P1 Random Probability' },
+      { id: 'S1', name: 'S1 统计推断', nameEn: 'S1 Statistical Inference' },
     ],
   },
 ];
@@ -390,7 +394,7 @@ export const LineClosedLoop: React.FC<LineClosedLoopProps> = ({
                     color: group.themeColor,
                   }}
                 >
-                  {group.domain}
+                  {locale === 'en' ? (group.domainEn || group.domain) : group.domain}
                 </span>
               </div>
 
@@ -416,7 +420,7 @@ export const LineClosedLoop: React.FC<LineClosedLoopProps> = ({
                         whiteSpace: 'nowrap',
                       }}
                     >
-                      {item.name}
+                      {locale === 'en' ? (item.nameEn || item.name) : item.name}
                     </button>
                   );
                 })}
@@ -505,7 +509,7 @@ export const LineClosedLoop: React.FC<LineClosedLoopProps> = ({
               boxShadow: activeTab === 'lecture' ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
             }}
           >
-            ① 主线精讲
+            {locale === 'en' ? '① Logic Lecture' : '① 主线精讲'}
           </button>
           <button
             type="button"
@@ -522,7 +526,7 @@ export const LineClosedLoop: React.FC<LineClosedLoopProps> = ({
               boxShadow: activeTab === 'master' ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
             }}
           >
-            ③ 主线母题
+            {locale === 'en' ? '③ Master Example' : '③ 主线母题'}
           </button>
           <button
             type="button"
@@ -539,7 +543,7 @@ export const LineClosedLoop: React.FC<LineClosedLoopProps> = ({
               boxShadow: activeTab === 'practice' ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
             }}
           >
-            ④ 主线快练 (L4~L6)
+            {locale === 'en' ? '④ Line Practice (L4~L6)' : '④ 主线快练 (L4~L6)'}
           </button>
         </div>
       </div>

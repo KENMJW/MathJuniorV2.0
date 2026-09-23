@@ -21,6 +21,7 @@ import { SourceTag } from '../../components/common/SourceTag';
 import { MathKeyboard } from './MathKeyboard';
 import { ScorePanel } from './ScorePanel';
 import { Icon } from '../../components/common/Icon';
+import { useSessionStore } from '../../store/sessionStore';
 
 export interface OnlineExamProps {
   paper: GeneratedPaper;
@@ -31,6 +32,9 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
   paper,
   onBackToWorkbench,
 }) => {
+  const locale = useSessionStore((state) => state.locale);
+  const isEn = String(locale).toLowerCase().startsWith('en');
+
   // 考试状态机：作答中 ('answering') | 已交卷复盘中 ('submitted')
   const [examState, setExamState] = useState<'answering' | 'submitted'>('answering');
 
@@ -100,7 +104,11 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
   const handleFocusFill = (q: QuestionItem, idx: number) => {
     setFocusedQuestionId(q.question_id);
     setFocusedQuestionType('fill');
-    setFocusedTitle(`第 ${paper.choiceQuestions.length + idx + 1} 题 填空输入`);
+    setFocusedTitle(
+      isEn
+        ? `Q${paper.choiceQuestions.length + idx + 1} Fill-in Input`
+        : `第 ${paper.choiceQuestions.length + idx + 1} 题 填空输入`
+    );
     setKeyboardVisible(true);
   };
 
@@ -108,7 +116,11 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
   const handleFocusSolution = (q: QuestionItem, idx: number) => {
     setFocusedQuestionId(q.question_id);
     setFocusedQuestionType('solution');
-    setFocusedTitle(`第 ${paper.choiceQuestions.length + paper.fillQuestions.length + idx + 1} 题 解答推导草稿`);
+    setFocusedTitle(
+      isEn
+        ? `Q${paper.choiceQuestions.length + paper.fillQuestions.length + idx + 1} Derivation Scratchpad`
+        : `第 ${paper.choiceQuestions.length + paper.fillQuestions.length + idx + 1} 题 解答推导草稿`
+    );
     setKeyboardVisible(true);
   };
 
@@ -300,7 +312,7 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
             }}
           >
             <Icon name="chevron-left" size={13} />
-            <span>返回出题中心</span>
+            <span>{isEn ? 'Back to Workbench' : '返回出题中心'}</span>
           </button>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -315,7 +327,7 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                 border: '1px solid rgba(0, 113, 227, 0.15)',
               }}
             >
-              精准出题中心
+              {isEn ? 'Precision Exam Center' : '精准出题中心'}
             </span>
             <h1
               style={{
@@ -328,9 +340,9 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                 whiteSpace: 'nowrap',
                 maxWidth: '360px',
               }}
-              title={paper.titleZh}
+              title={(isEn ? paper.titleEn : paper.titleZh) || paper.titleZh}
             >
-              {paper.titleZh}
+              {(isEn ? paper.titleEn : paper.titleZh) || paper.titleZh}
             </h1>
           </div>
         </div>
@@ -353,7 +365,7 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
             }}
           >
             <Icon name="timer" size={14} />
-            <span>剩余时间</span>
+            <span>{isEn ? 'Time Remaining' : '剩余时间'}</span>
             <span style={{ fontSize: '0.875rem', fontWeight: 900 }}>{formatTime(timeRemaining)}</span>
           </div>
           <button
@@ -376,7 +388,7 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
             }}
           >
             <Icon name="download" size={14} />
-            <span>立即交卷</span>
+            <span>{isEn ? 'Submit Exam' : '立即交卷'}</span>
           </button>
         </div>
       </div>
@@ -416,10 +428,14 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                 }}
               >
                 <h2 style={{ fontSize: '1rem', fontWeight: 900, color: 'var(--text-primary)', margin: 0 }}>
-                  一、选择题 (共 {paper.choiceQuestions.length} 小题)
+                  {isEn
+                    ? `I. Multiple Choice (${paper.choiceQuestions.length} Questions)`
+                    : `一、选择题 (共 ${paper.choiceQuestions.length} 小题)`}
                 </h2>
                 <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', fontWeight: 500 }}>
-                  每题单选，在四个备选项中选出唯一正确答案
+                  {isEn
+                    ? 'Single choice, select the only correct answer among four options'
+                    : '每题单选，在四个备选项中选出唯一正确答案'}
                 </span>
               </div>
 
@@ -474,10 +490,12 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                               flexShrink: 0,
                             }}
                           >
-                            第 {qNum} 题
+                            {isEn ? `Question ${qNum}` : `第 ${qNum} 题`}
                           </span>
                           <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-tertiary)', flexShrink: 0 }}>
-                            ({q.score_default}分) · 难度 L{q.difficulty_level}
+                            {isEn
+                              ? `(${q.score_default} pts) · Level L${q.difficulty_level}`
+                              : `(${q.score_default}分) · 难度 L${q.difficulty_level}`}
                           </span>
                           <SourceTag source={q.source} exam_year={q.exam_year} region={q.region} />
                         </div>
@@ -500,13 +518,13 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                           }}
                         >
                           <Icon name="flag" size={12} style={{ color: isFlagged ? 'var(--ios-red)' : 'currentColor' }} />
-                          <span>{isFlagged ? '已标记复查' : '标记复查'}</span>
+                          <span>{isEn ? (isFlagged ? 'Flagged' : 'Flag for Review') : (isFlagged ? '已标记复查' : '标记复查')}</span>
                         </button>
                       </div>
 
                       {/* 题干 (支持图锚点混合渲染) */}
                       <div style={{ fontSize: '0.9375rem', color: 'var(--text-primary)', lineHeight: 1.6 }}>
-                        <QuestionContent content={q.stem_zh} images={q.image_paths_json} />
+                        <QuestionContent content={(isEn ? q.stem_en : q.stem_zh) || q.stem_zh} images={q.image_paths_json} />
                       </div>
 
                       {/* 选项网格 */}
@@ -519,7 +537,7 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                       >
                         {['A', 'B', 'C', 'D'].map((optKey) => {
                           const optObj = optionsMap[optKey];
-                          const optText = optObj ? optObj.zh : '';
+                          const optText = optObj ? ((isEn ? optObj.en : optObj.zh) || optObj.zh) : '';
                           const isCur = selectedOpt === optKey;
 
                           return (
@@ -562,7 +580,7 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                               </span>
                               <div style={{ flex: 1, overflowX: 'auto', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                                 {optObj?.img ? (
-                                  <QuestionImage role="option" src={optObj.img} alt={`选项 ${optKey}`} />
+                                  <QuestionImage role="option" src={optObj.img} alt={isEn ? `Option ${optKey}` : `选项 ${optKey}`} />
                                 ) : (
                                   <MathRenderer content={optText || '—'} />
                                 )}
@@ -591,10 +609,14 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                 }}
               >
                 <h2 style={{ fontSize: '1rem', fontWeight: 900, color: 'var(--text-primary)', margin: 0 }}>
-                  二、填空题 (共 {paper.fillQuestions.length} 小题)
+                  {isEn
+                    ? `II. Fill-in-the-Blank (${paper.fillQuestions.length} Questions)`
+                    : `二、填空题 (共 ${paper.fillQuestions.length} 小题)`}
                 </h2>
                 <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', fontWeight: 500 }}>
-                  请直接在输入框作答，点击输入框呼出智能数学键盘
+                  {isEn
+                    ? 'Type answers directly into input box or click to invoke smart math keyboard'
+                    : '请直接在输入框作答，点击输入框呼出智能数学键盘'}
                 </span>
               </div>
 
@@ -640,10 +662,12 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                               flexShrink: 0,
                             }}
                           >
-                            第 {qNum} 题
+                            {isEn ? `Question ${qNum}` : `第 ${qNum} 题`}
                           </span>
                           <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-tertiary)', flexShrink: 0 }}>
-                            ({q.score_default}分) · 难度 L{q.difficulty_level}
+                            {isEn
+                              ? `(${q.score_default} pts) · Level L${q.difficulty_level}`
+                              : `(${q.score_default}分) · 难度 L${q.difficulty_level}`}
                           </span>
                           <SourceTag source={q.source} exam_year={q.exam_year} region={q.region} />
                         </div>
@@ -666,13 +690,13 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                           }}
                         >
                           <Icon name="flag" size={12} style={{ color: isFlagged ? 'var(--ios-red)' : 'currentColor' }} />
-                          <span>{isFlagged ? '已标记复查' : '标记复查'}</span>
+                          <span>{isEn ? (isFlagged ? 'Flagged' : 'Flag for Review') : (isFlagged ? '已标记复查' : '标记复查')}</span>
                         </button>
                       </div>
 
                       {/* 题干 (支持图锚点混合渲染) */}
                       <div style={{ fontSize: '0.9375rem', color: 'var(--text-primary)', lineHeight: 1.6 }}>
-                        <QuestionContent content={q.stem_zh} images={q.image_paths_json} />
+                        <QuestionContent content={(isEn ? q.stem_en : q.stem_zh) || q.stem_zh} images={q.image_paths_json} />
                       </div>
 
                       {/* 填空作答输入区 */}
@@ -680,7 +704,7 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                         <div style={{ position: 'relative' }}>
                           <input
                             type="text"
-                            placeholder="点击此处唤起数学键盘作答..."
+                            placeholder={isEn ? 'Click here to invoke math keyboard to answer...' : '点击此处唤起数学键盘作答...'}
                             value={currentAns}
                             onChange={(e) =>
                               setFillAnswers((prev) => ({
@@ -725,7 +749,7 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                             }}
                           >
                             <Icon name="keyboard" size={12} />
-                            <span>符号键盘</span>
+                            <span>{isEn ? 'Math Keyboard' : '符号键盘'}</span>
                           </button>
                         </div>
 
@@ -744,7 +768,7 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                               border: '1px solid var(--border-subtle)',
                             }}
                           >
-                            <span style={{ color: 'var(--text-tertiary)', flexShrink: 0 }}>实时渲染:</span>
+                            <span style={{ color: 'var(--text-tertiary)', flexShrink: 0 }}>{isEn ? 'Real-time Preview:' : '实时渲染:'}</span>
                             <div style={{ overflowX: 'auto' }}>
                               <MathRenderer content={currentAns} />
                             </div>
@@ -771,10 +795,14 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                 }}
               >
                 <h2 style={{ fontSize: '1rem', fontWeight: 900, color: 'var(--text-primary)', margin: 0 }}>
-                  三、解答题 (共 {paper.solutionQuestions.length} 小题)
+                  {isEn
+                    ? `III. Extended Solution (${paper.solutionQuestions.length} Questions)`
+                    : `三、解答题 (共 ${paper.solutionQuestions.length} 小题)`}
                 </h2>
                 <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', fontWeight: 500 }}>
-                  在中考考场中写清推理演算步骤，交卷后支持踩分点自核打钩
+                  {isEn
+                    ? 'Write down derivation steps in the exam; rubric self-assessment available after submission'
+                    : '在中考考场中写清推理演算步骤，交卷后支持踩分点自核打钩'}
                 </span>
               </div>
 
@@ -821,10 +849,12 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                               flexShrink: 0,
                             }}
                           >
-                            第 {qNum} 题
+                            {isEn ? `Question ${qNum}` : `第 ${qNum} 题`}
                           </span>
                           <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-tertiary)', flexShrink: 0 }}>
-                            (满分 {q.score_default}分) · 难度 L{q.difficulty_level}
+                            {isEn
+                              ? `(Full ${q.score_default} pts) · Level L${q.difficulty_level}`
+                              : `(满分 ${q.score_default}分) · 难度 L${q.difficulty_level}`}
                           </span>
                           <SourceTag source={q.source} exam_year={q.exam_year} region={q.region} />
                         </div>
@@ -847,19 +877,19 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                           }}
                         >
                           <Icon name="flag" size={12} style={{ color: isFlagged ? 'var(--ios-red)' : 'currentColor' }} />
-                          <span>{isFlagged ? '已标记复查' : '标记复查'}</span>
+                          <span>{isEn ? (isFlagged ? 'Flagged' : 'Flag for Review') : (isFlagged ? '已标记复查' : '标记复查')}</span>
                         </button>
                       </div>
 
                       {/* 题干 (支持图锚点混合渲染) */}
                       <div style={{ fontSize: '0.9375rem', color: 'var(--text-primary)', lineHeight: 1.6 }}>
-                        <QuestionContent content={q.stem_zh} images={q.image_paths_json} />
+                        <QuestionContent content={(isEn ? q.stem_en : q.stem_zh) || q.stem_zh} images={q.image_paths_json} />
                       </div>
 
                       {/* 解答草稿输入框 */}
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                          <span>考场作答与推导记录（交卷后将根据官方踩分点自核打钩）：</span>
+                          <span>{isEn ? 'Exam steps & scratchpad (self-assess against official rubrics upon submission):' : '考场作答与推导记录（交卷后将根据官方踩分点自核打钩）：'}</span>
                           <button
                             type="button"
                             onClick={() => handleFocusSolution(q, idx)}
@@ -876,12 +906,12 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                             }}
                           >
                             <Icon name="keyboard" size={13} />
-                            <span>打开数学符号键盘</span>
+                            <span>{isEn ? 'Open Math Keyboard' : '打开数学符号键盘'}</span>
                           </button>
                         </div>
                         <textarea
                           rows={4}
-                          placeholder="可键入主要步骤、辅助线设法或计算过程..."
+                          placeholder={isEn ? 'Type key steps, auxiliary line constructions, or calculations...' : '可键入主要步骤、辅助线设法或计算过程...'}
                           value={currentDraft}
                           onChange={(e) =>
                             setSolutionAnswers((prev) => ({
@@ -962,9 +992,11 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
             >
               <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
                 <Icon name="book" size={14} />
-                <span>答题辅助与语法说明</span>
+                <span>{isEn ? 'Exam Help & Syntax Guide' : '答题辅助与语法说明'}</span>
               </span>
-              <span style={{ color: 'var(--text-tertiary)' }}>{isTipsExpanded ? '▲ 收起' : '▼ 展开'}</span>
+              <span style={{ color: 'var(--text-tertiary)' }}>
+                {isTipsExpanded ? (isEn ? '▲ Collapse' : '▲ 收起') : (isEn ? '▼ Expand' : '▼ 展开')}
+              </span>
             </button>
 
             {isTipsExpanded && (
@@ -981,28 +1013,28 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                 }}
               >
                 <div>
-                  <strong style={{ color: 'var(--text-primary)' }}>分式表达：</strong>
+                  <strong style={{ color: 'var(--text-primary)' }}>{isEn ? 'Fraction:' : '分式表达：'}</strong>
                   <code style={{ padding: '0.125rem 0.375rem', borderRadius: '4px', backgroundColor: 'var(--glass-bg-card)', color: 'var(--ios-blue)', fontFamily: 'monospace' }}>
                     (x+1)/(x-2)
                   </code>
                 </div>
                 <div>
-                  <strong style={{ color: 'var(--text-primary)' }}>根号表达：</strong>
+                  <strong style={{ color: 'var(--text-primary)' }}>{isEn ? 'Square Root:' : '根号表达：'}</strong>
                   <code style={{ padding: '0.125rem 0.375rem', borderRadius: '4px', backgroundColor: 'var(--glass-bg-card)', color: 'var(--ios-blue)', fontFamily: 'monospace' }}>
                     sqrt(2x+3)
                   </code>
                 </div>
                 <div>
-                  <strong style={{ color: 'var(--text-primary)' }}>复合指数：</strong>
+                  <strong style={{ color: 'var(--text-primary)' }}>{isEn ? 'Composite Exponent:' : '复合指数：'}</strong>
                   <code style={{ padding: '0.125rem 0.375rem', borderRadius: '4px', backgroundColor: 'var(--glass-bg-card)', color: 'var(--ios-blue)', fontFamily: 'monospace' }}>
                     -2x^(m+1)
                   </code>
                 </div>
                 <div>
-                  <strong style={{ color: 'var(--text-primary)' }}>分类讨论：</strong>
-                  <span>多个解用“或”或逗号隔开，如 </span>
+                  <strong style={{ color: 'var(--text-primary)' }}>{isEn ? 'Multiple Solutions:' : '分类讨论：'}</strong>
+                  <span>{isEn ? 'Separate multiple solutions with "or" or comma, e.g. ' : '多个解用“或”或逗号隔开，如 '}</span>
                   <code style={{ padding: '0.125rem 0.375rem', borderRadius: '4px', backgroundColor: 'var(--glass-bg-card)', color: 'var(--ios-blue)', fontFamily: 'monospace' }}>
-                    x=1 或 x=2
+                    {isEn ? 'x=1 or x=2' : 'x=1 或 x=2'}
                   </code>
                 </div>
               </div>
@@ -1035,16 +1067,16 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
             >
               <span style={{ fontSize: '0.75rem', fontWeight: 900, color: 'var(--text-primary)', display: 'inline-flex', alignItems: 'center', gap: '0.375rem' }}>
                 <Icon name="target" size={14} />
-                <span>动态答题卡</span>
+                <span>{isEn ? 'Dynamic Answer Sheet' : '动态答题卡'}</span>
               </span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.75rem' }}>
-                <span style={{ color: 'var(--ios-blue)', fontWeight: 700 }}>已答 {answeredCount}</span>
+                <span style={{ color: 'var(--ios-blue)', fontWeight: 700 }}>{isEn ? `Answered ${answeredCount}` : `已答 ${answeredCount}`}</span>
                 <span style={{ color: 'var(--text-tertiary)' }}>·</span>
-                <span style={{ color: 'var(--text-secondary)' }}>未答 {unansweredCount}</span>
+                <span style={{ color: 'var(--text-secondary)' }}>{isEn ? `Unanswered ${unansweredCount}` : `未答 ${unansweredCount}`}</span>
                 {flaggedCount > 0 && (
                   <>
                     <span style={{ color: 'var(--text-tertiary)' }}>·</span>
-                    <span style={{ color: 'var(--ios-red)', fontWeight: 700 }}>复查 {flaggedCount}</span>
+                    <span style={{ color: 'var(--ios-red)', fontWeight: 700 }}>{isEn ? `Review ${flaggedCount}` : `复查 ${flaggedCount}`}</span>
                   </>
                 )}
               </div>
@@ -1152,7 +1184,7 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
               }}
             >
               <Icon name="download" size={16} />
-              <span>提交试卷并判分 ({answeredCount}/{allQuestions.length})</span>
+              <span>{isEn ? `Submit & Grade (${answeredCount}/${allQuestions.length})` : `提交试卷并判分 (${answeredCount}/${allQuestions.length})`}</span>
             </button>
           </div>
         </div>
@@ -1225,10 +1257,10 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                      确认退出考试
+                      {isEn ? 'Confirm Exit Exam' : '确认退出考试'}
                     </h3>
                     <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                      正在进行考试，你是否确认退出？
+                      {isEn ? 'Exam is currently in progress. Are you sure you want to exit?' : '正在进行考试，你是否确认退出？'}
                     </p>
                   </div>
 
@@ -1248,7 +1280,7 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                         cursor: 'pointer',
                       }}
                     >
-                      继续考试
+                      {isEn ? 'Continue Exam' : '继续考试'}
                     </button>
                     <button
                       type="button"
@@ -1269,7 +1301,7 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                         boxShadow: '0 4px 12px rgba(255, 59, 48, 0.25)',
                       }}
                     >
-                      确认退出
+                      {isEn ? 'Confirm Exit' : '确认退出'}
                     </button>
                   </div>
                 </div>

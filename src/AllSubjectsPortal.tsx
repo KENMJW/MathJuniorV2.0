@@ -314,7 +314,9 @@ export const AllSubjectsPortal: React.FC = () => {
                   fontWeight: 400,
                 }}
               >
-                覆盖小学、初中、高中全学段智能提分平台 · 精准提分 · 深度探究 · 考霸思维
+                {locale === "en"
+                  ? "K-12 Full-Spectrum Core Competency Platform · Precision Elevation · In-depth Inquiry · Master Mindset"
+                  : "覆盖小学、初中、高中全学段智能提分平台 · 精准提分 · 深度探究 · 考霸思维"}
               </span>
             </div>
           </div>
@@ -324,7 +326,7 @@ export const AllSubjectsPortal: React.FC = () => {
             {/* 通知铃铛按钮 */}
             <button
               type="button"
-              title="系统公告与教研通知"
+              title={locale === "en" ? "System Announcements & Notifications" : "系统公告与教研通知"}
               style={{
                 width: "32px",
                 height: "32px",
@@ -435,7 +437,7 @@ export const AllSubjectsPortal: React.FC = () => {
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                 <circle cx="12" cy="7" r="4" />
               </svg>
-              <span>默认学员 · 核心素养版 (学员模式)</span>
+              <span>{locale === "en" ? "Student Mode · Core Competency Edition" : "默认学员 · 核心素养版 (学员模式)"}</span>
             </div>
           </div>
         </div>
@@ -474,9 +476,21 @@ export const AllSubjectsPortal: React.FC = () => {
             }}
           >
             {[
-              { key: "primary", label: "小学教育 (4科)", icon: "book" },
-              { key: "junior", label: "初中突破 (8科·首发)", icon: "target" },
-              { key: "senior", label: "高中决胜 (8科)", icon: "star" },
+              {
+                key: "primary",
+                label: locale === "en" ? "Primary (4 Subjects)" : "小学教育 (4科)",
+                icon: "book",
+              },
+              {
+                key: "junior",
+                label: locale === "en" ? "Junior (8 Subjects · Flagship)" : "初中突破 (8科·首发)",
+                icon: "target",
+              },
+              {
+                key: "senior",
+                label: locale === "en" ? "Senior (8 Subjects)" : "高中决胜 (8科)",
+                icon: "star",
+              },
             ].map((item) => {
               const active = selectedStage === item.key;
               return (
@@ -584,7 +598,7 @@ export const AllSubjectsPortal: React.FC = () => {
                         display: "inline-block",
                       }}
                     />
-                    <span>已全量就绪 · 点击进入</span>
+                    <span>{locale === "en" ? "Ready · Click to Enter" : "已全量就绪 · 点击进入"}</span>
                   </span>
                   <span
                     style={{
@@ -594,7 +608,7 @@ export const AllSubjectsPortal: React.FC = () => {
                       letterSpacing: "-0.1px",
                     }}
                   >
-                    7~9年级全学段
+                    {locale === "en" ? "Grades 7-9 Full Scope" : "7~9年级全学段"}
                   </span>
                 </div>
 
@@ -610,7 +624,7 @@ export const AllSubjectsPortal: React.FC = () => {
                       lineHeight: 1.25,
                     }}
                   >
-                    初中数学核心素养提分系统
+                    {locale === "en" ? "Junior Math Core Competency Elevation System" : "初中数学核心素养提分系统"}
                   </h2>
                   <span
                     style={{
@@ -622,7 +636,7 @@ export const AllSubjectsPortal: React.FC = () => {
                       borderRadius: "var(--radius-pill)",
                     }}
                   >
-                    初中数学核心素养工坊
+                    {locale === "en" ? "Junior Math Workshop" : "初中数学核心素养工坊"}
                   </span>
                 </div>
 
@@ -635,7 +649,9 @@ export const AllSubjectsPortal: React.FC = () => {
                     color: "var(--text-secondary)",
                   }}
                 >
-                  彻底打破死记硬背！独家构建 107 大纲考点四段论、12 底层数学主线思维图谱、36 中考压轴跃迁动力学沙盒、以及双栏印刷全真模考系统。
+                  {locale === "en"
+                    ? "Completely break rote memorization! Exclusive 107 syllabus point four-stage lectures, 12 underlying logic lines, 36 exam-winning 4D dynamic sandboxes, and dual-column real mock exam workbench."
+                    : "彻底打破死记硬背！独家构建 107 大纲考点四段论、12 底层数学主线思维图谱、36 中考压轴跃迁动力学沙盒、以及双栏印刷全真模考系统。"}
                 </p>
 
                 {/* 四大核心指标横排统计条 */}
@@ -663,7 +679,7 @@ export const AllSubjectsPortal: React.FC = () => {
                       107
                     </span>
                     <span style={{ fontSize: "11px", color: "var(--text-tertiary)", marginTop: "2px", fontWeight: 500, display: "block" }}>
-                      考点名师四段论
+                      {locale === "en" ? "Four-Stage Lectures" : "考点名师四段论"}
                     </span>
                   </div>
 
@@ -680,7 +696,7 @@ export const AllSubjectsPortal: React.FC = () => {
                       12
                     </span>
                     <span style={{ fontSize: "11px", color: "var(--text-tertiary)", marginTop: "2px", fontWeight: 500, display: "block" }}>
-                      跨学期逻辑主线
+                      {locale === "en" ? "Cross-Term Logic Lines" : "跨学期逻辑主线"}
                     </span>
                   </div>
 
@@ -697,7 +713,7 @@ export const AllSubjectsPortal: React.FC = () => {
                       36
                     </span>
                     <span style={{ fontSize: "11px", color: "var(--text-tertiary)", marginTop: "2px", fontWeight: 500, display: "block" }}>
-                      思维跃迁 4D 沙盒
+                      {locale === "en" ? "4D Leap Sandboxes" : "思维跃迁 4D 沙盒"}
                     </span>
                   </div>
 
@@ -714,7 +730,7 @@ export const AllSubjectsPortal: React.FC = () => {
                       119
                     </span>
                     <span style={{ fontSize: "11px", color: "var(--text-tertiary)", marginTop: "2px", fontWeight: 500, display: "block" }}>
-                      全解剖黄金母题
+                      {locale === "en" ? "Dissected Master Examples" : "全解剖黄金母题"}
                     </span>
                   </div>
                 </div>
@@ -754,7 +770,7 @@ export const AllSubjectsPortal: React.FC = () => {
                       e.currentTarget.style.boxShadow = "0 2px 8px var(--ios-blue-glow)";
                     }}
                   >
-                    <span>进入初中数学工坊</span>
+                    <span>{t("portal.math.enter", locale, "进入初中数学工坊")}</span>
                     <span style={{ fontSize: "13px" }}>→</span>
                   </button>
                 </div>
@@ -825,7 +841,9 @@ export const AllSubjectsPortal: React.FC = () => {
                   <circle cx="180" cy="50" r="3" fill="#0071e3" />
 
                   {/* 坐标轴刻度与数学标注 */}
-                  <text x="180" y="34" textAnchor="middle" fill="#0071e3" fontSize="11" fontWeight="600">极大值 (μ, σ)</text>
+                  <text x="180" y="34" textAnchor="middle" fill="#0071e3" fontSize="11" fontWeight="600">
+                    {locale === "en" ? "Max (μ, σ)" : "极大值 (μ, σ)"}
+                  </text>
                   <text x="125" y="196" textAnchor="middle" fill="#86868b" fontSize="10">μ - σ</text>
                   <text x="180" y="196" textAnchor="middle" fill="#0071e3" fontSize="10" fontWeight="600">μ</text>
                   <text x="235" y="196" textAnchor="middle" fill="#86868b" fontSize="10">μ + σ</text>
@@ -854,10 +872,12 @@ export const AllSubjectsPortal: React.FC = () => {
                     color: "var(--text-primary)",
                   }}
                 >
-                  初中其他学科 (全科母版筹备中)
+                  {locale === "en" ? "Other Junior Subjects (Coming Soon)" : "初中其他学科 (全科母版筹备中)"}
                 </h3>
                 <span style={{ fontSize: "12px", color: "var(--text-tertiary)" }}>
-                  物理、化学、生物、语文、英语等学科正在按照同构标准有序接入
+                  {locale === "en"
+                    ? "Physics, Chemistry, Biology, Chinese, English etc. are being integrated under isomorphic standards"
+                    : "物理、化学、生物、语文、英语等学科正在按照同构标准有序接入"}
                 </span>
               </div>
 
@@ -971,18 +991,20 @@ export const AllSubjectsPortal: React.FC = () => {
                       color: "var(--text-tertiary)",
                     }}
                   >
-                    <span>● 筹备中 · 1~6年级全学段</span>
+                    <span>{locale === "en" ? "● In Development · Grades 1-6" : "● 筹备中 · 1~6年级全学段"}</span>
                   </span>
                   <span style={{ fontSize: "12px", color: "var(--ios-blue)", fontWeight: 500 }}>
-                    数感与几何直观系统
+                    {locale === "en" ? "Number Sense & Geometric Intuition" : "数感与几何直观系统"}
                   </span>
                 </div>
 
                 <h2 style={{ margin: "0 0 10px 0", fontSize: "28px", fontWeight: 700, color: "var(--text-primary)" }}>
-                  小学核心素养数感与几何直观系统
+                  {locale === "en" ? "Primary Core Competency: Number Sense & Geometric Intuition" : "小学核心素养数感与几何直观系统"}
                 </h2>
                 <p style={{ margin: "0 0 28px 0", fontSize: "14px", lineHeight: 1.65, color: "var(--text-secondary)" }}>
-                  让孩子在具象图形与动手探究中真正爱上数学！独家构建 48 核心素养直观图谱、6 大启蒙思维模型、24 具象互动沙盒与 56 黄金母题。
+                  {locale === "en"
+                    ? "Inspire children to fall in love with mathematics through concrete figures and hands-on inquiry! 48 visual concept lectures, 6 foundational models, 24 tactile sandboxes, 56 master examples."
+                    : "让孩子在具象图形与动手探究中真正爱上数学！独家构建 48 核心素养直观图谱、6 大启蒙思维模型、24 具象互动沙盒与 56 黄金母题。"}
                 </p>
 
                 <div
@@ -998,19 +1020,27 @@ export const AllSubjectsPortal: React.FC = () => {
                 >
                   <div style={{ padding: "14px 18px", borderRight: "1px solid var(--border-subtle)" }}>
                     <span style={{ fontSize: "22px", fontWeight: 700, color: "var(--text-primary)", display: "block" }}>48</span>
-                    <span style={{ fontSize: "11px", color: "var(--text-tertiary)" }}>直观考点精讲</span>
+                    <span style={{ fontSize: "11px", color: "var(--text-tertiary)" }}>
+                      {locale === "en" ? "Intuitive Points" : "直观考点精讲"}
+                    </span>
                   </div>
                   <div style={{ padding: "14px 18px", borderRight: "1px solid var(--border-subtle)" }}>
                     <span style={{ fontSize: "22px", fontWeight: 700, color: "var(--text-primary)", display: "block" }}>6</span>
-                    <span style={{ fontSize: "11px", color: "var(--text-tertiary)" }}>启蒙思维模型</span>
+                    <span style={{ fontSize: "11px", color: "var(--text-tertiary)" }}>
+                      {locale === "en" ? "Foundational Models" : "启蒙思维模型"}
+                    </span>
                   </div>
                   <div style={{ padding: "14px 18px", borderRight: "1px solid var(--border-subtle)" }}>
                     <span style={{ fontSize: "22px", fontWeight: 700, color: "var(--text-primary)", display: "block" }}>24</span>
-                    <span style={{ fontSize: "11px", color: "var(--text-tertiary)" }}>具象动手沙盒</span>
+                    <span style={{ fontSize: "11px", color: "var(--text-tertiary)" }}>
+                      {locale === "en" ? "Tactile Sandboxes" : "具象动手沙盒"}
+                    </span>
                   </div>
                   <div style={{ padding: "14px 18px" }}>
                     <span style={{ fontSize: "22px", fontWeight: 700, color: "var(--text-primary)", display: "block" }}>56</span>
-                    <span style={{ fontSize: "11px", color: "var(--text-tertiary)" }}>素养探究母题</span>
+                    <span style={{ fontSize: "11px", color: "var(--text-tertiary)" }}>
+                      {locale === "en" ? "Inquiry Examples" : "素养探究母题"}
+                    </span>
                   </div>
                 </div>
 
@@ -1027,15 +1057,19 @@ export const AllSubjectsPortal: React.FC = () => {
                     cursor: "default",
                   }}
                 >
-                  建设中 · 敬请期待
+                  {locale === "en" ? "Under Construction · Coming Soon" : "建设中 · 敬请期待"}
                 </button>
               </div>
             </section>
 
             <section style={{ display: "flex", flexDirection: "column" }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "18px", paddingBottom: "10px", borderBottom: "1px solid var(--border-subtle)" }}>
-                <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 600, color: "var(--text-primary)" }}>小学启蒙学科矩阵</h3>
-                <span style={{ fontSize: "12px", color: "var(--text-tertiary)" }}>按照同构标准有序接入</span>
+                <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 600, color: "var(--text-primary)" }}>
+                  {locale === "en" ? "Primary Foundation Matrix" : "小学启蒙学科矩阵"}
+                </h3>
+                <span style={{ fontSize: "12px", color: "var(--text-tertiary)" }}>
+                  {locale === "en" ? "Systematic integration under isomorphic standards" : "按照同构标准有序接入"}
+                </span>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: "16px" }}>
                 {PRIMARY_SUBJECTS.map((sub) => (
@@ -1043,11 +1077,17 @@ export const AllSubjectsPortal: React.FC = () => {
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                         <Icon name={sub.icon} size={18} />
-                        <h4 style={{ margin: 0, fontSize: "15px", fontWeight: 600, color: "var(--text-primary)" }}>{sub.nameZh}</h4>
+                        <h4 style={{ margin: 0, fontSize: "15px", fontWeight: 600, color: "var(--text-primary)" }}>
+                          {locale === "en" ? (sub.nameEn || sub.nameZh) : sub.nameZh}
+                        </h4>
                       </div>
-                      <span style={{ fontSize: "11px", color: "var(--text-tertiary)", background: "var(--bg-card-subtle)", padding: "2px 8px", borderRadius: "var(--radius-pill)" }}>即将推出</span>
+                      <span style={{ fontSize: "11px", color: "var(--text-tertiary)", background: "var(--bg-card-subtle)", padding: "2px 8px", borderRadius: "var(--radius-pill)" }}>
+                        {t("portal.comingSoon", locale, "即将推出")}
+                      </span>
                     </div>
-                    <p style={{ margin: 0, fontSize: "12px", color: "var(--text-tertiary)" }}>{sub.scopeZh}</p>
+                    <p style={{ margin: 0, fontSize: "12px", color: "var(--text-tertiary)" }}>
+                      {locale === "en" ? (sub.scopeEn || sub.scopeZh) : sub.scopeZh}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -1089,18 +1129,20 @@ export const AllSubjectsPortal: React.FC = () => {
                       color: "var(--text-tertiary)",
                     }}
                   >
-                    <span>● 筹备中 · 高一至高三全学段</span>
+                    <span>{locale === "en" ? "● In Development · Grades 10-12" : "● 筹备中 · 高一至高三全学段"}</span>
                   </span>
                   <span style={{ fontSize: "12px", color: "var(--ios-blue)", fontWeight: 500 }}>
-                    高阶建模与压轴突破
+                    {locale === "en" ? "Advanced Modeling & Capstone Breakthrough" : "高阶建模与压轴突破"}
                   </span>
                 </div>
 
                 <h2 style={{ margin: "0 0 10px 0", fontSize: "28px", fontWeight: 700, color: "var(--text-primary)" }}>
-                  高中数学高阶建模与压轴突破系统
+                  {locale === "en" ? "Senior Math Advanced Modeling & Capstone Breakthrough" : "高中数学高阶建模与压轴突破系统"}
                 </h2>
                 <p style={{ margin: "0 0 28px 0", fontSize: "14px", lineHeight: 1.65, color: "var(--text-secondary)" }}>
-                  精准突破高考压轴难题！独家构建 142 考点四段论、18 底层数学思想模型（数形结合、分类讨论、化归转化）、45 高维动力学沙盒与 180 压轴母题。
+                  {locale === "en"
+                    ? "Precision breakthrough in Gaokao capstone problems! 142 concept lectures, 18 core thought models, 45 high-dimensional dynamic sandboxes, 180 capstone master examples."
+                    : "精准突破高考压轴难题！独家构建 142 考点四段论、18 底层数学思想模型（数形结合、分类讨论、化归转化）、45 高维动力学沙盒与 180 压轴母题。"}
                 </p>
 
                 <div
@@ -1116,19 +1158,27 @@ export const AllSubjectsPortal: React.FC = () => {
                 >
                   <div style={{ padding: "14px 18px", borderRight: "1px solid var(--border-subtle)" }}>
                     <span style={{ fontSize: "22px", fontWeight: 700, color: "var(--text-primary)", display: "block" }}>142</span>
-                    <span style={{ fontSize: "11px", color: "var(--text-tertiary)" }}>高考考点精讲</span>
+                    <span style={{ fontSize: "11px", color: "var(--text-tertiary)" }}>
+                      {locale === "en" ? "Gaokao Points" : "高考考点精讲"}
+                    </span>
                   </div>
                   <div style={{ padding: "14px 18px", borderRight: "1px solid var(--border-subtle)" }}>
                     <span style={{ fontSize: "22px", fontWeight: 700, color: "var(--text-primary)", display: "block" }}>18</span>
-                    <span style={{ fontSize: "11px", color: "var(--text-tertiary)" }}>底层思想模型</span>
+                    <span style={{ fontSize: "11px", color: "var(--text-tertiary)" }}>
+                      {locale === "en" ? "Core Thought Models" : "底层思想模型"}
+                    </span>
                   </div>
                   <div style={{ padding: "14px 18px", borderRight: "1px solid var(--border-subtle)" }}>
                     <span style={{ fontSize: "22px", fontWeight: 700, color: "var(--text-primary)", display: "block" }}>45</span>
-                    <span style={{ fontSize: "11px", color: "var(--text-tertiary)" }}>高维动力沙盒</span>
+                    <span style={{ fontSize: "11px", color: "var(--text-tertiary)" }}>
+                      {locale === "en" ? "Dynamic Sandboxes" : "高维动力沙盒"}
+                    </span>
                   </div>
                   <div style={{ padding: "14px 18px" }}>
                     <span style={{ fontSize: "22px", fontWeight: 700, color: "var(--text-primary)", display: "block" }}>180</span>
-                    <span style={{ fontSize: "11px", color: "var(--text-tertiary)" }}>全真压轴母题</span>
+                    <span style={{ fontSize: "11px", color: "var(--text-tertiary)" }}>
+                      {locale === "en" ? "Capstone Examples" : "全真压轴母题"}
+                    </span>
                   </div>
                 </div>
 
@@ -1145,15 +1195,19 @@ export const AllSubjectsPortal: React.FC = () => {
                     cursor: "default",
                   }}
                 >
-                  建设中 · 敬请期待
+                  {locale === "en" ? "Under Construction · Coming Soon" : "建设中 · 敬请期待"}
                 </button>
               </div>
             </section>
 
             <section style={{ display: "flex", flexDirection: "column" }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "18px", paddingBottom: "10px", borderBottom: "1px solid var(--border-subtle)" }}>
-                <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 600, color: "var(--text-primary)" }}>高中决胜学科矩阵</h3>
-                <span style={{ fontSize: "12px", color: "var(--text-tertiary)" }}>按照同构标准有序接入</span>
+                <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 600, color: "var(--text-primary)" }}>
+                  {locale === "en" ? "Senior Capstone Matrix" : "高中决胜学科矩阵"}
+                </h3>
+                <span style={{ fontSize: "12px", color: "var(--text-tertiary)" }}>
+                  {locale === "en" ? "Systematic integration under isomorphic standards" : "按照同构标准有序接入"}
+                </span>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: "16px" }}>
                 {SENIOR_SUBJECTS.map((sub) => (
@@ -1161,11 +1215,17 @@ export const AllSubjectsPortal: React.FC = () => {
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                         <Icon name={sub.icon} size={18} />
-                        <h4 style={{ margin: 0, fontSize: "15px", fontWeight: 600, color: "var(--text-primary)" }}>{sub.nameZh}</h4>
+                        <h4 style={{ margin: 0, fontSize: "15px", fontWeight: 600, color: "var(--text-primary)" }}>
+                          {locale === "en" ? (sub.nameEn || sub.nameZh) : sub.nameZh}
+                        </h4>
                       </div>
-                      <span style={{ fontSize: "11px", color: "var(--text-tertiary)", background: "var(--bg-card-subtle)", padding: "2px 8px", borderRadius: "var(--radius-pill)" }}>即将推出</span>
+                      <span style={{ fontSize: "11px", color: "var(--text-tertiary)", background: "var(--bg-card-subtle)", padding: "2px 8px", borderRadius: "var(--radius-pill)" }}>
+                        {t("portal.comingSoon", locale, "即将推出")}
+                      </span>
                     </div>
-                    <p style={{ margin: 0, fontSize: "12px", color: "var(--text-tertiary)" }}>{sub.scopeZh}</p>
+                    <p style={{ margin: 0, fontSize: "12px", color: "var(--text-tertiary)" }}>
+                      {locale === "en" ? (sub.scopeEn || sub.scopeZh) : sub.scopeZh}
+                    </p>
                   </div>
                 ))}
               </div>

@@ -174,7 +174,7 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
               background: 'rgba(0,0,0,0.04)',
             }}
           >
-            L1~L3 单选锁定
+            {locale === 'en' ? 'L1~L3 Single Choice' : 'L1~L3 单选锁定'}
           </span>
         </div>
 
@@ -287,7 +287,7 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
                         fontWeight: 600,
                       }}
                     >
-                      {`难度 L${q.difficulty_level}`}
+                      {locale === 'en' ? `Level L${q.difficulty_level}` : `难度 L${q.difficulty_level}`}
                     </span>
                     <span style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)' }}>
                       {q.question_id}
