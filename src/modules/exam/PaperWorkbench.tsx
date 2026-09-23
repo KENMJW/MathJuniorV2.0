@@ -1170,6 +1170,7 @@ export const PaperWorkbench: React.FC = () => {
 
           <button
             type="button"
+            data-testid="start-online-exam-btn"
             disabled={!inventoryResult.canGenerate || isGenerating}
             onClick={handleStartOnlineExam}
             style={{

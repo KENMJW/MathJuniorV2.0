@@ -3,6 +3,7 @@ import { KnowledgePointRecord } from './types';
 import { EnrichedKnowledgePoint } from './allPointsData';
 import { Icon } from '../../components/common/Icon';
 import { t, Locale } from '../../engine/i18n/i18n';
+import { useDeviceResponsive } from '../../hooks/useDeviceResponsive';
 
 export const SUBCATEGORY_NAMES_EN: Record<string, string> = {
   '三角形': 'Triangles',
@@ -64,6 +65,9 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
   const isEn = String(locale).toLowerCase().startsWith('en');
   const effectiveLocale = (isEn ? 'en' : 'zh-CN') as Locale;
   const [searchQuery, setSearchQuery] = useState('');
+  const responsive = useDeviceResponsive();
+  const isMobile = responsive.isMobile;
+  const isTablet = responsive.isTablet;
 
   // 1. 所有可用年级
   const availableGrades = useMemo(() => {
@@ -165,31 +169,95 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
         />
       )}
 
-      {/* 4级抽屉选择器浮动面板 */}
+      {/* 4级抽屉选择器浮动面板 (手机端原生 iOS Bottom Sheet / 平板端居中模态 / 桌面端 Popover) */}
       <aside
         data-testid="concept-tree-sidebar"
         className={`concept-drawer-panel ${isOpen ? 'is-open' : 'is-closed'}`}
-        style={{
-          display: isOpen ? 'flex' : 'none',
-          flexDirection: 'column',
-          position: 'absolute',
-          top: 'calc(100% + 10px)',
-          left: 0,
-          zIndex: 100,
-          width: '680px',
-          maxWidth: '92vw',
-          maxHeight: '78vh',
-          background: 'var(--glass-bg-elevated, #ffffff)',
-          backdropFilter: 'blur(30px)',
-          WebkitBackdropFilter: 'blur(30px)',
-          border: '1px solid var(--border-subtle, rgba(0, 0, 0, 0.12))',
-          borderRadius: 'var(--radius-lg, 20px)',
-          boxShadow: '0 24px 60px rgba(0, 0, 0, 0.16)',
-          overflow: 'hidden',
-          boxSizing: 'border-box',
-          animation: 'drawerSlideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-        }}
+        style={
+          isMobile
+            ? {
+                display: isOpen ? 'flex' : 'none',
+                flexDirection: 'column',
+                position: 'fixed',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                top: 'auto',
+                zIndex: 100,
+                width: '100%',
+                maxWidth: '100vw',
+                height: '82vh',
+                maxHeight: '82vh',
+                background: 'var(--glass-bg-elevated, #ffffff)',
+                backdropFilter: 'blur(30px)',
+                WebkitBackdropFilter: 'blur(30px)',
+                border: '1px solid var(--border-subtle, rgba(0, 0, 0, 0.12))',
+                borderRadius: '20px 20px 0 0',
+                borderBottom: 'none',
+                boxShadow: '0 -12px 40px rgba(0, 0, 0, 0.22)',
+                overflow: 'hidden',
+                boxSizing: 'border-box',
+                animation: 'drawerSlideUpMobile 0.24s cubic-bezier(0.16, 1, 0.3, 1)',
+              }
+            : isTablet
+            ? {
+                display: isOpen ? 'flex' : 'none',
+                flexDirection: 'column',
+                position: 'fixed',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                zIndex: 100,
+                width: '640px',
+                maxWidth: '90vw',
+                height: '560px',
+                maxHeight: '80vh',
+                background: 'var(--glass-bg-elevated, #ffffff)',
+                backdropFilter: 'blur(30px)',
+                WebkitBackdropFilter: 'blur(30px)',
+                border: '1px solid var(--border-subtle, rgba(0, 0, 0, 0.12))',
+                borderRadius: '20px',
+                boxShadow: '0 24px 60px rgba(0, 0, 0, 0.24)',
+                overflow: 'hidden',
+                boxSizing: 'border-box',
+                animation: 'fadeIn 0.2s ease',
+              }
+            : {
+                display: isOpen ? 'flex' : 'none',
+                flexDirection: 'column',
+                position: 'absolute',
+                top: 'calc(100% + 10px)',
+                left: 0,
+                zIndex: 100,
+                width: '680px',
+                maxWidth: '92vw',
+                maxHeight: '78vh',
+                background: 'var(--glass-bg-elevated, #ffffff)',
+                backdropFilter: 'blur(30px)',
+                WebkitBackdropFilter: 'blur(30px)',
+                border: '1px solid var(--border-subtle, rgba(0, 0, 0, 0.12))',
+                borderRadius: 'var(--radius-lg, 20px)',
+                boxShadow: '0 24px 60px rgba(0, 0, 0, 0.16)',
+                overflow: 'hidden',
+                boxSizing: 'border-box',
+                animation: 'drawerSlideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+              }
+        }
       >
+        {/* 顶部居中药丸拖动手柄 (手机端原生 iOS 视觉规范) */}
+        <div
+          data-testid="drawer-drag-handle"
+          className="drawer-drag-handle"
+          style={{
+            width: '36px',
+            height: '4px',
+            borderRadius: '2px',
+            background: 'rgba(0, 0, 0, 0.2)',
+            margin: '8px auto 0 auto',
+            flexShrink: 0,
+            display: isMobile ? 'block' : 'none',
+          }}
+        />
         {/* 顶部搜索栏与抽屉标题 */}
         <div
           style={{

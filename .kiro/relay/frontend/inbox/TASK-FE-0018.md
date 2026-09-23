@@ -1,7 +1,7 @@
 ---
 id: TASK-FE-0018
 line: frontend
-status: assigned
+status: done
 attempt: 1
 created_by: Kiro
 exec_machine: 本机（主控机）

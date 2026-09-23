@@ -17,6 +17,36 @@
   --tablet-header-height: 52px;
 }
 
+/* 动画关键帧定义 */
+@keyframes drawerSlideUpMobile {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes drawerSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 /* 移动端与触控通用体验优化 */
 @media (max-width: 1024px) {
   * {
@@ -39,10 +69,16 @@
     overscroll-behavior-y: none;
   }
 
-  /* 顶栏防折行与紧凑化 */
+  /* 顶栏 44px 极简瘦身 (TASK-FE-0018 判据 1) */
   .card-deck-header {
     padding: 0 0.5rem !important;
-    min-height: 48px !important;
+    height: 44px !important;
+    min-height: 44px !important;
+  }
+
+  /* 底部原生 iOS Tab Bar (56px) */
+  .card-deck-bottom-sheet {
+    min-height: 56px !important;
   }
 
   /* 模块一：概念精讲在手机端深度适配 */
@@ -57,7 +93,7 @@
     min-height: 44px !important;
   }
 
-  /* 模块一：抽屉选择器在手机端变为原生 iOS Bottom Sheet */
+  /* 模块一：抽屉选择器在手机端变为原生 iOS Bottom Sheet (TASK-FE-0018 判据 3) */
   .concept-drawer-panel.is-open {
     display: flex !important;
     position: fixed !important;
@@ -67,19 +103,23 @@
     right: 0 !important;
     width: 100% !important;
     max-width: 100vw !important;
-    height: 85vh !important;
-    max-height: 85vh !important;
+    height: 82vh !important;
+    max-height: 82vh !important;
     margin: 0 !important;
     border-radius: 20px 20px 0 0 !important;
     border: 1px solid var(--border-subtle, rgba(0, 0, 0, 0.12)) !important;
     border-bottom: none !important;
     box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.22) !important;
     z-index: 100 !important;
-    animation: drawerSlideUpMobile 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    animation: drawerSlideUpMobile 0.24s cubic-bezier(0.16, 1, 0.3, 1) !important;
   }
 
   .concept-drawer-panel.is-closed {
     display: none !important;
+  }
+
+  .drawer-drag-handle {
+    display: block !important;
   }
 
   .concept-drawer-body {
@@ -296,9 +336,39 @@
     font-size: 11px !important;
   }
 
-  /* 模块四：实战测评在手机端适配 */
+  /* 模块四：实战测评在手机端上下流式排版 (TASK-FE-0018 判据 6) */
   .exam-workbench-grid {
     grid-template-columns: 1fr !important;
+  }
+
+  .exam-split-container {
+    flex-direction: column !important;
+  }
+
+  [data-testid="left-paper-scroll"] {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  [data-testid="right-cockpit-sticky"] {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    position: static !important;
+    top: auto !important;
+  }
+
+  .print-columns-flow {
+    column-count: 1 !important;
+  }
+
+  .print-paper-container {
+    padding: 1rem 0.5rem !important;
+  }
+
+  .print-sealing-line {
+    display: none !important;
   }
 
   .score-panel-grid {
@@ -323,11 +393,26 @@
       max-width: 100% !important;
       flex: none !important;
     }
+    .exam-split-container {
+      flex-direction: column !important;
+    }
+    [data-testid="left-paper-scroll"] {
+      flex: 1 1 100% !important;
+      width: 100% !important;
+    }
+    [data-testid="right-cockpit-sticky"] {
+      flex: 1 1 100% !important;
+      width: 100% !important;
+      position: static !important;
+    }
   }
 
   /* 平板横屏模式：保持双栏 */
   @media (orientation: landscape) {
     .concept-two-column-layout {
+      flex-direction: row !important;
+    }
+    .exam-split-container {
       flex-direction: row !important;
     }
   }

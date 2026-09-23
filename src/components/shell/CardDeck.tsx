@@ -41,13 +41,14 @@ export const CardDeck: React.FC<CardDeckProps> = ({
         ...style,
       }}
     >
-      {/* 顶部 Slim 导航条 */}
+      {/* 顶部 Slim 导航条 (44px) */}
       {header && (
         <header
           data-testid="card-deck-header"
           style={{
             flexShrink: 0,
-            minHeight: "52px",
+            height: "44px",
+            minHeight: "44px",
             display: "flex",
             alignItems: "center",
             padding: "0 0.75rem",
@@ -81,20 +82,21 @@ export const CardDeck: React.FC<CardDeckProps> = ({
         {children}
       </main>
 
-      {/* 底部原生 iOS Tab Bar (含 safe-area 避让) */}
+      {/* 底部原生 iOS Tab Bar (56px, 含 safe-area 避让) */}
       {bottomSheet && (
         <nav
           data-testid="card-deck-bottom-sheet"
+          data-min-touch-target="52px"
           className="mobile-safe-bottom"
           style={{
             flexShrink: 0,
-            minHeight: "52px",
+            minHeight: "56px",
             background: "rgba(255, 255, 255, 0.96)",
             backdropFilter: "blur(25px)",
             WebkitBackdropFilter: "blur(25px)",
             borderTop: "1px solid var(--border-subtle, rgba(0, 0, 0, 0.08))",
             boxShadow: "0 -2px 10px rgba(0, 0, 0, 0.04)",
-            padding: "4px 8px calc(4px + env(safe-area-inset-bottom, 0px)) 8px",
+            padding: "4px 8px calc(4px + env(safe-area-inset-bottom, 12px)) 8px",
             zIndex: 30,
             boxSizing: "border-box",
           }}

@@ -619,90 +619,108 @@ export const MathJuniorHome: React.FC = () => {
     </div>
   );
 
-  const renderMobileHeader = () => (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        width: "100%",
-        gap: "8px",
-      }}
-    >
-      {/* 手机端精简返回按钮：极简图标 (<) 紧凑胶囊，热区 >= 44px，彻底根除“全科门/户”竖排 */}
-      <button
-        type="button"
-        data-testid="back-to-portal-btn"
-        onClick={() => navigate("/")}
-        aria-label={t("nav.backToPortal", locale, "返回全科门户")}
-        title={t("nav.backToPortal", locale, "返回全科门户")}
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          width: "36px",
-          height: "36px",
-          minWidth: "36px",
-          minHeight: "36px",
-          padding: 0,
-          borderRadius: "var(--radius-pill)",
-          border: "1px solid var(--border-subtle)",
-          background: "#ffffff",
-          color: "var(--text-primary)",
-          cursor: "pointer",
-          flexShrink: 0,
-          boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
-        }}
-      >
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="15 18 9 12 15 6" />
-        </svg>
-      </button>
+  const renderMobileHeader = () => {
+    const subModuleTitles: Record<string, { zh: string; en: string }> = {
+      concept: { zh: "概念精讲 · 107考点", en: "Concept Lecture" },
+      graph: { zh: "思维图谱 · 12主线", en: "Knowledge Graph" },
+      lab: { zh: "实验探究 · 动力沙盒", en: "Dynamics Sandbox" },
+      sandbox: { zh: "实验探究 · 动力沙盒", en: "Dynamics Sandbox" },
+      exam: { zh: "实战测评 · 全真模考", en: "Mock Exam Arena" },
+    };
+    const currentTitleObj = subModuleTitles[currentSubModule] || { zh: "初中数学工坊", en: "Junior Math" };
+    const mobileHeaderTitle = locale === "en" ? currentTitleObj.en : currentTitleObj.zh;
 
-      {/* 手机端标题：单行不换行，绝不出现“初中数/学”竖排 */}
-      <span
+    return (
+      <div
+        data-testid="math-junior-mobile-header"
         style={{
-          fontSize: "0.95rem",
-          fontWeight: 700,
-          color: "var(--text-primary)",
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          textAlign: "center",
-          flex: 1,
-        }}
-      >
-        {locale === "en" ? "Junior Math" : "初中数学"}
-      </span>
-
-      {/* 手机端右侧语言切换：紧凑胶囊，绝无挤压 */}
-      <button
-        type="button"
-        data-testid="math-lang-toggle"
-        onClick={() => setLocale(locale === "zh-CN" ? "en" : "zh-CN")}
-        style={{
-          height: "32px",
-          padding: "0 10px",
-          borderRadius: "var(--radius-pill)",
-          border: "1px solid var(--border-subtle)",
-          background: "#ffffff",
-          color: "var(--text-primary)",
-          cursor: "pointer",
-          fontWeight: 600,
-          fontSize: "0.78rem",
-          display: "inline-flex",
+          display: "flex",
           alignItems: "center",
-          gap: "4px",
-          flexShrink: 0,
-          whiteSpace: "nowrap",
-          boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
+          justifyContent: "space-between",
+          width: "100%",
+          height: "44px",
+          minHeight: "44px",
+          gap: "8px",
+          boxSizing: "border-box",
         }}
       >
-        <Icon name="globe" size={13} />
-        <span>{locale === "zh-CN" ? "EN" : "中"}</span>
-      </button>
-    </div>
-  );
+        {/* 手机端精简返回按钮：极简图标 (<) 紧凑胶囊，热区 >= 36px，居中 */}
+        <button
+          type="button"
+          data-testid="back-to-portal-btn"
+          onClick={() => navigate("/")}
+          aria-label={t("nav.backToPortal", locale, "返回全科门户")}
+          title={t("nav.backToPortal", locale, "返回全科门户")}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "36px",
+            height: "36px",
+            minWidth: "36px",
+            minHeight: "36px",
+            padding: 0,
+            borderRadius: "var(--radius-pill)",
+            border: "1px solid var(--border-subtle)",
+            background: "#ffffff",
+            color: "var(--text-primary)",
+            cursor: "pointer",
+            flexShrink: 0,
+            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
+          }}
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+        </button>
+
+        {/* 手机端标题：单行不换行，15px 粗体 */}
+        <span
+          data-testid="mobile-header-title"
+          style={{
+            fontSize: "15px",
+            fontWeight: 700,
+            color: "var(--text-primary)",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            textAlign: "center",
+            flex: 1,
+            letterSpacing: "-0.2px",
+          }}
+        >
+          {mobileHeaderTitle}
+        </span>
+
+        {/* 手机端右侧语言切换：高度 28px 紧凑胶囊 */}
+        <button
+          type="button"
+          data-testid="math-lang-toggle"
+          onClick={() => setLocale(locale === "zh-CN" ? "en" : "zh-CN")}
+          style={{
+            height: "28px",
+            padding: "0 8px",
+            borderRadius: "var(--radius-pill)",
+            border: "1px solid var(--border-subtle)",
+            background: "#ffffff",
+            color: "var(--text-primary)",
+            cursor: "pointer",
+            fontWeight: 600,
+            fontSize: "12px",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "4px",
+            flexShrink: 0,
+            whiteSpace: "nowrap",
+            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
+          }}
+        >
+          <Icon name="globe" size={12} />
+          <span>{locale === "zh-CN" ? "EN" : "中"}</span>
+        </button>
+      </div>
+    );
+  };
 
   // 导航栏 (供 Desktop / Tablet 侧边或顶部展示)
   const renderNavList = () => (
@@ -750,18 +768,22 @@ export const MathJuniorHome: React.FC = () => {
     </nav>
   );
 
-  // 移动端底部原生 iOS Tab Bar
+  // 移动端底部原生 iOS Tab Bar (56px)
   const renderMobileBottomBar = () => (
     <div
+      data-testid="math-junior-mobile-tabbar"
       style={{
         display: "flex",
         justifyContent: "space-around",
         alignItems: "center",
         width: "100%",
+        minHeight: "56px",
+        height: "56px",
+        boxSizing: "border-box",
       }}
     >
       {MODULE_NAV_ITEMS.map((item) => {
-        const active = currentSubModule === item.key;
+        const active = currentSubModule === item.key || (item.key === "lab" && currentSubModule === "sandbox");
         return (
           <button
             key={item.key}
@@ -870,6 +892,7 @@ export const MathJuniorHome: React.FC = () => {
       hideSidebarToggle={true}
     >
       <div
+        data-testid="math-junior-desktop-theater"
         style={{
           width: "100%",
           maxWidth: "1240px",

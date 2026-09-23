@@ -396,6 +396,7 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
 
       {/* 左右解耦视窗主结构 (Fixed Split-View) */}
       <div
+        className="exam-split-container"
         style={{
           display: 'flex',
           flexDirection: 'row',

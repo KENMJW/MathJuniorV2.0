@@ -610,3 +610,54 @@ input[type=range].apple-slider::-webkit-slider-thumb:hover {
   color: var(--text-tertiary, #86868b);
 }
 
+/* 触控隔离：保证沙盒画布及其 SVG/DIV 图元挂载 touch-action: none，杜绝页面上下滚动冲突 (TASK-FE-0018 判据 4) */
+.sandbox-renderer,
+.sandbox-renderer div,
+.sandbox-renderer svg,
+.jxgbox {
+  touch-action: none !important;
+  -webkit-touch-callout: none !important;
+  user-select: none !important;
+}
+
+/* 手机端触控与排版深度优化 (<768px) */
+@media (max-width: 767px) {
+  .sandbox-viewport-85 {
+    height: 300px !important;
+    min-height: 280px !important;
+  }
+
+  .sandbox-split-box {
+    border-radius: 12px !important;
+  }
+
+  /* 遥测指标收敛为 2x2 网格，杜绝溢出与拥挤 */
+  .sandbox-guide-15 {
+    padding: 10px 14px !important;
+    font-size: 11px !important;
+  }
+
+  .telemetry-readings {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px 12px !important;
+    width: 100% !important;
+  }
+
+  .telemetry-tag-invariant,
+  .telemetry-tag-secondary,
+  .telemetry-tag-conclusion {
+    white-space: normal !important;
+    font-size: 11px !important;
+    line-height: 1.35 !important;
+  }
+
+  /* 4D 动力控制台面板手机端转单列卡片 */
+  .sandbox-4d-shelf {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    padding: 12px 14px !important;
+  }
+}
+
+

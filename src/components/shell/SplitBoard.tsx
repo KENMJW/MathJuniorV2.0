@@ -70,38 +70,37 @@ export const SplitBoard: React.FC<SplitBoardProps> = ({
             boxSizing: "border-box",
           }}
         >
-          {isPortrait && (
-            <button
-              type="button"
-              data-testid="split-board-toggle-btn"
-              onClick={() => setSidebarOpen((prev) => !prev)}
-              style={{
-                marginRight: "0.75rem",
-                padding: "6px 12px",
-                borderRadius: "var(--radius-sm, 8px)",
-                border: "1px solid var(--border-subtle, rgba(0, 0, 0, 0.1))",
-                background: sidebarOpen ? "var(--ios-blue-glow, rgba(0, 113, 227, 0.1))" : "#ffffff",
-                color: sidebarOpen ? "var(--ios-blue, #0071e3)" : "var(--text-primary, #1d1d1f)",
-                fontSize: "12px",
-                fontWeight: 600,
-                cursor: "pointer",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "6px",
-                whiteSpace: "nowrap",
-                flexShrink: 0,
-                minHeight: "44px",
-                boxShadow: "0 1px 3px rgba(0, 0, 0, 0.04)",
-              }}
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="3" y1="12" x2="21" y2="12" />
-                <line x1="3" y1="6" x2="21" y2="6" />
-                <line x1="3" y1="18" x2="21" y2="18" />
-              </svg>
-              <span>{sidebarOpen ? "收起导航" : "展开导航"}</span>
-            </button>
-          )}
+          <button
+            type="button"
+            data-testid="split-board-toggle-btn"
+            onClick={() => setSidebarOpen((prev) => !prev)}
+            style={{
+              marginRight: "0.75rem",
+              padding: "6px 12px",
+              borderRadius: "var(--radius-sm, 8px)",
+              border: "1px solid var(--border-subtle, rgba(0, 0, 0, 0.1))",
+              background: sidebarOpen ? "var(--ios-blue-glow, rgba(0, 113, 227, 0.1))" : "#ffffff",
+              color: sidebarOpen ? "var(--ios-blue, #0071e3)" : "var(--text-primary, #1d1d1f)",
+              fontSize: "12px",
+              fontWeight: 600,
+              cursor: "pointer",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              whiteSpace: "nowrap",
+              flexShrink: 0,
+              minHeight: "36px",
+              boxShadow: "0 1px 3px rgba(0, 0, 0, 0.04)",
+              transition: "all 0.18s ease",
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+            <span>{sidebarOpen ? (isPortrait ? "收起导航" : "沉浸全屏") : "展开导航"}</span>
+          </button>
           {header}
         </header>
       )}
@@ -115,18 +114,19 @@ export const SplitBoard: React.FC<SplitBoardProps> = ({
           position: "relative",
         }}
       >
-        {/* 左侧分栏导航 (横屏常驻，竖屏按需展开) */}
+        {/* 左侧分栏导航 (横屏支持沉浸折叠，竖屏按需展开) */}
         <aside
           data-testid="split-board-sidebar"
           style={{
-            width: isPortrait ? (sidebarOpen ? widthVal : "0px") : widthVal,
-            minWidth: isPortrait ? (sidebarOpen ? widthVal : "0px") : widthVal,
+            width: sidebarOpen ? widthVal : "0px",
+            minWidth: sidebarOpen ? widthVal : "0px",
             maxWidth: widthVal,
             height: "100%",
             overflowY: "auto",
+            overflowX: "hidden",
             backgroundColor: "var(--bg-card, #ffffff)",
-            borderRight: isPortrait && !sidebarOpen ? "none" : "1px solid var(--border-subtle, rgba(0, 0, 0, 0.08))",
-            display: isPortrait && !sidebarOpen ? "none" : "flex",
+            borderRight: !sidebarOpen ? "none" : "1px solid var(--border-subtle, rgba(0, 0, 0, 0.08))",
+            display: !sidebarOpen ? "none" : "flex",
             flexDirection: "column",
             zIndex: isPortrait ? 25 : 5,
             position: isPortrait ? "absolute" : "relative",

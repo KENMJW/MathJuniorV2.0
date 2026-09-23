@@ -969,11 +969,14 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
                 name: showLabel ? (elemDef.name || elemDef.id || '') : '',
                 withLabel: showLabel,
                 visible: !isDistractor,
-                size: elemDef.size || 5,
+                size: elemDef.size ? Math.max(elemDef.size, 6) : 6,
                 fillColor: ptColor,
                 strokeColor: ptStroke,
                 strokeWidth: 2,
                 fixed: isCarrierFixed,
+                highlightSize: 14,
+                snapSizeX: 20,
+                snapSizeY: 20,
                 label: {
                   color: '#ffffff',
                   fontSize: 12,
@@ -1211,11 +1214,14 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
           name: showLabel ? (ptDef.name || ptDef.id) : '',
           withLabel: showLabel,
           visible: !isDistractor,
-          size: isCenter ? 6 : ptDef.size || 5,
+          size: isCenter ? 6 : Math.max(ptDef.size || 5, 6),
           fillColor: ptColor,
           strokeColor: '#ffffff',
           strokeWidth: 2,
           fixed: isPtFixed,
+          highlightSize: 14,
+          snapSizeX: 20,
+          snapSizeY: 20,
           label: {
             color: '#ffffff',
             fontSize: 12,
@@ -1679,10 +1685,15 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
         borderRadius: '14px',
         overflow: 'hidden',
         position: 'relative',
+        touchAction: 'none',
         ...style,
       }}
     >
-      <div id={containerId} ref={containerRef} style={{ width: '100%', height: '100%' }} />
+      <div
+        id={containerId}
+        ref={containerRef}
+        style={{ width: '100%', height: '100%', touchAction: 'none' }}
+      />
     </div>
   );
 };
