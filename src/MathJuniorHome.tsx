@@ -36,6 +36,7 @@ import {
   ClipboardCheck,
 } from "lucide-react";
 import { cn } from "./lib/utils";
+import { SystemFooter } from "./components/common/SystemFooter";
 
 const ALL_SANDBOXES = [
   {
@@ -312,7 +313,7 @@ export const MathJuniorHome: React.FC = () => {
               {t("app.title", locale, "全科核心素养提分系统")}
             </span>
             <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-ios-blue/[0.08] text-ios-blue border border-ios-blue/20">
-              {locale === "en" ? "Junior Math V2.0" : "初中数学 V2.0"}
+              {locale === "en" ? "Junior Math" : "初中数学"}
             </span>
           </div>
         </div>
@@ -714,7 +715,10 @@ export const MathJuniorHome: React.FC = () => {
         subnav={renderMobileSubnav()}
         bottomSheet={renderMobileBottomBar()}
       >
-        <div className="w-full box-border">{renderModuleContent()}</div>
+        <div className="w-full box-border flex flex-col min-h-full">
+          <div className="flex-1">{renderModuleContent()}</div>
+          <SystemFooter className="pb-16" />
+        </div>
       </CardDeck>
     );
   }
@@ -727,8 +731,9 @@ export const MathJuniorHome: React.FC = () => {
         sidebarWidth={260}
         isPortrait={responsive.orientation === "portrait"}
       >
-        <div className="p-5 w-full min-h-full box-border">
-          {renderModuleContent()}
+        <div className="p-5 w-full min-h-full box-border flex flex-col">
+          <div className="flex-1">{renderModuleContent()}</div>
+          <SystemFooter />
         </div>
       </SplitBoard>
     );
@@ -745,9 +750,10 @@ export const MathJuniorHome: React.FC = () => {
     >
       <div
         data-testid="math-junior-desktop-theater"
-        className="w-full max-w-[1240px] mx-auto px-4 pt-6 pb-12 box-border"
+        className="w-full max-w-[1240px] mx-auto px-4 pt-6 pb-12 box-border flex flex-col flex-1"
       >
-        {renderModuleContent()}
+        <div className="flex-1">{renderModuleContent()}</div>
+        <SystemFooter />
       </div>
     </Cockpit>
   );

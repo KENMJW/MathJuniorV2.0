@@ -17,6 +17,7 @@ import { t } from './engine/i18n/i18n';
 import { useDeviceResponsive } from './hooks/useDeviceResponsive';
 import { Badge } from './components/ui/badge';
 import { Button } from './components/ui/button';
+import { SystemFooter } from './components/common/SystemFooter';
 
 interface SubjectCardItem {
   id: string;
@@ -670,6 +671,7 @@ export const AllSubjectsPortal: React.FC = () => {
             </section>
           </div>
         )}
+        <SystemFooter />
       </main>
     </div>
   );
