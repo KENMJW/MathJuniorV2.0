@@ -94,9 +94,44 @@
 
 ---
 
-## 3. 五大量化硬性否决门禁 (Hard Acceptance Gates)
+### 任务分支 C：【沙盒渲染模块深度体检与加固：公式与文本防溢出策略、KaTeX 全量渲染、多语言 (i18n) 全覆盖】
 
-执行方交付时，必须通过以下 5 大量化否决门禁，由架构师独立复核：
+#### C.1 几何不变量 LaTeX 公式裸露与代码溢出根治
+- **典型缺陷溯源**：
+  在 `SB-KP055`（等边三角形）等大量沙盒中，`invariants_display_json` 定义了带 LaTeX 语法的 `formula`（例如 `\angle A = {val}^\circ`、`\sqrt{...}`、`\Delta` 等）。
+  `invariants.ts` 中的 `formatInvariantText` 替换数值后生成 `三内角度数皆 60° (∠A=∠B=∠C=60°): \angle A = 43.7^\circ`；
+  而组件层（`LinkedSandboxSlot.tsx`、`LabWorkspace.tsx`、`LeapLab.tsx`）直接通过裸 `<span>{inv.text}</span>` 呈现，引发两大严重缺陷：
+  1. **代码泄露 (Raw LaTeX Leakage)**：浏览器未调用 KaTeX，直接将裸代码 `\angle A = 43.7^\circ` 暴露给中学生；
+  2. **文本与代码溢出 (Container & Text Overflow)**：长中文标签 + LaTeX 代码未做换行截断处理，在手机端 170px 窄单元格中硬性撑爆容器或产生横向溢出。
+- **三重防线改造规约**：
+  - **防线 ①（公式定界符规范化）**：在 `invariants.ts` 的 `formatInvariantText` 中，对含有 LaTeX 转义字符（`\angle`, `^\circ`, `\sqrt`, `\frac` 等）的公式输出，自动规范包裹为行内数学公式语法 `$...$`，便于 KaTeX 正确捕获；
+  - **防线 ②（全量接入 `<MathRenderer>`）**：全面替换 `LinkedSandboxSlot.tsx`、`LabWorkspace.tsx`、`LeapLab.tsx` 中的裸 `<span>{inv.text}</span>`，统一升级为 `<MathRenderer content={inv.text} />`（包括首项遥测、全量遥测列表、结论栏与状态后缀），确保数学符号全部编译为优雅的 KaTeX 矢量字体排版；
+  - **防线 ③（CSS 弹性与防溢出兜底）**：
+    - 在 `sandbox.css` 中为 `.telemetry-tag-invariant`、`.telemetry-tag-secondary`、`.telemetry-tag-conclusion` 注入：
+      `word-break: break-word; overflow-wrap: break-word; min-width: 0; max-width: 100%;`
+    - 在手机端媒体查询 `@media (max-width: 767px)` 中，重构 `.telemetry-readings`：废弃粗暴硬性的 `grid-template-columns: repeat(2, 1fr)` 窄格挤压，采用自适应弹性排版（`minmax(0, 1fr)` 或弹性流式换行），确保长公式与长中文标签自然换行，绝对杜绝容器溢出或字符裁剪。
+
+#### C.2 沙盒多语言 (i18n) 全覆盖与动态响应
+- **全面排查并消灭未翻译硬编码**：
+  - 检查沙盒渲染控制台、悬浮按钮、步骤引导、遥测结论栏等所有用户可见文本；
+  - 核心词汇双语覆盖（严禁纯中文写死）：
+    - `[ 🔍 中考题眼透视 ]` ➔ `[ 🔍 Exam Focus X-Ray ]`
+    - `[ 💡 分步推演 ]` ➔ `[ 💡 Step Deduction ]`
+    - `[ 🎮 自由探索 ]` ➔ `[ 🎮 Free Play ]`
+    - `几何不变量：` ➔ `Geometric Invariant: `
+    - `状态：[绝对恒定] / [动态观测中]` ➔ `Status: [Absolute Invariant] / [Dynamic Observation]`
+    - `结论：几何直观验证通过` ➔ `Conclusion: Intuitive geometric verification passed`
+    - `重置视角` ➔ `Reset View`
+- **动态语言热切换响应**：
+  - 确保 `SandboxRenderer`、`LinkedSandboxSlot`、`LabWorkspace`、`LeapLab` 均监听并正确向下传递 `locale`；
+  - `formatInvariantText(spec, pointMap, locale)` 在 `locale === 'en'` 时严格优先读取 `spec.labelEn`，当 `labelEn` 缺失时提供英文降级兜底，严禁英文界面下吐出中文不变量标签；
+  - 全局切换语言时，DOM 无需刷新即可即时热响应更新文本。
+
+---
+
+## 3. 七大量化硬性否决门禁 (Hard Acceptance Gates)
+
+执行方交付时，必须通过以下 7 大量化否决门禁，由架构师独立复核：
 
 | 门禁编号 | 验收项 | 判定标准 |
 | :---: | :--- | :--- |
@@ -105,6 +140,8 @@
 | **门禁 3** | **真机 E2E 三端视口与控制台** | 运行无头 Chrome CDP 实测三端（Phone 390x844, Pad 820x1180, PC 1440x900）；控制台致命错误数 = 0；手机端 `scrollWidth === clientWidth === 390`（0 水平溢出）。 |
 | **门禁 4** | **手机端手势隔离与默认焦点** | 跃迁沙盒画布容器声明 `touch-action: none`；出卷抽屉默认焦点严格锁定最左项（100分制 / 7上 / 基础夯实）。 |
 | **门禁 5** | **代码纯洁度与样式受控** | 源码中 Emoji 违规数严格为 0（`noEmoji.test.ts` 通过）；内联样式 `style={{` 仅限动态坐标/高度（<= 5 处）。 |
+| **门禁 6** | **公式渲染零泄露与文字防溢出** | 抽检包含 LaTeX 公式（如 `SB-KP055`）的沙盒遥测，DOM 中裸露 LaTeX 代码（如 `\angle`, `^\circ`, `\sqrt`）出现次数严格为 0，必须全部通过 `MathRenderer` 渲染为 KaTeX 节点；手机端 390px 下遥测文本容器 0 水平截断/溢出。 |
+| **门禁 7** | **沙盒多语言 (i18n) 动态响应** | 当 `locale = 'en'` 时，沙盒全部界面按钮（题眼透视、推演/自由模式、不变量遥测、结论栏）无中文硬编码泄露，且支持动态热切换。 |
 
 ---
 
@@ -112,5 +149,7 @@
 
 执行完毕后，执行方须在 `.kiro/relay/frontend/outbox/RESULT-FE-0022.md` 给出详细量化交付报告，包含：
 1. 真实无头 Chrome 浏览器在 Phone (390x844)、Pad (820x1180)、PC (1440x900) 下生成的实测截图，附 SHA256 哈希值；
-2. 5 大门禁实测数据与终端命令执行记录；
-3. 将 `.kiro/relay/frontend/inbox/NEXT.md` 恢复为 `IDLE` 并等待架构师验收。
+2. 包含公式 KaTeX 渲染及英文模式下的真机遥测截图证据；
+3. 7 大门禁实测数据与终端命令执行记录；
+4. 将 `.kiro/relay/frontend/inbox/NEXT.md` 恢复为 `IDLE` 并等待架构师验收。
+

@@ -331,6 +331,32 @@
   * **步进联动推进**：读完当前步骤，点击底部大按钮 `[ ➔ 下一步：② 变式演进 ]`，**上方画布原地平滑形变/旋转联动演进，下方文字卡片瞬时切入第二步**；
   * **零关卡锁死（自由穿透）**：顶部步骤胶囊 `[ ① 原型 | ② 变式 | ③ 测度 | ④ 破局 ]` 全程高亮指示进度，且 **100% 允许任意点按跳步**，学霸想直接看中考真题可秒级直达。
 
+---
+
+### 6. 沙盒渲染内容防公式与代码溢出、KaTeX 全量真实渲染与多语言 (i18n) 规范
+
+用户深度实测提出高优先级专项要求：
+> “检查沙盒渲染内容，是否进行了代码溢出策略。例如：几何不变量：三内角度数皆 60° (∠A=∠B=∠C=60°): \angle A = 43.7^\circ。。。检查修复沙盒渲染模块里面对文字渲染出现的公式溢出，还有是否支持了多语言”
+
+#### (1) 代码溢出与渲染泄漏根因诊断
+1. **未解析的 LaTeX 裸代码泄露**：
+   沙盒定义文件（如 `SB-KP055`）中公式字段声明为 `\angle A = {val}^\circ`，通过 `invariants.ts` 计算替换后生成 `\angle A = 43.7^\circ`。但在前端组件（`LinkedSandboxSlot.tsx`、`LabWorkspace.tsx`、`LeapLab.tsx`）中，直接作为纯字符串在 `<span>{inv.text}</span>` 中输出，完全未接入 `<MathRenderer>` 解析，导致底层 LaTeX 转义字符硬性暴露给学生。
+2. **移动端窄单元格排版撑爆与水平溢出 (Overflow)**：
+   在 `sandbox.css` 中，手机端媒体查询将 `.telemetry-readings` 强制声明为 `grid-template-columns: repeat(2, 1fr)`，单个网格宽度不足 170px。在缺乏 `break-words`、`word-break: break-word` 与自适应换行策略时，长中文说明结合长公式代码直接撑爆网格，造成严重水平溢出或被右侧边界生硬裁剪切掉。
+
+#### (2) 刚性工程修复方案（三重防线与双语支持）
+1. **防线 ①：字符串标准化与 LaTeX 定界符封装**：
+   在 `invariants.ts` 的 `formatInvariantText` 中，对所有包含 LaTeX 语法（`\angle`, `\circ`, `\sqrt`, `^`, `_`, `\frac` 等）的公式结果，自动规整并包裹为标准行内数学定界符 `$...$`。
+2. **防线 ②：全量组件接入 `<MathRenderer>`**：
+   全面替换 `LinkedSandboxSlot.tsx`、`LabWorkspace.tsx`、`LeapLab.tsx` 中的裸字符串 `<span>` 渲染，统一升级为 `<MathRenderer content={inv.text} />`。无论是主不变量、辅助不变量还是几何结论，均由 KaTeX 渲染出工业级数学排版。
+3. **防线 ③：弹性防溢出与移动端排版重塑**：
+   - 在 `sandbox.css` 中为所有遥测标签增加 `word-break: break-word; overflow-wrap: break-word; min-width: 0; max-width: 100%;`；
+   - 手机端媒体查询废弃粗暴硬性的 `repeat(2, 1fr)` 窄格挤压，升级为自适应弹性布局，确保长公式自动优雅折行，容器 `scrollWidth === clientWidth`（0 水平溢出）。
+4. **多语言 (i18n) 全覆盖与动态热响应**：
+   - 彻底排查沙盒模块中的全部操作文案（如 `[ 🔍 中考题眼透视 ]` ↔ `[ 🔍 Exam Focus X-Ray ]`、`[ 💡 分步推演 ]` ↔ `[ 💡 Step Deduction ]`、`[ 🎮 自由探索 ]` ↔ `[ 🎮 Free Play ]`、`几何不变量：` ↔ `Geometric Invariant: `、`状态：` ↔ `Status: `、`[绝对恒定]` ↔ `[Absolute Invariant]`、`[动态观测中]` ↔ `[Dynamic Observation]` 等），严禁出现硬编码中文；
+   - `invariants.ts` 及沙盒预设数据在 `locale === 'en'` 时严格优先读取 `labelEn`，当英文缺失时提供标准降级字典，严防英文模式下漏出中文。
+
+
 
 
 
