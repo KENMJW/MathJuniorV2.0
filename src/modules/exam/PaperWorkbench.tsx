@@ -47,6 +47,7 @@ import {
 } from './difficultyRipple';
 import { PrintLayout } from './PrintLayout';
 import { OnlineExam } from './OnlineExam';
+import { MobilePaperWorkbench } from './MobilePaperWorkbench';
 import { MathRenderer } from '../../components/math/MathRenderer';
 import { Icon } from '../../components/common/Icon';
 import { dbClient } from '../../engine/db/dbClient';
@@ -388,6 +389,17 @@ export const PaperWorkbench: React.FC = () => {
         onBackToWorkbench={() => {
           setGeneratedPaper(null);
           setActiveView('workbench');
+        }}
+      />
+    );
+  }
+
+  if (isMobile) {
+    return (
+      <MobilePaperWorkbench
+        onStartExam={(paper) => {
+          setGeneratedPaper(paper);
+          setActiveView('online_exam');
         }}
       />
     );

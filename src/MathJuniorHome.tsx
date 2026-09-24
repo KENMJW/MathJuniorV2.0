@@ -191,6 +191,7 @@ export const MathJuniorHome: React.FC = () => {
             parameter_morphing_json: String(r.parameter_morphing_json || '{}'),
             posture_morphing_json: String(r.posture_morphing_json || '{}'),
             camouflage_xray_json: String(r.camouflage_xray_json || '{}'),
+            story_stages_json: r.story_stages_json ? String(r.story_stages_json) : undefined,
           }));
           setDbLeapModels(parsedLeap);
         }

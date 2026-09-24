@@ -241,6 +241,20 @@ export function evaluateInvariantValue(
 }
 
 /**
+ * 将含有 LaTeX 命令或数学表达式的文本片段规范包裹在 $...$ 中，使 MathRenderer / KaTeX 能够正常解析
+ */
+export function wrapFormulaLatex(expr: string): string {
+  if (!expr) return expr;
+  if (expr.includes('$')) return expr;
+  // 检测是否含有 LaTeX 特殊命令或转义符号 (\angle, \sqrt, \frac, ^\circ, ^, _, 等)
+  const hasLatex = /(\\[a-zA-Z]+|\^|_|\{|\})/.test(expr);
+  if (hasLatex) {
+    return `$${expr.trim()}$`;
+  }
+  return expr;
+}
+
+/**
  * 格式化不变量展示文本
  */
 export function formatInvariantText(
@@ -290,10 +304,12 @@ export function formatInvariantText(
         const mx = ((p1.x + p2.x) / 2).toFixed(1);
         const my = ((p1.y + p2.y) / 2).toFixed(1);
         const res = formula.replace('{x}', mx).replace('{y}', my).replace('{val}', `(${mx}, ${my})`);
-        return label ? `${label}: ${res}` : res;
+        const wrappedRes = wrapFormulaLatex(res);
+        return label ? `${label}: ${wrappedRes}` : wrappedRes;
       }
     }
-    return label ? `${label}: ${formula}` : formula;
+    const wrappedFormula = wrapFormulaLatex(formula);
+    return label ? `${label}: ${wrappedFormula}` : wrappedFormula;
   }
 
   // 处理单点坐标展示: formula = "Solution ({x}, {y})"
@@ -304,10 +320,12 @@ export function formatInvariantText(
         const px = p.x.toFixed(1);
         const py = p.y.toFixed(1);
         const res = formula.replace('{x}', px).replace('{y}', py).replace('{val}', `(${px}, ${py})`);
-        return label ? `${label}: ${res}` : res;
+        const wrappedRes = wrapFormulaLatex(res);
+        return label ? `${label}: ${wrappedRes}` : wrappedRes;
       }
     }
-    return label ? `${label}: ${formula}` : formula;
+    const wrappedFormula = wrapFormulaLatex(formula);
+    return label ? `${label}: ${wrappedFormula}` : wrappedFormula;
   }
 
   // 2. 纯几何不变量计算
@@ -317,12 +335,14 @@ export function formatInvariantText(
     // 角度保留 1 位小数，距离/面积/比值保留 2 位小数
     const formattedVal = spec.type === 'angle' ? val.toFixed(1) : val.toFixed(2);
     const text = formula.replace('{val}', formattedVal);
-    return label ? `${label}: ${text}` : text;
+    const wrappedText = wrapFormulaLatex(text);
+    return label ? `${label}: ${wrappedText}` : wrappedText;
   }
 
   // 2.5 关系型守恒定理（直接展示几何关系结论，避免非数值方程被代数求值为 0）
   if (spec.type === 'relation') {
-    return label || formula || null;
+    const raw = label || formula || '';
+    return raw ? wrapFormulaLatex(raw) : null;
   }
 
   // 3. 代数/遥测公式安全求值 (如 Delta = b^2 - 4ac, sum_roots = -b/a)
@@ -338,7 +358,8 @@ export function formatInvariantText(
       const numVal = evaluateSafeExpression(formula.replace(/\{val\}/g, '0'), currentScope);
       const formatted = Number.isFinite(numVal) ? Number(numVal).toFixed(2) : String(numVal);
       const text = formula.replace('{val}', formatted);
-      return label ? `${label}: ${text}${stateSuffix}` : `${text}${stateSuffix}`;
+      const wrappedText = wrapFormulaLatex(text);
+      return label ? `${label}: ${wrappedText}${stateSuffix}` : `${wrappedText}${stateSuffix}`;
     }
 
     // 否则直接对 formula 表达式求值
@@ -348,9 +369,11 @@ export function formatInvariantText(
       : String(numVal);
 
     if (label) {
-      return `${label} = ${formatted}${stateSuffix}`;
+      const expr = `${label} = ${formatted}`;
+      return `${wrapFormulaLatex(expr)}${stateSuffix}`;
     }
-    return `${formula} = ${formatted}${stateSuffix}`;
+    const expr = `${formula} = ${formatted}`;
+    return `${wrapFormulaLatex(expr)}${stateSuffix}`;
   }
 
   return label || null;

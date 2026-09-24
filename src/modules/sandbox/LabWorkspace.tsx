@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { SandboxRenderer } from './SandboxRenderer';
 import { LeapLab, SEMESTER_CONFIG as LEAP_SEMESTER_CONFIG, formatSemester } from './LeapLab';
+import { MathRenderer } from '../../components/math/MathRenderer';
 import { Icon } from '../../components/common/Icon';
 import './sandbox.css';
 
@@ -764,7 +765,7 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
                   {invariants.length > 0 ? (
                     invariants.map((inv) => (
                       <span key={inv.id} className="telemetry-tag-invariant" style={{ marginRight: '6px' }}>
-                        {inv.text}
+                        <MathRenderer content={inv.text} />
                       </span>
                     ))
                   ) : (

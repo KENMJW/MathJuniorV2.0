@@ -23,6 +23,7 @@ import { ScorePanel } from './ScorePanel';
 import { Icon } from '../../components/common/Icon';
 import { useSessionStore } from '../../store/sessionStore';
 import { getSafeStem } from '../../engine/i18n/stemGuard';
+import { useDeviceResponsive } from '../../hooks/useDeviceResponsive';
 
 export interface OnlineExamProps {
   paper: GeneratedPaper;
@@ -33,6 +34,8 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
   paper,
   onBackToWorkbench,
 }) => {
+  const { isMobile } = useDeviceResponsive();
+  const [mobileSheetOpen, setMobileSheetOpen] = useState<boolean>(false);
   const locale = useSessionStore((state) => state.locale);
   const isEn = String(locale).toLowerCase().startsWith('en');
 
@@ -399,7 +402,7 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
         className="exam-split-container"
         style={{
           display: 'flex',
-          flexDirection: 'row',
+          flexDirection: isMobile ? 'column' : 'row',
           flexWrap: 'wrap',
           gap: '1.5rem',
           position: 'relative',
@@ -410,7 +413,8 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
         <div
           data-testid="left-paper-scroll"
           style={{
-            flex: '1 1 68%',
+            flex: isMobile ? '1 1 100%' : '1 1 68%',
+            width: isMobile ? '100%' : undefined,
             minWidth: 0,
             display: 'flex',
             flexDirection: 'column',
@@ -533,7 +537,7 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                       <div
                         style={{
                           display: 'grid',
-                          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+                          gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(240px, 1fr))',
                           gap: '0.625rem',
                         }}
                       >
@@ -552,6 +556,7 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                                 alignItems: 'flex-start',
                                 gap: '0.75rem',
                                 padding: '0.75rem',
+                                minHeight: '48px',
                                 borderRadius: 'var(--radius-lg)',
                                 textAlign: 'left',
                                 fontSize: '0.875rem',
@@ -944,6 +949,8 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
               </div>
             </div>
           )}
+          {/* 底部安全呼吸垫片 (彻底消除 TabBar 遮挡) */}
+          <div className="bottom-safe-spacer" data-testid="bottom-safe-spacer" />
         </div>
 
         {/* ===================== 右侧：控制指挥舱 (绝对固定常驻) ===================== */}
@@ -955,7 +962,7 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
             position: 'sticky',
             top: '1rem',
             alignSelf: 'flex-start',
-            display: 'flex',
+            display: isMobile ? 'none' : 'flex',
             flexDirection: 'column',
             gap: '1rem',
           }}
@@ -1191,6 +1198,219 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
           </div>
         </div>
       </div>
+
+      {/* 手机端悬浮胶囊：[ 进度 (已答/总数) ] 滑出答题卡 */}
+      {isMobile && (
+        <button
+          type="button"
+          data-testid="mobile-exam-progress-capsule"
+          onClick={() => setMobileSheetOpen(true)}
+          style={{
+            position: 'fixed',
+            right: '1rem',
+            bottom: 'calc(env(safe-area-inset-bottom, 0px) + 72px)',
+            zIndex: 40,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            padding: '0.625rem 1rem',
+            borderRadius: '9999px',
+            backgroundColor: 'var(--ios-blue)',
+            color: '#ffffff',
+            fontWeight: 700,
+            fontSize: '0.8125rem',
+            boxShadow: '0 8px 24px rgba(0, 122, 255, 0.35)',
+            border: 'none',
+            cursor: 'pointer',
+          }}
+        >
+          <Icon name="target" size={16} />
+          <span>
+            {isEn
+              ? `Progress (${answeredCount}/${allQuestions.length})`
+              : `进度 (${answeredCount}/${allQuestions.length})`}
+          </span>
+        </button>
+      )}
+
+      {/* 手机端答题卡浮层 (iOS 27 Modal Bottom Sheet) */}
+      {isMobile && mobileSheetOpen && (
+        <div
+          data-testid="mobile-answer-sheet-modal"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 50,
+            backgroundColor: 'rgba(0, 0, 0, 0.45)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'flex-end',
+          }}
+          onClick={() => setMobileSheetOpen(false)}
+        >
+          <div
+            style={{
+              backgroundColor: 'var(--bg-primary, #ffffff)',
+              borderTopLeftRadius: '24px',
+              borderTopRightRadius: '24px',
+              padding: '1.25rem',
+              maxHeight: '80vh',
+              overflowY: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '1rem',
+              boxShadow: '0 -10px 40px rgba(0, 0, 0, 0.15)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* 抽屉头部 */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                borderBottom: '1px solid var(--border-subtle)',
+                paddingBottom: '0.75rem',
+              }}
+            >
+              <span
+                style={{
+                  fontSize: '0.875rem',
+                  fontWeight: 900,
+                  color: 'var(--text-primary)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.375rem',
+                }}
+              >
+                <Icon name="target" size={16} />
+                <span>{isEn ? 'Dynamic Answer Sheet' : '动态答题卡'}</span>
+              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--ios-blue)', fontWeight: 700 }}>
+                  {isEn ? `Answered ${answeredCount}/${allQuestions.length}` : `已答 ${answeredCount}/${allQuestions.length}`}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setMobileSheetOpen(false)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: '4px',
+                    cursor: 'pointer',
+                    color: 'var(--text-secondary)',
+                  }}
+                >
+                  <Icon name="x" size={18} />
+                </button>
+              </div>
+            </div>
+
+            {/* 题号网格 */}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(5, 1fr)',
+                gap: '0.5rem',
+                maxHeight: '260px',
+                overflowY: 'auto',
+                padding: '0.25rem',
+              }}
+            >
+              {allQuestions.map((q, idx) => {
+                const qNum = idx + 1;
+                const isFlagged = flaggedIds.has(q.question_id);
+                let isAnswered = false;
+                if (idx < paper.choiceQuestions.length) {
+                  isAnswered = !!choiceAnswers[q.question_id];
+                } else if (idx < paper.choiceQuestions.length + paper.fillQuestions.length) {
+                  isAnswered = !!(fillAnswers[q.question_id] && fillAnswers[q.question_id].trim());
+                } else {
+                  isAnswered = !!(solutionAnswers[q.question_id] && solutionAnswers[q.question_id].trim());
+                }
+
+                return (
+                  <button
+                    key={q.question_id}
+                    type="button"
+                    onClick={() => {
+                      setMobileSheetOpen(false);
+                      scrollToQuestion(q.question_id);
+                    }}
+                    style={{
+                      position: 'relative',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      height: '2.5rem',
+                      borderRadius: 'var(--radius-md)',
+                      fontSize: '0.75rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      border: 'none',
+                      backgroundColor: isAnswered ? 'var(--ios-blue)' : 'var(--glass-bg-card)',
+                      color: isAnswered ? '#ffffff' : 'var(--text-primary)',
+                      boxShadow: isAnswered ? '0 2px 6px rgba(0, 122, 255, 0.25)' : 'none',
+                    }}
+                  >
+                    <span>{qNum}</span>
+                    {isFlagged && (
+                      <span
+                        style={{
+                          position: 'absolute',
+                          top: '-4px',
+                          right: '-4px',
+                          display: 'flex',
+                          width: '0.875rem',
+                          height: '0.875rem',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          borderRadius: '50%',
+                          backgroundColor: 'var(--ios-red)',
+                          color: '#ffffff',
+                        }}
+                      >
+                        <Icon name="flag" size={8} />
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* 提交大按钮 */}
+            <button
+              type="button"
+              data-testid="mobile-submit-exam-btn"
+              onClick={() => {
+                setMobileSheetOpen(false);
+                handleSubmitExam();
+              }}
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                borderRadius: 'var(--radius-lg)',
+                fontSize: '0.875rem',
+                fontWeight: 900,
+                backgroundColor: 'var(--ios-blue)',
+                border: 'none',
+                color: '#ffffff',
+                cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(0, 122, 255, 0.3)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+              }}
+            >
+              <Icon name="download" size={16} />
+              <span>{isEn ? `Submit & Grade (${answeredCount}/${allQuestions.length})` : `提交试卷并判分 (${answeredCount}/${allQuestions.length})`}</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 全局唯一智能伴随数学键盘 (MathKeyboard) */}
       <MathKeyboard

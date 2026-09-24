@@ -122,6 +122,27 @@ export interface LeapSandboxModel {
   canvas_template?: string;
   carrier?: any;
   telemetry_invariants?: any[];
+  story_stages_json?: string;
+}
+
+export interface StoryStage {
+  stage: number;
+  title?: string;
+  titleZh?: string;
+  titleEn?: string;
+  guide_text?: string;
+  guideTextZh?: string;
+  guideTextEn?: string;
+  teacher_secret?: string;
+  teacherSecretZh?: string;
+  teacherSecretEn?: string;
+  state_config?: {
+    carrierId?: string;
+    sliders?: Record<string, number>;
+    xrayActive?: boolean;
+    activeDistractors?: string[];
+    postureId?: string;
+  };
 }
 
 export interface MorphingState {

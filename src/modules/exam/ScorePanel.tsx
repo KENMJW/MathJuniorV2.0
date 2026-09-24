@@ -12,6 +12,7 @@
  */
 
 import React, { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { GeneratedPaper, QuestionItem } from './drawQuestions';
 import { MathRenderer } from '../../components/math/MathRenderer';
 import { QuestionContent } from '../../components/common/QuestionContent';
@@ -54,10 +55,33 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
   onBackToWorkbench,
   timeSpentSeconds = 0,
 }) => {
+  let navigate: ((to: string) => void) | null = null;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    navigate = useNavigate();
+  } catch {
+    navigate = null;
+  }
   const setExamScore = useSessionStore((state) => state.setExamScore);
   const resetScores = useSessionStore((state) => state.resetScores);
+  const setSelectedConceptPointId = useSessionStore((state) => state.setSelectedConceptPointId);
   const locale = useSessionStore((state) => state.locale);
   const isEn = String(locale).toLowerCase().startsWith('en');
+
+  const handleReviewConcept = (pointId?: string) => {
+    if (pointId) {
+      setSelectedConceptPointId(pointId);
+    }
+    if (navigate) {
+      navigate('/math-junior/concept');
+    }
+  };
+
+  const handleReviewXRay = () => {
+    if (navigate) {
+      navigate('/math-junior/lab');
+    }
+  };
 
   // 1. 选择题判分结果
   const choiceResults = useMemo(() => {
@@ -644,6 +668,60 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                     </strong>
                   </span>
                 </div>
+                {!r.isCorrect && (
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      marginTop: '0.25rem',
+                      flexWrap: 'wrap',
+                    }}
+                  >
+                    <button
+                      type="button"
+                      data-testid={`wrong-q-review-concept-${r.question.question_id}`}
+                      onClick={() => handleReviewConcept(r.question.primary_point_id)}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.375rem',
+                        padding: '0.375rem 0.75rem',
+                        borderRadius: 'var(--radius-md)',
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        backgroundColor: 'rgba(0, 122, 255, 0.08)',
+                        color: 'var(--ios-blue)',
+                        border: '1px solid rgba(0, 122, 255, 0.2)',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <Icon name="book" size={13} />
+                      <span>{isEn ? 'Review Concept' : '回看概念精讲'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      data-testid={`wrong-q-review-xray-${r.question.question_id}`}
+                      onClick={handleReviewXRay}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.375rem',
+                        padding: '0.375rem 0.75rem',
+                        borderRadius: 'var(--radius-md)',
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        backgroundColor: 'rgba(175, 82, 222, 0.08)',
+                        color: 'var(--ios-purple)',
+                        border: '1px solid rgba(175, 82, 222, 0.2)',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <Icon name="search" size={13} />
+                      <span>{isEn ? 'Exam Focus X-Ray' : '题眼透视'}</span>
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -751,6 +829,60 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                     </span>
                   </div>
                 </div>
+                {!r.isCorrect && (
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      marginTop: '0.25rem',
+                      flexWrap: 'wrap',
+                    }}
+                  >
+                    <button
+                      type="button"
+                      data-testid={`wrong-q-review-concept-${r.question.question_id}`}
+                      onClick={() => handleReviewConcept(r.question.primary_point_id)}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.375rem',
+                        padding: '0.375rem 0.75rem',
+                        borderRadius: 'var(--radius-md)',
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        backgroundColor: 'rgba(0, 122, 255, 0.08)',
+                        color: 'var(--ios-blue)',
+                        border: '1px solid rgba(0, 122, 255, 0.2)',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <Icon name="book" size={13} />
+                      <span>{isEn ? 'Review Concept' : '回看概念精讲'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      data-testid={`wrong-q-review-xray-${r.question.question_id}`}
+                      onClick={handleReviewXRay}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.375rem',
+                        padding: '0.375rem 0.75rem',
+                        borderRadius: 'var(--radius-md)',
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        backgroundColor: 'rgba(175, 82, 222, 0.08)',
+                        color: 'var(--ios-purple)',
+                        border: '1px solid rgba(175, 82, 222, 0.2)',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <Icon name="search" size={13} />
+                      <span>{isEn ? 'Exam Focus X-Ray' : '题眼透视'}</span>
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -1064,11 +1196,68 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                     </span>
                   </div>
                 )}
+
+                {r.score < r.maxScore && (
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      marginTop: '0.25rem',
+                      flexWrap: 'wrap',
+                    }}
+                  >
+                    <button
+                      type="button"
+                      data-testid={`wrong-q-review-concept-${r.question.question_id}`}
+                      onClick={() => handleReviewConcept(r.question.primary_point_id)}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.375rem',
+                        padding: '0.375rem 0.75rem',
+                        borderRadius: 'var(--radius-md)',
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        backgroundColor: 'rgba(0, 122, 255, 0.08)',
+                        color: 'var(--ios-blue)',
+                        border: '1px solid rgba(0, 122, 255, 0.2)',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <Icon name="book" size={13} />
+                      <span>{isEn ? 'Review Concept' : '回看概念精讲'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      data-testid={`wrong-q-review-xray-${r.question.question_id}`}
+                      onClick={handleReviewXRay}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.375rem',
+                        padding: '0.375rem 0.75rem',
+                        borderRadius: 'var(--radius-md)',
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        backgroundColor: 'rgba(175, 82, 222, 0.08)',
+                        color: 'var(--ios-purple)',
+                        border: '1px solid rgba(175, 82, 222, 0.2)',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <Icon name="search" size={13} />
+                      <span>{isEn ? 'Exam Focus X-Ray' : '题眼透视'}</span>
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
         </div>
       </div>
+      {/* 底部安全呼吸垫片 (彻底消除 TabBar 遮挡) */}
+      <div className="bottom-safe-spacer" data-testid="bottom-safe-spacer" />
     </div>
   );
 };

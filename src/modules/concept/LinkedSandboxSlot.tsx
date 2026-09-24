@@ -482,7 +482,7 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
                       className="flex flex-col gap-0.5 border-b border-slate-800/80 pb-1.5 last:border-b-0 last:pb-0"
                     >
                       <span className="telemetry-tag-invariant text-xs font-mono text-sky-300 font-semibold break-words">
-                        {inv.text}
+                        <MathRenderer content={inv.text} />
                       </span>
                       <span className="telemetry-tag-secondary text-[10px] text-slate-400">
                         {inv.isConstant
