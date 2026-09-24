@@ -9,13 +9,13 @@ export interface CardDeckProps {
 }
 
 /**
- * 手机端横向/纵向卡片穿透流骨架 (CardDeck)
- * 对应设计文档 §10.3、任务 16.2 与 TASK-FE-0010 规范
+ * 手机端横向/纵向卡片穿透流骨架 (CardDeck / MobileShell)
+ * 对应设计文档 §10.3、任务 16.2 与 TASK-FE-0020
  *
  * 关键特征：
- * - 100dvh 屏幕锁定，垂直单列自适应流动
+ * - 100dvh 屏幕锁定，垂直单列自适应流动，绝对 0 水平滚动条
  * - 单手拇指触控靶心规范 >= 48px
- * - 支持顶部 Slim 导航条与底部原生 iOS Tab Bar (带 safe-area 避让)
+ * - 顶部 Slim 导航条与底部原生 iOS Tab Bar (带 safe-area 避让)
  */
 export const CardDeck: React.FC<CardDeckProps> = ({
   children,
@@ -27,38 +27,14 @@ export const CardDeck: React.FC<CardDeckProps> = ({
   return (
     <div
       data-testid="shell-card-deck"
-      className={`card-deck-shell ${className}`.trim()}
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        height: "100dvh",
-        width: "100%",
-        backgroundColor: "var(--bg-canvas, #f5f5f7)",
-        color: "var(--text-primary, #1d1d1f)",
-        overflow: "hidden",
-        position: "relative",
-        boxSizing: "border-box",
-        ...style,
-      }}
+      className={`card-deck-shell flex flex-col h-[100dvh] w-full bg-page text-text-primary overflow-hidden relative box-border ${className}`.trim()}
+      style={style}
     >
       {/* 顶部 Slim 导航条 (44px) */}
       {header && (
         <header
           data-testid="card-deck-header"
-          style={{
-            flexShrink: 0,
-            height: "44px",
-            minHeight: "44px",
-            display: "flex",
-            alignItems: "center",
-            padding: "0 0.75rem",
-            background: "rgba(255, 255, 255, 0.92)",
-            backdropFilter: "blur(20px)",
-            WebkitBackdropFilter: "blur(20px)",
-            borderBottom: "1px solid var(--border-subtle, rgba(0, 0, 0, 0.08))",
-            zIndex: 20,
-            boxSizing: "border-box",
-          }}
+          className="shrink-0 h-[44px] min-h-[44px] flex items-center px-3 bg-white/90 backdrop-blur-xl border-b border-border-subtle z-20 box-border"
         >
           {header}
         </header>
@@ -67,17 +43,8 @@ export const CardDeck: React.FC<CardDeckProps> = ({
       {/* 主卡片垂直单列流动容器 */}
       <main
         data-testid="card-deck-body"
-        style={{
-          flex: 1,
-          overflowY: "auto",
-          overflowX: "hidden",
-          WebkitOverflowScrolling: "touch",
-          padding: "0.5rem 0.5rem 1rem 0.5rem",
-          display: "flex",
-          flexDirection: "column",
-          gap: "0.75rem",
-          boxSizing: "border-box",
-        }}
+        className="flex-1 overflow-y-auto overflow-x-hidden p-2 pb-4 flex flex-col gap-3 box-border"
+        style={{ WebkitOverflowScrolling: "touch" }}
       >
         {children}
       </main>
@@ -87,19 +54,8 @@ export const CardDeck: React.FC<CardDeckProps> = ({
         <nav
           data-testid="card-deck-bottom-sheet"
           data-min-touch-target="52px"
-          className="mobile-safe-bottom"
-          style={{
-            flexShrink: 0,
-            minHeight: "56px",
-            background: "rgba(255, 255, 255, 0.96)",
-            backdropFilter: "blur(25px)",
-            WebkitBackdropFilter: "blur(25px)",
-            borderTop: "1px solid var(--border-subtle, rgba(0, 0, 0, 0.08))",
-            boxShadow: "0 -2px 10px rgba(0, 0, 0, 0.04)",
-            padding: "4px 8px calc(4px + env(safe-area-inset-bottom, 12px)) 8px",
-            zIndex: 30,
-            boxSizing: "border-box",
-          }}
+          className="mobile-safe-bottom shrink-0 min-h-[56px] bg-white/95 backdrop-blur-2xl border-t border-border-subtle shadow-[0_-2px_10px_rgba(0,0,0,0.04)] px-2 py-1 z-30 flex items-center justify-around box-border"
+          style={{ paddingBottom: "calc(4px + env(safe-area-inset-bottom, 12px))" }}
         >
           {bottomSheet}
         </nav>

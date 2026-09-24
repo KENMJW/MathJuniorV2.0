@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Icon } from "../common/Icon";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export interface CockpitProps {
   sidebar?: React.ReactNode;
@@ -13,13 +13,13 @@ export interface CockpitProps {
 }
 
 /**
- * 桌面端宽屏大剧场骨架 (Cockpit)
- * 对应设计文档 §10.3、任务 16.2
+ * 桌面端宽屏大剧场骨架 (Cockpit / DesktopShell)
+ * 对应设计文档 §10.3、任务 16.2 与 TASK-FE-0020
  *
  * 关键特征：
- * - 宽屏沉浸视窗，沉浸剧场体验
- * - 可折叠左侧树形导航（支持快捷键 Meta+B / Ctrl+B 展开折叠）
- * - 顶部指挥舱工具条 (Toolbar/Header)
+ * - 宽屏沉浸视窗，1240px Keynote 居中大剧场体验
+ * - 可折叠左侧导航树（支持快捷键 Meta+B / Ctrl+B 展开折叠）
+ * - 顶部 54px 统一高透毛玻璃工具条 (Toolbar/Header)
  */
 export const Cockpit: React.FC<CockpitProps> = ({
   sidebar,
@@ -51,95 +51,44 @@ export const Cockpit: React.FC<CockpitProps> = ({
   return (
     <div
       data-testid="shell-cockpit"
-      className={`cockpit-shell ${className}`.trim()}
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        height: "100vh",
-        width: "100%",
-        backgroundColor: "var(--bg-canvas)",
-        color: "var(--text-primary)",
-        overflow: "hidden",
-        position: "relative",
-        ...style,
-      }}
+      className={`cockpit-shell flex flex-col h-screen w-full bg-page text-text-primary overflow-hidden relative ${className}`.trim()}
+      style={style}
     >
       {/* 顶部指挥舱条 */}
       {(header || toolbar) && (
         <header
           data-testid="cockpit-header"
-          style={{
-            flexShrink: 0,
-            display: "flex",
-            flexDirection: "column",
-            width: "100%",
-            background: "var(--glass-bg)",
-            backdropFilter: "blur(20px)",
-            WebkitBackdropFilter: "blur(20px)",
-            borderBottom: "1px solid rgba(0, 0, 0, 0.05)",
-            zIndex: 120,
-          }}
+          className="shrink-0 flex flex-col w-full bg-white/85 backdrop-blur-xl border-b border-border-subtle z-50"
         >
-          <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
+          <div className="flex items-center w-full">
             {sidebar && !hideSidebarToggle && (
               <button
                 data-testid="cockpit-toggle-sidebar"
                 type="button"
                 onClick={toggleSidebar}
                 title="切换导航树 (Cmd+B / Ctrl+B)"
-                style={{
-                  minWidth: "36px",
-                  minHeight: "36px",
-                  marginLeft: "1.5rem",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  borderRadius: "var(--radius-sm)",
-                  border: "1px solid var(--border-subtle)",
-                  backgroundColor: "var(--glass-bg-elevated)",
-                  color: "var(--text-primary)",
-                  cursor: "pointer",
-                }}
+                className="min-w-[36px] min-h-[36px] ml-6 flex items-center justify-center rounded-lg border border-border-subtle bg-white/80 hover:bg-white text-text-primary cursor-pointer shadow-sm"
               >
                 {collapsed ? (
-                  <Icon name="chevron-right" size={14} />
+                  <ChevronRight className="w-3.5 h-3.5" />
                 ) : (
-                  <Icon name="chevron-left" size={14} />
+                  <ChevronLeft className="w-3.5 h-3.5" />
                 )}
               </button>
             )}
-            <div style={{ flex: 1, width: "100%" }}>{header}</div>
+            <div className="flex-1 w-full">{header}</div>
           </div>
-          {toolbar && <div data-testid="cockpit-toolbar">{toolbar}</div>}
+          {toolbar && <div data-testid="cockpit-toolbar" className="border-t border-border-subtle px-4 py-1">{toolbar}</div>}
         </header>
       )}
 
       {/* 主体大剧场 */}
-      <div
-        style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "row",
-          overflow: "hidden",
-          position: "relative",
-        }}
-      >
+      <div className="flex-1 flex flex-row overflow-hidden relative min-h-0">
         {sidebar && (
           <aside
             data-testid="cockpit-sidebar"
-            style={{
-              width: collapsed ? "0px" : "300px",
-              minWidth: collapsed ? "0px" : "300px",
-              maxWidth: collapsed ? "0px" : "300px",
-              height: "100%",
-              overflowY: "auto",
-              backgroundColor: "var(--bg-card)",
-              borderRight: collapsed ? "none" : "1px solid var(--border-subtle)",
-              transition: "width 0.25s var(--spring-smooth), min-width 0.25s var(--spring-smooth)",
-              display: collapsed ? "none" : "flex",
-              flexDirection: "column",
-              zIndex: 10,
-            }}
+            className="w-[260px] min-w-[260px] overflow-y-auto bg-card border-r border-black/[0.07] shrink-0 z-30 flex flex-col"
+            style={{ display: collapsed ? "none" : "flex" }}
           >
             {sidebar}
           </aside>
@@ -147,16 +96,8 @@ export const Cockpit: React.FC<CockpitProps> = ({
 
         <main
           data-testid="cockpit-theater"
-          style={{
-            flex: 1,
-            height: "100%",
-            overflowY: "auto",
-            overflowX: "hidden",
-            backgroundColor: "var(--bg-canvas)",
-            position: "relative",
-            display: "flex",
-            flexDirection: "column",
-          }}
+          className="cockpit-theater flex-1 h-full overflow-y-auto overflow-x-hidden bg-page relative flex flex-col"
+          style={{ WebkitOverflowScrolling: "touch" }}
         >
           {children}
         </main>

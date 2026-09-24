@@ -11,13 +11,14 @@ export interface SplitBoardProps {
 }
 
 /**
- * 平板分栏画板骨架 (SplitBoard)
- * 对应设计文档 §10.3、任务 16.2 与 TASK-FE-0010 规范
+ * 平板分栏画板骨架 (SplitBoard / TabletShell)
+ * 对应设计文档 §10.3、任务 16.2 与 TASK-FE-0020 规范
  *
  * 关键特征：
- * - 横屏 (Landscape)：左侧 260px 常驻分栏 + 右侧大画布
- * - 竖屏 (Portrait)：支持侧边栏抽屉手势折叠与无缝展开，避免挤压右侧画布
+ * - 横屏 (Landscape)：左侧 280px~320px 结构化侧边栏 (border-r border-black/[0.07])
+ * - 竖屏 (Portrait)：支持侧边栏抽屉折叠与一键展开
  * - 触控靶心规范 >= 44px
+ * - 顶栏保留 [ 专注大画布 / 沉浸全屏 ] 切换键
  */
 export const SplitBoard: React.FC<SplitBoardProps> = ({
   sidebar,
@@ -32,141 +33,68 @@ export const SplitBoard: React.FC<SplitBoardProps> = ({
   const [sidebarOpen, setSidebarOpen] = useState(!isPortrait);
 
   useEffect(() => {
-    // 横竖屏切换时自适应展开/收起
     setSidebarOpen(!isPortrait);
   }, [isPortrait]);
 
   return (
     <div
       data-testid="shell-split-board"
-      className={`split-board-shell ${className}`.trim()}
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        height: "100vh",
-        width: "100%",
-        backgroundColor: "var(--bg-canvas, #f5f5f7)",
-        color: "var(--text-primary, #1d1d1f)",
-        overflow: "hidden",
-        position: "relative",
-        boxSizing: "border-box",
-        ...style,
-      }}
+      className={`split-board-shell flex flex-col h-screen w-full bg-page text-text-primary overflow-hidden relative box-border ${className}`.trim()}
+      style={style}
     >
       {header && (
         <header
           data-testid="split-board-header"
-          style={{
-            flexShrink: 0,
-            minHeight: "44px",
-            display: "flex",
-            alignItems: "center",
-            padding: "0 1.25rem",
-            background: "rgba(255, 255, 255, 0.92)",
-            backdropFilter: "blur(20px)",
-            WebkitBackdropFilter: "blur(20px)",
-            borderBottom: "1px solid var(--border-subtle, rgba(0, 0, 0, 0.08))",
-            zIndex: 20,
-            boxSizing: "border-box",
-          }}
+          className="shrink-0 min-h-[48px] flex items-center px-4 bg-white/90 backdrop-blur-xl border-b border-border-subtle z-20 box-border"
         >
           <button
             type="button"
             data-testid="split-board-toggle-btn"
             onClick={() => setSidebarOpen((prev) => !prev)}
-            style={{
-              marginRight: "0.75rem",
-              padding: "6px 12px",
-              borderRadius: "var(--radius-sm, 8px)",
-              border: "1px solid var(--border-subtle, rgba(0, 0, 0, 0.1))",
-              background: sidebarOpen ? "var(--ios-blue-glow, rgba(0, 113, 227, 0.1))" : "#ffffff",
-              color: sidebarOpen ? "var(--ios-blue, #0071e3)" : "var(--text-primary, #1d1d1f)",
-              fontSize: "12px",
-              fontWeight: 600,
-              cursor: "pointer",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "6px",
-              whiteSpace: "nowrap",
-              flexShrink: 0,
-              minHeight: "36px",
-              boxShadow: "0 1px 3px rgba(0, 0, 0, 0.04)",
-              transition: "all 0.18s ease",
-            }}
+            className="mr-3 px-3 py-1.5 rounded-lg border border-border-subtle bg-white text-text-primary text-xs font-semibold inline-flex items-center gap-1.5 shadow-sm hover:bg-card-subtle transition-all cursor-pointer min-h-[44px]"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="3" y1="12" x2="21" y2="12" />
-              <line x1="3" y1="6" x2="21" y2="6" />
-              <line x1="3" y1="18" x2="21" y2="18" />
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+              <line x1="9" y1="3" x2="9" y2="21" />
             </svg>
-            <span>{sidebarOpen ? (isPortrait ? "收起导航" : "沉浸全屏") : "展开导航"}</span>
+            <span>{sidebarOpen ? (isPortrait ? "收起导航" : "专注大画布") : "展开导航"}</span>
           </button>
-          {header}
+          <div className="flex-1 min-w-0">{header}</div>
         </header>
       )}
 
-      <div
-        style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "row",
-          overflow: "hidden",
-          position: "relative",
-        }}
-      >
-        {/* 左侧分栏导航 (横屏支持沉浸折叠，竖屏按需展开) */}
+      <div className="flex-1 flex flex-row overflow-hidden relative min-h-0">
+        {/* 左侧分栏导航 */}
         <aside
           data-testid="split-board-sidebar"
+          className={`split-board-sidebar overflow-y-auto bg-card border-r border-black/[0.07] shrink-0 z-30 transition-all duration-300 ${
+            isPortrait
+              ? "absolute top-0 bottom-0 left-0 shadow-2xl"
+              : "relative"
+          }`}
           style={{
-            width: sidebarOpen ? widthVal : "0px",
-            minWidth: sidebarOpen ? widthVal : "0px",
-            maxWidth: widthVal,
-            height: "100%",
-            overflowY: "auto",
-            overflowX: "hidden",
-            backgroundColor: "var(--bg-card, #ffffff)",
-            borderRight: !sidebarOpen ? "none" : "1px solid var(--border-subtle, rgba(0, 0, 0, 0.08))",
-            display: !sidebarOpen ? "none" : "flex",
+            width: widthVal,
+            display: sidebarOpen ? "flex" : "none",
             flexDirection: "column",
-            zIndex: isPortrait ? 25 : 5,
-            position: isPortrait ? "absolute" : "relative",
-            left: 0,
-            top: 0,
-            bottom: 0,
-            boxShadow: isPortrait && sidebarOpen ? "4px 0 16px rgba(0,0,0,0.1)" : "none",
-            transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
           }}
         >
           {sidebar}
         </aside>
 
-        {/* 竖屏模式下的侧栏遮罩 */}
+        {/* 竖屏遮罩 */}
         {isPortrait && sidebarOpen && (
           <div
+            data-testid="split-board-backdrop"
             onClick={() => setSidebarOpen(false)}
-            style={{
-              position: "absolute",
-              inset: 0,
-              backgroundColor: "rgba(0, 0, 0, 0.2)",
-              zIndex: 20,
-              backdropFilter: "blur(2px)",
-            }}
+            className="absolute inset-0 bg-black/20 backdrop-blur-[2px] z-20"
           />
         )}
 
-        {/* 右侧自适应主内容画布 */}
+        {/* 主内容画板 */}
         <main
           data-testid="split-board-main"
-          style={{
-            flex: 1,
-            height: "100%",
-            overflowY: "auto",
-            overflowX: "hidden",
-            backgroundColor: "var(--bg-canvas, #f5f5f7)",
-            position: "relative",
-            display: "flex",
-            flexDirection: "column",
-          }}
+          className="split-board-main flex-1 overflow-y-auto min-w-0 relative flex flex-col"
+          style={{ WebkitOverflowScrolling: "touch" }}
         >
           {children}
         </main>

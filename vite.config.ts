@@ -90,8 +90,36 @@ export default defineConfig({
     sourcemap: false,
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom', 'zustand'],
+        manualChunks: (id) => {
+          if (id.includes('node_modules/jsxgraph')) {
+            return 'jsxgraph';
+          }
+          if (id.includes('node_modules/katex')) {
+            return 'katex';
+          }
+          if (id.includes('node_modules/lucide-react') || id.includes('node_modules/@radix-ui')) {
+            return 'ui-vendor';
+          }
+          if (
+            id.includes('node_modules/react') ||
+            id.includes('node_modules/react-dom') ||
+            id.includes('node_modules/zustand') ||
+            id.includes('node_modules/react-router')
+          ) {
+            return 'vendor';
+          }
+          if (
+            id.includes('src/modules/concept/allPointsData') ||
+            id.includes('src/modules/sandbox/mockLeapModels')
+          ) {
+            return 'curriculum-data';
+          }
+          if (id.includes('src/AllSubjectsPortal')) {
+            return 'portal-page';
+          }
+          if (id.includes('src/modules/exam')) {
+            return 'exam-module';
+          }
         },
       },
     },

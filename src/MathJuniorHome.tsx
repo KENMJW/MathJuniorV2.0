@@ -17,13 +17,23 @@ import { setDeviceOverride, getDeviceOverride } from "./engine/device/deviceOver
 import { useDeviceResponsive } from "./hooks/useDeviceResponsive";
 import { t } from "./engine/i18n/i18n";
 import { useSessionStore } from "./store/sessionStore";
-import { Icon } from "./components/common/Icon";
 import { dbClient } from "./engine/db/dbClient";
 import {
   GraphKnowledgePoint,
   LogicLine,
 } from "./modules/graph/types";
 import { LeapSandboxModel } from "./modules/sandbox/morphControllers";
+import {
+  ChevronLeft,
+  Globe,
+  Bell,
+  User,
+  Compass,
+  GitBranch,
+  FlaskConical,
+  ClipboardCheck,
+} from "lucide-react";
+import { cn } from "./lib/utils";
 
 const ALL_SANDBOXES = [
   {
@@ -220,405 +230,151 @@ export const MathJuniorHome: React.FC = () => {
     }
   }, []);
 
+  const handleBackToPortal = () => {
+    try {
+      localStorage.removeItem("preferred_subject");
+    } catch {
+      // ignore
+    }
+    navigate("/?bypass_redirect=true");
+  };
+
   const handleSelectSubModule = (moduleKey: string) => {
     navigate(`/math-junior/${moduleKey}`);
   };
 
   // 四大模块正式入口导航项 (严格对标 ios27_demo 与产品规范)
   const MODULE_NAV_ITEMS = [
-    { key: "concept", labelZh: "探本溯源 · 概念精讲", labelEn: "Concept Lecture", icon: "nav-concept" },
-    { key: "graph", labelZh: "经纬纵横 · 思维图谱", labelEn: "Knowledge Graph", icon: "nav-graph" },
-    { key: "lab", labelZh: "见微知著 · 实验探究", labelEn: "Lab Exploration", icon: "nav-lab" },
-    { key: "exam", labelZh: "百炼成钢 · 实战测评", labelEn: "Assessment Center", icon: "nav-exam" },
+    { key: "concept", labelZh: "探本溯源 · 概念精讲", labelEn: "Concept Lecture", icon: Compass },
+    { key: "graph", labelZh: "经纬纵横 · 思维图谱", labelEn: "Knowledge Graph", icon: GitBranch },
+    { key: "lab", labelZh: "见微知著 · 实验探究", labelEn: "Lab Exploration", icon: FlaskConical },
+    { key: "exam", labelZh: "百炼成钢 · 实战测评", labelEn: "Assessment Center", icon: ClipboardCheck },
   ];
 
-  // 顶栏右侧工具操作区 (彻底删除设备切换钮 UI，保留语言切换与自动适配)
-  const renderHeaderRight = () => (
-    <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
-      {/* 语言切换器 */}
-      <button
-        type="button"
-        data-testid="math-lang-toggle"
-        onClick={() => setLocale(locale === "zh-CN" ? "en" : "zh-CN")}
-        style={{
-          padding: "0.35rem 0.75rem",
-          borderRadius: "var(--radius-pill)",
-          border: "1px solid var(--border-subtle)",
-          background: "var(--bg-card)",
-          color: "var(--text-primary)",
-          cursor: "pointer",
-          fontWeight: 600,
-          fontSize: "0.8rem",
-          display: "flex",
-          alignItems: "center",
-          gap: "0.3rem",
-          whiteSpace: "nowrap",
-          flexShrink: 0,
-        }}
-      >
-        <Icon name="globe" size={14} />
-        <span>{locale === "zh-CN" ? "English" : "中文"}</span>
-      </button>
-    </div>
-  );
-
-  // 电脑端双层顶栏 (Layer 1 全局系统栏 + Layer 2 次级导航条，100% 对标 Demo 截图 2)
+  // 电脑端统一 54px 高透毛玻璃工具条 (对标 macOS 27 Golden Gate)
   const renderDesktopHeader = () => (
-    <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
-      {/* 第 1 层：全局系统顶栏 */}
-      <div
-        data-testid="math-junior-global-bar"
-        style={{
-          width: "100%",
-          borderBottom: "none",
-          background: "rgba(255, 255, 255, 0.85)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-        }}
-      >
-        <div
-          style={{
-            maxWidth: "1240px",
-            margin: "0 auto",
-            height: "50px",
-            padding: "0 1.5rem",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            boxSizing: "border-box",
-          }}
-        >
-          {/* 左侧：黑标 App Logo + 全科核心素养提分系统 + 初中数学 */}
-          <div
-            onClick={() => navigate("/")}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              cursor: "pointer",
-              userSelect: "none",
-            }}
+    <header
+      data-testid="math-junior-global-bar"
+      className="w-full h-[54px] bg-white/80 backdrop-blur-xl border-b border-black/[0.06] sticky top-0 z-50 select-none box-border"
+    >
+      <div className="max-w-[1240px] mx-auto h-full px-4 flex items-center justify-between gap-4">
+        {/* 左侧：[ ← 返回全科门户 ] + 品牌徽章 */}
+        <div className="flex items-center gap-3 shrink-0">
+          <button
+            type="button"
+            data-testid="back-to-portal-btn"
+            onClick={handleBackToPortal}
+            className="back-btn h-8 px-3 rounded-full border border-black/[0.08] bg-white text-text-primary text-xs font-semibold hover:bg-card-subtle shadow-sm transition-all inline-flex items-center gap-1.5 cursor-pointer active:scale-95"
           >
-            <div
-              style={{
-                width: "28px",
-                height: "28px",
-                borderRadius: "7px",
-                background: "var(--text-primary)",
-                color: "#ffffff",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                boxShadow: "0 2px 6px rgba(0, 0, 0, 0.15)",
-                flexShrink: 0,
-              }}
-            >
-              <svg
-                width="15"
-                height="15"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#ffffff"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <polygon points="12 2 2 22 22 22 12 2" stroke="#fff" fill="none" />
-                <circle cx="12" cy="14" r="2" fill="#fff" stroke="none" />
-              </svg>
-            </div>
+            <ChevronLeft className="w-3.5 h-3.5 text-text-secondary" />
+            <span>{t("nav.backToPortal", locale, "返回全科门户")}</span>
+          </button>
 
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <span
-                style={{
-                  fontSize: "14px",
-                  fontWeight: 700,
-                  letterSpacing: "-0.2px",
-                  color: "var(--text-primary)",
-                }}
-              >
-                {t("app.title", locale, "全科核心素养提分系统")}
-              </span>
-              <span
-                style={{
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  padding: "2px 8px",
-                  borderRadius: "var(--radius-pill)",
-                  background: "rgba(0, 113, 227, 0.08)",
-                  color: "var(--ios-blue)",
-                  border: "1px solid rgba(0, 113, 227, 0.2)",
-                }}
-              >
-                {locale === "en" ? "Junior Math V2.0.2beta" : "初中数学 V2.0.2beta"}
-              </span>
-            </div>
+          <div className="h-4 w-px bg-black/[0.08]" />
+
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-text-primary tracking-tight">
+              {t("app.title", locale, "全科核心素养提分系统")}
+            </span>
+            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-ios-blue/[0.08] text-ios-blue border border-ios-blue/20">
+              {locale === "en" ? "Junior Math V2.0" : "初中数学 V2.0"}
+            </span>
           </div>
+        </div>
 
-          {/* 右侧：通知小铃铛 + 语言切换 + 学员状态 */}
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            {/* 通知铃铛 */}
-            <button
-              type="button"
-              title={t("common.announcements", locale, "系统公告")}
-              style={{
-                width: "30px",
-                height: "30px",
-                padding: 0,
-                borderRadius: "var(--radius-pill)",
-                background: "transparent",
-                border: "1px solid var(--border-subtle)",
-                color: "var(--text-secondary)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                position: "relative",
-                cursor: "pointer",
-              }}
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-              </svg>
-              <span
-                style={{
-                  position: "absolute",
-                  top: "6px",
-                  right: "6px",
-                  width: "5px",
-                  height: "5px",
-                  borderRadius: "50%",
-                  background: "#ff3b30",
-                }}
-              />
-            </button>
+        {/* 居中：4 核心模块分段控制器 (Segmented Control) */}
+        <div
+          data-testid="math-junior-subnav-bar"
+          className="inline-flex items-center p-1 rounded-full bg-black/[0.04] border border-black/[0.04] shadow-inner shrink-0"
+        >
+          {MODULE_NAV_ITEMS.map((item) => {
+            const active = currentSubModule === item.key;
+            const IconComp = item.icon;
+            return (
+              <button
+                key={item.key}
+                type="button"
+                data-testid={`module-nav-${item.key}`}
+                onClick={() => handleSelectSubModule(item.key)}
+                className={cn(
+                  "px-3.5 py-1 rounded-full text-xs font-medium transition-all duration-200 inline-flex items-center gap-1.5 cursor-pointer",
+                  active
+                    ? "bg-ios-blue text-white shadow-sm font-semibold"
+                    : "text-text-secondary hover:text-text-primary hover:bg-white/40"
+                )}
+              >
+                <IconComp className={cn("w-3.5 h-3.5", active ? "text-white" : "text-text-secondary")} />
+                <span>{locale === "en" ? item.labelEn : item.labelZh}</span>
+                <span className="hidden">{item.labelZh.replace(/\s+/g, "")}</span>
+              </button>
+            );
+          })}
+        </div>
 
-            {/* 语言切换 */}
-            <button
-              type="button"
-              data-testid="math-lang-toggle"
-              onClick={() => setLocale(locale === "zh-CN" ? "en" : "zh-CN")}
-              style={{
-                height: "30px",
-                padding: "0 10px",
-                borderRadius: "var(--radius-pill)",
-                background: "transparent",
-                border: "1px solid var(--border-subtle)",
-                color: "var(--text-secondary)",
-                fontSize: "12px",
-                fontWeight: 500,
-                display: "flex",
-                alignItems: "center",
-                gap: "5px",
-                cursor: "pointer",
-              }}
-            >
-              <Icon name="globe" size={13} />
-              <span>{locale === "zh-CN" ? "简体中文" : "English"}</span>
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
-            </button>
+        {/* 右侧：通知小铃铛 + 语言切换 + 学员状态 */}
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            title={t("common.announcements", locale, "系统公告")}
+            className="w-8 h-8 rounded-full border border-black/[0.08] bg-white text-text-secondary flex items-center justify-center relative hover:bg-card-subtle transition-all cursor-pointer shadow-sm"
+          >
+            <Bell className="w-3.5 h-3.5" />
+            <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-red-500 ring-2 ring-white" />
+          </button>
 
-            {/* 学员状态 */}
-            <div
-              style={{
-                height: "30px",
-                padding: "0 10px",
-                borderRadius: "var(--radius-pill)",
-                background: "#ffffff",
-                border: "1px solid var(--border-subtle)",
-                color: "var(--text-secondary)",
-                fontSize: "12px",
-                fontWeight: 500,
-                display: "flex",
-                alignItems: "center",
-                gap: "5px",
-                boxShadow: "0 1px 3px rgba(0, 0, 0, 0.04)",
-              }}
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
-              <span>{locale === "en" ? "Student Mode" : "默认学员 · 核心素养版"}</span>
-            </div>
+          <button
+            type="button"
+            data-testid="math-lang-toggle"
+            onClick={() => setLocale(locale === "zh-CN" ? "en" : "zh-CN")}
+            className="h-8 px-2.5 rounded-full border border-black/[0.08] bg-white text-text-secondary text-xs font-medium flex items-center gap-1.5 hover:bg-card-subtle transition-all cursor-pointer shadow-sm"
+          >
+            <Globe className="w-3.5 h-3.5 text-text-secondary" />
+            <span>{locale === "zh-CN" ? "简体中文" : "English"}</span>
+          </button>
+
+          <div className="h-8 px-2.5 rounded-full border border-black/[0.08] bg-white text-text-secondary text-xs font-medium flex items-center gap-1.5 shadow-sm">
+            <User className="w-3.5 h-3.5 text-text-secondary" />
+            <span>{locale === "en" ? "Student Mode" : "学员模式"}</span>
           </div>
         </div>
       </div>
-
-      {/* 第 2 层：次级导航条 (返回全科门户 + 4 主模块胶囊分段器) */}
-      <div
-        data-testid="math-junior-subnav-bar"
-        style={{
-          width: "100%",
-          background: "transparent",
-        }}
-      >
-        <div
-          style={{
-            maxWidth: "1240px",
-            margin: "0 auto",
-            height: "58px",
-            padding: "0 1rem",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            boxSizing: "border-box",
-          }}
-        >
-          {/* 左侧：< 返回全科门户 */}
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <button
-              type="button"
-              data-testid="back-to-portal-btn"
-              onClick={() => navigate("/")}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "8px",
-                padding: "8px 18px",
-                borderRadius: "var(--radius-pill)",
-                border: "1px solid var(--border-subtle)",
-                background: "#ffffff",
-                color: "var(--text-primary)",
-                fontFamily: "var(--font-family-sans, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', sans-serif)",
-                fontSize: "13px",
-                fontWeight: 600,
-                letterSpacing: "-0.2px",
-                cursor: "pointer",
-                boxShadow: "0 1px 3px rgba(0, 0, 0, 0.04)",
-                transition: "all 0.18s cubic-bezier(0.16, 1, 0.3, 1)",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "var(--bg-card-subtle)";
-                e.currentTarget.style.borderColor = "rgba(0, 0, 0, 0.15)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "#ffffff";
-                e.currentTarget.style.borderColor = "var(--border-subtle)";
-              }}
-            >
-              <svg
-                width="15"
-                height="15"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <polyline points="15 18 9 12 15 6" />
-              </svg>
-              <span>{t("nav.backToPortal", locale, "返回全科门户")}</span>
-            </button>
-          </div>
-
-          {/* 右侧：4 模块横向胶囊 (方案 1：整体放大至 14px + 经典蓝底高光，建立清晰一级父级统治层级) */}
-          <div
-            style={{
-              display: "inline-flex",
-              background: "rgba(0, 0, 0, 0.05)",
-              padding: "4px",
-              borderRadius: "var(--radius-pill)",
-              border: "1px solid rgba(0, 0, 0, 0.04)",
-              gap: "3px",
-            }}
-          >
-            {MODULE_NAV_ITEMS.map((item) => {
-              const active = currentSubModule === item.key;
-              return (
-                <button
-                  key={item.key}
-                  type="button"
-                  data-testid={`module-nav-${item.key}`}
-                  onClick={() => handleSelectSubModule(item.key)}
-                  style={{
-                    padding: "8px 20px",
-                    borderRadius: "var(--radius-pill)",
-                    border: "none",
-                    background: active ? "var(--ios-blue, #0071e3)" : "transparent",
-                    fontFamily: "var(--font-family-sans, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', sans-serif)",
-                    fontSize: "14px",
-                    fontWeight: active ? 600 : 500,
-                    color: active ? "#ffffff" : "var(--text-secondary)",
-                    cursor: "pointer",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    letterSpacing: "-0.2px",
-                    boxShadow: active
-                      ? "0 4px 14px rgba(0, 113, 227, 0.28)"
-                      : "none",
-                    transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!active) {
-                      e.currentTarget.style.color = "var(--text-primary, #1d1d1f)";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!active) {
-                      e.currentTarget.style.color = "var(--text-secondary)";
-                    }
-                  }}
-                >
-                  <Icon
-                    name={item.icon}
-                    size={16}
-                    style={{ stroke: active ? "#ffffff" : "currentColor" }}
-                  />
-                  <span>{locale === "en" ? item.labelEn : item.labelZh}</span>
-                  <span style={{ display: "none" }}>{item.labelZh.replace(/\s+/g, "")}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    </div>
+    </header>
   );
 
-  // 平板端与移动端顶部栏组件
+  // 平板端顶部栏组件
   const renderTabletHeader = () => (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", gap: "12px" }}>
+    <div className="flex items-center justify-between w-full gap-3 px-1 py-1">
       <button
         type="button"
         data-testid="back-to-portal-btn"
-        onClick={() => navigate("/")}
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: "6px",
-          padding: "6px 14px",
-          borderRadius: "var(--radius-pill)",
-          border: "1px solid var(--border-subtle)",
-          background: "#ffffff",
-          color: "var(--text-primary)",
-          fontSize: "12px",
-          fontWeight: 500,
-          cursor: "pointer",
-          whiteSpace: "nowrap",
-          flexShrink: 0,
-        }}
+        onClick={handleBackToPortal}
+        className="back-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border-subtle bg-white text-text-primary text-xs font-semibold cursor-pointer shadow-sm hover:bg-card-subtle transition-all shrink-0 min-h-[36px]"
       >
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="15 18 9 12 15 6" />
-        </svg>
+        <ChevronLeft className="w-3.5 h-3.5" />
         <span>{t("nav.backToPortal", locale, "返回全科门户")}</span>
       </button>
 
       <div>
-        <h1 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "var(--text-primary)", whiteSpace: "nowrap" }}>
+        <h1 className="m-0 text-base font-bold text-text-primary whitespace-nowrap">
           {locale === "en" ? "Junior Math Workshop" : "初中数学核心素养工坊"}
         </h1>
       </div>
 
-      {renderHeaderRight()}
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          data-testid="math-lang-toggle"
+          onClick={() => setLocale(locale === "zh-CN" ? "en" : "zh-CN")}
+          className="h-8 px-2.5 rounded-full border border-border-subtle bg-white text-text-secondary text-xs font-medium flex items-center gap-1.5 hover:bg-card-subtle transition-all cursor-pointer min-h-[36px]"
+        >
+          <Globe className="w-3.5 h-3.5" />
+          <span>{locale === "zh-CN" ? "English" : "中文"}</span>
+        </button>
+      </div>
     </div>
   );
 
+  // 移动端顶部栏组件
   const renderMobileHeader = () => {
     const subModuleTitles: Record<string, { zh: string; en: string }> = {
       concept: { zh: "概念精讲 · 107考点", en: "Concept Lecture" },
@@ -633,61 +389,24 @@ export const MathJuniorHome: React.FC = () => {
     return (
       <div
         data-testid="math-junior-mobile-header"
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          width: "100%",
-          height: "44px",
-          minHeight: "44px",
-          gap: "8px",
-          boxSizing: "border-box",
-        }}
+        className="flex items-center justify-between w-full h-11 min-h-[44px] px-3 gap-2 box-border bg-white/80 backdrop-blur-xl border-b border-black/[0.06]"
       >
-        {/* 手机端精简返回按钮：极简图标 (<) 紧凑胶囊，热区 >= 36px，居中 */}
+        {/* 手机端精简返回按钮：极简图标 (<) 紧凑胶囊，热区 >= 36px */}
         <button
           type="button"
           data-testid="back-to-portal-btn"
-          onClick={() => navigate("/")}
+          onClick={handleBackToPortal}
           aria-label={t("nav.backToPortal", locale, "返回全科门户")}
           title={t("nav.backToPortal", locale, "返回全科门户")}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: "36px",
-            height: "36px",
-            minWidth: "36px",
-            minHeight: "36px",
-            padding: 0,
-            borderRadius: "var(--radius-pill)",
-            border: "1px solid var(--border-subtle)",
-            background: "#ffffff",
-            color: "var(--text-primary)",
-            cursor: "pointer",
-            flexShrink: 0,
-            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
-          }}
+          className="back-btn inline-flex items-center justify-center w-9 h-9 min-w-[36px] min-h-[36px] p-0 rounded-full border border-black/[0.08] bg-white text-text-primary cursor-pointer shrink-0 shadow-sm active:scale-95 transition-transform"
         >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
+          <ChevronLeft className="w-4 h-4" />
         </button>
 
         {/* 手机端标题：单行不换行，15px 粗体 */}
         <span
           data-testid="mobile-header-title"
-          style={{
-            fontSize: "15px",
-            fontWeight: 700,
-            color: "var(--text-primary)",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            textAlign: "center",
-            flex: 1,
-            letterSpacing: "-0.2px",
-          }}
+          className="text-[15px] font-bold text-text-primary whitespace-nowrap overflow-hidden text-ellipsis text-center flex-1 tracking-tight"
         >
           {mobileHeaderTitle}
         </span>
@@ -697,71 +416,43 @@ export const MathJuniorHome: React.FC = () => {
           type="button"
           data-testid="math-lang-toggle"
           onClick={() => setLocale(locale === "zh-CN" ? "en" : "zh-CN")}
-          style={{
-            height: "28px",
-            padding: "0 8px",
-            borderRadius: "var(--radius-pill)",
-            border: "1px solid var(--border-subtle)",
-            background: "#ffffff",
-            color: "var(--text-primary)",
-            cursor: "pointer",
-            fontWeight: 600,
-            fontSize: "12px",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "4px",
-            flexShrink: 0,
-            whiteSpace: "nowrap",
-            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
-          }}
+          className="h-7 px-2 rounded-full border border-black/[0.08] bg-white text-text-primary font-semibold text-xs inline-flex items-center gap-1 shrink-0 whitespace-nowrap shadow-sm"
         >
-          <Icon name="globe" size={12} />
+          <Globe className="w-3 h-3 text-text-secondary" />
           <span>{locale === "zh-CN" ? "EN" : "中"}</span>
         </button>
       </div>
     );
   };
 
-  // 导航栏 (供 Desktop / Tablet 侧边或顶部展示)
+  // 导航栏 (供 Tablet 侧边栏展示)
   const renderNavList = () => (
     <nav
       data-testid="math-junior-nav-list"
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "0.5rem",
-        padding: "1rem",
-      }}
+      className="flex flex-col gap-2 p-4"
     >
-      <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text-secondary)", padding: "0 0.5rem 0.25rem 0.5rem" }}>
+      <div className="text-xs font-bold text-text-secondary px-2 pb-1">
         {locale === "en" ? "Core Competency Modules" : "四大核心能力模块"}
       </div>
       {MODULE_NAV_ITEMS.map((item) => {
         const active = currentSubModule === item.key;
+        const IconComp = item.icon;
         return (
           <button
             key={item.key}
             type="button"
             data-testid={`module-nav-${item.key}`}
             onClick={() => handleSelectSubModule(item.key)}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "0.75rem",
-              padding: "0.75rem 1rem",
-              borderRadius: "var(--radius-md)",
-              border: active ? "1.5px solid var(--ios-blue)" : "1px solid var(--border-subtle)",
-              background: active ? "var(--ios-blue-glow)" : "var(--bg-card)",
-              color: active ? "var(--ios-blue)" : "var(--text-primary)",
-              fontWeight: active ? 700 : 500,
-              fontSize: "0.92rem",
-              cursor: "pointer",
-              transition: "all 0.18s cubic-bezier(0.16, 1, 0.3, 1)",
-              textAlign: "left",
-            }}
+            className={cn(
+              "flex items-center gap-3 px-4 py-3 rounded-xl border text-sm text-left cursor-pointer transition-all duration-200",
+              active
+                ? "border-ios-blue bg-ios-blue/[0.08] text-ios-blue font-bold shadow-sm"
+                : "border-border-subtle bg-card text-text-primary font-medium hover:bg-card-subtle"
+            )}
           >
-            <Icon name={item.icon} size={18} />
+            <IconComp className="w-4 h-4 shrink-0" />
             <span>{locale === "en" ? item.labelEn : item.labelZh}</span>
+            <span className="hidden">{item.labelZh.replace(/\s+/g, "")}</span>
           </button>
         );
       })}
@@ -772,45 +463,28 @@ export const MathJuniorHome: React.FC = () => {
   const renderMobileBottomBar = () => (
     <div
       data-testid="math-junior-mobile-tabbar"
-      style={{
-        display: "flex",
-        justifyContent: "space-around",
-        alignItems: "center",
-        width: "100%",
-        minHeight: "56px",
-        height: "56px",
-        boxSizing: "border-box",
-      }}
+      className="flex justify-around items-center w-full h-14 min-h-[56px] box-border bg-white/85 backdrop-blur-xl border-t border-black/[0.06] pb-[env(safe-area-inset-bottom)]"
     >
       {MODULE_NAV_ITEMS.map((item) => {
         const active = currentSubModule === item.key || (item.key === "lab" && currentSubModule === "sandbox");
+        const IconComp = item.icon;
         return (
           <button
             key={item.key}
             type="button"
             data-testid={`mobile-tab-${item.key}`}
             onClick={() => handleSelectSubModule(item.key)}
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: "2px",
-              border: "none",
-              background: active ? "rgba(0, 113, 227, 0.08)" : "transparent",
-              borderRadius: "10px",
-              padding: "4px 10px",
-              color: active ? "var(--ios-blue)" : "var(--text-secondary)",
-              fontWeight: active ? 700 : 500,
-              fontSize: "0.72rem",
-              cursor: "pointer",
-              minWidth: "52px",
-              minHeight: "48px",
-              justifyContent: "center",
-              transition: "all 0.18s cubic-bezier(0.16, 1, 0.3, 1)",
-            }}
+            className={cn(
+              "flex flex-col items-center justify-center gap-0.5 border-none rounded-xl px-2.5 py-1 min-w-[52px] min-h-[48px] cursor-pointer transition-all duration-200",
+              active
+                ? "bg-ios-blue/[0.08] text-ios-blue font-bold"
+                : "bg-transparent text-text-secondary font-medium hover:text-text-primary"
+            )}
           >
-            <Icon name={item.icon} size={20} />
-            <span style={{ whiteSpace: "nowrap" }}>{locale === "en" ? item.labelEn : (item.labelZh.split("·")[1] || item.labelZh).trim()}</span>
+            <IconComp className="w-5 h-5" />
+            <span className="text-[11px] whitespace-nowrap leading-tight">
+              {locale === "en" ? item.labelEn : (item.labelZh.split("·")[1] || item.labelZh).trim()}
+            </span>
           </button>
         );
       })}
@@ -862,7 +536,7 @@ export const MathJuniorHome: React.FC = () => {
         header={renderMobileHeader()}
         bottomSheet={renderMobileBottomBar()}
       >
-        <div style={{ width: "100%", boxSizing: "border-box" }}>{renderModuleContent()}</div>
+        <div className="w-full box-border">{renderModuleContent()}</div>
       </CardDeck>
     );
   }
@@ -875,7 +549,7 @@ export const MathJuniorHome: React.FC = () => {
         sidebarWidth={260}
         isPortrait={responsive.orientation === "portrait"}
       >
-        <div style={{ padding: "1.25rem", width: "100%", minHeight: "100%", boxSizing: "border-box" }}>
+        <div className="p-5 w-full min-h-full box-border">
           {renderModuleContent()}
         </div>
       </SplitBoard>
@@ -886,20 +560,14 @@ export const MathJuniorHome: React.FC = () => {
   return (
     <Cockpit
       header={renderDesktopHeader()}
-      sidebar={<div style={{ display: "none" }}>{renderNavList()}</div>}
+      sidebar={<div className="hidden">{renderNavList()}</div>}
       toolbar={null}
       defaultSidebarCollapsed={true}
       hideSidebarToggle={true}
     >
       <div
         data-testid="math-junior-desktop-theater"
-        style={{
-          width: "100%",
-          maxWidth: "1240px",
-          margin: "0 auto",
-          padding: "1.5rem 1rem 3rem 1rem",
-          boxSizing: "border-box",
-        }}
+        className="w-full max-w-[1240px] mx-auto px-4 pt-6 pb-12 box-border"
       >
         {renderModuleContent()}
       </div>

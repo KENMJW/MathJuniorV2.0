@@ -1,12 +1,12 @@
 # 数据线待办 Backlog（Kiro 维护，非即时任务）
 
-## [🚀 当前进行中] TASK-DATA-0014 概念与跃迁沙盒教研步骤与剧情推演全量补齐双语英文
+## [✅ 已完成] TASK-DATA-0014 概念与跃迁沙盒教研步骤与剧情推演全量补齐双语英文（2026-09-24 验收归档）
 - 为 `data/sandbox.db` 中两大核心表全量补齐高质量英文双语字段：
-  - 1. 概念沙盒 46 行：补齐 `titleEn`、`guideTextEn`、`ahaInsightEn`；
-  - 2. 跃迁沙盒 37 行：补齐 `titleEn`、`guideTextEn`、`teacherSecretEn`；
-  - 3. 编排规范：`concurrency: 8`，8 路子 Agent 分片并行翻译，保持原有中文与逻辑参数零篡改；
-  - 4. 前置备份 `data/sandbox.db.bak_before_task0014`，单事务写库，双库同步，323 测试无损绿灯。
-- 任务书：`inbox/TASK-DATA-0014.md`
+  - 1. 概念沙盒 46 行（138 个步骤）：补齐 `titleEn`、`guideTextEn`、`ahaInsightEn` 覆盖率 100%；
+  - 2. 跃迁沙盒 37 行（148 幕推演）：补齐 `titleEn`、`guideTextEn`、`teacherSecretEn` 覆盖率 100%；
+  - 3. 编排规范：`concurrency: 8`，8 路子 Agent 分片并行翻译，生成 478,538 字节双语教研数据，原有中文与逻辑参数 100% 零篡改；
+  - 4. 前置备份 `data/sandbox.db.bak_before_task0014` (548,864 字节)，双库 SHA256 逐字节一致，323 测试无损绿灯。
+- 验收报告：`archive/RESULT-DATA-0014.md`
 
 ---
 
