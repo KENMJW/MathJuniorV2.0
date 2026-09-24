@@ -1,13 +1,14 @@
 # 前端线待办 Backlog（Kiro 维护）
 
-## [✅ 已完成待归档] TASK-FE-0020 【任务一：整体修改】全局基建与三端外壳重构
-- **TASK-FE-0020**（已完成，输出 `outbox/RESULT-FE-0020.md`）：
+## [✅ 已验收归档] TASK-FE-0020 【任务一：整体修改】全局基建与三端外壳重构（2026-09-24 架构师量化验收归档）
+- **TASK-FE-0020**（已验收，归档至 `archive/RESULT-FE-0020.md`）：
   - Tailwind CSS 3.4 + Radix UI + Lucide 图标全量就绪；
-  - Vite Rollup 分包优化（`index.js` 降至 230.11 kB，远低于 350 kB 门槛）；
-  - 全科门户彻底重写，0 内联样式，落实学科记忆；
+  - Vite Rollup 分包优化（`index.js` 暴降至 **230.11 kB**，较原 2,079 kB 下降 88.9%，远优于 350 kB 门槛）；
+  - 全科门户彻底重写，0 内联样式，落实 LocalStorage 学科记忆；
   - 初中数学工坊 54px 统一高透毛玻璃工具栏与三端物理外壳（MobileShell / TabletShell / DesktopShell）落地；
-  - 全量 54 个测试套件、323 个测试用例 100% PASS，Chrome 无头 E2E 8 张截图核验全绿，控制台 0 错误，手机端 0 水平滚动条。
-- 验收报告：`outbox/RESULT-FE-0020.md`
+  - 全量 54 个测试套件、323 个测试用例 100% PASS，Chrome 无头 E2E 8 张独立截图核验通过，控制台 0 错误，手机端 0 水平滚动条；
+  - 红线铁律：`SandboxRenderer.tsx` 与 `LeapLab.tsx` 保持 0 修改。
+- 验收报告：`archive/RESULT-FE-0020.md`
 
 ## [🚀 下一阶段待派发] TASK-FE-0021 【任务二：模型一重绘】46 概念沙盒与模块一四段交互
 - 模块一【46 概念具象微沙盒】JSXGraph 重绘（声明式填充面、1~3 步自适应探究、Aha 顿悟弹窗）；

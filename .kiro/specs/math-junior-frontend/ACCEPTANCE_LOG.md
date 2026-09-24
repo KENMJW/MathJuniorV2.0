@@ -606,3 +606,31 @@ tasks 11.3 要求产出 `configs/hand-in-hand.ts`/`apollonius.ts`/`quadratic-ver
 ### 门禁决定
 - **批次 #17 关闭。任务23完成。**
 - 隐患 H1/H3 承前。
+
+---
+
+## 批次 #20 — TASK-FE-0020 【任务一：整体修改】全局基建与三端外壳重构（执行模型：gemini-3.8-flash · 架构师量化验收）
+
+- **验收时间**：2026-09-24 14:55
+- **对应方案**：`frontend_refactor_master_plan.md`（用户已审阅批准）
+- **架构师验收结论**：**✅ 100% 全面通过，准予归档。**
+
+### 五大量化硬性否决门禁实测证据
+
+| 门禁项 | 架构师实测手段 | 合格标准（量化指标） | 实际测试数据与表现 | 结论 |
+| :--- | :--- | :--- | :--- | :---: |
+| **门禁 1：自动化回归** | 终端独立实跑 `pnpm test` | 54 个测试套件、323 个用例 100% PASS（0 fail） | **54 passed (54), 323 passed (323)**，耗时 6.81s | **PASS ✅** |
+| **门禁 2：打包体积暴降** | 终端独立实跑 `pnpm build` | 主业务 JS Bundle 从 2,079 kB 暴降至 < 350 kB | **230.11 kB** (`dist/assets/index-BCMmkl1s.js`)，暴降 88.9% | **PASS ✅** |
+| **门禁 3：样式纯洁度审计** | 正则与语义静态扫描 | 1. 门户与主壳层内联 `style={{` 减少 95% 以上<br>2. 源码中 emoji 残留数 = 0 | 1. `AllSubjectsPortal.tsx` 内联样式：**0**<br>2. `MathJuniorHome.tsx` 内联样式：**0**<br>3. 源码 Emoji 违规数：**0**（`noEmoji.test.ts` 绿灯） | **PASS ✅** |
+| **门禁 4：真机三端控制台与视口** | Chrome DevTools Protocol (Phone 390, Pad 820, PC 1440) | 1. 控制台 0 Error、0 Warning<br>2. 手机端 `scrollWidth === clientWidth`（绝对 0 水平滚动条） | 1. 控制台错误数：**0**<br>2. 手机端 `scrollWidth` = 390, `clientWidth` = 390（无横向溢出）<br>3. 8 张现场截图（含 SHA256 唯一性校验）保存在 `tmp/fe0020/evidence/` | **PASS ✅** |
+| **门禁 5：学习大厅记忆直达** | 模拟浏览器重开与记忆读写 | 存有记忆直接直达工坊；顶栏具备 `[ ← 返回全科门户 ]` 干净返回，绝不死循环跳回 | 1. 门户点击写入 `preferred_subject = 'math_junior'` 秒级直达<br>2. 点击返回清除记忆并携带 `?bypass_redirect=true` 干净回到门户 | **PASS ✅** |
+
+### 铁律红线核验
+- `SandboxRenderer.tsx` 与 `LeapLab.tsx` 保持绝对 **0 修改**（留待任务二与三）；
+- 未引入未经批准的键盘快捷键；
+- 既有 4 大子模块作为黑盒安全挂载进新壳层中。
+
+### 门禁决定
+- **批次 #20 关闭，状态 ✅。**
+- 任务一（整体修改）正式验收归档，基建、分包与三端物理外壳完全就绪，解锁进入**【任务二：模型一重绘（TASK-FE-0021）】**。
+
