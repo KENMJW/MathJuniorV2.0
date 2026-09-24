@@ -86,4 +86,36 @@ describe('LinkedSandboxSlot (Task 9.2 & CLS=0 验收)', () => {
     expect(html).toContain('面积与线段比例守恒');
     expect(html).toContain('结论：几何直观验证通过');
   });
+
+  it('5. 防初始误判门禁：初始滑块默认值满足步骤1条件时，首屏严禁自动标记为完成(无✓，待探究)', () => {
+    const autoSatisfyConfig: SandboxConfig = {
+      sandbox_id: 'SB-TEST-AUTO',
+      canvas_template: 'euclidean',
+      viewbox_spec_json: '{"xMin":-5,"xMax":5,"yMin":-5,"yMax":5}',
+      drag_points_json: '[]',
+      param_sliders_json: JSON.stringify([
+        { id: 'p_num', name: '分子 p', min: -5, max: 5, default: 3 },
+        { id: 'q_den', name: '分母 q', min: 1, max: 5, default: 2 },
+      ]),
+      inquiry_steps_json: JSON.stringify([
+        { step: 1, titleZh: '正有理数定位', guideTextZh: '调节参数', target_condition: 'p_num > 0 && q_den >= 2' },
+        { step: 2, titleZh: '负有理数定位', guideTextZh: '调节为负数', target_condition: 'p_num < 0' },
+      ]),
+    };
+
+    const html = renderToString(
+      <LinkedSandboxSlot
+        sandboxId="SB-TEST-AUTO"
+        config={autoSatisfyConfig}
+        locale="zh-CN"
+      />
+    );
+
+    // 步骤胶囊必须是未完成态：不能包含 '✓ 步骤 1'，只包含 '步骤 1'
+    expect(html).not.toContain('✓ 步骤 1');
+    expect(html).toContain('步骤 1');
+    expect(html).toContain('调节参数或动点探究');
+    expect(html).toContain('进入下一步');
+    expect(html).not.toContain('已达成 · 下一步');
+  });
 });

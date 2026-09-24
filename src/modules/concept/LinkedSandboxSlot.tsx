@@ -10,7 +10,7 @@
  * 6. 铁律 3：文本与公式全部经由 <MathRenderer> 渲染。
  */
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { SandboxConfig, SandboxRenderer } from '../sandbox/SandboxRenderer';
 import { Point2D } from '../sandbox/invariants';
 import { MathRenderer } from '../../components/math/MathRenderer';
@@ -110,8 +110,51 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
   const [activeStepIndex, setActiveStepIndex] = useState<number>(0);
   const [isFreePlayMode, setIsFreePlayMode] = useState<boolean>(false);
   const [completedStepIndices, setCompletedStepIndices] = useState<Set<number>>(new Set());
+  const [interactedStepIndices, setInteractedStepIndices] = useState<Set<number>>(new Set());
+  const initialPointsRef = useRef<Record<string, Point2D> | null>(null);
   const [showAhaModal, setShowAhaModal] = useState<boolean>(false);
   const [currentAhaStep, setCurrentAhaStep] = useState<InquiryStep | null>(null);
+
+  // 用户主动交互标记（调节滑块或拖拽动点）
+  const markUserInteracted = useCallback(() => {
+    setInteractedStepIndices((prev) => {
+      if (prev.has(activeStepIndex)) return prev;
+      const next = new Set(prev);
+      next.add(activeStepIndex);
+      return next;
+    });
+  }, [activeStepIndex]);
+
+  const handleSliderChange = useCallback((id: string, value: number) => {
+    setParamValues((prev) => ({ ...prev, [id]: value }));
+    markUserInteracted();
+  }, [markUserInteracted]);
+
+  const handleParamChange = useCallback((patch: Record<string, number>) => {
+    setParamValues((prev) => ({ ...prev, ...patch }));
+    markUserInteracted();
+  }, [markUserInteracted]);
+
+  const handlePointsChange = useCallback((pointMap: Record<string, Point2D>) => {
+    setLivePoints(pointMap);
+    if (!initialPointsRef.current) {
+      initialPointsRef.current = pointMap;
+      return;
+    }
+    const hasPointMoved = Object.entries(pointMap).some(([id, pt]) => {
+      const initPt = initialPointsRef.current?.[id];
+      if (!initPt) return false;
+      return Math.abs(pt.x - initPt.x) > 0.01 || Math.abs(pt.y - initPt.y) > 0.01;
+    });
+    if (hasPointMoved) {
+      markUserInteracted();
+    }
+  }, [markUserInteracted]);
+
+  // 当步骤切换时，重置动点位移基准，确保新步骤需要独立的交互触发
+  useEffect(() => {
+    initialPointsRef.current = null;
+  }, [activeStepIndex]);
 
   // 初始化参数与步骤
   useEffect(() => {
@@ -123,6 +166,8 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
     setActiveStepIndex(0);
     setIsFreePlayMode(false);
     setCompletedStepIndices(new Set());
+    setInteractedStepIndices(new Set());
+    initialPointsRef.current = null;
     setShowAhaModal(false);
     setCurrentAhaStep(null);
     setLivePoints({});
@@ -138,6 +183,8 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
     setActiveStepIndex(0);
     setIsFreePlayMode(false);
     setCompletedStepIndices(new Set());
+    setInteractedStepIndices(new Set());
+    initialPointsRef.current = null;
     setShowAhaModal(false);
     setCurrentAhaStep(null);
   }, [sliders]);
@@ -190,7 +237,7 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
     []
   );
 
-  // 动态监听参数与动点变化进行 Aha 达成判定
+  // 动态监听参数与动点变化进行 Aha 达成判定 (仅在用户主动交互后触发，杜绝初始挂载秒达标)
   useEffect(() => {
     if (isFreePlayMode || inquirySteps.length === 0) return;
     if (activeStepIndex >= inquirySteps.length) return;
@@ -198,7 +245,7 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
     const currentStep = inquirySteps[activeStepIndex];
     if (!currentStep) return;
 
-    if (!completedStepIndices.has(activeStepIndex)) {
+    if (!completedStepIndices.has(activeStepIndex) && interactedStepIndices.has(activeStepIndex)) {
       const isAchieved = checkTargetCondition(currentStep, paramValues, livePoints);
       if (isAchieved) {
         setCompletedStepIndices((prev) => {
@@ -217,6 +264,7 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
     isFreePlayMode,
     inquirySteps,
     completedStepIndices,
+    interactedStepIndices,
     checkTargetCondition,
   ]);
 
@@ -269,7 +317,8 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
               config={config}
               paramValues={paramValues}
               onInvariantsChange={setInvariants}
-              onPointsChange={setLivePoints}
+              onPointsChange={handlePointsChange}
+              onParamChange={handleParamChange}
               locale={locale}
               className="h-full w-full"
             />
@@ -543,7 +592,7 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
                     value={val}
                     onChange={(e) => {
                       const next = parseFloat(e.target.value);
-                      setParamValues((prev) => ({ ...prev, [s.id]: next }));
+                      handleSliderChange(s.id, next);
                     }}
                     className="w-24 sm:w-32 cursor-pointer accent-blue-600"
                   />
