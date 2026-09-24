@@ -3,6 +3,7 @@ import sqlite3InitModule, { type Sqlite3Static, type Database } from '@sqlite.or
 // @ts-ignore: Vite ?url import for wasm
 import sqlite3WasmUrl from '../../../node_modules/@sqlite.org/sqlite-wasm/sqlite-wasm/jswasm/sqlite3.wasm?url';
 import { type DbPackage, DB_PACKAGE_PATHS } from './packages';
+import { APP_VERSION } from '../../config/version';
 
 export interface WorkerMessageRequest {
   id: string;
@@ -36,8 +37,10 @@ async function loadDbPackage(pkg: DbPackage): Promise<void> {
     throw new Error('[Worker] SQLite WASM not initialized yet');
   }
 
-  const url = DB_PACKAGE_PATHS[pkg];
-  const response = await fetch(url);
+  const rawUrl = DB_PACKAGE_PATHS[pkg];
+  const separator = rawUrl.includes('?') ? '&' : '?';
+  const url = `${rawUrl}${separator}v=${APP_VERSION}`;
+  const response = await fetch(url, { cache: 'no-cache' });
   if (!response.ok) {
     throw new Error(`[Worker] Failed to fetch database package ${pkg} from ${url}: ${response.statusText}`);
   }

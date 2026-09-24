@@ -14,6 +14,8 @@ describe('SystemFooter Component', () => {
     expect(html).toContain('v2.0.3-beta');
     expect(html).toContain('全科核心素养提分系统');
     expect(html).toContain('发布版本');
+    expect(html).toContain('force-purge-cache-btn');
+    expect(html).toContain('刷新缓存');
   });
 
   it('支持英文模式下的文本切换', () => {

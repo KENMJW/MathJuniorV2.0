@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { APP_VERSION } from '../../config/version';
 
 export type StageNumber = 1 | 2 | 3 | 4;
 
@@ -155,7 +156,10 @@ export const SvgLayerReveal: React.FC<SvgLayerRevealProps> = ({
       path = '/' + path;
     }
 
-    fetch(path)
+    const separator = path.includes('?') ? '&' : '?';
+    const finalUrl = `${path}${separator}v=${APP_VERSION}`;
+
+    fetch(finalUrl, { cache: 'no-cache' })
       .then((res) => {
         if (!res.ok) throw new Error(`Fetch failed with status ${res.status}`);
         return res.text();
@@ -166,7 +170,7 @@ export const SvgLayerReveal: React.FC<SvgLayerRevealProps> = ({
         setError(false);
       })
       .catch((err) => {
-        console.error('Failed to load SVG:', path, err);
+        console.error('Failed to load SVG:', finalUrl, err);
         setError(true);
       });
   }, [svgAssetPath, pointId]);
