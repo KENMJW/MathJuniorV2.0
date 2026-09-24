@@ -17,6 +17,7 @@ import { useDeviceResponsive } from "./hooks/useDeviceResponsive";
 export interface ConceptNavProps {
   knowledgePoints?: KnowledgePointRecord[];
   initialPointId?: string;
+  initialDrawerOpen?: boolean;
   onSelectPoint?: (point: KnowledgePointRecord) => void;
   className?: string;
 }
@@ -120,6 +121,7 @@ function getPracticeQuestionsForPoint(point: KnowledgePointRecord): QuickPractic
 export const ConceptNav: React.FC<ConceptNavProps> = ({
   knowledgePoints: propKnowledgePoints,
   initialPointId,
+  initialDrawerOpen = false,
   onSelectPoint,
   className = "",
 }) => {
@@ -141,7 +143,7 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
   const [dbPracticeQuestions, setDbPracticeQuestions] = useState<QuickPracticeQuestion[] | null>(null);
 
   // 4 级抽屉状态 (默认折叠，点击顶栏左侧胶囊展开)
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(initialDrawerOpen);
 
   useEffect(() => {
     let active = true;
@@ -382,28 +384,30 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
       className={`concept-nav-container w-full max-w-[1240px] mx-auto flex flex-col relative box-border ${className}`.trim()}
     >
       {/* 
-        4 级抽屉盒选择器 (浮动 Popover / 移动端 80vh Bottom Sheet)
-        支持外部 sessionStore (移动端标题胶囊触发) 与桌面端内嵌按钮共同驱动
+        移动端：4 级抽屉盒选择器 (82vh Bottom Sheet / Portal)
+        由顶轨交互式标题胶囊驱动 (isConceptDrawerOpen)
       */}
-      <ConceptDrawerSelector
-        isOpen={isDrawerOpen || (isMobile && isConceptDrawerOpen)}
-        onClose={() => {
-          setIsDrawerOpen(false);
-          setIsConceptDrawerOpen(false);
-        }}
-        knowledgePoints={knowledgePoints}
-        currentPoint={currentPoint}
-        selectedGrade={selectedGrade}
-        selectedSemester={selectedSemester}
-        selectedDomain={selectedDomain}
-        selectedSubcategory={selectedSubcategory}
-        onSelectGrade={setSelectedGrade}
-        onSelectSemester={setSelectedSemester}
-        onSelectDomain={setSelectedDomain}
-        onSelectSubcategory={setSelectedSubcategory}
-        onSelectPoint={handleSelectPoint}
-        locale={locale}
-      />
+      {isMobile && (
+        <ConceptDrawerSelector
+          isOpen={isConceptDrawerOpen}
+          onClose={() => {
+            setIsDrawerOpen(false);
+            setIsConceptDrawerOpen(false);
+          }}
+          knowledgePoints={knowledgePoints}
+          currentPoint={currentPoint}
+          selectedGrade={selectedGrade}
+          selectedSemester={selectedSemester}
+          selectedDomain={selectedDomain}
+          selectedSubcategory={selectedSubcategory}
+          onSelectGrade={setSelectedGrade}
+          onSelectSemester={setSelectedSemester}
+          onSelectDomain={setSelectedDomain}
+          onSelectSubcategory={setSelectedSubcategory}
+          onSelectPoint={handleSelectPoint}
+          locale={locale}
+        />
+      )}
 
       {/* 
         顶部二级导航栏：纯白底色（与图二、图三对齐），吸顶常驻，不随滚动消失
@@ -411,26 +415,53 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
       */}
       {!isMobile && (
         <header
-          className="concept-nav-header w-full flex items-center justify-between flex-wrap gap-3 px-7 py-4 bg-white dark:bg-slate-900 rounded-t-[22px] border border-slate-200/80 dark:border-slate-800 border-b-slate-200/50 sticky top-0 z-40 box-border shadow-sm"
+          className="concept-nav-header w-full flex items-center justify-between flex-wrap gap-3 px-7 py-4 bg-white dark:bg-slate-900 rounded-t-[22px] border border-slate-200/80 dark:border-slate-800 border-b-slate-200/50 sticky top-0 box-border shadow-sm"
+          style={{ zIndex: (isDrawerOpen || isConceptDrawerOpen) ? 95 : 40 }}
         >
-          {/* 左侧：[ 考点名称 · 9年级 上学期 ▾ ] 胶囊按钮 (左侧对齐 32px，与下方【原点溯源】完全平齐) */}
-          <button
-            type="button"
-            data-testid="concept-drawer-trigger"
-            className="concept-drawer-trigger-btn inline-flex items-center gap-1.5 px-4 py-1.5 bg-white dark:bg-slate-800 border-[1.5px] border-blue-600 dark:border-sky-400 rounded-full text-blue-600 dark:text-sky-400 text-xs font-bold cursor-pointer shadow-sm active:scale-[0.98] transition-all max-w-full shrink-0"
-            onClick={() => setIsDrawerOpen((prev) => !prev)}
-          >
-            <Icon name="pin" size={13} />
-            <span className="whitespace-nowrap overflow-hidden text-ellipsis">
-              {locale === "en" ? (currentPoint.name_en || currentPoint.name_zh) : currentPoint.name_zh} · {locale === "en" ? `Grade ${currentPoint.grade} Sem ${currentPoint.semester}` : `${currentPoint.grade}年级 ${currentPoint.semester === 1 ? '上学期' : '下学期'}`}
-            </span>
-            <span className="hidden">{currentPoint.point_id}</span>
-            <Icon
-              name="chevron-down"
-              size={12}
-              className={`shrink-0 transition-transform duration-200 ${isDrawerOpen ? "rotate-180" : ""}`}
+          {/* 左侧：[ 考点名称 · 9年级 上学期 ▾ ] 胶囊按钮 + 桌面端 Popover 锚点容器 */}
+          <div className="relative inline-block">
+            <button
+              type="button"
+              data-testid="concept-drawer-trigger"
+              className="concept-drawer-trigger-btn inline-flex items-center gap-1.5 px-4 py-1.5 bg-white dark:bg-slate-800 border-[1.5px] border-blue-600 dark:border-sky-400 rounded-full text-blue-600 dark:text-sky-400 text-xs font-bold cursor-pointer shadow-sm active:scale-[0.98] transition-all max-w-full shrink-0"
+              onClick={() => {
+                setIsDrawerOpen((prev) => !prev);
+                setIsConceptDrawerOpen((prev) => !prev);
+              }}
+            >
+              <Icon name="pin" size={13} />
+              <span className="whitespace-nowrap overflow-hidden text-ellipsis">
+                {locale === "en" ? (currentPoint.name_en || currentPoint.name_zh) : currentPoint.name_zh} · {locale === "en" ? `Grade ${currentPoint.grade} Sem ${currentPoint.semester}` : `${currentPoint.grade}年级 ${currentPoint.semester === 1 ? '上学期' : '下学期'}`}
+              </span>
+              <span className="hidden">{currentPoint.point_id}</span>
+              <Icon
+                name="chevron-down"
+                size={12}
+                className={`shrink-0 transition-transform duration-200 ${isDrawerOpen || isConceptDrawerOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+
+            {/* 桌面端：4 级抽屉盒 Popover 紧随胶囊按钮正下方展开 */}
+            <ConceptDrawerSelector
+              isOpen={isDrawerOpen || isConceptDrawerOpen}
+              onClose={() => {
+                setIsDrawerOpen(false);
+                setIsConceptDrawerOpen(false);
+              }}
+              knowledgePoints={knowledgePoints}
+              currentPoint={currentPoint}
+              selectedGrade={selectedGrade}
+              selectedSemester={selectedSemester}
+              selectedDomain={selectedDomain}
+              selectedSubcategory={selectedSubcategory}
+              onSelectGrade={setSelectedGrade}
+              onSelectSemester={setSelectedSemester}
+              onSelectDomain={setSelectedDomain}
+              onSelectSubcategory={setSelectedSubcategory}
+              onSelectPoint={handleSelectPoint}
+              locale={locale}
             />
-          </button>
+          </div>
 
           {/* 中间：Flex 自适应留白 (Negative Space，严禁微光竖线) */}
           <div className="flex-1" />

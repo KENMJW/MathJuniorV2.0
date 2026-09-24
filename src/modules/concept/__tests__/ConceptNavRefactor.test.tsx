@@ -76,4 +76,13 @@ describe('ConceptNav 顶层大卡片与 4 级抽屉集成测试 (Demo 图 4 对�
     expect(drawerCode).not.toContain('dangerouslySetInnerHTML');
     expect(drawerCode).not.toContain('.innerHTML');
   });
+
+  it('5. 桌面端 4 级抽屉通过锚点容器直接在触发胶囊下方展开 (包含 is-open 与遮罩)', () => {
+    const html = renderToString(<ConceptNav initialPointId="KP-023" initialDrawerOpen={true} />);
+
+    expect(html).toContain('concept-drawer-panel is-open');
+    expect(html).toContain('data-testid="concept-drawer-backdrop"');
+    expect(html).toContain('concept-drawer-trigger-btn');
+    expect(html).toContain('relative inline-block');
+  });
 });
