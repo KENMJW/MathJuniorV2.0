@@ -8,7 +8,9 @@ import {
   evaluateInvariantValue,
   formatInvariantText,
   Point2D,
+  InvariantSpec,
 } from '../invariants';
+import { evaluateSafeExpression } from '../safeExpression';
 
 describe('沙盒不变量计算引擎边界测试 (Task 11.3 & 模块三收口验收)', () => {
   describe('1. 角度不变量 calculateAngle (无向夹角 [0, 180])', () => {
@@ -264,4 +266,218 @@ describe('沙盒不变量计算引擎边界测试 (Task 11.3 & 模块三收口�
       expect(text).toContain('定比: PA / PB =');
     });
   });
+
+  describe('6. SB-KP057 勾股定理与遥测数学计算 (彻底根除 25 vs 5 矛盾)', () => {
+    const kp057Specs: InvariantSpec[] = [
+      {
+        id: 'inv_pythagorean_sum',
+        formula: 'leg_a^2 + leg_b^2',
+        deps: ['leg_a', 'leg_b'],
+        labelZh: '两直角边平方和 a² + b²',
+        isConstant: false,
+        labelEn: 'Sum of Legs Squared a² + b²',
+      },
+      {
+        id: 'inv_hypot_c_sq',
+        formula: 'hypot * hypot',
+        deps: ['leg_a', 'leg_b'],
+        labelZh: '斜边平方 c²',
+        isConstant: false,
+        labelEn: 'Hypotenuse Squared c²',
+      },
+      {
+        id: 'inv_pythagoras_closure',
+        formula:
+          "abs((leg_a^2 + leg_b^2) - (hypot * hypot)) < 0.01 ? '勾股恒等守恒成立 (a²+b²≡c²)' : '计算中'",
+        deps: ['leg_a', 'leg_b'],
+        labelZh: '勾股恒等关系',
+        isConstant: true,
+        labelEn: 'Pythagorean Identity a² + b² ≡ c²',
+      },
+    ];
+
+    it('在 leg_a=3, leg_b=4 时，平方和严格等于 25.00，斜边平方严格等于 25.00，恒等式成立，绝不输出 5.00', () => {
+      const scopeWithoutHypot = { leg_a: 3, leg_b: 4 };
+      const pointMap: Record<string, Point2D> = {
+        C: { x: 0, y: 0 },
+        A: { x: 0, y: 4 },
+        B: { x: 3, y: 0 },
+      };
+
+      // 1. 底层表达式数值求值断言
+      const sumVal = evaluateSafeExpression(kp057Specs[0].formula!, { ...scopeWithoutHypot, hypot: 5 });
+      const hypotSqVal = evaluateSafeExpression(kp057Specs[1].formula!, { ...scopeWithoutHypot, hypot: 5 });
+      const closureVal = evaluateSafeExpression(kp057Specs[2].formula!, { ...scopeWithoutHypot, hypot: 5 });
+
+      expect(sumVal).toBe(25);
+      expect(Number(sumVal).toFixed(2)).toBe('25.00');
+
+      expect(hypotSqVal).toBe(25);
+      expect(Number(hypotSqVal).toFixed(2)).toBe('25.00');
+      // 核心断言：绝对杜绝输出 5 或 5.00
+      expect(hypotSqVal).not.toBe(5);
+      expect(Number(hypotSqVal).toFixed(2)).not.toBe('5.00');
+
+      expect(closureVal).toBe('勾股恒等守恒成立 (a²+b²≡c²)');
+
+      // 2. formatInvariantText 格式化断言（自适应推导 hypot=5）
+      const textSum = formatInvariantText(kp057Specs[0], pointMap, 'zh-CN', scopeWithoutHypot);
+      const textHypotSq = formatInvariantText(kp057Specs[1], pointMap, 'zh-CN', scopeWithoutHypot);
+      const textClosure = formatInvariantText(kp057Specs[2], pointMap, 'zh-CN', scopeWithoutHypot);
+
+      expect(textSum).toContain('25');
+      expect(textHypotSq).toContain('25');
+      expect(textHypotSq).not.toContain('5.00');
+      expect(textHypotSq).not.toContain('= 5');
+      expect(textClosure).toContain('勾股恒等守恒成立');
+
+      // 3. 显式带有 hypot 的作用域计算断言
+      const scopeWithHypot = { leg_a: 3, leg_b: 4, hypot: 5 };
+      const textHypotSqWithH = formatInvariantText(kp057Specs[1], pointMap, 'zh-CN', scopeWithHypot);
+      expect(textHypotSqWithH).toBe('两直角边平方和 a² + b² = 25' ? '斜边平方 c² = 25' : '');
+      expect(textHypotSqWithH).not.toContain('5.00');
+
+      // 4. spec.type === 'distance_sq' 几何不变量断言
+      const distSqSpec: InvariantSpec = {
+        id: 'inv_c_sq_geom',
+        type: 'distance_sq',
+        deps: ['A', 'B'],
+        formula: 'c^2 = {val}',
+        labelZh: '斜边平方 c²',
+      };
+      const textDistSq = formatInvariantText(distSqSpec, pointMap, 'zh-CN');
+      expect(textDistSq).toBe('斜边平方 c²: $c^2 = 25.00$');
+      expect(textDistSq).not.toContain('c^2 = 5.00');
+      expect(textDistSq).not.toContain(': 5.00');
+      const valDistSq = evaluateInvariantValue(distSqSpec, pointMap);
+      expect(valDistSq).toBe(25);
+      expect(valDistSq?.toFixed(2)).toBe('25.00');
+    });
+  });
+
+  describe('7. SB-KP008 平方根夹逼与 SB-KP085 同角三角函数计算验证', () => {
+    it('SB-KP008 补全区间夹逼遥测项 (val_base=5)', () => {
+      const scope = { val_base: 5 };
+      const kp008Specs: InvariantSpec[] = [
+        {
+          id: 'inv_sqrt',
+          formula: 'sqrt(val_base)',
+          deps: ['val_base'],
+          labelZh: '无理数取值 √a 锁定',
+        },
+        {
+          id: 'inv_lower_bound',
+          formula: 'floor(sqrt(val_base))',
+          deps: ['val_base'],
+          labelZh: '区间下界整数 n',
+        },
+        {
+          id: 'inv_upper_bound',
+          formula: 'floor(sqrt(val_base)) + 1',
+          deps: ['val_base'],
+          labelZh: '区间上界整数 n+1',
+        },
+        {
+          id: 'inv_sq_ineq',
+          formula: 'val_base',
+          deps: ['val_base'],
+          labelZh: '完全平方数夹逼不等式',
+          state_label:
+            "val_base < 4 ? '1 < a < 4 => 1 < √a < 2' : (val_base < 9 ? '4 <= a < 9 => 2 <= √a < 3' : (val_base < 16 ? '9 <= a < 16 => 3 <= √a < 4' : '16 <= a < 25 => 4 <= √a < 5'))",
+        },
+        {
+          id: 'inv_diff',
+          formula: 'sqrt(val_base) - floor(sqrt(val_base))',
+          deps: ['val_base'],
+          labelZh: '无理数小数部分 (√a - n)',
+        },
+      ];
+
+      expect(evaluateSafeExpression(kp008Specs[0].formula!, scope)).toBeCloseTo(2.236, 3);
+      expect(evaluateSafeExpression(kp008Specs[1].formula!, scope)).toBe(2);
+      expect(evaluateSafeExpression(kp008Specs[2].formula!, scope)).toBe(3);
+      expect(evaluateSafeExpression(kp008Specs[4].formula!, scope)).toBeCloseTo(0.236, 3);
+
+      const textLower = formatInvariantText(kp008Specs[1], {}, 'zh-CN', scope);
+      const textUpper = formatInvariantText(kp008Specs[2], {}, 'zh-CN', scope);
+      const textIneq = formatInvariantText(kp008Specs[3], {}, 'zh-CN', scope);
+      const textDiff = formatInvariantText(kp008Specs[4], {}, 'zh-CN', scope);
+
+      expect(textLower).toBe('区间下界整数 n = 2');
+      expect(textUpper).toBe('区间上界整数 n+1 = 3');
+      expect(textIneq).toContain('4 <= a < 9 => 2 <= √a < 3');
+      expect(textDiff).toBe('无理数小数部分 (√a - n) = 0.24');
+    });
+
+    it('SB-KP085 同角三角函数平方和公式 (angle_A=30, hypot_c=6)', () => {
+      const scope = { angle_A: 30, hypot_c: 6 };
+      const pointMap: Record<string, Point2D> = {
+        C: { x: 0, y: 0 },
+        A: { x: 5.19615, y: 0 },
+        B: { x: 5.19615, y: 3 },
+      };
+
+      const kp085Specs: InvariantSpec[] = [
+        {
+          id: 'inv_angle_A',
+          type: 'angle',
+          deps: ['B', 'C', 'A'],
+          formula: '\\angle A = {val}^\\circ',
+          labelZh: '锐角 A 真实度数',
+        },
+        {
+          id: 'inv_sin_A',
+          type: 'ratio_distance',
+          deps: ['A', 'B', 'B', 'C'],
+          formula: '\\sin A = AB/BC = {val}',
+          labelZh: '正弦值 (对边/斜边)',
+        },
+        {
+          id: 'inv_cos_A',
+          type: 'ratio_distance',
+          deps: ['A', 'C', 'B', 'C'],
+          formula: '\\cos A = AC/BC = {val}',
+          labelZh: '余弦值 (邻边/斜边)',
+        },
+        {
+          id: 'inv_tan_A',
+          type: 'ratio_distance',
+          deps: ['A', 'B', 'A', 'C'],
+          formula: '\\tan A = AB/AC = {val}',
+          labelZh: '正切值 (对边/邻边)',
+        },
+        {
+          id: 'inv_pythagorean_identity',
+          formula: 'sin(angle_A * pi / 180)^2 + cos(angle_A * pi / 180)^2',
+          deps: ['angle_A'],
+          labelZh: '同角三角函数平方和公式 sin²A + cos²A',
+          isConstant: true,
+        },
+      ];
+
+      // 验证角度为 30°
+      const angleVal = evaluateInvariantValue(kp085Specs[0], pointMap);
+      expect(angleVal).toBeCloseTo(30, 1);
+
+      // 验证 sin(30°) = 0.50
+      const sinVal = evaluateInvariantValue(kp085Specs[1], pointMap);
+      expect(sinVal).toBeCloseTo(0.5, 2);
+
+      // 验证 cos(30°) = √3/2 ≈ 0.866
+      const cosVal = evaluateInvariantValue(kp085Specs[2], pointMap);
+      expect(cosVal).toBeCloseTo(0.866, 2);
+
+      // 验证 tan(30°) = 1/√3 ≈ 0.577
+      const tanVal = evaluateInvariantValue(kp085Specs[3], pointMap);
+      expect(tanVal).toBeCloseTo(0.577, 2);
+
+      // 验证同角三角函数平方和恒等式
+      const trigSum = evaluateSafeExpression(kp085Specs[4].formula!, scope);
+      expect(trigSum).toBe(1);
+
+      const textTrigSum = formatInvariantText(kp085Specs[4], pointMap, 'zh-CN', scope);
+      expect(textTrigSum).toBe('同角三角函数平方和公式 sin²A + cos²A = 1');
+    });
+  });
 });
+

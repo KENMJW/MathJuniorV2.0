@@ -4,25 +4,33 @@
 
   <!-- Card Header -->
   <rect x="20" y="16" width="360" height="42" rx="10" fill="#f2f2f7" />
-  <text x="35" y="42" font-family="-apple-system, sans-serif" font-size="13" font-weight="700" fill="#0071e3">KP-106 · 概率</text>
-  <text x="365" y="42" text-anchor="end" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#1d1d1f">Tree Diagram and Tabulation Methods for Probability</text>
+  <text x="35" y="42" font-family="-apple-system, sans-serif" font-size="13" font-weight="700" fill="#0071e3">KP-106 · Probability</text>
+  <text x="365" y="42" text-anchor="end" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#1d1d1f">Tree Diagrams &amp; Probability</text>
 
-
-  <!-- Probability Tree / Spinner Diagram -->
-  <g transform="translate(200, 160)">
-    <!-- Probability Spinner Wheel -->
-    <circle class="layer-stage-1" cx="-60" cy="0" r="55" fill="#f8fafc" stroke="#1d1d1f" stroke-width="2"/>
-    <path class="layer-stage-1" d="M -60 0 L -60 -55 A 55 55 0 0 1 -5 0 Z" fill="#0071e3" fill-opacity="0.4"/>
-    <path class="layer-stage-2" d="M -60 0 L -5 0 A 55 55 0 0 1 -60 55 Z" fill="#34c759" fill-opacity="0.4"/>
-    <path class="layer-stage-2" d="M -60 0 L -60 55 A 55 55 0 0 1 -115 0 Z" fill="#ff9500" fill-opacity="0.4"/>
-    <path class="layer-stage-1" d="M -60 0 L -115 0 A 55 55 0 0 1 -60 -55 Z" fill="#af52de" fill-opacity="0.4"/>
-    <!-- Center pointer -->
-    <circle class="layer-stage-2" cx="-60" cy="0" r="5" fill="#1d1d1f"/>
-    <line class="layer-stage-4" x1="-60" y1="0" x2="-35" y2="-25" stroke="#ff3b30" stroke-width="2.5"/>
-    <!-- Probability Formulas -->
-    <text class="layer-stage-4" x="40" y="-15" font-family="monospace" font-size="14" font-weight="bold" fill="#0071e3">P(A) = m / n</text>
-    <text class="layer-stage-4" x="40" y="15" font-size="12" fill="#86868b">0 ≤ P(A) ≤ 1</text>
+  <!-- Core Content Graphic -->
+  <g transform="translate(50, 68)">
+    <circle class="layer-stage-1" cx="30" cy="85" r="5" fill="#475569"/>
+    <text class="layer-stage-1" x="15" y="90" font-size="10" font-weight="bold">Start</text>
+    <line class="layer-stage-2" x1="35" y1="85" x2="110" y2="50" stroke="#2563eb" stroke-width="2"/>
+    <line class="layer-stage-2" x1="35" y1="85" x2="110" y2="120" stroke="#2563eb" stroke-width="2"/>
+    <circle class="layer-stage-2" cx="110" cy="50" r="4" fill="#2563eb"/>
+    <circle class="layer-stage-2" cx="110" cy="120" r="4" fill="#2563eb"/>
+    <text class="layer-stage-2" x="118" y="54" font-size="10" font-weight="bold" fill="#1e40af">H</text>
+    <text class="layer-stage-2" x="118" y="124" font-size="10" font-weight="bold" fill="#1e40af">T</text>
+    <line class="layer-stage-3 formal-labels" x1="125" y1="50" x2="200" y2="35" stroke="#16a34a" stroke-width="1.5"/>
+    <line class="layer-stage-3 formal-labels" x1="125" y1="50" x2="200" y2="65" stroke="#16a34a" stroke-width="1.5"/>
+    <line class="layer-stage-3 formal-labels" x1="125" y1="120" x2="200" y2="105" stroke="#16a34a" stroke-width="1.5"/>
+    <line class="layer-stage-3 formal-labels" x1="125" y1="120" x2="200" y2="135" stroke="#16a34a" stroke-width="1.5"/>
+    <text class="layer-stage-3 formal-labels" x="210" y="40" font-size="10" fill="#15803d">(H, H)</text>
+    <text class="layer-stage-3 formal-labels" x="210" y="70" font-size="10" fill="#15803d">(H, T)</text>
+    <text class="layer-stage-3 formal-labels" x="210" y="110" font-size="10" fill="#15803d">(T, H)</text>
+    <text class="layer-stage-3 formal-labels" x="210" y="140" font-size="10" fill="#15803d">(T, T)</text>
+    <text class="layer-stage-4" x="130" y="165" text-anchor="middle" font-size="11" font-weight="bold" fill="#047857">Tree diagrams systematically enumerate multi-step paths</text>
   </g>
-  <text class="layer-stage-4" x="200" y="268" text-anchor="middle" font-size="13" font-weight="600" fill="#1d1d1f">Classical Probability &amp; Frequency Convergence</text>
 
+  <!-- Footer Conclusion / Extrema / Vieta -->
+  <text class="layer-stage-4" x="200" y="262" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" font-weight="600" fill="#1d1d1f">
+    <tspan x="200" dy="0">Tree diagrams systematically</tspan>
+    <tspan x="200" dy="14">enumerate outcomes in multi-stage experiments</tspan>
+  </text>
 </svg>

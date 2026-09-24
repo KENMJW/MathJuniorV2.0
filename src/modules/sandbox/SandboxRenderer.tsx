@@ -19,7 +19,7 @@ import { DiscreteOrthographicRenderer } from './DiscreteOrthographicRenderer';
 export interface SandboxConfig {
   sandbox_id: string;
   canvas_template: string; // 模板标记，比如 'euclidean' 或 'axis' 或契约 10 大类
-  viewbox_spec_json: string;
+  viewbox_spec_json?: string;
   drag_points_json: string;
   param_sliders_json?: string;
   invariants_display_json?: string;
@@ -199,13 +199,20 @@ export function canInvertParam(
   }
 
   // 场景 2：直角三角形 / 勾股定理模型
-  // 顶点 B 反解直角边 leg_a / a，顶点 A 反解直角边 leg_b / b
+  // 顶点 B 反解直角边 leg_a / a，顶点 A 反解直角边 leg_b / b，动点 M 反解 point_t
   if (
     tpl.includes('right_triangle') ||
     tpl.includes('pythagorean') ||
     (config?.sandbox_id && config.sandbox_id.includes('PYTHAGOREAN'))
   ) {
-    if (id === 'B' || name === 'B' || id === 'A' || name === 'A') {
+    if (id === 'B' || name === 'B' || id === 'A' || name === 'A' || id === 'M' || name === 'M') {
+      return true;
+    }
+  }
+
+  // 场景 2b：等腰三角形模型，底边端点 C 反解 base_w
+  if (tpl.includes('isosceles')) {
+    if (id === 'C' || name === 'C') {
       return true;
     }
   }
@@ -302,7 +309,7 @@ export function handleParamInversion(
     return;
   }
 
-  // 2. 直角三角形：根据 B 点坐标反解直角边 leg_a / a，根据 A 点反解 leg_b / b
+  // 2. 直角三角形：根据 B 点坐标反解直角边 leg_a / a，根据 A 点反解 leg_b / b，根据 M 点反解 point_t
   if (
     tpl.includes('right_triangle') ||
     tpl.includes('pythagorean') ||
@@ -329,6 +336,25 @@ export function handleParamInversion(
           ? 'b'
           : 'leg_b';
       patch[keyB] = legB;
+      onParamChange(patch);
+      return;
+    }
+    if (id === 'M' || name === 'M') {
+      const legA = Number(paramValues['leg_a'] ?? 6);
+      if (legA > 0.1) {
+        const ratio = Math.max(0, Math.min(1, pt.X() / legA));
+        patch['point_t'] = Math.round(ratio * 20) / 20;
+        onParamChange(patch);
+        return;
+      }
+    }
+  }
+
+  // 2b. 等腰三角形：根据 C 点坐标反解底边宽度 base_w
+  if (tpl.includes('isosceles')) {
+    if (id === 'C' || name === 'C') {
+      const w = Math.max(2, Math.min(10, Math.round(Math.abs(pt.X()) * 2 * 10) / 10));
+      patch['base_w'] = w;
       onParamChange(patch);
       return;
     }
@@ -471,6 +497,482 @@ export function handleParamInversion(
       }
     }
   }
+}
+
+export interface KinematicPointResult {
+  x: number;
+  y: number;
+  constraints?: string;
+  isFixed?: boolean;
+}
+
+/**
+ * 46 概念沙盒 31 个模型几何动力学映射引擎
+ * 支持旋转、缩放、动点、轴对称、相变全量滑块解算
+ */
+export function applyGeometricKinematics(
+  config: SandboxConfig,
+  ptDef: any,
+  paramValues: Record<string, number> = {}
+): KinematicPointResult {
+  const tpl = config.canvas_template || '';
+  const sid = config.sandbox_id || '';
+  let x = ptDef.x ?? 0;
+  let y = ptDef.y ?? 0;
+  let constraints = ptDef.constraints;
+  let isFixed = ptDef.isFixed;
+
+  // 1. SB-KP057: 勾股定理与赵爽弦图
+  if (sid === 'SB-KP057' || tpl === 'geometry_pythagorean_template') {
+    const legA = Number(paramValues['leg_a'] ?? 4);
+    const legB = Number(paramValues['leg_b'] ?? 3);
+    const viewMode = Number(paramValues['view_mode'] ?? 1);
+    if (viewMode === 2) {
+      if (ptDef.id === 'C') { x = 0; y = 0; constraints = 'fixed'; isFixed = true; }
+      else if (ptDef.id === 'B') { x = legB; y = 0; constraints = 'fixed'; isFixed = true; }
+      else if (ptDef.id === 'A') { x = legB; y = legA; constraints = 'fixed'; isFixed = true; }
+    } else {
+      if (ptDef.id === 'C' || ptDef.id === 'O') { x = 0; y = 0; constraints = 'fixed'; isFixed = true; }
+      else if (ptDef.id === 'B') { x = legA; y = 0; constraints = 'fixed'; isFixed = false; }
+      else if (ptDef.id === 'A') { x = 0; y = legB; constraints = 'fixed'; isFixed = false; }
+    }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 2. SB-KP053: 等腰三角形对称折叠与顶角
+  if (sid === 'SB-KP053' || tpl.includes('isosceles')) {
+    const baseW = Number(paramValues['base_w'] ?? 6);
+    const apexAngle = Number(paramValues['apex_angle'] ?? 60);
+    const halfW = baseW / 2;
+    const rad = ((apexAngle / 2) * Math.PI) / 180;
+    const h = rad > 0.01 && rad < Math.PI / 2 ? halfW / Math.tan(rad) : 4;
+    if (ptDef.id === 'A') { x = 0; y = h; constraints = 'fixed'; isFixed = false; }
+    else if (ptDef.id === 'B') { x = -halfW; y = 0; constraints = 'fixed'; isFixed = false; }
+    else if (ptDef.id === 'C') { x = halfW; y = 0; constraints = 'fixed'; isFixed = false; }
+    else if (ptDef.id === 'D') { x = 0; y = 0; constraints = 'fixed'; isFixed = true; }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 3. SB-KP055: 等边三角形旋转与四心双圆
+  if (sid === 'SB-KP055' || tpl.includes('equilateral')) {
+    const sideA = Number(paramValues['side_a'] ?? 6);
+    const rotTheta = Number(paramValues['rot_theta'] ?? 0);
+    const R = sideA / Math.sqrt(3);
+    const thetaRad = (rotTheta * Math.PI) / 180;
+    if (ptDef.id === 'A') {
+      x = R * Math.cos(Math.PI / 2 + thetaRad);
+      y = R * Math.sin(Math.PI / 2 + thetaRad);
+      constraints = 'fixed';
+    } else if (ptDef.id === 'B') {
+      x = R * Math.cos((7 * Math.PI) / 6 + thetaRad);
+      y = R * Math.sin((7 * Math.PI) / 6 + thetaRad);
+      constraints = 'fixed';
+    } else if (ptDef.id === 'C') {
+      x = R * Math.cos((11 * Math.PI) / 6 + thetaRad);
+      y = R * Math.sin((11 * Math.PI) / 6 + thetaRad);
+      constraints = 'fixed';
+    } else if (ptDef.id === 'O') {
+      x = 0; y = 0; constraints = 'fixed'; isFixed = true;
+    }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 4. SB-KP068: 中点四边形相变与对角线
+  if (sid === 'SB-KP068' || tpl.includes('midpoint_quad')) {
+    const preset = Number(paramValues['quad_morph_preset'] ?? 1);
+    let pA = { x: -4, y: -2 };
+    let pB = { x: 3, y: -3 };
+    let pC = { x: 4, y: 3 };
+    let pD = { x: -2, y: 4 };
+
+    if (preset === 2) {
+      pA = { x: -4, y: -1 };
+      pB = { x: -1, y: -4 };
+      pC = { x: 4, y: 1 };
+      pD = { x: 1, y: 4 };
+    } else if (preset === 3) {
+      pA = { x: -5, y: 0 };
+      pB = { x: 0, y: -2.5 };
+      pC = { x: 3, y: 0 };
+      pD = { x: 0, y: 3.5 };
+    } else if (preset === 4) {
+      pA = { x: -5, y: 0 };
+      pB = { x: 0, y: -3 };
+      pC = { x: 3, y: 0 };
+      pD = { x: 0, y: 5 };
+    }
+
+    if (ptDef.id === 'p_A' || ptDef.id === 'A') { x = pA.x; y = pA.y; constraints = 'fixed'; }
+    else if (ptDef.id === 'p_B' || ptDef.id === 'B') { x = pB.x; y = pB.y; constraints = 'fixed'; }
+    else if (ptDef.id === 'p_C' || ptDef.id === 'C') { x = pC.x; y = pC.y; constraints = 'fixed'; }
+    else if (ptDef.id === 'p_D' || ptDef.id === 'D') { x = pD.x; y = pD.y; constraints = 'fixed'; }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 5. SB-KP056: 直角三角形斜边动点
+  if (sid === 'SB-KP056' || (tpl.includes('right_triangle') && paramValues['point_t'] !== undefined)) {
+    const legA = Number(paramValues['leg_a'] ?? 6);
+    const legB = Number(paramValues['leg_b'] ?? 4);
+    const pointT = Number(paramValues['point_t'] ?? 0.5);
+    if (ptDef.id === 'C') { x = 0; y = 0; constraints = 'fixed'; isFixed = true; }
+    else if (ptDef.id === 'A') { x = 0; y = legB; constraints = 'fixed'; }
+    else if (ptDef.id === 'B') { x = legA; y = 0; constraints = 'fixed'; }
+    else if (ptDef.id === 'M') {
+      x = pointT * legA;
+      y = (1 - pointT) * legB;
+      constraints = 'fixed';
+    }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 6. SB-KP058: 相似三角形与姿态旋转
+  if (sid === 'SB-KP058' || tpl.includes('similarity')) {
+    const simK = Number(paramValues['sim_k'] ?? 1.5);
+    const rotAlpha = Number(paramValues['rot_alpha'] ?? 0);
+    const alphaRad = (rotAlpha * Math.PI) / 180;
+    if (ptDef.id === 'A1') { x = 0; y = 0; constraints = 'fixed'; }
+    else if (ptDef.id === 'B1') {
+      const vx = 3 * simK;
+      x = vx * Math.cos(alphaRad);
+      y = vx * Math.sin(alphaRad);
+      constraints = 'fixed';
+    } else if (ptDef.id === 'C1') {
+      const cx0 = 1 * simK;
+      const cy0 = 2.5 * simK;
+      x = cx0 * Math.cos(alphaRad) - cy0 * Math.sin(alphaRad);
+      y = cx0 * Math.sin(alphaRad) + cy0 * Math.cos(alphaRad);
+      constraints = 'fixed';
+    }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 7. SB-KP065: 菱形相变
+  if (sid === 'SB-KP065' || tpl.includes('rhombus')) {
+    const diagH = Number(paramValues['diag_h'] ?? 6);
+    const diagV = Number(paramValues['diag_v'] ?? 4);
+    const morphRhombus = Number(paramValues['morph_rhombus'] ?? 1);
+    const skew = morphRhombus > 0.5 ? 0 : 0.3 * diagH;
+    if (ptDef.id === 'p_O') { x = 0; y = 0; constraints = 'fixed'; isFixed = true; }
+    else if (ptDef.id === 'p_A') { x = -diagH / 2; y = 0; constraints = 'fixed'; }
+    else if (ptDef.id === 'p_B') { x = (-skew) || 0; y = -diagV / 2; constraints = 'fixed'; }
+    else if (ptDef.id === 'p_C') { x = diagH / 2; y = 0; constraints = 'fixed'; }
+    else if (ptDef.id === 'p_D') { x = skew || 0; y = diagV / 2; constraints = 'fixed'; }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 8. SB-KP066: 正方形旋转与边长
+  if (sid === 'SB-KP066' || tpl.includes('square')) {
+    const sideA = Number(paramValues['side_a'] ?? 4);
+    const rotAngle = Number(paramValues['rot_angle'] ?? 0);
+    const theta = (rotAngle * Math.PI) / 180;
+    const s = sideA / 2;
+    const rot = (cx: number, cy: number) => ({
+      x: cx * Math.cos(theta) - cy * Math.sin(theta),
+      y: cx * Math.sin(theta) + cy * Math.cos(theta),
+    });
+    if (ptDef.id === 'p_A') { const p = rot(-s, -s); x = p.x; y = p.y; constraints = 'fixed'; }
+    else if (ptDef.id === 'p_B') { const p = rot(s, -s); x = p.x; y = p.y; constraints = 'fixed'; }
+    else if (ptDef.id === 'p_C') { const p = rot(s, s); x = p.x; y = p.y; constraints = 'fixed'; }
+    else if (ptDef.id === 'p_D') { const p = rot(-s, s); x = p.x; y = p.y; constraints = 'fixed'; }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 9. SB-KP069: 圆与动点
+  if (sid === 'SB-KP069') {
+    const r = Number(paramValues['radius_r'] ?? 4);
+    const thetaP = (Number(paramValues['theta_P'] ?? 45) * Math.PI) / 180;
+    if (ptDef.id === 'O') { x = 0; y = 0; constraints = 'fixed'; isFixed = true; }
+    else if (ptDef.id === 'A') { x = r; y = 0; constraints = 'fixed'; }
+    else if (ptDef.id === 'P') { x = r * Math.cos(thetaP); y = r * Math.sin(thetaP); constraints = 'fixed'; }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 10. SB-KP071: 直线与圆
+  if (sid === 'SB-KP071') {
+    const d = Number(paramValues['line_dist_d'] ?? 3);
+    if (ptDef.id === 'H') { x = 0; y = d; constraints = 'fixed'; }
+    else if (ptDef.id === 'P1') { x = -5; y = d; constraints = 'fixed'; }
+    else if (ptDef.id === 'P2') { x = 5; y = d; constraints = 'fixed'; }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 11. SB-KP072: 切线长
+  if (sid === 'SB-KP072' || tpl.includes('tangent_segment')) {
+    const cr = Number(paramValues['circle_r'] ?? 3);
+    const d = Number(paramValues['dist_OP'] ?? 6);
+    const phi = (Number(paramValues['phi_P'] ?? 0) * Math.PI) / 180;
+    const safeD = Math.max(cr + 0.05, d);
+    const alpha = Math.acos(Math.min(1, cr / safeD));
+    if (ptDef.id === 'O') { x = 0; y = 0; constraints = 'fixed'; isFixed = true; }
+    else if (ptDef.id === 'P') { x = safeD * Math.cos(phi); y = safeD * Math.sin(phi); constraints = 'fixed'; }
+    else if (ptDef.id === 'A') { x = cr * Math.cos(phi + alpha); y = cr * Math.sin(phi + alpha); constraints = 'fixed'; }
+    else if (ptDef.id === 'B') { x = cr * Math.cos(phi - alpha); y = cr * Math.sin(phi - alpha); constraints = 'fixed'; }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 12. SB-KP073: 圆周角
+  if (sid === 'SB-KP073' || tpl.includes('inscribed')) {
+    const cr = Number(paramValues['radius_r'] ?? 4);
+    const thetaC = (Number(paramValues['theta_C'] ?? 90) * Math.PI) / 180;
+    const arcSpan = (Number(paramValues['arc_span'] ?? 80) * Math.PI) / 180;
+    const tA = (3 * Math.PI) / 2 - arcSpan / 2;
+    const tB = (3 * Math.PI) / 2 + arcSpan / 2;
+    if (ptDef.id === 'O') { x = 0; y = 0; constraints = 'fixed'; isFixed = true; }
+    else if (ptDef.id === 'A') { x = cr * Math.cos(tA); y = cr * Math.sin(tA); constraints = 'fixed'; }
+    else if (ptDef.id === 'B') { x = cr * Math.cos(tB); y = cr * Math.sin(tB); constraints = 'fixed'; }
+    else if (ptDef.id === 'C') { x = cr * Math.cos(thetaC); y = cr * Math.sin(thetaC); constraints = 'fixed'; }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 13. SB-KP074: 垂径定理
+  if (sid === 'SB-KP074' || tpl.includes('chord_bisector')) {
+    const cr = Number(paramValues['circle_r'] ?? 5);
+    const d = Number(paramValues['chord_dist_d'] ?? 1);
+    const halfChord = Math.sqrt(Math.max(0, cr * cr - d * d));
+    if (ptDef.id === 'O') { x = 0; y = 0; constraints = 'fixed'; isFixed = true; }
+    else if (ptDef.id === 'M') { x = 0; y = d; constraints = 'fixed'; }
+    else if (ptDef.id === 'A') { x = -halfChord; y = d; constraints = 'fixed'; }
+    else if (ptDef.id === 'B') { x = halfChord; y = d; constraints = 'fixed'; }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 14. SB-KP076: 三角形内切圆
+  if (sid === 'SB-KP076' || tpl.includes('incircle')) {
+    const ay = Number(paramValues['vertex_A_y'] ?? 5);
+    const cx = Number(paramValues['vertex_C_x'] ?? 4);
+    const aSide = cx + 4;
+    const bSide = Math.hypot(cx, ay);
+    const cSide = Math.hypot(4, ay);
+    const pPerim = aSide + bSide + cSide;
+    const ix = (aSide * 0 + bSide * (-4) + cSide * cx) / pPerim;
+    const iy = (aSide * ay + bSide * 0 + cSide * 0) / pPerim;
+    if (ptDef.id === 'B') { x = -4; y = 0; constraints = 'fixed'; isFixed = true; }
+    else if (ptDef.id === 'C') { x = cx; y = 0; constraints = 'fixed'; }
+    else if (ptDef.id === 'A') { x = 0; y = ay; constraints = 'fixed'; }
+    else if (ptDef.id === 'I') { x = ix; y = iy; constraints = 'fixed'; }
+    else if (ptDef.id === 'D') { x = ix; y = 0; constraints = 'fixed'; }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 15. SB-KP077: 扇形度量
+  if (sid === 'SB-KP077' || tpl.includes('sector_metric')) {
+    const cr = Number(paramValues['radius_r'] ?? 4);
+    const n = (Number(paramValues['angle_n'] ?? 60) * Math.PI) / 180;
+    if (ptDef.id === 'O') { x = 0; y = 0; constraints = 'fixed'; isFixed = true; }
+    else if (ptDef.id === 'A') { x = cr; y = 0; constraints = 'fixed'; }
+    else if (ptDef.id === 'B') { x = cr * Math.cos(n); y = cr * Math.sin(n); constraints = 'fixed'; }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 16. SB-KP079: 轴对称变换与倾斜轴
+  if (sid === 'SB-KP079' || tpl.includes('reflection')) {
+    const x0 = Number(paramValues['axis_pos'] ?? 0);
+    const phi = (Number(paramValues['axis_phi'] ?? 15) * Math.PI) / 180;
+    const reflect = (px: number, py: number) => {
+      const normalX = -Math.sin(phi);
+      const normalY = Math.cos(phi);
+      const dist = (px - x0) * normalX + py * normalY;
+      return {
+        x: px - 2 * dist * normalX,
+        y: py - 2 * dist * normalY,
+      };
+    };
+    if (ptDef.id === 'A') { x = -4; y = 3; constraints = 'fixed'; }
+    else if (ptDef.id === 'B') { x = -2; y = -1; constraints = 'fixed'; }
+    else if (ptDef.id === 'A_prime') { const r = reflect(-4, 3); x = r.x; y = r.y; constraints = 'fixed'; }
+    else if (ptDef.id === 'B_prime') { const r = reflect(-2, -1); x = r.x; y = r.y; constraints = 'fixed'; }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 17. SB-KP080: 平移
+  if (sid === 'SB-KP080' || tpl.includes('translation_carrier')) {
+    const dx = Number(paramValues['dx'] ?? 0);
+    const dy = Number(paramValues['dy'] ?? 0);
+    if (ptDef.id === 'A') { x = -3; y = 1; constraints = 'fixed'; }
+    else if (ptDef.id === 'B') { x = -1; y = -2; constraints = 'fixed'; }
+    else if (ptDef.id === 'A_prime') { x = -3 + dx; y = 1 + dy; constraints = 'fixed'; }
+    else if (ptDef.id === 'B_prime') { x = -1 + dx; y = -2 + dy; constraints = 'fixed'; }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 18. SB-KP081: 手拉手模型
+  if (sid === 'SB-KP081' || tpl.includes('rotation_hand_in_hand')) {
+    const theta = (Number(paramValues['theta'] ?? 0) * Math.PI) / 180;
+    const sideBy = Number(paramValues['side_B_y'] ?? 4);
+    if (ptDef.id === 'O') { x = 0; y = 0; constraints = 'fixed'; isFixed = true; }
+    else if (ptDef.id === 'A') { x = 3; y = 0; constraints = 'fixed'; }
+    else if (ptDef.id === 'B') { x = 0; y = sideBy; constraints = 'fixed'; }
+    else if (ptDef.id === 'A_prime') {
+      x = 3 * Math.cos(theta);
+      y = 3 * Math.sin(theta);
+      constraints = 'fixed';
+    } else if (ptDef.id === 'B_prime') {
+      x = -sideBy * Math.sin(theta);
+      y = sideBy * Math.cos(theta);
+      constraints = 'fixed';
+    }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 19. SB-KP082: 中心对称旋转过程
+  if (sid === 'SB-KP082' || tpl.includes('central_sym')) {
+    const rotP = (Number(paramValues['rot_process'] ?? 0) * Math.PI) / 180;
+    if (ptDef.id === 'O') { x = 0; y = 0; constraints = 'fixed'; isFixed = true; }
+    else if (ptDef.id === 'A') { x = 3; y = 2; constraints = 'fixed'; }
+    else if (ptDef.id === 'B') { x = 1; y = -2; constraints = 'fixed'; }
+    else if (ptDef.id === 'A_prime') {
+      x = 3 * Math.cos(rotP) - 2 * Math.sin(rotP);
+      y = 3 * Math.sin(rotP) + 2 * Math.cos(rotP);
+      constraints = 'fixed';
+    } else if (ptDef.id === 'B_prime') {
+      x = 1 * Math.cos(rotP) - (-2) * Math.sin(rotP);
+      y = 1 * Math.sin(rotP) + (-2) * Math.cos(rotP);
+      constraints = 'fixed';
+    }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 20. SB-KP085: 解直角三角形
+  if (sid === 'SB-KP085' || tpl.includes('right_triangle_measurement')) {
+    const angleA = (Number(paramValues['angle_A'] ?? 30) * Math.PI) / 180;
+    const hypotC = Number(paramValues['hypot_c'] ?? 6);
+    if (ptDef.id === 'C') { x = 0; y = 0; constraints = 'fixed'; isFixed = true; }
+    else if (ptDef.id === 'A') { x = hypotC * Math.cos(angleA); y = 0; constraints = 'fixed'; }
+    else if (ptDef.id === 'B') { x = hypotC * Math.cos(angleA); y = hypotC * Math.sin(angleA); constraints = 'fixed'; }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 21. SB-KP043: 二次函数应用建模
+  if (sid === 'SB-KP043' || tpl.includes('quadratic_modeling')) {
+    const aVal = Number(paramValues['param_a'] ?? -0.5);
+    const tVal = Number(paramValues['param_t'] ?? 1);
+    const yP = aVal * (tVal + 2) * (tVal - 4);
+    if (ptDef.id === 'p_A') { x = -2; y = 0; constraints = 'fixed'; }
+    else if (ptDef.id === 'p_B') { x = 4; y = 0; constraints = 'fixed'; }
+    else if (ptDef.id === 'p_P') { x = tVal; y = yP; constraints = 'fixed'; }
+    else if (ptDef.id === 'p_Q') { x = tVal; y = 0; constraints = 'fixed'; }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 22. SB-KP044: 几何点线角
+  if (sid === 'SB-KP044' || tpl.includes('point_line')) {
+    const angle = (Number(paramValues['param_angle_deg'] ?? 45) * Math.PI) / 180;
+    const lenOA = Number(paramValues['param_len_oa'] ?? 4);
+    if (ptDef.id === 'p_O') { x = 0; y = 0; constraints = 'fixed'; isFixed = true; }
+    else if (ptDef.id === 'p_A') { x = lenOA * Math.cos(angle); y = lenOA * Math.sin(angle); constraints = 'fixed'; }
+    else if (ptDef.id === 'p_B') { x = 4; y = 0; constraints = 'fixed'; }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 23. SB-KP045: 线段中点
+  if (sid === 'SB-KP045' || tpl.includes('segment_mid')) {
+    const lenAB = Number(paramValues['param_len_ab'] ?? 8);
+    const cPos = Number(paramValues['param_c_pos'] ?? 3);
+    if (ptDef.id === 'p_A') { x = 0; y = 0; constraints = 'fixed'; }
+    else if (ptDef.id === 'p_B') { x = lenAB; y = 0; constraints = 'fixed'; }
+    else if (ptDef.id === 'p_C') { x = cPos; y = 0; constraints = 'fixed'; }
+    else if (ptDef.id === 'p_M') { x = cPos / 2; y = 0; constraints = 'fixed'; }
+    else if (ptDef.id === 'p_N') { x = (cPos + lenAB) / 2; y = 0; constraints = 'fixed'; }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 24. SB-KP046: 角计算
+  if (sid === 'SB-KP046' || tpl.includes('angle_calc')) {
+    const alpha = (Number(paramValues['param_alpha'] ?? 60) * Math.PI) / 180;
+    if (ptDef.id === 'p_O') { x = 0; y = 0; constraints = 'fixed'; isFixed = true; }
+    else if (ptDef.id === 'p_A') { x = 4; y = 0; constraints = 'fixed'; }
+    else if (ptDef.id === 'p_B') { x = 4 * Math.cos(alpha); y = 4 * Math.sin(alpha); constraints = 'fixed'; }
+    else if (ptDef.id === 'p_C') { x = -4; y = 0; constraints = 'fixed'; }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 25. SB-KP047: 垂线段最短
+  if (sid === 'SB-KP047' || tpl.includes('perpendicular')) {
+    if (paramValues['param_x_c'] !== undefined && (ptDef.id === 'C' || ptDef.name?.includes('C'))) {
+      x = Number(paramValues['param_x_c']);
+    }
+    if (paramValues['param_y_p'] !== undefined && (ptDef.id === 'P' || ptDef.name?.includes('P'))) {
+      y = Number(paramValues['param_y_p']);
+    }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 26. SB-KP048: 平行线与截线
+  if (sid === 'SB-KP048' || tpl === 'geometry_parallel_template' || (tpl.includes('parallel') && !tpl.includes('parallelogram'))) {
+    const transAngle = (Number(paramValues['param_trans_angle'] ?? 60) * Math.PI) / 180;
+    const lineDist = Number(paramValues['param_line_dist'] ?? 4);
+    const halfD = lineDist / 2;
+    const xOffset = Math.abs(Math.tan(transAngle)) > 1e-4 ? halfD / Math.tan(transAngle) : 0;
+    if (ptDef.id === 'A') { x = -4; y = halfD; constraints = 'fixed'; }
+    else if (ptDef.id === 'B') { x = 4; y = halfD; constraints = 'fixed'; }
+    else if (ptDef.id === 'C') { x = -4; y = -halfD; constraints = 'fixed'; }
+    else if (ptDef.id === 'D') { x = 4; y = -halfD; constraints = 'fixed'; }
+    else if (ptDef.id === 'P1') { x = 0; y = halfD; constraints = 'fixed'; }
+    else if (ptDef.id === 'P2') { x = -2 * xOffset; y = -halfD; constraints = 'fixed'; }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 27. SB-KP049: 三角形内角和
+  if (sid === 'SB-KP049' || tpl.includes('triangle_sum')) {
+    const vAx = Number(paramValues['param_vertex_ax'] ?? 0);
+    const vAy = Number(paramValues['param_vertex_ay'] ?? 4);
+    const baseW = Number(paramValues['param_base_w'] ?? 8);
+    if (ptDef.id === 'A') { x = vAx; y = vAy; constraints = 'fixed'; }
+    else if (ptDef.id === 'B') { x = -baseW / 2; y = -2; constraints = 'fixed'; }
+    else if (ptDef.id === 'C') { x = baseW / 2; y = -2; constraints = 'fixed'; }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 28. SB-KP051: 全等判定与平移
+  if (sid === 'SB-KP051' || tpl.includes('congruence')) {
+    const transX = Number(paramValues['trans_x'] ?? 0);
+    const transY = Number(paramValues['trans_y'] ?? 0);
+    if (ptDef.id === 'A2') { x = 3 + transX; y = 3 + transY; constraints = 'fixed'; }
+    else if (ptDef.id === 'B2') { x = 1 + transX; y = -2 + transY; constraints = 'fixed'; }
+    else if (ptDef.id === 'C2') { x = 6 + transX; y = -2 + transY; constraints = 'fixed'; }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 29. SB-KP060: 位似变换
+  if (sid === 'SB-KP060' || tpl.includes('homothety')) {
+    const homoK = Number(paramValues['homo_k'] ?? 2);
+    const cx = Number(paramValues['center_x'] ?? 0);
+    const cy = Number(paramValues['center_y'] ?? 0);
+    if (ptDef.id === 'p_O') { x = cx; y = cy; constraints = 'fixed'; isFixed = true; }
+    else if (ptDef.id === 'p_A_prime') { x = cx + homoK * (1 - cx); y = cy + homoK * (2 - cy); constraints = 'fixed'; }
+    else if (ptDef.id === 'p_B_prime') { x = cx + homoK * (3 - cx); y = cy + homoK * (1 - cy); constraints = 'fixed'; }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 30. SB-KP062: 平行四边形剪切
+  if (sid === 'SB-KP062' || tpl.includes('parallelogram')) {
+    const baseA = Number(paramValues['base_len'] ?? 5);
+    const sideB = Number(paramValues['side_len'] ?? 4);
+    const shearAngle = (Number(paramValues['shear_angle'] ?? 60) * Math.PI) / 180;
+    const ax = -baseA / 2;
+    const ay = (-sideB * Math.sin(shearAngle)) / 2;
+    if (ptDef.id === 'p_A') { x = ax; y = ay; constraints = 'fixed'; }
+    else if (ptDef.id === 'p_B') { x = ax + baseA; y = ay; constraints = 'fixed'; }
+    else if (ptDef.id === 'p_D') { x = ax + sideB * Math.cos(shearAngle); y = ay + sideB * Math.sin(shearAngle); constraints = 'fixed'; }
+    else if (ptDef.id === 'p_C') { x = ax + baseA + sideB * Math.cos(shearAngle); y = ay + sideB * Math.sin(shearAngle); constraints = 'fixed'; }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 31. SB-KP064: 矩形与剪切角
+  if (sid === 'SB-KP064' || tpl.includes('rectangle')) {
+    const rectW = Number(paramValues['rect_w'] ?? 6);
+    const rectH = Number(paramValues['rect_h'] ?? 4);
+    const shearA = (Number(paramValues['shear_alpha'] ?? 90) * Math.PI) / 180;
+    const raX = -rectW / 2;
+    const raY = -rectH / 2;
+    if (ptDef.id === 'p_A') { x = raX; y = raY; constraints = 'fixed'; }
+    else if (ptDef.id === 'p_B') { x = raX + rectW; y = raY; constraints = 'fixed'; }
+    else if (ptDef.id === 'p_D') { x = raX + rectH * Math.cos(shearA); y = raY + rectH * Math.sin(shearA); constraints = 'fixed'; }
+    else if (ptDef.id === 'p_C') { x = raX + rectW + rectH * Math.cos(shearA); y = raY + rectH * Math.sin(shearA); constraints = 'fixed'; }
+    return { x, y, constraints, isFixed };
+  }
+
+  return { x, y, constraints, isFixed };
 }
 
 /**
@@ -638,8 +1140,9 @@ export function computeSandboxBoundingBox(
 
   // 具名滑块驱动动点坐标
   dragPoints = dragPoints.map((ptDef) => {
-    let x = ptDef.x ?? 0;
-    let y = ptDef.y ?? 0;
+    const kPt = applyGeometricKinematics(config, ptDef, paramValues);
+    let x = kPt.x;
+    let y = kPt.y;
 
     if (
       tpl.startsWith('number_axis') ||
@@ -708,6 +1211,21 @@ export function computeSandboxBoundingBox(
   });
 
   // 4. 特化数学图元极值与衍生点计算
+  if (config.sandbox_id === 'SB-KP057' || tpl === 'geometry_pythagorean_template') {
+    if (paramValues['view_mode'] === 2) {
+      const legA = Number(paramValues['leg_a'] ?? 4);
+      const legB = Number(paramValues['leg_b'] ?? 3);
+      addPoint(0, 0);
+      addPoint(legB + legA, legB + legA);
+    }
+  }
+
+  if (config.sandbox_id === 'SB-KP055' || tpl.includes('equilateral')) {
+    const sideA = Number(paramValues['side_a'] ?? 6);
+    const R = sideA / Math.sqrt(3);
+    addCircleBounds(0, 0, R);
+  }
+
   if (isCircleTemplate) {
     const centerPt = dragPoints.find((p) => p.id === 'O' || p.id === 'Origin') || dragPoints[0];
     const cx = centerPt?.x ?? 0;
@@ -720,8 +1238,7 @@ export function computeSandboxBoundingBox(
     tpl.includes('parallelogram') ||
     tpl.includes('rectangle') ||
     tpl.includes('rhombus') ||
-    tpl.includes('square') ||
-    tpl.includes('midpoint_quad')
+    tpl.includes('square')
   ) {
     if (dragPoints.length >= 3) {
       const ptA = dragPoints[0];
@@ -902,6 +1419,15 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
       scope['slope_k'] = k;
       scope['Delta'] = b * b - 4 * a * c;
       scope['delta_val'] = b * b - 4 * a * c;
+      if (paramValues['leg_a'] !== undefined && paramValues['leg_b'] !== undefined) {
+        const legA = Number(paramValues['leg_a']);
+        const legB = Number(paramValues['leg_b']);
+        if (Number.isFinite(legA) && Number.isFinite(legB)) {
+          const h = Math.hypot(legA, legB);
+          scope['hypot'] = h;
+          scope['c_len'] = h;
+        }
+      }
       return scope;
     };
 
@@ -1222,8 +1748,11 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
 
       // 具名滑块驱动动点坐标
       dragPoints = dragPoints.map((ptDef) => {
-        let x = ptDef.x ?? 0;
-        let y = ptDef.y ?? 0;
+        const kPt = applyGeometricKinematics(config, ptDef, paramValues);
+        let x = kPt.x;
+        let y = kPt.y;
+        let constraints = kPt.constraints !== undefined ? kPt.constraints : ptDef.constraints;
+        let isFixed = kPt.isFixed !== undefined ? kPt.isFixed : ptDef.isFixed;
 
         // 数轴模板：动点 X 坐标响应 param_x0 + param_v * param_t 或 p_num / q_den
         if (
@@ -1336,7 +1865,7 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
           }
         }
 
-        return { ...ptDef, x, y };
+        return { ...ptDef, x, y, constraints, isFixed };
       });
 
       // 创建动点 (支持 46 概念沙盒 dynamic constraints 声明式约束动力学求解)
@@ -1653,6 +2182,7 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
         }
       });
 
+      const sid = config.sandbox_id || '';
       const primaryPoints = Object.keys(elements)
         .filter((k) => elements[k].elType === 'point')
         .map((k) => elements[k]);
@@ -1682,26 +2212,64 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
         }
 
         // 圆周角模型 (SB-KP073 / inscribed)
-        if (tpl.includes('inscribed') || config.sandbox_id === 'SB-KP073') {
+        if (tpl.includes('inscribed') || sid === 'SB-KP073') {
           if (elements['O'] && elements['A']) board.create('segment', [elements['O'], elements['A']], { strokeColor: '#0071e3', strokeWidth: 2 });
           if (elements['O'] && elements['B']) board.create('segment', [elements['O'], elements['B']], { strokeColor: '#0071e3', strokeWidth: 2 });
           if (elements['C'] && elements['A']) board.create('segment', [elements['C'], elements['A']], { strokeColor: '#818cf8', strokeWidth: 2.2 });
           if (elements['C'] && elements['B']) board.create('segment', [elements['C'], elements['B']], { strokeColor: '#818cf8', strokeWidth: 2.2 });
           if (elements['A'] && elements['B']) board.create('segment', [elements['A'], elements['B']], { strokeColor: '#64748b', strokeWidth: 1.5, dash: 2 });
         }
-        // 垂径定理 (chord)
-        else if (tpl.includes('chord')) {
+        // 垂径定理 (chord / SB-KP074)
+        else if (tpl.includes('chord') || sid === 'SB-KP074') {
           if (elements['A'] && elements['B']) board.create('segment', [elements['A'], elements['B']], { strokeColor: '#38bdf8', strokeWidth: 2.5 });
           const midOrD = elements['M'] || elements['D'];
           if (elements['O'] && midOrD) board.create('segment', [elements['O'], midOrD], { strokeColor: '#f59e0b', strokeWidth: 2 });
+          if (elements['O'] && elements['A']) board.create('segment', [elements['O'], elements['A']], { strokeColor: '#64748b', strokeWidth: 1.5, dash: 2 });
+          if (elements['O'] && elements['B']) board.create('segment', [elements['O'], elements['B']], { strokeColor: '#64748b', strokeWidth: 1.5, dash: 2 });
         }
-        // 切线与切线长 (tangent)
-        else if (tpl.includes('tangent')) {
+        // 切线与切线长 (tangent / SB-KP072)
+        else if (tpl.includes('tangent') || sid === 'SB-KP072') {
           if (elements['P'] && elements['A']) board.create('segment', [elements['P'], elements['A']], { strokeColor: '#34c759', strokeWidth: 2.2 });
           if (elements['P'] && elements['B']) board.create('segment', [elements['P'], elements['B']], { strokeColor: '#34c759', strokeWidth: 2.2 });
           if (elements['O'] && elements['A']) board.create('segment', [elements['O'], elements['A']], { strokeColor: '#64748b', strokeWidth: 1.5, dash: 2 });
           if (elements['O'] && elements['B']) board.create('segment', [elements['O'], elements['B']], { strokeColor: '#64748b', strokeWidth: 1.5, dash: 2 });
           if (elements['O'] && elements['P']) board.create('segment', [elements['O'], elements['P']], { strokeColor: '#94a3b8', strokeWidth: 1.5, dash: 3 });
+        }
+        // 直线与圆位置关系 (SB-KP071)
+        else if (sid === 'SB-KP071') {
+          if (elements['P1'] && elements['P2']) board.create('line', [elements['P1'], elements['P2']], { strokeColor: '#818cf8', strokeWidth: 2 });
+          if (elements['O'] && elements['H']) board.create('segment', [elements['O'], elements['H']], { strokeColor: '#f59e0b', strokeWidth: 2, dash: 2 });
+        }
+        // 三角形内切圆 (SB-KP076 / incircle)
+        else if (tpl.includes('incircle') || sid === 'SB-KP076') {
+          if (elements['A'] && elements['B'] && elements['C']) {
+            board.create('polygon', [elements['A'], elements['B'], elements['C']], {
+              borders: { strokeColor: '#38bdf8', strokeWidth: 2.5 },
+              fillColor: '#38bdf8',
+              fillOpacity: 0.18,
+            });
+          }
+          if (elements['I'] && elements['D']) {
+            board.create('segment', [elements['I'], elements['D']], { strokeColor: '#f59e0b', strokeWidth: 1.8, dash: 2 });
+            board.create('circle', [elements['I'], elements['D']], {
+              strokeColor: '#f59e0b',
+              strokeWidth: 2,
+              fillColor: 'rgba(245, 158, 11, 0.12)',
+            });
+          }
+        }
+        // 扇形度量 (SB-KP077 / sector_metric)
+        else if (tpl.includes('sector') || sid === 'SB-KP077') {
+          if (elements['O'] && elements['A']) board.create('segment', [elements['O'], elements['A']], { strokeColor: '#38bdf8', strokeWidth: 2 });
+          if (elements['O'] && elements['B']) board.create('segment', [elements['O'], elements['B']], { strokeColor: '#38bdf8', strokeWidth: 2 });
+          if (elements['O'] && elements['A'] && elements['B']) {
+            board.create('sector', [elements['O'], elements['A'], elements['B']], {
+              strokeColor: '#38bdf8',
+              strokeWidth: 2,
+              fillColor: '#38bdf8',
+              fillOpacity: 0.22,
+            });
+          }
         }
       }
       // (二) 数轴动力学与实数夹逼类
@@ -1884,15 +2452,387 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
           }
         }
       }
-      // (六) 三角形全等/相似与双三角形拓扑分离
+      // (六) 勾股定理与赵爽弦图 (SB-KP057 / geometry_pythagorean_template)
+      else if (sid === 'SB-KP057' || tpl === 'geometry_pythagorean_template') {
+        const viewMode = Number(paramValues['view_mode'] ?? 1);
+        const legA = Number(paramValues['leg_a'] ?? 4);
+        const legB = Number(paramValues['leg_b'] ?? 3);
+
+        if (viewMode === 2) {
+          // 赵爽弦图模式
+          // 外接大正方形边框 (0,0) -> (b+a,0) -> (b+a, b+a) -> (0, b+a)
+          board.create('polygon', [[0, 0], [legB + legA, 0], [legB + legA, legB + legA], [0, legB + legA]], {
+            borders: { strokeColor: '#64748b', strokeWidth: 1.5, dash: 2 },
+            fillColor: 'none',
+          });
+          // 4 个全等直角三角形
+          const tTriangles = [
+            [[0, 0], [legB, 0], [legB, legA]],
+            [[legB + legA, 0], [legB + legA, legB], [legB, legB]],
+            [[legB + legA, legB + legA], [legA, legB + legA], [legA, legB]],
+            [[0, legB + legA], [0, legA], [legB, legA]],
+          ];
+          tTriangles.forEach((pts) => {
+            board.create('polygon', pts, {
+              borders: { strokeColor: '#38bdf8', strokeWidth: 2 },
+              fillColor: '#38bdf8',
+              fillOpacity: 0.22,
+            });
+          });
+          // 中心小正方形：边长 |b - a|
+          board.create('polygon', [[legA, legA], [legB, legA], [legB, legB], [legA, legB]], {
+            borders: { strokeColor: '#f59e0b', strokeWidth: 2 },
+            fillColor: '#f59e0b',
+            fillOpacity: 0.35,
+          });
+        } else {
+          // 三方外挂正方形模式 (viewMode === 1)
+          const ptC = elements['C'] || elements['O'] || board.create('point', [0, 0], { visible: false, fixed: true });
+          const ptB = elements['B'] || board.create('point', [legA, 0], { visible: false, fixed: true });
+          const ptA = elements['A'] || board.create('point', [0, legB], { visible: false, fixed: true });
+
+          // 核心直角三角形 ABC
+          board.create('polygon', [ptC, ptB, ptA], {
+            borders: { strokeColor: '#38bdf8', strokeWidth: 2.5 },
+            fillColor: '#38bdf8',
+            fillOpacity: 0.22,
+          });
+          // 直角边 a 外挂 a×a 正方形 (0,0) -> (a,0) -> (a,-a) -> (0,-a)
+          board.create('polygon', [[0, 0], [legA, 0], [legA, -legA], [0, -legA]], {
+            borders: { strokeColor: '#f43f5e', strokeWidth: 1.8, dash: 2 },
+            fillColor: '#f43f5e',
+            fillOpacity: 0.15,
+          });
+          // 直角边 b 外挂 b×b 正方形 (0,0) -> (0,b) -> (-b,b) -> (-b,0)
+          board.create('polygon', [[0, 0], [0, legB], [-legB, legB], [-legB, 0]], {
+            borders: { strokeColor: '#a855f7', strokeWidth: 1.8, dash: 2 },
+            fillColor: '#a855f7',
+            fillOpacity: 0.15,
+          });
+          // 斜边 c 外挂 c×c 正方形 B(a,0) -> A(0,b) -> (b, b+a) -> (a+b, a)
+          board.create('polygon', [[legA, 0], [0, legB], [legB, legB + legA], [legA + legB, legA]], {
+            borders: { strokeColor: '#38bdf8', strokeWidth: 2, dash: 2 },
+            fillColor: '#38bdf8',
+            fillOpacity: 0.15,
+          });
+        }
+      }
+      // (七) 等腰三角形与对称折叠 (SB-KP053 / geometry_isosceles_template)
+      else if (sid === 'SB-KP053' || tpl.includes('isosceles')) {
+        const baseW = Number(paramValues['base_w'] ?? 6);
+        const foldT = Number(paramValues['fold_t'] ?? 0);
+        const ptA = elements['A'];
+        const ptB = elements['B'];
+        const ptC = elements['C'];
+        const ptD = elements['D'];
+
+        if (ptA && ptB && ptC) {
+          board.create('polygon', [ptA, ptB, ptC], {
+            borders: { strokeColor: '#38bdf8', strokeWidth: 2.5 },
+            fillColor: '#38bdf8',
+            fillOpacity: 0.2,
+          });
+        }
+        if (ptA && ptD) {
+          board.create('segment', [ptA, ptD], {
+            strokeColor: '#f59e0b',
+            strokeWidth: 2,
+            dash: 2,
+          });
+        }
+        if (foldT > 0 && ptA && ptD) {
+          const halfW = baseW / 2;
+          const foldX = halfW * Math.cos(foldT * Math.PI);
+          const ptCFold = board.create('point', [foldX, 0], {
+            name: "C'",
+            size: 4,
+            fillColor: '#f59e0b',
+            strokeColor: '#ffffff',
+            fixed: true,
+          });
+          board.create('polygon', [ptA, ptD, ptCFold], {
+            borders: { strokeColor: '#f59e0b', strokeWidth: 2, dash: 2 },
+            fillColor: '#f59e0b',
+            fillOpacity: 0.25,
+          });
+        }
+      }
+      // (八) 等边三角形与四心双圆 (SB-KP055 / geometry_equilateral_template)
+      else if (sid === 'SB-KP055' || tpl.includes('equilateral')) {
+        const sideA = Number(paramValues['side_a'] ?? 6);
+        const showDual = Number(paramValues['show_dual_circles'] ?? 1);
+        const ptA = elements['A'];
+        const ptB = elements['B'];
+        const ptC = elements['C'];
+
+        if (ptA && ptB && ptC) {
+          board.create('polygon', [ptA, ptB, ptC], {
+            borders: { strokeColor: '#38bdf8', strokeWidth: 2.5 },
+            fillColor: '#38bdf8',
+            fillOpacity: 0.2,
+          });
+        }
+
+        if (showDual > 0) {
+          const centerPt = elements['O'] || board.create('point', [0, 0], { name: 'O', size: 3, fillColor: '#cbd5e1', fixed: true });
+          const R = sideA / Math.sqrt(3);
+          const r = sideA / (2 * Math.sqrt(3));
+          board.create('circle', [centerPt, R], {
+            strokeColor: '#38bdf8',
+            strokeWidth: 2,
+            dash: 2,
+            fillColor: 'rgba(56, 189, 248, 0.08)',
+          });
+          board.create('circle', [centerPt, r], {
+            strokeColor: '#f59e0b',
+            strokeWidth: 2,
+            dash: 2,
+            fillColor: 'rgba(245, 158, 11, 0.08)',
+          });
+        }
+      }
+      // (九) 直角三角形斜边动点与垂线 (SB-KP056 / geometry_right_triangle_template)
+      else if (sid === 'SB-KP056' || (tpl.includes('right_triangle') && paramValues['point_t'] !== undefined)) {
+        const ptC = elements['C'];
+        const ptA = elements['A'];
+        const ptB = elements['B'];
+        const ptM = elements['M'];
+
+        if (ptC && ptA && ptB) {
+          board.create('polygon', [ptC, ptB, ptA], {
+            borders: { strokeColor: '#38bdf8', strokeWidth: 2.5 },
+            fillColor: '#38bdf8',
+            fillOpacity: 0.18,
+          });
+        }
+        if (ptM && ptC) {
+          const projY = board.create('point', [0, () => ptM.Y()], { visible: false, fixed: true });
+          const projX = board.create('point', [() => ptM.X(), 0], { visible: false, fixed: true });
+          board.create('segment', [ptM, projY], { strokeColor: '#f59e0b', strokeWidth: 1.8, dash: 2 });
+          board.create('segment', [ptM, projX], { strokeColor: '#f59e0b', strokeWidth: 1.8, dash: 2 });
+          board.create('segment', [ptC, ptM], { strokeColor: '#818cf8', strokeWidth: 2 });
+        }
+      }
+      // (十) 中点四边形相变与对角线 (SB-KP068 / geometry_midpoint_quad_template)
+      else if (sid === 'SB-KP068' || tpl.includes('midpoint_quad')) {
+        const ptA = elements['p_A'] || elements['A'];
+        const ptB = elements['p_B'] || elements['B'];
+        const ptC = elements['p_C'] || elements['C'];
+        const ptD = elements['p_D'] || elements['D'];
+
+        if (ptA && ptB && ptC && ptD) {
+          // 原四边形 ABCD
+          board.create('polygon', [ptA, ptB, ptC, ptD], {
+            borders: { strokeColor: '#38bdf8', strokeWidth: 2.5 },
+            fillColor: '#38bdf8',
+            fillOpacity: 0.15,
+          });
+
+          // 四边中点 M1, M2, M3, M4
+          const m1 = board.create('midpoint', [ptA, ptB], { name: 'M1', size: 3, fillColor: '#f59e0b', strokeColor: '#ffffff' });
+          const m2 = board.create('midpoint', [ptB, ptC], { name: 'M2', size: 3, fillColor: '#f59e0b', strokeColor: '#ffffff' });
+          const m3 = board.create('midpoint', [ptC, ptD], { name: 'M3', size: 3, fillColor: '#f59e0b', strokeColor: '#ffffff' });
+          const m4 = board.create('midpoint', [ptD, ptA], { name: 'M4', size: 3, fillColor: '#f59e0b', strokeColor: '#ffffff' });
+
+          // 中点四边形
+          board.create('polygon', [m1, m2, m3, m4], {
+            borders: { strokeColor: '#f59e0b', strokeWidth: 2 },
+            fillColor: '#f59e0b',
+            fillOpacity: 0.22,
+          });
+
+          // 对角线虚线
+          const showDiags = Number(paramValues['show_diags'] ?? 1);
+          if (showDiags > 0) {
+            board.create('segment', [ptA, ptC], { strokeColor: '#a855f7', strokeWidth: 2, dash: 2 });
+            board.create('segment', [ptB, ptD], { strokeColor: '#a855f7', strokeWidth: 2, dash: 2 });
+          }
+        }
+      }
+      // (十一) 几何变换动力学 (SB-KP079, SB-KP080, SB-KP081, SB-KP082)
+      else if (sid === 'SB-KP079' || tpl.includes('reflection')) {
+        const ptA = elements['A'];
+        const ptB = elements['B'];
+        const ptAP = elements['A_prime'] || elements["A'"];
+        const ptBP = elements['B_prime'] || elements["B'"];
+        const x0 = Number(paramValues['axis_pos'] ?? 0);
+        const phi = (Number(paramValues['axis_phi'] ?? 15) * Math.PI) / 180;
+
+        if (ptA && ptB) board.create('segment', [ptA, ptB], { strokeColor: '#38bdf8', strokeWidth: 2.5 });
+        if (ptAP && ptBP) board.create('segment', [ptAP, ptBP], { strokeColor: '#818cf8', strokeWidth: 2.5 });
+        if (ptA && ptAP) board.create('segment', [ptA, ptAP], { strokeColor: '#64748b', strokeWidth: 1.5, dash: 2 });
+        if (ptB && ptBP) board.create('segment', [ptB, ptBP], { strokeColor: '#64748b', strokeWidth: 1.5, dash: 2 });
+
+        const dirX = Math.cos(phi);
+        const dirY = Math.sin(phi);
+        board.create('line', [[x0, 0], [x0 + dirX, dirY]], {
+          strokeColor: '#f59e0b',
+          strokeWidth: 2,
+          dash: 2,
+        });
+      }
+      else if (sid === 'SB-KP080' || tpl.includes('translation_carrier')) {
+        const ptA = elements['A'];
+        const ptB = elements['B'];
+        const ptAP = elements['A_prime'] || elements["A'"];
+        const ptBP = elements['B_prime'] || elements["B'"];
+
+        if (ptA && ptB) board.create('segment', [ptA, ptB], { strokeColor: '#38bdf8', strokeWidth: 2.5 });
+        if (ptAP && ptBP) board.create('segment', [ptAP, ptBP], { strokeColor: '#818cf8', strokeWidth: 2.5 });
+        if (ptA && ptAP) board.create('arrow', [ptA, ptAP], { strokeColor: '#f59e0b', strokeWidth: 1.8, dash: 2 });
+        if (ptB && ptBP) board.create('arrow', [ptB, ptBP], { strokeColor: '#f59e0b', strokeWidth: 1.8, dash: 2 });
+      }
+      else if (sid === 'SB-KP081' || tpl.includes('rotation_hand_in_hand')) {
+        const ptO = elements['O'];
+        const ptA = elements['A'];
+        const ptB = elements['B'];
+        const ptAP = elements['A_prime'] || elements["A'"];
+        const ptBP = elements['B_prime'] || elements["B'"];
+
+        if (ptO && ptA && ptB) {
+          board.create('polygon', [ptO, ptA, ptB], {
+            borders: { strokeColor: '#38bdf8', strokeWidth: 2.2 },
+            fillColor: '#38bdf8',
+            fillOpacity: 0.18,
+          });
+        }
+        if (ptO && ptAP && ptBP) {
+          board.create('polygon', [ptO, ptAP, ptBP], {
+            borders: { strokeColor: '#818cf8', strokeWidth: 2.2 },
+            fillColor: '#818cf8',
+            fillOpacity: 0.18,
+          });
+        }
+        if (ptA && ptAP) board.create('segment', [ptA, ptAP], { strokeColor: '#f59e0b', strokeWidth: 1.5, dash: 2 });
+        if (ptB && ptBP) board.create('segment', [ptB, ptBP], { strokeColor: '#f59e0b', strokeWidth: 1.5, dash: 2 });
+      }
+      else if (sid === 'SB-KP082' || tpl.includes('central_sym')) {
+        const ptO = elements['O'];
+        const ptA = elements['A'];
+        const ptB = elements['B'];
+        const ptAP = elements['A_prime'] || elements["A'"];
+        const ptBP = elements['B_prime'] || elements["B'"];
+
+        if (ptA && ptB) board.create('segment', [ptA, ptB], { strokeColor: '#38bdf8', strokeWidth: 2.5 });
+        if (ptAP && ptBP) board.create('segment', [ptAP, ptBP], { strokeColor: '#818cf8', strokeWidth: 2.5 });
+        if (ptO && ptA && ptAP) board.create('segment', [ptA, ptAP], { strokeColor: '#64748b', strokeWidth: 1.5, dash: 2 });
+        if (ptO && ptB && ptBP) board.create('segment', [ptB, ptBP], { strokeColor: '#64748b', strokeWidth: 1.5, dash: 2 });
+      }
+      // (十二) 二次函数应用建模 (SB-KP043 / quadratic_modeling)
+      else if (sid === 'SB-KP043' || tpl.includes('quadratic_modeling')) {
+        const aVal = Number(paramValues['param_a'] ?? -0.5);
+        board.create('functiongraph', [(x: number) => aVal * (x + 2) * (x - 4), -5, 7], {
+          strokeColor: '#38bdf8',
+          strokeWidth: 2.5,
+        });
+        const ptP = elements['p_P'] || elements['P'];
+        if (ptP) {
+          const ptQ = board.create('point', [() => ptP.X(), 0], { visible: false, fixed: true });
+          board.create('segment', [ptP, ptQ], { strokeColor: '#f59e0b', strokeWidth: 2, dash: 2 });
+        }
+      }
+      // (十三) 平行线与几何点线角 (SB-KP048, 044, 045, 046, 047, 049, 085)
+      else if (sid === 'SB-KP048' || tpl === 'geometry_parallel_template' || (tpl.includes('parallel') && !tpl.includes('parallelogram'))) {
+        const ptA = elements['A'];
+        const ptB = elements['B'];
+        const ptC = elements['C'];
+        const ptD = elements['D'];
+        const ptP1 = elements['P1'];
+        const ptP2 = elements['P2'];
+
+        if (ptA && ptB) board.create('line', [ptA, ptB], { strokeColor: '#38bdf8', strokeWidth: 2 });
+        if (ptC && ptD) board.create('line', [ptC, ptD], { strokeColor: '#38bdf8', strokeWidth: 2 });
+        if (ptP1 && ptP2) board.create('line', [ptP1, ptP2], { strokeColor: '#f59e0b', strokeWidth: 2 });
+      }
+      else if (sid === 'SB-KP044' || tpl.includes('point_line')) {
+        const ptO = elements['p_O'] || elements['O'];
+        const ptA = elements['p_A'] || elements['A'];
+        const ptB = elements['p_B'] || elements['B'];
+
+        if (ptO && ptA) board.create('segment', [ptO, ptA], { strokeColor: '#38bdf8', strokeWidth: 2.5 });
+        if (ptO && ptB) board.create('segment', [ptO, ptB], { strokeColor: '#818cf8', strokeWidth: 2.5 });
+      }
+      else if (sid === 'SB-KP045' || tpl.includes('segment_mid')) {
+        const ptA = elements['p_A'] || elements['A'];
+        const ptB = elements['p_B'] || elements['B'];
+        if (ptA && ptB) board.create('segment', [ptA, ptB], { strokeColor: '#38bdf8', strokeWidth: 3 });
+      }
+      else if (sid === 'SB-KP046' || tpl.includes('angle_calc')) {
+        const ptO = elements['p_O'] || elements['O'];
+        const ptA = elements['p_A'] || elements['A'];
+        const ptB = elements['p_B'] || elements['B'];
+        const ptC = elements['p_C'] || elements['C'];
+
+        if (ptO && ptA) board.create('segment', [ptO, ptA], { strokeColor: '#38bdf8', strokeWidth: 2 });
+        if (ptO && ptB) board.create('segment', [ptO, ptB], { strokeColor: '#f59e0b', strokeWidth: 2 });
+        if (ptO && ptC) board.create('segment', [ptO, ptC], { strokeColor: '#818cf8', strokeWidth: 2 });
+      }
+      else if (sid === 'SB-KP047' || tpl.includes('perpendicular')) {
+        const ptP = elements['P'];
+        const ptC = elements['C'];
+        if (ptP && ptC) {
+          board.create('segment', [ptP, ptC], { strokeColor: '#f59e0b', strokeWidth: 2.2 });
+          const ptH = board.create('point', [() => ptP.X(), 0], { name: 'H', size: 3, fillColor: '#cbd5e1', fixed: true });
+          board.create('segment', [ptP, ptH], { strokeColor: '#38bdf8', strokeWidth: 2, dash: 2 });
+        }
+      }
+      else if (sid === 'SB-KP049' || tpl.includes('triangle_sum')) {
+        const ptA = elements['A'];
+        const ptB = elements['B'];
+        const ptC = elements['C'];
+        if (ptA && ptB && ptC) {
+          board.create('polygon', [ptA, ptB, ptC], {
+            borders: { strokeColor: '#38bdf8', strokeWidth: 2.5 },
+            fillColor: '#38bdf8',
+            fillOpacity: 0.2,
+          });
+        }
+      }
+      else if (sid === 'SB-KP085' || tpl.includes('right_triangle_measurement')) {
+        const ptC = elements['C'];
+        const ptA = elements['A'];
+        const ptB = elements['B'];
+        if (ptC && ptA && ptB) {
+          board.create('polygon', [ptC, ptA, ptB], {
+            borders: { strokeColor: '#38bdf8', strokeWidth: 2.5 },
+            fillColor: '#38bdf8',
+            fillOpacity: 0.2,
+          });
+        }
+      }
+      // (十四) 三角形全等/相似/位似与双三角形拓扑分离
       else if (
         tpl.includes('congruence') ||
         tpl.includes('similarity') ||
+        tpl.includes('homothety') ||
         tpl.includes('projection') ||
         tpl.includes('k_shape') ||
         primaryPoints.length === 6
       ) {
-        if (primaryPoints.length >= 6) {
+        if (tpl.includes('homothety') || sid === 'SB-KP060') {
+          const ptO = elements['p_O'] || elements['O'];
+          const ptA = elements['p_A'] || elements['A'];
+          const ptB = elements['p_B'] || elements['B'];
+          const ptAP = elements['p_A_prime'] || elements['A_prime'];
+          const ptBP = elements['p_B_prime'] || elements['B_prime'];
+
+          if (ptO && ptA && ptB) {
+            board.create('polygon', [ptO, ptA, ptB], {
+              borders: { strokeColor: '#38bdf8', strokeWidth: 2 },
+              fillColor: '#38bdf8',
+              fillOpacity: 0.18,
+            });
+          }
+          if (ptO && ptAP && ptBP) {
+            board.create('polygon', [ptO, ptAP, ptBP], {
+              borders: { strokeColor: '#818cf8', strokeWidth: 2 },
+              fillColor: '#818cf8',
+              fillOpacity: 0.18,
+            });
+          }
+          if (ptO && ptAP) board.create('segment', [ptO, ptAP], { strokeColor: '#64748b', strokeWidth: 1.5, dash: 2 });
+          if (ptO && ptBP) board.create('segment', [ptO, ptBP], { strokeColor: '#64748b', strokeWidth: 1.5, dash: 2 });
+        } else if (primaryPoints.length >= 6) {
           // 双三角形拓扑分离：前 3 点独立一角 (天蓝)，后 3 点独立一角 (靛紫)
           board.create('polygon', [primaryPoints[0], primaryPoints[1], primaryPoints[2]], {
             borders: { strokeColor: '#38bdf8', strokeWidth: 2.5 },
@@ -1912,25 +2852,26 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
           });
         }
       }
-      // (七) 特殊四边形与向量从动闭环
+      // (十五) 特殊四边形与向量从动闭环
       else if (
         tpl.includes('parallelogram') ||
         tpl.includes('rectangle') ||
         tpl.includes('rhombus') ||
-        tpl.includes('square') ||
-        tpl.includes('midpoint_quad')
+        tpl.includes('square')
       ) {
         if (primaryPoints.length >= 4) {
           const ptA = primaryPoints[0];
           const ptB = primaryPoints[1];
           const ptC = primaryPoints[2];
-          // 严格向量从动计算 D = A + C - B
-          const dX = ptA.X() + ptC.X() - ptB.X();
-          const dY = ptA.Y() + ptC.Y() - ptB.Y();
-          const ptD = elements['D'] || primaryPoints[3];
-          if (ptD && typeof ptD.setPosition === 'function') {
+          // 严格向量从动计算 D = A + C - B (仅对一般平行四边形闭环，且非显式参数驱动时)
+          if (!sid.startsWith('SB-KP06') && typeof (elements['D'] || primaryPoints[3])?.setPosition === 'function') {
+            const dX = ptA.X() + ptC.X() - ptB.X();
+            const dY = ptA.Y() + ptC.Y() - ptB.Y();
+            const ptD = elements['D'] || primaryPoints[3];
             ptD.setPosition(JXG.COORDS_BY_USER, [dX, dY]);
           }
+
+          const ptD = elements['p_D'] || elements['D'] || primaryPoints[3];
 
           // 绘制四边形
           board.create('polygon', [ptA, ptB, ptC, ptD], {
@@ -1967,7 +2908,7 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
           }
         }
       }
-      // (八) 基础多边形降级回退
+      // (十六) 基础多边形降级回退
       else {
         const hasExplicitPolys = Array.isArray(visualElements?.polygons) && visualElements.polygons.length > 0;
         if (!hasExplicitPolys) {
@@ -1994,7 +2935,16 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
     }
 
     // (九) 46 概念沙盒声明式几何填充面与直角标渲染引擎 (TASK-FE-0021 步骤 2)
-    if (visualElements?.polygons && Array.isArray(visualElements.polygons)) {
+    const skipDefaultPolygons = [
+      'SB-KP057', 'SB-KP053', 'SB-KP055', 'SB-KP068', 'SB-KP056',
+      'SB-KP062', 'SB-KP064', 'SB-KP065', 'SB-KP066', 'SB-KP058', 'SB-KP051'
+    ].includes(config.sandbox_id || '') ||
+    tpl === 'geometry_pythagorean_template' ||
+    tpl.includes('midpoint_quad') ||
+    tpl.includes('equilateral') ||
+    tpl.includes('isosceles');
+
+    if (!skipDefaultPolygons && visualElements?.polygons && Array.isArray(visualElements.polygons)) {
       visualElements.polygons.forEach((poly) => {
         const rawPts = poly.pts || (poly as any).points;
         if (!Array.isArray(rawPts) || rawPts.length < 3) return;

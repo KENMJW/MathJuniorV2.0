@@ -7,22 +7,23 @@
   <text x="35" y="42" font-family="-apple-system, sans-serif" font-size="13" font-weight="700" fill="#0071e3">KP-066 · 四边形</text>
   <text x="365" y="42" text-anchor="end" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#1d1d1f">正方形的性质与判定</text>
 
-
-  <!-- Parallelogram with Diagonals -->
-  <g transform="translate(70, 85)">
-    <!-- Parallelogram vertices -->
-    <polygon class="layer-stage-1" points="60,30 230,30 180,140 10,140" fill="#af52de" fill-opacity="0.1" stroke="#af52de" stroke-width="2.5"/>
-    <!-- Diagonals -->
-    <line class="layer-stage-4" x1="60" y1="30" x2="180" y2="140" stroke="#ff9500" stroke-width="1.5" stroke-dasharray="4,3"/>
-    <line class="layer-stage-4" x1="230" y1="30" x2="10" y2="140" stroke="#0071e3" stroke-width="1.5" stroke-dasharray="4,3"/>
-    <circle class="layer-stage-4" cx="120" cy="85" r="4" fill="#ff3b30"/>
-    <text class="layer-stage-4" x="120" y="75" text-anchor="middle" font-size="12" font-weight="bold" fill="#ff3b30">O</text>
-    <!-- Vertices -->
-    <text class="layer-stage-4" x="50" y="24" font-weight="bold" font-size="13" fill="#1d1d1f">A</text>
-    <text class="layer-stage-4" x="238" y="28" font-weight="bold" font-size="13" fill="#1d1d1f">B</text>
-    <text class="layer-stage-3 formal-labels" x="188" y="152" font-weight="bold" font-size="13" fill="#1d1d1f">C</text>
-    <text class="layer-stage-3 formal-labels" x="0" y="152" font-weight="bold" font-size="13" fill="#1d1d1f">D</text>
+  <!-- Core Content Graphic -->
+  <g transform="translate(65, 68)">
+    <rect class="layer-stage-1" x="25" y="25" width="120" height="120" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+    <!-- 4 corner right angles -->
+    <rect class="layer-stage-2" x="25" y="25" width="12" height="12" fill="none" stroke="#16a34a" stroke-width="1.5"/>
+    <rect class="layer-stage-2" x="133" y="25" width="12" height="12" fill="none" stroke="#16a34a" stroke-width="1.5"/>
+    <rect class="layer-stage-2" x="133" y="133" width="12" height="12" fill="none" stroke="#16a34a" stroke-width="1.5"/>
+    <rect class="layer-stage-2" x="25" y="133" width="12" height="12" fill="none" stroke="#16a34a" stroke-width="1.5"/>
+    <!-- Perpendicular equal diagonals -->
+    <line class="layer-stage-3 formal-labels" x1="25" y1="25" x2="145" y2="145" stroke="#dc2626" stroke-width="2"/>
+    <line class="layer-stage-3 formal-labels" x1="145" y1="25" x2="25" y2="145" stroke="#dc2626" stroke-width="2"/>
+    <text class="layer-stage-4" x="85" y="165" text-anchor="middle" font-size="12" font-weight="bold" fill="#15803d">正方形: 矩形 + 菱形 (全对称图形)</text>
   </g>
-  <text class="layer-stage-4" x="200" y="265" text-anchor="middle" font-size="13" font-weight="600" fill="#1d1d1f">对角线互相平分 (OA=OC, OB=OD)</text>
 
+  <!-- Footer Conclusion / Extrema / Vieta -->
+  <text class="layer-stage-4" x="200" y="262" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" font-weight="600" fill="#1d1d1f">
+    <tspan x="200" dy="0">正方形具有矩形与菱形的所有性质：四角</tspan>
+    <tspan x="200" dy="14">为直角，四边相等，对角线垂直相等且平分</tspan>
+  </text>
 </svg>

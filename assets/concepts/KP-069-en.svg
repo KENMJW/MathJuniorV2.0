@@ -4,31 +4,25 @@
 
   <!-- Card Header -->
   <rect x="20" y="16" width="360" height="42" rx="10" fill="#f2f2f7" />
-  <text x="35" y="42" font-family="-apple-system, sans-serif" font-size="13" font-weight="700" fill="#0071e3">KP-069 · 圆</text>
+  <text x="35" y="42" font-family="-apple-system, sans-serif" font-size="13" font-weight="700" fill="#0071e3">KP-069 · Circles</text>
   <text x="365" y="42" text-anchor="end" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#1d1d1f">Fundamental Concepts of Circles</text>
 
-
-  <!-- Circle with Chord, Radius and Tangent -->
-  <g transform="translate(200, 160)">
-    <!-- Main Circle -->
-    <circle class="layer-stage-1" cx="0" cy="0" r="70" fill="#0071e3" fill-opacity="0.08" stroke="#0071e3" stroke-width="2.5"/>
-    <circle class="layer-stage-2" cx="0" cy="0" r="4" fill="#1d1d1f"/>
-    <text class="layer-stage-3 formal-labels" x="-12" y="-5" font-weight="bold" font-size="13" fill="#1d1d1f">O</text>
-    <!-- Chord AB -->
-    <line class="layer-stage-2" x1="-55" y1="43" x2="55" y2="43" stroke="#ff9500" stroke-width="2"/>
-    <!-- Perpendicular radius to chord -->
-    <line class="layer-stage-2" x1="0" y1="0" x2="0" y2="70" stroke="#34c759" stroke-width="2"/>
-    <rect class="layer-stage-2" x="0" y="33" width="10" height="10" fill="none" stroke="#1d1d1f" stroke-width="1.2"/>
-    <!-- Tangent line at bottom (0, 70) -->
-    <line class="layer-stage-4" x1="-80" y1="70" x2="80" y2="70" stroke="#ff3b30" stroke-width="2.5"/>
-    <!-- Points -->
-    <circle class="layer-stage-2" cx="-55" cy="43" r="3.5" fill="#ff9500"/>
-    <circle class="layer-stage-2" cx="55" cy="43" r="3.5" fill="#ff9500"/>
-    <circle class="layer-stage-4" cx="0" cy="70" r="4" fill="#ff3b30"/>
-    <text class="layer-stage-3 formal-labels" x="-65" y="45" font-size="12" font-weight="bold" fill="#1d1d1f">A</text>
-    <text class="layer-stage-3 formal-labels" x="62" y="45" font-size="12" font-weight="bold" fill="#1d1d1f">B</text>
-    <text class="layer-stage-4" x="5" y="85" font-size="12" font-weight="bold" fill="#ff3b30">T</text>
+  <!-- Core Content Graphic -->
+  <g transform="translate(60, 68)">
+    <circle class="layer-stage-1" cx="140" cy="85" r="55" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+    <circle class="layer-stage-1" cx="140" cy="85" r="4" fill="#1e40af"/>
+    <text class="layer-stage-1" x="140" y="103" text-anchor="middle" font-size="11" font-weight="bold" fill="#1e40af">Center O</text>
+    <line class="layer-stage-2" x1="140" y1="85" x2="185" y2="50" stroke="#ea580c" stroke-width="2.5"/>
+    <circle class="layer-stage-2" cx="185" cy="50" r="4" fill="#ea580c"/>
+    <text class="layer-stage-2" x="165" y="60" font-size="10" font-weight="bold" fill="#ea580c">Radius r</text>
+    <path class="layer-stage-3 formal-labels" d="M195,85 A55,55 0 0,0 185,50" fill="none" stroke="#16a34a" stroke-width="2"/>
+    <polygon class="layer-stage-3 formal-labels" points="185,50 190,56 195,50" fill="#16a34a"/>
+    <text class="layer-stage-4" x="140" y="160" text-anchor="middle" font-size="11" font-weight="bold" fill="#047857">Locus of points at distance r from fixed center O</text>
   </g>
-  <text class="layer-stage-4" x="200" y="270" text-anchor="middle" font-size="13" font-weight="600" fill="#1d1d1f">Perpendicular Chord &amp; Tangent Line</text>
 
+  <!-- Footer Conclusion / Extrema / Vieta -->
+  <text class="layer-stage-4" x="200" y="262" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" font-weight="600" fill="#1d1d1f">
+    <tspan x="200" dy="0">Circle is locus of all points</tspan>
+    <tspan x="200" dy="14">at distance r from center O</tspan>
+  </text>
 </svg>

@@ -15,6 +15,7 @@ export interface Point2D {
 
 export type InvariantType =
   | 'distance'
+  | 'distance_sq'
   | 'angle'
   | 'vertical_distance'
   | 'area_triangle'
@@ -159,6 +160,14 @@ export function evaluateInvariantValue(
       return Math.hypot(p1.x - p2.x, p1.y - p2.y);
     }
 
+    case 'distance_sq': {
+      if (!deps || deps.length < 2) return null;
+      const p1 = getPt(deps[0]);
+      const p2 = getPt(deps[1]);
+      if (!p1 || !p2) return null;
+      return (p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2;
+    }
+
     case 'distance_sum': {
       if (!deps || deps.length < 3) return null;
       if (deps.length >= 4) {
@@ -283,6 +292,42 @@ export function formatInvariantText(
     currentScope[`${k.toLowerCase()}_y`] = pt.y;
   });
 
+  // 增强公式求值作用域：若公式中出现 hypot * hypot 或 c_len * c_len 或 c * c，确保如果当前 scope 中有 hypot，计算其真实平方，杜绝任何 NaN 或错配
+  const formulaAll = `${spec.formula || ''} ${spec.condition || ''} ${spec.state_label || ''}`;
+  if (
+    formulaAll.includes('hypot') ||
+    formulaAll.includes('c_len') ||
+    formulaAll.includes('c * c') ||
+    formulaAll.includes('c^2')
+  ) {
+    if (currentScope.hypot === undefined || Number.isNaN(currentScope.hypot)) {
+      const legA = currentScope.leg_a ?? currentScope.param_a ?? currentScope.a;
+      const legB = currentScope.leg_b ?? currentScope.param_b ?? currentScope.b;
+      if (typeof legA === 'number' && typeof legB === 'number' && Number.isFinite(legA) && Number.isFinite(legB)) {
+        currentScope.hypot = Math.hypot(legA, legB);
+      } else if (pointMap['A'] && pointMap['B']) {
+        currentScope.hypot = Math.hypot(pointMap['A'].x - pointMap['B'].x, pointMap['A'].y - pointMap['B'].y);
+      } else if (spec.deps && spec.deps.length >= 2) {
+        const p1 = pointMap[spec.deps[0]] || pointMap[spec.deps[0].toLowerCase()] || pointMap[`p_${spec.deps[0]}`];
+        const p2 = pointMap[spec.deps[1]] || pointMap[spec.deps[1].toLowerCase()] || pointMap[`p_${spec.deps[1]}`];
+        if (p1 && p2) {
+          currentScope.hypot = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+        }
+      }
+    }
+
+    if (currentScope.hypot !== undefined && Number.isFinite(Number(currentScope.hypot))) {
+      const h = Number(currentScope.hypot);
+      currentScope.hypot = h;
+      if (currentScope.c_len === undefined || Number.isNaN(currentScope.c_len)) {
+        currentScope.c_len = h;
+      }
+      if (formulaAll.includes('c * c') || formulaAll.includes('c^2')) {
+        currentScope.c = h;
+      }
+    }
+  }
+
   // 1. condition 条件显隐
   if (spec.condition) {
     const condResult = evaluateSafeExpression(spec.condition, currentScope);
@@ -326,6 +371,18 @@ export function formatInvariantText(
     }
     const wrappedFormula = wrapFormulaLatex(formula);
     return label ? `${label}: ${wrappedFormula}` : wrappedFormula;
+  }
+
+  // 处理两点距离平方展示: formula = "c^2 = {val}"
+  if (spec.type === 'distance_sq' && spec.deps && spec.deps.length >= 2) {
+    const p1 = pointMap[spec.deps[0]] || pointMap[spec.deps[0].toLowerCase()] || pointMap[`p_${spec.deps[0]}`];
+    const p2 = pointMap[spec.deps[1]] || pointMap[spec.deps[1].toLowerCase()] || pointMap[`p_${spec.deps[1]}`];
+    if (p1 && p2) {
+      const distSq = (p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2;
+      const formatted = distSq.toFixed(2);
+      const text = formula.replace('{val}', formatted);
+      return label ? `${label}: ${wrapFormulaLatex(text)}` : wrapFormulaLatex(text);
+    }
   }
 
   // 2. 纯几何不变量计算

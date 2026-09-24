@@ -8,6 +8,16 @@ import {
   createDefaultMorphingState,
   compileMorphingSandboxConfig,
   mockLeapSandboxModels,
+  MODEL_MORPH_SOLVERS,
+  solveLM8A09,
+  solveLM7B04,
+  solveLM7A02,
+  solveLM7B03,
+  solveLM7B05,
+  solveLM8A06,
+  solveLM8A10,
+  solveLM8B14,
+  solveLM9B29,
 } from '../morphControllers';
 import { XRayLayer } from '../XRayLayer';
 import { LeapLab } from '../LeapLab';
@@ -64,7 +74,7 @@ describe('4D Morphing Controllers & X-Ray (Task 11.4 & 铁律 1/3 校验)', () =
 
     expect(config1.sandbox_id).toContain('LEAP-LM-8A-01');
     expect(config1.canvas_template).toBe('euclidean');
-    expect(JSON.parse(config1.viewbox_spec_json)).toHaveProperty('marginPercent');
+    expect(JSON.parse(config1.viewbox_spec_json!)).toHaveProperty('marginPercent');
 
     // 切换到直角坐标系载体
     const axisState = { ...defaultState, carrierId: 'coordinate_grid' };
@@ -293,5 +303,221 @@ describe('4D Morphing Controllers & X-Ray (Task 11.4 & 铁律 1/3 校验)', () =
     expect(rendererCode).toContain("tpl === 'number_axis_dynamic'");
     expect(rendererCode).toContain("tpl.includes('number_line')");
     expect(rendererCode).toContain("tpl === 'axis'");
+  });
+
+  it('12. 全库硬编码数字动点名称正则清洗：彻底剔除 A(-1,5)、B(-4,0)、村庄A(-4,4)、交点P(2,3) 并保留纯净动态名称', () => {
+    const testDirtyModel = {
+      ...testModel,
+      model_id: 'LM-TEST-CLEAN',
+      carrier_morphing_json: JSON.stringify({
+        default: 'c1',
+        options: [
+          {
+            id: 'c1',
+            nameZh: '清洗测试',
+            nameEn: 'Clean Test',
+            points: [
+              { id: 'A', name: 'A(-1,5)', x: -1, y: 5, isFixed: true },
+              { id: 'B', name: 'B(-4,0)', x: -4, y: 0, isFixed: true },
+              { id: 'C', name: '村庄A(-4,4)', x: -4, y: 4, isFixed: true },
+              { id: 'P', name: '交点P(2,3)', x: 2, y: 3, isFixed: false },
+              { id: 'O', name: 'O(0,0)', x: 0, y: 0, isFixed: true },
+              { id: 'P2', name: 'P(动点)', x: 1, y: 0, isFixed: false },
+              { id: 'A2', name: 'A(起点)', x: 0, y: 1, isFixed: true },
+            ],
+          },
+        ],
+      }),
+    };
+
+    const state = createDefaultMorphingState(testDirtyModel);
+    const config = compileMorphingSandboxConfig(testDirtyModel, state);
+    const dragPoints = JSON.parse(config.drag_points_json);
+
+    const ptA = dragPoints.find((p: any) => p.id === 'A');
+    const ptB = dragPoints.find((p: any) => p.id === 'B');
+    const ptC = dragPoints.find((p: any) => p.id === 'C');
+    const ptP = dragPoints.find((p: any) => p.id === 'P');
+    const ptO = dragPoints.find((p: any) => p.id === 'O');
+    const ptP2 = dragPoints.find((p: any) => p.id === 'P2');
+    const ptA2 = dragPoints.find((p: any) => p.id === 'A2');
+
+    expect(ptA.name).toBe('A');
+    expect(ptB.name).toBe('B');
+    expect(ptC.name).toBe('村庄A');
+    expect(ptP.name).toBe('交点P');
+    expect(ptO.name).toBe('O');
+    expect(ptP2.name).toBe('P(动点)');
+    expect(ptA2.name).toBe('A(起点)');
+  });
+
+  it('13. 4D 专属模型参数动力学解算器 (MODEL_MORPH_SOLVERS)：全库 37 个模型全量覆盖', () => {
+    const all37ModelIds = [
+      'LM-7A-01', 'LM-7A-02', 'LM-7B-03', 'LM-7B-04', 'LM-7B-05',
+      'LM-8A-01', 'LM-8A-06', 'LM-8A-07', 'LM-8A-08', 'LM-8A-09',
+      'LM-8A-10', 'LM-8A-11', 'LM-8A-12', 'LM-8B-13', 'LM-8B-14',
+      'LM-8B-15', 'LM-8B-16', 'LM-8B-17', 'LM-9A-18', 'LM-9A-19',
+      'LM-9A-20', 'LM-9A-21', 'LM-9A-22', 'LM-9A-23', 'LM-9A-24',
+      'LM-9A-25', 'LM-9A-26', 'LM-9A-27', 'LM-9A-28', 'LM-9B-29',
+      'LM-9B-30', 'LM-9B-31', 'LM-9B-32', 'LM-9B-33', 'LM-9B-34',
+      'LM-9B-35', 'LM-9B-36',
+    ];
+
+    expect(Object.keys(MODEL_MORPH_SOLVERS).length).toBeGreaterThanOrEqual(37);
+    all37ModelIds.forEach((id) => {
+      expect(typeof MODEL_MORPH_SOLVERS[id]).toBe('function');
+    });
+  });
+
+  it('14. 4D 动力学解算器详细验证 (9 大专属模型动力驱动)', () => {
+    // 1. LM-8A-09 (倍长中线)
+    const points8A09 = [
+      { id: 'A', name: 'A', x: 0, y: 6, isFixed: true },
+      { id: 'B', name: 'B', x: -4, y: 0, isFixed: true },
+      { id: 'C', name: 'C', x: 6, y: 0, isFixed: true },
+    ];
+    const solved8A09 = solveLM8A09(points8A09, { vertex_ax: 2, vertex_ay: 4, extend_ratio: 1.5 });
+    const ptA8A09 = solved8A09.find((p) => p.id === 'A');
+    const ptD8A09 = solved8A09.find((p) => p.id === 'D');
+    const ptE8A09 = solved8A09.find((p) => p.id === 'E');
+    expect(ptA8A09?.x).toBe(2);
+    expect(ptA8A09?.y).toBe(4);
+    expect(ptD8A09?.x).toBe(0);
+    expect(ptD8A09?.y).toBe(0);
+    expect(ptE8A09?.x).toBe(-3);
+    expect(ptE8A09?.y).toBe(-6);
+
+    // 2. LM-7B-04 (造桥选址最短路径)
+    const points7B04 = [
+      { id: 'A', name: 'A(起点)', x: -4, y: 4, isFixed: true },
+      { id: 'B', name: 'B(终点)', x: 4, y: -4, isFixed: true },
+      { id: 'P1', name: 'P1(桥头)', x: -1, y: 1, isFixed: false },
+      { id: 'P2', name: 'P2(桥尾)', x: -1, y: -1, isFixed: false },
+    ];
+    const solved7B04 = solveLM7B04(points7B04, { bridge_x: 2, river_d: 3 });
+    const ptP1_7B04 = solved7B04.find((p) => p.id === 'P1');
+    const ptP2_7B04 = solved7B04.find((p) => p.id === 'P2');
+    const ptAPrime = solved7B04.find((p) => p.id === 'A_prime');
+    expect(ptP1_7B04?.x).toBe(2);
+    expect(ptP1_7B04?.y).toBe(1.5);
+    expect(ptP2_7B04?.x).toBe(2);
+    expect(ptP2_7B04?.y).toBe(-1.5);
+    expect(ptAPrime?.x).toBe(-4);
+    expect(ptAPrime?.y).toBe(1); // 4 - 3 = 1
+
+    // 3. LM-7A-02 (线段双中点与角平分线)
+    const points7A02 = [
+      { id: 'Origin', name: 'O', x: 0, y: 0, isFixed: true },
+      { id: 'A', name: 'A', x: -4, y: 0, isFixed: true },
+      { id: 'B', name: 'B', x: 4, y: 0, isFixed: true },
+      { id: 'M2', name: 'M2', x: 2, y: 0, isFixed: false },
+      { id: 'P', name: 'P', x: 0, y: 4, isFixed: false },
+    ];
+    const solved7A02 = solveLM7A02(points7A02, { len_ab: 8, angle_alpha: 60 });
+    const ptB7A02 = solved7A02.find((p) => p.id === 'B');
+    const ptM2_7A02 = solved7A02.find((p) => p.id === 'M2');
+    const ptP7A02 = solved7A02.find((p) => p.id === 'P');
+    expect(ptB7A02?.x).toBe(8);
+    expect(ptM2_7A02?.x).toBe(4);
+    expect(ptP7A02?.x).toBeCloseTo(2, 2);
+    expect(ptP7A02?.y).toBeCloseTo(3.464, 2);
+
+    // 4. LM-7B-03 (非负数之和为零)
+    const points7B03 = [
+      { id: 'Origin', name: 'O', x: 0, y: 0, isFixed: true },
+      { id: 'A', name: 'A', x: -2, y: 0, isFixed: true },
+      { id: 'B', name: 'B', x: 2, y: 0, isFixed: true },
+    ];
+    const solved7B03 = solveLM7B03(points7B03, { var_x: 0, var_y: 0, target_x0: 0, target_y0: 0 });
+    const ptP7B03 = solved7B03.find((p) => p.id === 'P');
+    expect(ptP7B03?.x).toBe(0);
+    expect(ptP7B03?.y).toBe(0);
+
+    // 5. LM-7B-05 (二元一次方程组交点)
+    const points7B05 = [
+      { id: 'Origin', name: 'O', x: 0, y: 0, isFixed: true },
+      { id: 'P', name: 'P(交点)', x: 2, y: 3, isFixed: false },
+    ];
+    const solved7B05 = solveLM7B05(points7B05, { slope_k1: 2, intercept_b1: 1, slope_k2: -1, intercept_b2: 4 });
+    const ptP7B05 = solved7B05.find((p) => p.id === 'P');
+    expect(ptP7B05?.x).toBe(1);
+    expect(ptP7B05?.y).toBe(3);
+
+    // 6. LM-8A-06 (乘法公式面积割补)
+    const points8A06 = [
+      { id: 'A', name: 'A', x: 6, y: 0, isFixed: true },
+      { id: 'B', name: 'B', x: 0, y: 4, isFixed: true },
+      { id: 'P', name: 'P', x: 4, y: 2, isFixed: false },
+    ];
+    const solved8A06 = solveLM8A06(points8A06, { side_a: 10, side_b: 8 });
+    const ptA8A06 = solved8A06.find((p) => p.id === 'A');
+    const ptB8A06 = solved8A06.find((p) => p.id === 'B');
+    const ptP8A06 = solved8A06.find((p) => p.id === 'P');
+    expect(ptA8A06?.x).toBe(10);
+    expect(ptB8A06?.y).toBe(8);
+    expect(ptP8A06?.x).toBe(6);
+    expect(ptP8A06?.y).toBe(4);
+
+    // 7. LM-8A-10 (截长补短)
+    const points8A10 = [
+      { id: 'A', name: 'A', x: 0, y: 5.196, isFixed: true },
+      { id: 'B', name: 'B', x: -3, y: 0, isFixed: true },
+      { id: 'C', name: 'C', x: 3, y: 0, isFixed: true },
+    ];
+    const solved8A10 = solveLM8A10(points8A10, { pos_e: 1.5, pos_f: 4.5 });
+    const ptE8A10 = solved8A10.find((p) => p.id === 'E');
+    const ptF8A10 = solved8A10.find((p) => p.id === 'F');
+    expect(ptE8A10?.x).toBe(1.5);
+    expect(ptF8A10?.x).toBe(4.5);
+
+    // 8. LM-8B-14 (十字架垂直)
+    const points8B14 = [
+      { id: 'A', name: 'A', x: 0, y: 4, isFixed: true },
+      { id: 'B', name: 'B', x: -3, y: 0, isFixed: true },
+      { id: 'C', name: 'C', x: 0, y: -2, isFixed: true },
+      { id: 'D', name: 'D', x: 5, y: 0, isFixed: true },
+    ];
+    const solved8B14 = solveLM8B14(points8B14, { vert_a_y: 6, vert_c_y: -4, vert_b_x: -5, vert_d_x: 7 });
+    const ptA8B14 = solved8B14.find((p) => p.id === 'A');
+    const ptC8B14 = solved8B14.find((p) => p.id === 'C');
+    const ptB8B14 = solved8B14.find((p) => p.id === 'B');
+    const ptD8B14 = solved8B14.find((p) => p.id === 'D');
+    expect(ptA8B14?.y).toBe(6);
+    expect(ptC8B14?.y).toBe(-4);
+    expect(ptB8B14?.x).toBe(-5);
+    expect(ptD8B14?.x).toBe(7);
+
+    // 9. LM-9B-29 (一线三等角)
+    const points9B29 = [
+      { id: 'A', name: 'A', x: -4, y: 0, isFixed: true },
+      { id: 'C', name: 'C', x: 0, y: 0, isFixed: false },
+      { id: 'B', name: 'B', x: 5, y: 0, isFixed: true },
+      { id: 'D', name: 'D', x: -4, y: 3, isFixed: false },
+      { id: 'E', name: 'E', x: 5, y: 3.75, isFixed: false },
+    ];
+    const solved9B29 = solveLM9B29(points9B29, { slider_xc: 1 });
+    const ptC9B29 = solved9B29.find((p) => p.id === 'C');
+    const ptE9B29 = solved9B29.find((p) => p.id === 'E');
+    expect(ptC9B29?.x).toBe(1);
+    expect(ptE9B29?.y).toBe(2.4);
+  });
+
+  it('15. 严格红线检查：源码零 emoji、零 eval、零 innerHTML、零 foreignObject', () => {
+    const morphCode = fs.readFileSync(path.resolve(__dirname, '../morphControllers.ts'), 'utf-8');
+
+    // 零 emoji 检查
+    const emojiRegex = /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/u;
+    expect(emojiRegex.test(morphCode)).toBe(false);
+
+    // 零 eval / new Function 检查
+    expect(morphCode).not.toContain('eval(');
+    expect(morphCode).not.toContain('new Function(');
+
+    // 零 innerHTML / dangerouslySetInnerHTML
+    expect(morphCode).not.toContain('innerHTML');
+    expect(morphCode).not.toContain('dangerouslySetInnerHTML');
+
+    // 零 foreignObject
+    expect(morphCode).not.toContain('foreignObject');
   });
 });

@@ -295,125 +295,24 @@ export const LeapLab: React.FC<LeapLabProps> = ({
     currentModel.model_id.includes('9A-19') ||
     currentModel.model_name_zh.includes('手拉手');
 
-  // 主线同谱系模型与梯次映射
-  const lineModels = useMemo(() => {
-    const line = currentModel.primary_line;
-    if (!line) return [currentModel];
-    return allModels.filter((m) => m.primary_line === line);
-  }, [allModels, currentModel.primary_line]);
-
-  // 根据当前模型推导当前梯次 (1=原型, 2=变式, 3=综合)
-  const currentModelTier = useMemo(() => {
-    if (lineModels.length >= 3) {
-      const sorted = [...lineModels].sort((a, b) => a.model_id.localeCompare(b.model_id));
-      const idx = sorted.findIndex((m) => m.model_id === currentModel.model_id);
-      if (idx === 0) return 1;
-      if (idx === sorted.length - 1) return 3;
-      return 2;
-    } else if (lineModels.length === 2) {
-      return currentModel.tier_level === 2 ? 2 : 1;
-    }
-    return currentModel.tier_level || 1;
-  }, [lineModels, currentModel]);
-
   // 手拉手专用动画与交互状态
   const [rotationAngle, setRotationAngle] = useState<number>(60);
   const [isAutoPlaying, setIsAutoPlaying] = useState<boolean>(false);
-  const [tierLevel, setTierLevel] = useState<number>(() => currentModelTier);
   const [invariants, setInvariants] = useState<Array<{ id: string; text: string; isConstant: boolean }>>([]);
+  const [isMicroTuningOpen, setIsMicroTuningOpen] = useState<boolean>(true);
 
-  // 模型改变时自动同步高亮梯次
-  useEffect(() => {
-    setTierLevel(currentModelTier);
-  }, [currentModelTier]);
-
-  // 梯次点击处理（同主线跨模型切换 + 4D 梯次认知预设双驱动）
-  const handleTierChange = (targetTier: number) => {
-    setTierLevel(targetTier);
-
-    // 1. 尝试在同主线中寻找对应梯次的目标模型
-    let targetModel: LeapSandboxModel | undefined;
-    if (lineModels.length >= 3) {
-      const sorted = [...lineModels].sort((a, b) => a.model_id.localeCompare(b.model_id));
-      if (targetTier === 1) targetModel = sorted[0];
-      else if (targetTier === 3) targetModel = sorted[sorted.length - 1];
-      else targetModel = sorted[Math.floor((sorted.length - 1) / 2)] || sorted[1];
-    } else if (lineModels.length === 2) {
-      if (targetTier === 1) targetModel = lineModels.find((m) => m.tier_level === 1) || lineModels[0];
-      else if (targetTier === 2) targetModel = lineModels.find((m) => m.tier_level === 2) || lineModels[1];
-    }
-
-    if (targetModel && targetModel.model_id !== currentModel.model_id) {
-      handleSelectModel(targetModel.model_id);
-      return;
-    }
-
-    // 2. 若留在当前模型，执行 4D 梯次认知预设（原型/变式/综合形态切换）
-    if (isHandInHand) {
-      if (targetTier === 1) {
-        setRotationAngle(60);
-        setMorphState((prev) => ({
-          ...prev,
-          carrierId: 'free_triangle',
-          postureId: 'standard',
-          activeCamouflageIds: [],
-          xrayActive: true,
-          parameterValues: { ...prev.parameterValues, param_scale: 1.0, param_t: 5 },
-        }));
-      } else if (targetTier === 2) {
-        setRotationAngle(90);
-        setMorphState((prev) => ({
-          ...prev,
-          carrierId: 'opt2',
-          postureId: 'rotated_90',
-          activeCamouflageIds: [],
-          xrayActive: false,
-          parameterValues: { ...prev.parameterValues, param_scale: 1.2, param_t: 6 },
-        }));
-      } else {
-        setRotationAngle(180);
-        setMorphState((prev) => ({
-          ...prev,
-          carrierId: 'quadrilateral',
-          postureId: 'collinear_degraded',
-          activeCamouflageIds: camouflageSpec.distractorLayers.map((l) => l.id),
-          xrayActive: false,
-          parameterValues: { ...prev.parameterValues, param_scale: 1.5, param_t: 8 },
-        }));
-      }
-    } else {
-      if (targetTier === 1) {
-        setMorphState((prev) => ({
-          ...prev,
-          carrierId: carrierSpec.options[0]?.id || 'default',
-          postureId: postureSpec.modes[0]?.id || 'standard',
-          activeCamouflageIds: [],
-          xrayActive: true,
-          parameterValues: {},
-        }));
-      } else if (targetTier === 2) {
-        const opt2 = carrierSpec.options[1]?.id || carrierSpec.options[0]?.id || 'default';
-        const mode2 = postureSpec.modes[1]?.id || postureSpec.modes[0]?.id || 'standard';
-        setMorphState((prev) => ({
-          ...prev,
-          carrierId: opt2,
-          postureId: mode2,
-          activeCamouflageIds: [],
-          xrayActive: false,
-        }));
-      } else {
-        const optLast = carrierSpec.options[carrierSpec.options.length - 1]?.id || 'default';
-        const modeLast = postureSpec.modes[postureSpec.modes.length - 1]?.id || 'standard';
-        setMorphState((prev) => ({
-          ...prev,
-          carrierId: optLast,
-          postureId: modeLast,
-          activeCamouflageIds: camouflageSpec.distractorLayers.map((l) => l.id),
-          xrayActive: false,
-        }));
-      }
-    }
-  };
+  // 计算当前推演阶梯的 target 旋转角与参数标靶
+  const currentStageObj = stages[currentStepIndex];
+  const stageTargetRot = useMemo(() => {
+    const rawTarget =
+      currentStageObj?.state_config?.sliders?.['rotationAngle'] ??
+      currentStageObj?.state_config?.sliders?.['rot_theta'] ??
+      currentStageObj?.state_config?.sliders?.['rot_angle'] ??
+      currentStageObj?.state_config?.sliders?.['angle_alpha'] ??
+      currentStageObj?.state_config?.sliders?.['theta'];
+    if (rawTarget !== undefined) return Number(rawTarget);
+    return currentStepIndex === 0 ? 60 : currentStepIndex === 1 ? 90 : currentStepIndex === 2 ? 120 : 60;
+  }, [currentStageObj, currentStepIndex]);
 
   // 自动旋转播放器
   useEffect(() => {
@@ -608,7 +507,7 @@ export const LeapLab: React.FC<LeapLabProps> = ({
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             {/* 双模切换入口：分步推演 vs 自由探索 */}
-            <div className="stage-segmented-control" role="tablist">
+            <div className="stage-segmented-control lab-mode-segmented-control" role="tablist">
               <button
                 type="button"
                 className={`seg-item ${labMode === 'step_deduction' ? 'active' : ''}`}
@@ -636,33 +535,6 @@ export const LeapLab: React.FC<LeapLabProps> = ({
               >
                 <Icon name="gamepad" size={13} className="seg-icon" />
                 <span>{isEn ? 'Free Play' : '自由探索'}</span>
-              </button>
-            </div>
-
-            <div className="tier-pill-group">
-              <button
-                type="button"
-                className={`nav-pill-btn ${tierLevel === 1 ? 'active' : ''}`}
-                onClick={() => handleTierChange(1)}
-                title={isEn ? 'L1 Archetype: Core skeleton & invariant' : 'L1 原型：核心基础骨架与本质不变性'}
-              >
-                {isEn ? 'Archetype' : '原型'}
-              </button>
-              <button
-                type="button"
-                className={`nav-pill-btn ${tierLevel === 2 ? 'active' : ''}`}
-                onClick={() => handleTierChange(2)}
-                title={isEn ? 'L2 Variation: Posture rotation & carrier expansion' : 'L2 变式：姿态翻折旋转与载体拓展'}
-              >
-                {isEn ? 'Variation' : '变式'}
-              </button>
-              <button
-                type="button"
-                className={`nav-pill-btn ${tierLevel === 3 ? 'active' : ''}`}
-                onClick={() => handleTierChange(3)}
-                title={isEn ? 'L3 Synthesis: Distractor camouflage & synthesis' : 'L3 综合：中考压轴加壳与极限综合态'}
-              >
-                {isEn ? 'Synthesis' : '综合'}
               </button>
             </div>
           </div>
@@ -1037,6 +909,252 @@ export const LeapLab: React.FC<LeapLabProps> = ({
                   />
                 </div>
               )}
+
+              {/* 阶段参数标靶指示条与微调抽屉 (PLAN-MODEL-REPAIR-V2 轨道 1) */}
+              <div
+                className="step-tuning-drawer"
+                style={{
+                  marginTop: '6px',
+                  marginBottom: '6px',
+                  padding: '10px',
+                  borderRadius: '12px',
+                  background: 'rgba(15, 23, 42, 0.85)',
+                  border: '1px solid rgba(51, 65, 85, 0.7)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Icon name="target" size={14} style={{ color: 'var(--ios-blue)' }} />
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: '#38bdf8' }}>
+                      {isEn ? 'Stage Target & Live Tuning' : '阶段标靶与动态微调'}
+                    </span>
+                    {isHandInHand ? (
+                      <span
+                        style={{
+                          fontSize: '11px',
+                          fontFamily: 'monospace',
+                          padding: '1px 6px',
+                          borderRadius: '4px',
+                          background: 'rgba(56, 189, 248, 0.15)',
+                          color: '#38bdf8',
+                          border: '1px solid rgba(56, 189, 248, 0.3)',
+                        }}
+                      >
+                        {isEn ? 'Target θ = ' : '标靶 θ = '}{stageTargetRot}°
+                      </span>
+                    ) : null}
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {isHandInHand && Math.abs(rotationAngle - stageTargetRot) < 2 ? (
+                      <span
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '2px',
+                          padding: '2px 8px',
+                          borderRadius: '9999px',
+                          fontSize: '10px',
+                          fontWeight: 700,
+                          background: 'rgba(16, 185, 129, 0.2)',
+                          color: '#34d399',
+                          border: '1px solid rgba(16, 185, 129, 0.4)',
+                        }}
+                      >
+                        <span>{isEn ? 'Target Met ✓' : '标靶达成 ✓'}</span>
+                      </span>
+                    ) : isHandInHand ? (
+                      <span style={{ fontSize: '11px', color: '#94a3b8', fontFamily: 'monospace' }}>
+                        {isEn ? `Current: ${rotationAngle}°` : `当前: ${rotationAngle}°`}
+                      </span>
+                    ) : null}
+
+                    <button
+                      type="button"
+                      onClick={() => setIsMicroTuningOpen(!isMicroTuningOpen)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        fontSize: '11px',
+                        color: '#94a3b8',
+                        padding: '2px 4px',
+                      }}
+                    >
+                      <Icon name={isMicroTuningOpen ? 'chevron-up' : 'chevron-down'} size={12} />
+                      <span>{isMicroTuningOpen ? (isEn ? 'Fold' : '收起') : (isEn ? 'Tune' : '微调')}</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* 微调抽屉内容 */}
+                {isMicroTuningOpen && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingTop: '4px', borderTop: '1px solid rgba(51, 65, 85, 0.6)' }}>
+                    {isHandInHand ? (
+                      <>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <label htmlFor="step-tuning-rot-slider" style={{ fontSize: '12px', color: '#cbd5e1', fontWeight: 500, whiteSpace: 'nowrap' }}>
+                            {isEn ? 'Rotate θ: ' : '旋转角 θ: '}<strong style={{ color: '#38bdf8', fontFamily: 'monospace' }}>{rotationAngle}°</strong>
+                          </label>
+                          <input
+                            id="step-tuning-rot-slider"
+                            type="range"
+                            className="apple-slider"
+                            min="0"
+                            max="360"
+                            step="1"
+                            value={rotationAngle}
+                            onChange={(e) => {
+                              const val = Number(e.target.value);
+                              setRotationAngle(val);
+                              handleSliderChange('rotationAngle', val);
+                            }}
+                            style={{ flex: 1 }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setRotationAngle(stageTargetRot);
+                              handleSliderChange('rotationAngle', stageTargetRot);
+                            }}
+                            title={isEn ? 'Reset to Stage Target' : '对齐阶段标靶'}
+                            style={{
+                              padding: '2px 8px',
+                              borderRadius: '6px',
+                              fontSize: '11px',
+                              fontWeight: 500,
+                              background: '#1e293b',
+                              color: '#cbd5e1',
+                              border: '1px solid #334155',
+                              cursor: 'pointer',
+                              fontFamily: 'monospace',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {isEn ? `${stageTargetRot}°` : `对齐 ${stageTargetRot}°`}
+                          </button>
+                        </div>
+
+                        {/* 度量指示条：动态守恒数值展示 */}
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            gap: '6px',
+                            fontSize: '11px',
+                            fontFamily: 'monospace',
+                            color: '#cbd5e1',
+                            background: 'rgba(2, 6, 23, 0.85)',
+                            borderRadius: '8px',
+                            padding: '6px 10px',
+                            border: '1px solid #1e293b',
+                            flexWrap: 'wrap',
+                          }}
+                        >
+                          <span style={{ color: '#38bdf8', fontWeight: 600 }}>
+                            AC = BD = {normalizedCm} cm
+                          </span>
+                          <span style={{ color: '#34d399', fontWeight: 700 }}>
+                            {isEn ? 'Rotation Congruent ✓' : '旋转恒全等保距 ✓'}
+                          </span>
+                          <span style={{ color: '#fbbf24' }}>
+                            ∠(AC, BD) = {rotationAngle}°
+                          </span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        {parameterSpec.sliders.slice(0, 2).map((s) => {
+                          const currentVal = morphState.parameterValues[s.id] ?? s.default;
+                          const stageTargetVal = currentStageObj?.state_config?.sliders?.[s.id] ?? s.default;
+                          const isTargetAchieved = Math.abs(currentVal - stageTargetVal) < 0.05;
+
+                          return (
+                            <div key={s.id} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px' }}>
+                                <span style={{ color: '#cbd5e1', fontWeight: 500 }}>
+                                  {(isEn ? s.nameEn : s.nameZh) || s.nameZh || s.id}: <strong style={{ color: '#38bdf8', fontFamily: 'monospace' }}>{currentVal}{s.unit || ''}</strong>
+                                </span>
+                                <span style={{ fontSize: '11px', color: '#94a3b8', fontFamily: 'monospace' }}>
+                                  {isEn ? 'Target: ' : '阶段标靶: '}{stageTargetVal}{s.unit || ''}
+                                  {isTargetAchieved ? <span style={{ color: '#34d399', marginLeft: '4px', fontWeight: 700 }}>✓</span> : ''}
+                                </span>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <input
+                                  type="range"
+                                  className="apple-slider"
+                                  min={s.min}
+                                  max={s.max}
+                                  step={s.step || 0.1}
+                                  value={currentVal}
+                                  onChange={(e) => handleSliderChange(s.id, Number(e.target.value))}
+                                  style={{ flex: 1 }}
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => handleSliderChange(s.id, stageTargetVal)}
+                                  title={isEn ? 'Reset to Stage Target' : '恢复阶段标靶'}
+                                  style={{
+                                    padding: '2px 6px',
+                                    borderRadius: '4px',
+                                    fontSize: '10px',
+                                    color: '#cbd5e1',
+                                    background: '#1e293b',
+                                    border: '1px solid #334155',
+                                    cursor: 'pointer',
+                                    fontFamily: 'monospace',
+                                  }}
+                                >
+                                  {isEn ? 'Target' : '标靶'}
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+
+                        {/* 度量指示条 */}
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            gap: '6px',
+                            fontSize: '11px',
+                            fontFamily: 'monospace',
+                            color: '#cbd5e1',
+                            background: 'rgba(2, 6, 23, 0.85)',
+                            borderRadius: '8px',
+                            padding: '6px 10px',
+                            border: '1px solid #1e293b',
+                            flexWrap: 'wrap',
+                          }}
+                        >
+                          {invariants.length > 0 ? (
+                            invariants.slice(0, 2).map((inv, idx) => (
+                              <span key={inv.id || idx} style={{ color: '#38bdf8', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '200px' }}>
+                                <MathRenderer content={inv.text} />
+                              </span>
+                            ))
+                          ) : (
+                            <span style={{ color: '#38bdf8', fontWeight: 600 }}>
+                              {isEn ? 'Rigid Transform Isometry Holds' : '刚体变异保距性成立'}
+                            </span>
+                          )}
+                          <span style={{ color: '#34d399', fontWeight: 700, marginLeft: 'auto' }}>[守恒 ✓]</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
 
               {/* 底部操作区 */}
               <div className="step-action-bar">

@@ -265,7 +265,7 @@ export const ConceptFourStages: React.FC<ConceptFourStagesProps> = ({
   initialStage = 1,
   locale: propLocale,
   onStageChange,
-  onNavigateToMaster,
+  onNavigateToMaster: _onNavigateToMaster,
 }) => {
   const storeLocale = useSessionStore((state) => state.locale);
   const locale = (propLocale || storeLocale || 'zh-CN') as Locale;
@@ -288,8 +288,6 @@ export const ConceptFourStages: React.FC<ConceptFourStagesProps> = ({
   const handleNext = () => {
     if (activeStage < 4) {
       handleStageSelect((activeStage + 1) as StageNumber);
-    } else if (onNavigateToMaster) {
-      onNavigateToMaster();
     }
   };
 
@@ -394,8 +392,8 @@ export const ConceptFourStages: React.FC<ConceptFourStagesProps> = ({
         ? 'Next: ④ Intrinsic Variation ➜'
         : '下一阶段：④ 本体辨正 ➜'
       : isEn
-      ? 'Complete Concept Guide · Enter Master Example ➜'
-      : '完成四段精讲 · 开启考点黄金母题 ➜';
+      ? '✓ All 4 Stages Completed'
+      : '✓ 四段精讲已全部学完';
 
   return (
     <div
@@ -551,18 +549,19 @@ export const ConceptFourStages: React.FC<ConceptFourStagesProps> = ({
             <button
               type="button"
               onClick={handleNext}
+              disabled={activeStage === 4}
               data-testid="stage-next-btn"
-              className={`inline-flex items-center gap-1 border-none py-1.5 px-4 rounded-full cursor-pointer font-bold text-xs active:scale-[0.98] transition-all ${
+              className={`inline-flex items-center gap-1 border-none py-1.5 px-4 rounded-full font-bold text-xs transition-all ${
                 activeStage === 4
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/30'
-                  : 'bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/25'
+                  ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-60'
+                  : 'bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/25 cursor-pointer active:scale-[0.98]'
               }`}
             >
               <span>
                 {activeStage === 4
                   ? locale === 'en'
                     ? 'Completed'
-                    : '四段完成'
+                    : '四段已学完'
                   : locale === 'en'
                   ? 'Next'
                   : '下一段'}
@@ -576,11 +575,21 @@ export const ConceptFourStages: React.FC<ConceptFourStagesProps> = ({
             <button
               type="button"
               data-testid="mobile-next-stage-btn"
-              onClick={handleNext}
-              className="w-full py-3 px-4 rounded-full font-bold text-xs sm:text-sm bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+              onClick={() => {
+                if (activeStage < 4) {
+                  handleNext();
+                } else {
+                  handleStageSelect(1);
+                }
+              }}
+              className={`w-full py-3 px-4 rounded-full font-bold text-xs sm:text-sm active:scale-[0.98] transition-all flex items-center justify-center gap-2 ${
+                activeStage === 4
+                  ? 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 shadow-sm'
+                  : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/30'
+              }`}
             >
-              <span>{mobileCtaText}</span>
-              <ArrowRight className="w-4 h-4" />
+              <span>{activeStage === 4 ? (isEn ? '↺ Review from Stage ①' : '↺ 四段已学完 · 重新温习') : mobileCtaText}</span>
+              {activeStage < 4 ? <ArrowRight className="w-4 h-4" /> : null}
             </button>
           </div>
         </div>

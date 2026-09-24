@@ -16,17 +16,18 @@ tmp
 __pycache__
 *.pyc
 
-# 数据库备份(保留主库,忽略 .bak 备份)
+# 数据库与资源备份(保留主库,忽略 .bak 备份)
 data/*.bak*
+*.bak*
+*.bak*/
 *.db-journal
 *.db-wal
 
-# 系统
+# 系统与截图
 .DS_Store
+public/screenshots/
 
 # 编辑器/工具缓存
 .vite
 .vscode
 
-# 代码/文件备份
-*.bak

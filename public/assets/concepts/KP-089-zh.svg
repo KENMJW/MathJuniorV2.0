@@ -7,18 +7,19 @@
   <text x="35" y="42" font-family="-apple-system, sans-serif" font-size="13" font-weight="700" fill="#0071e3">KP-089 · 锐角三角函数</text>
   <text x="365" y="42" text-anchor="end" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#1d1d1f">互余角的三角函数关系</text>
 
-
-  <!-- Trigonometric Ratio Right Triangle -->
-  <g transform="translate(100, 90)">
-    <polygon class="layer-stage-1" points="30,120 180,120 180,30" fill="#ff9500" fill-opacity="0.12" stroke="#ff9500" stroke-width="2.5"/>
-    <rect class="layer-stage-2" x="162" y="102" width="18" height="18" fill="none" stroke="#1d1d1f" stroke-width="1.5"/>
-    <!-- Angle alpha arc -->
-    <path class="layer-stage-1" d="M 60 120 A 30 30 0 0 0 54 105" fill="none" stroke="#0071e3" stroke-width="2.5"/>
-    <text class="layer-stage-3 formal-labels" x="65" y="112" font-size="13" font-weight="bold" fill="#0071e3">α</text>
-    <text class="layer-stage-3 formal-labels" x="105" y="140" text-anchor="middle" font-size="12" fill="#86868b">邻边</text>
-    <text class="layer-stage-3 formal-labels" x="195" y="78" text-anchor="start" font-size="12" fill="#86868b">对边</text>
-    <text class="layer-stage-3 formal-labels" x="95" y="65" text-anchor="end" font-size="12" fill="#86868b">斜边</text>
+  <!-- Core Content Graphic -->
+  <g transform="translate(60, 68)">
+    <polygon class="layer-stage-1" points="40,140 220,140 220,40" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+    <rect class="layer-stage-1" x="208" y="128" width="12" height="12" fill="none" stroke="#2563eb" stroke-width="1.5"/>
+    <text class="layer-stage-2" x="65" y="132" font-size="12" font-weight="bold" fill="#2563eb">∠A</text>
+    <text class="layer-stage-2" x="205" y="60" font-size="12" font-weight="bold" fill="#dc2626">∠B</text>
+    <text class="layer-stage-3 formal-labels" x="130" y="90" text-anchor="middle" font-size="13" font-weight="bold" fill="#047857">∠A + ∠B = 90°</text>
+    <text class="layer-stage-4" x="130" y="165" text-anchor="middle" font-size="12" font-weight="bold" fill="#dc2626">互余关系: sin A = cos B, cos A = sin B, tan A · tan B = 1</text>
   </g>
-  <text class="layer-stage-4" x="200" y="268" text-anchor="middle" font-family="monospace" font-size="14" font-weight="700" fill="#1d1d1f">sin α = 对/斜,  cos α = 邻/斜,  tan α = 对/邻</text>
 
+  <!-- Footer Conclusion / Extrema / Vieta -->
+  <text class="layer-stage-4" x="200" y="262" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" font-weight="600" fill="#1d1d1f">
+    <tspan x="200" dy="0">若 ∠A + ∠B = 90°，则 sin A = cos</tspan>
+    <tspan x="200" dy="14">B，cos A = sin B，tan A · tan B = 1</tspan>
+  </text>
 </svg>

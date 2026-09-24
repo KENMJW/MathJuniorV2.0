@@ -7,22 +7,22 @@
   <text x="35" y="42" font-family="-apple-system, sans-serif" font-size="13" font-weight="700" fill="#0071e3">KP-012 · 代数式</text>
   <text x="365" y="42" text-anchor="end" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#1d1d1f">乘法公式</text>
 
-
-  <!-- Geometric Algebra Dissection: (a+b)^2 = a^2 + 2ab + b^2 -->
-  <g transform="translate(110, 85)">
-    <!-- a^2 -->
-    <rect class="layer-stage-1" x="0" y="0" width="110" height="110" fill="#0071e3" fill-opacity="0.2" stroke="#0071e3" stroke-width="2" />
-    <text class="layer-stage-3 formal-labels" x="55" y="60" text-anchor="middle" font-family="sans-serif" font-size="16" font-weight="bold" fill="#0071e3">a²</text>
-    <!-- ab top-right -->
-    <rect class="layer-stage-2" x="110" y="0" width="60" height="110" fill="#34c759" fill-opacity="0.2" stroke="#34c759" stroke-width="2" />
-    <text class="layer-stage-3 formal-labels" x="140" y="60" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="bold" fill="#34c759">ab</text>
-    <!-- ab bottom-left -->
-    <rect class="layer-stage-2" x="0" y="110" width="110" height="60" fill="#34c759" fill-opacity="0.2" stroke="#34c759" stroke-width="2" />
-    <text class="layer-stage-3 formal-labels" x="55" y="145" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="bold" fill="#34c759">ab</text>
-    <!-- b^2 bottom-right -->
-    <rect class="layer-stage-2" x="110" y="110" width="60" height="60" fill="#ff9500" fill-opacity="0.2" stroke="#ff9500" stroke-width="2" />
-    <text class="layer-stage-3 formal-labels" x="140" y="145" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="bold" fill="#ff9500">b²</text>
+  <!-- Core Content Graphic -->
+  <g transform="translate(60, 68)">
+    <rect class="layer-stage-1" x="20" y="20" width="160" height="160" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+    <rect class="layer-stage-2" x="20" y="20" width="110" height="110" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+    <text class="layer-stage-2" x="75" y="80" text-anchor="middle" font-size="16" font-weight="bold" fill="#1d4ed8">a²</text>
+    <rect class="layer-stage-3 formal-labels" x="130" y="20" width="50" height="110" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text class="layer-stage-3 formal-labels" x="155" y="80" text-anchor="middle" font-size="13" font-weight="600" fill="#b45309">ab</text>
+    <rect class="layer-stage-3 formal-labels" x="20" y="130" width="110" height="50" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text class="layer-stage-3 formal-labels" x="75" y="160" text-anchor="middle" font-size="13" font-weight="600" fill="#b45309">ab</text>
+    <rect class="layer-stage-4" x="130" y="130" width="50" height="50" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text class="layer-stage-4" x="155" y="160" text-anchor="middle" font-size="13" font-weight="bold" fill="#b91c1c">b²</text>
   </g>
-  <text class="layer-stage-4" x="200" y="275" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#1d1d1f">(a + b)² = a² + 2ab + b²</text>
 
+  <!-- Footer Conclusion / Extrema / Vieta -->
+  <text class="layer-stage-4" x="200" y="262" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" font-weight="600" fill="#1d1d1f">
+    <tspan x="200" dy="0">完全平方公式几何面积割补: (a+b)² = a² +</tspan>
+    <tspan x="200" dy="14">2ab + b²</tspan>
+  </text>
 </svg>

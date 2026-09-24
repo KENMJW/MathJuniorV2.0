@@ -520,7 +520,6 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
           {activeSubTab === "stages" && (
             <ConceptFourStages
               knowledgePoint={currentPoint}
-              onNavigateToMaster={() => setActiveSubTab("master")}
             />
           )}
 

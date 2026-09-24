@@ -4,25 +4,28 @@
 
   <!-- Card Header -->
   <rect x="20" y="16" width="360" height="42" rx="10" fill="#f2f2f7" />
-  <text x="35" y="42" font-family="-apple-system, sans-serif" font-size="13" font-weight="700" fill="#0071e3">KP-098 · 数据分析</text>
+  <text x="35" y="42" font-family="-apple-system, sans-serif" font-size="13" font-weight="700" fill="#0071e3">KP-098 · Data Analysis</text>
   <text x="365" y="42" text-anchor="end" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#1d1d1f">Median</text>
 
-
-  <!-- Statistical Histogram / Distribution -->
-  <g transform="translate(70, 90)">
-    <!-- Axis -->
-    <line class="layer-stage-1" x1="20" y1="130" x2="250" y2="130" stroke="#1d1d1f" stroke-width="2"/>
-    <line class="layer-stage-2" x1="20" y1="20" x2="20" y2="130" stroke="#1d1d1f" stroke-width="2"/>
-    <!-- Bars -->
-    <rect class="layer-stage-1" x="35" y="80" width="35" height="50" fill="#0071e3" fill-opacity="0.3" stroke="#0071e3" stroke-width="1.5"/>
-    <rect class="layer-stage-1" x="75" y="45" width="35" height="85" fill="#0071e3" fill-opacity="0.5" stroke="#0071e3" stroke-width="1.5"/>
-    <rect class="layer-stage-1" x="115" y="25" width="35" height="105" fill="#0071e3" fill-opacity="0.8" stroke="#0071e3" stroke-width="1.5"/>
-    <rect class="layer-stage-1" x="155" y="55" width="35" height="75" fill="#0071e3" fill-opacity="0.5" stroke="#0071e3" stroke-width="1.5"/>
-    <rect class="layer-stage-1" x="195" y="90" width="35" height="40" fill="#0071e3" fill-opacity="0.3" stroke="#0071e3" stroke-width="1.5"/>
-    <!-- Mean line -->
-    <line class="layer-stage-4" x1="132" y1="15" x2="132" y2="130" stroke="#ff3b30" stroke-width="2" stroke-dasharray="4,3"/>
-    <text class="layer-stage-4" x="135" y="18" font-size="12" font-weight="bold" fill="#ff3b30">x̄</text>
+  <!-- Core Content Graphic -->
+  <g transform="translate(45, 68)">
+    <line class="layer-stage-1" x1="20" y1="80" x2="270" y2="80" stroke="#94a3b8" stroke-width="2"/>
+    <circle class="layer-stage-2" cx="40" cy="80" r="5" fill="#2563eb"/>
+    <circle class="layer-stage-2" cx="80" cy="80" r="5" fill="#2563eb"/>
+    <circle class="layer-stage-3 formal-labels" cx="145" cy="80" r="7" fill="#dc2626"/>
+    <circle class="layer-stage-2" cx="210" cy="80" r="5" fill="#2563eb"/>
+    <circle class="layer-stage-2" cx="250" cy="80" r="5" fill="#2563eb"/>
+    <line class="layer-stage-3 formal-labels" x1="145" y1="35" x2="145" y2="70" stroke="#dc2626" stroke-width="2"/>
+    <polygon class="layer-stage-3 formal-labels" points="145,75 141,67 149,67" fill="#dc2626"/>
+    <text class="layer-stage-3 formal-labels" x="145" y="25" text-anchor="middle" font-size="11" font-weight="bold" fill="#dc2626">Median (Middle 50%)</text>
+    <text class="layer-stage-4" x="80" y="115" text-anchor="middle" font-size="10" fill="#1e40af">Lower 50%</text>
+    <text class="layer-stage-4" x="210" y="115" text-anchor="middle" font-size="10" fill="#1e40af">Upper 50%</text>
+    <text class="layer-stage-4" x="145" y="160" text-anchor="middle" font-size="11" font-weight="bold" fill="#047857">Middle value in sorted data; robust to outliers</text>
   </g>
-  <text class="layer-stage-4" x="200" y="265" text-anchor="middle" font-size="13" font-weight="600" fill="#1d1d1f">Central Tendency &amp; Dispersion (Variance)</text>
 
+  <!-- Footer Conclusion / Extrema / Vieta -->
+  <text class="layer-stage-4" x="200" y="262" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" font-weight="600" fill="#1d1d1f">
+    <tspan x="200" dy="0">Median is the middle value</tspan>
+    <tspan x="200" dy="14">separating the higher half from the lower half</tspan>
+  </text>
 </svg>

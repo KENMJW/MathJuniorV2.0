@@ -1,10 +1,13 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { SandboxRenderer } from './SandboxRenderer';
 import { LeapLab, SEMESTER_CONFIG as LEAP_SEMESTER_CONFIG, formatSemester } from './LeapLab';
 import { MathRenderer } from '../../components/math/MathRenderer';
 import { Icon } from '../../components/common/Icon';
 import { useSessionStore } from '../../store/sessionStore';
 import { useDeviceResponsive } from '../../hooks/useDeviceResponsive';
+import { Point2D } from './invariants';
+import { InquiryStep, checkTargetCondition } from '../concept/LinkedSandboxSlot';
+import { Sparkles, ChevronLeft, ChevronRight, X, RotateCcw } from 'lucide-react';
 import './sandbox.css';
 
 export interface LabWorkspaceProps {
@@ -251,49 +254,193 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
     ];
   }, [currentSandbox, isEn]);
 
+  // 概念沙盒双模状态管理 (分步推演 vs 自由探索)
+  const [conceptLabMode, setConceptLabMode] = useState<"step_deduction" | "free_explore">("step_deduction");
+
+  // 解析当前概念沙盒的 1~3 步分步推演引导阶梯
+  const inquirySteps: InquiryStep[] = useMemo(() => {
+    if (currentSandbox?.config?.inquiry_steps_json) {
+      try {
+        const parsed = JSON.parse(currentSandbox.config.inquiry_steps_json);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      } catch {}
+    }
+    // 优雅兜底标准 2 步阶梯
+    return [
+      {
+        step: 1,
+        titleZh: '① 基准观察与参数感知',
+        titleEn: '① Benchmark Observation & Parameter Sensing',
+        guideTextZh: currentSandbox?.desc || '观察当前几何/函数构型在初始基准态下的图形结构与对应参数。',
+        guideTextEn: currentSandbox?.descEn || 'Observe foundational configuration and parameter metrics.',
+        ahaInsightZh: '名师题眼：牢固把握初始基准态的几何特征，是不变量探究与解题的立足点。',
+        ahaInsightEn: 'Teacher Focus: Ground yourself in the baseline invariants.',
+      },
+      {
+        step: 2,
+        titleZh: '② 动态变异与不变量守恒',
+        titleEn: '② Dynamic Variation & Invariant Conservation',
+        guideTextZh: '调节参数滑块或拖拽动点，观察右侧测度指标在图形动态变形过程中如何保持守恒。',
+        guideTextEn: 'Adjust sliders or drag points to observe invariant conservation during dynamic changes.',
+        ahaInsightZh: '名师题眼：动中有静，局部线段与坐标改变时，核心不变量是联立方程的破题钥匙。',
+        ahaInsightEn: 'Teacher Focus: Core invariant remains constant during dynamic changes.',
+      },
+    ];
+  }, [currentSandbox?.config?.inquiry_steps_json, currentSandbox?.desc, currentSandbox?.descEn]);
+
+  // 概念沙盒分步推演状态
+  const [activeStepIndex, setActiveStepIndex] = useState<number>(0);
+  const [completedStepIndices, setCompletedStepIndices] = useState<Set<number>>(new Set());
+  const [interactedStepIndices, setInteractedStepIndices] = useState<Set<number>>(new Set());
+  const [livePoints, setLivePoints] = useState<Record<string, Point2D>>({});
+  const [showAhaModal, setShowAhaModal] = useState<boolean>(false);
+  const [currentAhaStep, setCurrentAhaStep] = useState<InquiryStep | null>(null);
+
   // 概念沙盒参数值状态管理
   const [conceptParamValues, setConceptParamValues] = useState<Record<string, number>>({});
   const [sandboxResetCount, setSandboxResetCount] = useState<number>(0);
-  const [isViewportLocked, setIsViewportLocked] = useState<boolean>(true);
-  const [toastMessage, setToastMessage] = useState<string>('');
 
-  // 概念沙盒重置为标准基准态
-  const handleResetConcept = useCallback(() => {
-    const initial: Record<string, number> = {};
-    conceptSliders.forEach((s) => {
-      initial[s.id] = s.default;
+  const initialPointsRef = useRef<Record<string, Point2D> | null>(null);
+
+  // 用户主动交互标记（调节滑块或拖拽动点）
+  const markUserInteracted = useCallback(() => {
+    setInteractedStepIndices((prev) => {
+      if (prev.has(activeStepIndex)) return prev;
+      const next = new Set(prev);
+      next.add(activeStepIndex);
+      return next;
     });
-    setConceptParamValues(initial);
-    setSandboxResetCount((prev) => prev + 1);
-    setToastMessage(isEn ? 'Restored standard benchmark state' : '已恢复考点标准具象态');
-    setTimeout(() => setToastMessage(''), 2000);
-  }, [conceptSliders, isEn]);
+  }, [activeStepIndex]);
 
-  // 视口阻尼锁定开关与复位
-  const handleToggleViewportLock = useCallback(() => {
-    setIsViewportLocked((prev) => !prev);
-    setSandboxResetCount((prev) => prev + 1);
-    setToastMessage(
-      !isViewportLocked
-        ? (isEn ? 'Viewport lock enabled' : '视口阻尼保护已锁定')
-        : (isEn ? 'Viewport free mode enabled' : '视口已开启自由漫游模式')
-    );
-    setTimeout(() => setToastMessage(''), 2000);
-  }, [isViewportLocked, isEn]);
+  // 当步骤切换或沙盒切换时，重置动点位移基准，确保新步骤需要独立的交互触发
+  useEffect(() => {
+    initialPointsRef.current = null;
+  }, [activeStepIndex, currentSandbox?.id]);
 
-  // 双向动点参数回写
-  const handleConceptParamChange = useCallback((patch: Record<string, number>) => {
-    setConceptParamValues((prev) => ({ ...prev, ...patch }));
+  // 步骤初态预设自动注入
+  const applyStepPreset = useCallback((stepObj?: InquiryStep | null) => {
+    if (!stepObj) return;
+    const rawPreset = stepObj.preset_params ?? stepObj.presetParams;
+    let preset: Record<string, number> | null = null;
+    if (rawPreset && typeof rawPreset === 'object' && !Array.isArray(rawPreset)) {
+      preset = rawPreset;
+    } else if (typeof rawPreset === 'string') {
+      try {
+        const parsed = JSON.parse(rawPreset);
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+          preset = parsed;
+        }
+      } catch {}
+    }
+    if (preset) {
+      setConceptParamValues((prev) => ({ ...prev, ...preset }));
+    }
   }, []);
 
-  // 切换沙盒时重置为初始默认值
+  // 切换沙盒时重置推演状态与初始参数
   useEffect(() => {
     const initial: Record<string, number> = {};
     conceptSliders.forEach((s) => {
       initial[s.id] = s.default;
     });
     setConceptParamValues(initial);
+    setActiveStepIndex(0);
+    setCompletedStepIndices(new Set());
+    setInteractedStepIndices(new Set());
+    initialPointsRef.current = null;
+    setLivePoints({});
+    setShowAhaModal(false);
+    setCurrentAhaStep(null);
   }, [currentSandbox?.id, conceptSliders]);
+
+  // 动态监听参数与动点变化进行 Aha 达成判定 (仅在用户主动交互后触发，防初始秒通过)
+  useEffect(() => {
+    if (conceptLabMode !== 'step_deduction' || inquirySteps.length === 0) return;
+    if (activeStepIndex >= inquirySteps.length) return;
+
+    const currentStep = inquirySteps[activeStepIndex];
+    if (!currentStep) return;
+
+    if (!completedStepIndices.has(activeStepIndex) && interactedStepIndices.has(activeStepIndex)) {
+      const isAchieved = checkTargetCondition(currentStep, conceptParamValues, livePoints);
+      if (isAchieved) {
+        setCompletedStepIndices((prev) => {
+          const next = new Set(prev);
+          next.add(activeStepIndex);
+          return next;
+        });
+        setCurrentAhaStep(currentStep);
+        setShowAhaModal(true);
+      }
+    }
+  }, [
+    conceptParamValues,
+    livePoints,
+    activeStepIndex,
+    conceptLabMode,
+    inquirySteps,
+    completedStepIndices,
+    interactedStepIndices,
+  ]);
+
+  // 推进至下一步骤或进入自由探索
+  const handleAdvanceToNextStep = useCallback(() => {
+    setShowAhaModal(false);
+    setCompletedStepIndices((prev) => {
+      const next = new Set(prev);
+      next.add(activeStepIndex);
+      return next;
+    });
+    if (activeStepIndex + 1 < inquirySteps.length) {
+      const nextIdx = activeStepIndex + 1;
+      setActiveStepIndex(nextIdx);
+      applyStepPreset(inquirySteps[nextIdx]);
+    } else {
+      setConceptLabMode('free_explore');
+    }
+  }, [activeStepIndex, inquirySteps, applyStepPreset]);
+
+  // 重置整个探究流程为初始状态
+  const handleResetInquiry = useCallback(() => {
+    const initial: Record<string, number> = {};
+    conceptSliders.forEach((s) => {
+      initial[s.id] = s.default;
+    });
+    setConceptParamValues(initial);
+    setActiveStepIndex(0);
+    setCompletedStepIndices(new Set());
+    setInteractedStepIndices(new Set());
+    initialPointsRef.current = null;
+    setLivePoints({});
+    setShowAhaModal(false);
+    setCurrentAhaStep(null);
+    setSandboxResetCount((prev) => prev + 1);
+  }, [conceptSliders]);
+
+  // 双向动点参数回写 (标记用户主动发生过调参交互)
+  const handleConceptParamChange = useCallback((patch: Record<string, number>) => {
+    markUserInteracted();
+    setConceptParamValues((prev) => ({ ...prev, ...patch }));
+  }, [markUserInteracted]);
+
+  // 捕获画布动点坐标变化 (仅当动点实际发生位移时标记用户主动交互，杜绝初次挂载秒达标)
+  const handleConceptPointsChange = useCallback((pointMap: Record<string, Point2D>) => {
+    setLivePoints(pointMap);
+    if (!initialPointsRef.current) {
+      initialPointsRef.current = pointMap;
+      return;
+    }
+    const hasPointMoved = Object.entries(pointMap).some(([id, pt]) => {
+      const initPt = initialPointsRef.current?.[id];
+      if (!initPt) return false;
+      return Math.abs(pt.x - initPt.x) > 0.01 || Math.abs(pt.y - initPt.y) > 0.01;
+    });
+    if (hasPointMoved) {
+      markUserInteracted();
+    }
+  }, [markUserInteracted]);
 
   const [leapSearchQuery, setLeapSearchQuery] = useState<string>('');
   const [leapSelectedSem, setLeapSelectedSem] = useState<string>(
@@ -723,98 +870,45 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
                   </span>
                 </h3>
 
-                <div className="tier-pill-group" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <button
-                    type="button"
-                    data-testid="badge-concept-concrete"
-                    onClick={handleResetConcept}
-                    title={isEn ? 'Click to restore standard benchmark state' : '点击恢复当前考点的标准具象基准态'}
-                    className="nav-pill-btn"
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      padding: '3px 10px',
-                      height: '26px',
-                      borderRadius: 'var(--radius-pill, 9999px)',
-                      fontSize: '11px',
-                      fontWeight: 600,
-                      background: 'rgba(0, 113, 227, 0.08)',
-                      color: 'var(--ios-blue, #0071e3)',
-                      border: '1px solid rgba(0, 113, 227, 0.25)',
-                      cursor: 'pointer',
-                      userSelect: 'none',
-                      transition: 'all 0.18s cubic-bezier(0.16, 1, 0.3, 1)',
-                    }}
-                  >
-                    <Icon name="check-circle" size={11} />
-                    <span>{isEn ? 'Concept Benchmark' : '概念具象化'}</span>
-                  </button>
-                  <button
-                    type="button"
-                    data-testid="badge-viewport-locked"
-                    onClick={handleToggleViewportLock}
-                    title={
-                      isViewportLocked
-                        ? (isEn ? 'Viewport damping locked, click to reset' : '视口物理阻尼锁定中，点击复位并居中')
-                        : (isEn ? 'Viewport free, click to lock' : '视口自由缩放中，点击重新锁定阻尼')
-                    }
-                    className="nav-pill-btn"
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      padding: '3px 10px',
-                      height: '26px',
-                      borderRadius: 'var(--radius-pill, 9999px)',
-                      fontSize: '11px',
-                      fontWeight: 600,
-                      background: isViewportLocked ? 'rgba(52, 199, 89, 0.08)' : 'var(--bg-card-subtle)',
-                      color: isViewportLocked ? '#2e7d32' : 'var(--text-secondary)',
-                      border: isViewportLocked ? '1px solid rgba(52, 199, 89, 0.25)' : '1px solid var(--border-subtle)',
-                      cursor: 'pointer',
-                      userSelect: 'none',
-                      transition: 'all 0.18s cubic-bezier(0.16, 1, 0.3, 1)',
-                    }}
-                  >
-                    <Icon name={isViewportLocked ? 'lock' : 'unlock'} size={11} />
-                    <span>{isViewportLocked ? (isEn ? 'Viewport Locked' : '视口阻尼锁定') : (isEn ? 'Viewport Free' : '视口自由漫游')}</span>
-                  </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  {/* 双模切换入口：分步推演 vs 自由探索 (像素级对齐实验室二 LeapLab) */}
+                  <div className="stage-segmented-control lab-mode-segmented-control" role="tablist">
+                    <button
+                      type="button"
+                      className={`seg-item ${conceptLabMode === 'step_deduction' ? 'active' : ''}`}
+                      onClick={() => setConceptLabMode('step_deduction')}
+                      role="tab"
+                      aria-selected={conceptLabMode === 'step_deduction'}
+                      title={isEn ? 'Step-by-step guided deduction' : '分步推演：跟随名师思路进阶'}
+                    >
+                      <Icon name="bulb" size={13} className="seg-icon" />
+                      <span>{isEn ? 'Step Deduction' : '分步推演'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`seg-item ${conceptLabMode === 'free_explore' ? 'active' : ''}`}
+                      onClick={() => setConceptLabMode('free_explore')}
+                      role="tab"
+                      aria-selected={conceptLabMode === 'free_explore'}
+                      title={isEn ? 'Free dynamic exploration' : '自由探索：动点滑块自主体验'}
+                    >
+                      <Icon name="gamepad" size={13} className="seg-icon" />
+                      <span>{isEn ? 'Free Play' : '自由探索'}</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
 
             {/* 85% Canvas + 15% Telemetry */}
             <div className="sandbox-split-box" style={{ position: 'relative' }}>
-              {toastMessage && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '12px',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    background: 'rgba(15, 23, 42, 0.9)',
-                    color: '#ffffff',
-                    border: '1px solid rgba(255, 255, 255, 0.15)',
-                    padding: '5px 14px',
-                    borderRadius: '20px',
-                    fontSize: '11px',
-                    fontWeight: 500,
-                    boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
-                    zIndex: 30,
-                    pointerEvents: 'none',
-                    backdropFilter: 'blur(8px)',
-                  }}
-                >
-                  {toastMessage}
-                </div>
-              )}
               <div className="sandbox-viewport-85">
                 <SandboxRenderer
                   key={`${currentSandbox.id}-${sandboxResetCount}`}
                   config={currentSandbox.config}
                   paramValues={conceptParamValues}
                   onInvariantsChange={setInvariants}
+                  onPointsChange={handleConceptPointsChange}
                   onParamChange={handleConceptParamChange}
                   locale={locale}
                   style={{ width: '100%', height: '100%' }}
@@ -841,60 +935,352 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
               </div>
             </div>
 
-            {/* 极简控制条 (动态渲染苹果极简白滑块) */}
-            <div className="sandbox-controls-bar">
-              <div style={{ display: 'flex', gap: '20px', width: '100%', flexWrap: 'wrap', alignItems: 'center' }}>
-                {conceptSliders.map((s) => {
-                  const val = conceptParamValues[s.id] ?? s.default;
-                  const sliderName = isEn ? (s.name || s.id) : s.name;
-                  return (
-                    <div key={s.id} className="slider-group">
-                      <label htmlFor={`concept-slider-${s.id}`} style={{ whiteSpace: 'nowrap' }}>
-                        {sliderName}: <strong style={{ color: 'var(--ios-blue)' }}>{val}{s.unit || ''}</strong>
-                      </label>
-                      <input
-                        id={`concept-slider-${s.id}`}
-                        type="range"
-                        className="apple-slider"
-                        min={s.min}
-                        max={s.max}
-                        step={s.step}
-                        value={val}
-                        onChange={(e) => {
-                          const newVal = parseFloat(e.target.value);
-                          setConceptParamValues((prev) => ({ ...prev, [s.id]: newVal }));
+            {/* 模式 1：概念沙盒分步推演 (严格对齐模块一链接沙盒逻辑与交互) */}
+            <div
+              className="step-deduction-container"
+              data-testid="concept-step-deduction-view"
+              style={{ display: conceptLabMode === 'step_deduction' ? 'flex' : 'none' }}
+            >
+              {/* 顶部步骤胶囊导航 [ ① | ② | ③ ] + 重新开始重置按钮 */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', overflowX: 'auto', padding: '4px 0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  {inquirySteps.map((s, idx) => {
+                    const stepSymbols = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧'];
+                    const sym = stepSymbols[idx] || `${idx + 1}`;
+                    const isCur = idx === activeStepIndex;
+                    const isDone = completedStepIndices.has(idx);
+                    const title = (isEn ? s.titleEn : s.titleZh) || s.titleZh || s.title || (isEn ? `Step ${idx + 1}` : `步骤 ${idx + 1}`);
+                    return (
+                      <button
+                        key={s.step || idx}
+                        type="button"
+                        className={`nav-pill-btn ${isCur ? 'active' : ''}`}
+                        onClick={() => {
+                          setActiveStepIndex(idx);
+                          applyStepPreset(s);
                         }}
-                      />
+                        title={title}
+                        style={{
+                          background: isCur ? 'var(--ios-blue)' : isDone ? 'rgba(52, 199, 89, 0.12)' : undefined,
+                          color: isCur ? '#ffffff' : isDone ? '#2e7d32' : undefined,
+                          borderColor: isCur ? 'var(--ios-blue)' : isDone ? 'rgba(52, 199, 89, 0.3)' : undefined,
+                        }}
+                      >
+                        <span style={{ fontWeight: 700 }}>{isDone ? '✓ ' : sym + ' '}</span>
+                        <span>{title}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleResetInquiry}
+                  title={isEn ? 'Restart Inquiry' : '重新开始探究'}
+                  className="nav-pill-btn"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11px', flexShrink: 0 }}
+                >
+                  <RotateCcw size={12} />
+                  <span>{isEn ? 'Reset' : '重新开始'}</span>
+                </button>
+              </div>
+
+              {/* 当前步骤引导与达成卡片 */}
+              {inquirySteps[activeStepIndex] && (
+                <div className="step-card-panel">
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                    <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Icon name="bulb" size={15} style={{ color: 'var(--ios-blue)' }} />
+                      <span>
+                        {(isEn ? inquirySteps[activeStepIndex].titleEn : inquirySteps[activeStepIndex].titleZh) ||
+                          inquirySteps[activeStepIndex].titleZh ||
+                          inquirySteps[activeStepIndex].title ||
+                          `Step ${activeStepIndex + 1}`}
+                      </span>
+                    </h4>
+                    <span style={{ fontSize: '12px', color: 'var(--text-tertiary)', fontFamily: 'var(--font-mono, monospace)' }}>
+                      {activeStepIndex + 1} / {inquirySteps.length}
+                    </span>
+                  </div>
+
+                  <div style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                    <MathRenderer
+                      content={
+                        (isEn ? inquirySteps[activeStepIndex].guideTextEn : inquirySteps[activeStepIndex].guideTextZh) ||
+                        inquirySteps[activeStepIndex].guide_text ||
+                        inquirySteps[activeStepIndex].guideTextZh ||
+                        ''
+                      }
+                    />
+                  </div>
+
+                  {/* 达成状态与名师秘籍入口 (严格对齐模块一链接沙盒) */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', paddingTop: '6px', borderTop: '1px solid var(--border-subtle, rgba(0,0,0,0.06))', fontSize: '12px' }}>
+                    {completedStepIndices.has(activeStepIndex) ? (
+                      <span style={{ color: '#2e7d32', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <span>✓</span>
+                        <span>{isEn ? 'Target Condition Achieved' : '目标已达成'}</span>
+                      </span>
+                    ) : (
+                      <span style={{ color: 'var(--text-tertiary)' }}>
+                        {isEn ? 'Adjust sliders or dynamic points to explore' : '调节参数或动点探究满足目标'}
+                      </span>
+                    )}
+
+                    {(inquirySteps[activeStepIndex].aha_insight || inquirySteps[activeStepIndex].ahaInsightZh || inquirySteps[activeStepIndex].ahaInsightEn) && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCurrentAhaStep(inquirySteps[activeStepIndex]);
+                          setShowAhaModal(true);
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          color: '#b45309',
+                          fontWeight: 600,
+                          fontSize: '12px',
+                          textDecoration: 'underline',
+                          textUnderlineOffset: '2px',
+                        }}
+                      >
+                        <Sparkles size={13} style={{ color: '#d97706' }} />
+                        <span>{isEn ? 'Master Insight' : '名师秘籍'}</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* 步骤参数微调条 (允许在分步模式下精准操作当前步骤参数) */}
+                  {conceptSliders.length > 0 && (
+                    <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center', paddingTop: '4px' }}>
+                      {conceptSliders.map((s) => {
+                        const val = conceptParamValues[s.id] ?? s.default;
+                        const sliderName = isEn ? (s.name || s.id) : s.name;
+                        return (
+                          <div key={s.id} className="slider-group" style={{ fontSize: '12px' }}>
+                            <label htmlFor={`step-slider-${s.id}`} style={{ whiteSpace: 'nowrap' }}>
+                              {sliderName}: <strong style={{ color: 'var(--ios-blue)' }}>{val}{s.unit || ''}</strong>
+                            </label>
+                            <input
+                              id={`step-slider-${s.id}`}
+                              type="range"
+                              className="apple-slider"
+                              min={s.min}
+                              max={s.max}
+                              step={s.step}
+                              value={val}
+                              onChange={(e) => {
+                                const newVal = parseFloat(e.target.value);
+                                handleConceptParamChange({ [s.id]: newVal });
+                              }}
+                            />
+                          </div>
+                        );
+                      })}
                     </div>
-                  );
-                })}
+                  )}
+
+                  {/* 底部操作区：[上一步] / [下一步 ➔] / [完成探究 · 自由把玩] */}
+                  <div className="step-action-bar" style={{ paddingTop: '6px' }}>
+                    <button
+                      type="button"
+                      disabled={activeStepIndex === 0}
+                      className="nav-pill-btn"
+                      onClick={() => {
+                        const prevIdx = Math.max(0, activeStepIndex - 1);
+                        setActiveStepIndex(prevIdx);
+                        applyStepPreset(inquirySteps[prevIdx]);
+                      }}
+                      style={{ opacity: activeStepIndex === 0 ? 0.4 : 1, display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                    >
+                      <ChevronLeft size={13} />
+                      <span>{isEn ? 'Previous Step' : '上一步'}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className="step-next-large-btn"
+                      onClick={handleAdvanceToNextStep}
+                      style={{
+                        background: completedStepIndices.has(activeStepIndex) ? '#059669' : 'var(--ios-blue, #0071e3)',
+                      }}
+                    >
+                      <span>
+                        {activeStepIndex + 1 < inquirySteps.length
+                          ? completedStepIndices.has(activeStepIndex)
+                            ? isEn ? 'Achieved · Next Step ➔' : '已达成 · 下一步 ➔'
+                            : isEn ? 'Next Step ➔' : '进入下一步 ➔'
+                          : isEn ? 'Finish · Free Play' : '完成探究 · 自由把玩'}
+                      </span>
+                      <ChevronRight size={14} />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 模式 2：自由探索 (包含极简控制条与全量探究指南) */}
+            <div
+              className="free-explore-container"
+              data-testid="concept-free-explore-view"
+              style={{ display: conceptLabMode === 'free_explore' ? 'flex' : 'none', flexDirection: 'column', gap: '12px', width: '100%' }}
+            >
+              {/* 极简控制条 (动态渲染苹果极简白滑块) */}
+              <div className="sandbox-controls-bar">
+                <div style={{ display: 'flex', gap: '20px', width: '100%', flexWrap: 'wrap', alignItems: 'center' }}>
+                  {conceptSliders.map((s) => {
+                    const val = conceptParamValues[s.id] ?? s.default;
+                    const sliderName = isEn ? (s.name || s.id) : s.name;
+                    return (
+                      <div key={s.id} className="slider-group">
+                        <label htmlFor={`concept-slider-${s.id}`} style={{ whiteSpace: 'nowrap' }}>
+                          {sliderName}: <strong style={{ color: 'var(--ios-blue)' }}>{val}{s.unit || ''}</strong>
+                        </label>
+                        <input
+                          id={`concept-slider-${s.id}`}
+                          type="range"
+                          className="apple-slider"
+                          min={s.min}
+                          max={s.max}
+                          step={s.step}
+                          value={val}
+                          onChange={(e) => {
+                            const newVal = parseFloat(e.target.value);
+                            handleConceptParamChange({ [s.id]: newVal });
+                          }}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 探究指南与直观结论卡片 */}
+              <div
+                style={{
+                  padding: '12px 18px',
+                  borderRadius: 'var(--radius-md, 14px)',
+                  background: 'var(--bg-card-subtle, #f5f5f7)',
+                  border: '1px solid var(--border-subtle, rgba(0,0,0,0.06))',
+                  fontSize: '12px',
+                  color: 'var(--text-secondary, #515154)',
+                  lineHeight: 1.6,
+                }}
+              >
+                <div style={{ fontWeight: 700, color: 'var(--ios-blue)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Icon name="bulb" size={14} />
+                  <span>{isEn ? 'Exploration Guide:' : '探究指南：'}</span>
+                </div>
+                <p style={{ margin: 0 }}>
+                  {(isEn ? currentSandbox.descEn : currentSandbox.desc) ||
+                    currentSandbox.desc ||
+                    (isEn
+                      ? 'Drag sliders or points to observe variations of curves and shapes.'
+                      : '拖动控制条中的参数滑块或画布动点，实时观察函数曲线与几何图形的变化特征。')}
+                </p>
               </div>
             </div>
 
-            {/* 探究指南与直观结论卡片 */}
-            <div
-              style={{
-                padding: '12px 18px',
-                borderRadius: 'var(--radius-md, 14px)',
-                background: 'var(--bg-card-subtle, #f5f5f7)',
-                border: '1px solid var(--border-subtle, rgba(0,0,0,0.06))',
-                fontSize: '12px',
-                color: 'var(--text-secondary, #515154)',
-                lineHeight: 1.6,
-              }}
-            >
-              <div style={{ fontWeight: 700, color: 'var(--ios-blue)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Icon name="bulb" size={14} />
-                <span>{isEn ? 'Exploration Guide:' : '探究指南：'}</span>
+            {/* 名师题眼 · 核心顿悟 (Aha! Insight) 弹窗 (严格对齐模块一链接沙盒) */}
+            {showAhaModal && currentAhaStep && (
+              <div
+                style={{
+                  position: 'fixed',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  zIndex: 1000,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '16px',
+                  background: 'rgba(15, 23, 42, 0.65)',
+                  backdropFilter: 'blur(8px)',
+                }}
+                onClick={() => setShowAhaModal(false)}
+              >
+                <div
+                  style={{
+                    position: 'relative',
+                    width: '100%',
+                    maxWidth: '520px',
+                    borderRadius: '24px',
+                    background: 'var(--bg-card, #ffffff)',
+                    border: '1px solid rgba(245, 158, 11, 0.35)',
+                    padding: '24px',
+                    boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '16px',
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {/* 弹窗顶部标头 */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border-subtle, rgba(0,0,0,0.08))', paddingBottom: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#d97706' }}>
+                      <Sparkles size={20} />
+                      <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                        {isEn ? 'Aha! Insight · Master Focus' : '名师题眼 · 核心顿悟 (Aha! Insight)'}
+                      </h3>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowAhaModal(false)}
+                      style={{
+                        width: '28px',
+                        height: '28px',
+                        borderRadius: '50%',
+                        border: 'none',
+                        background: 'var(--bg-card-subtle, #f1f5f9)',
+                        color: 'var(--text-tertiary)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <X size={15} />
+                    </button>
+                  </div>
+
+                  {/* 核心顿悟内容 */}
+                  <div style={{ padding: '14px 16px', borderRadius: '14px', background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.2)', fontSize: '13px', lineHeight: 1.6, color: 'var(--text-primary)' }}>
+                    <MathRenderer
+                      content={
+                        (isEn
+                          ? currentAhaStep.ahaInsightEn || currentAhaStep.ahaInsightZh || currentAhaStep.aha_insight
+                          : currentAhaStep.ahaInsightZh || currentAhaStep.aha_insight) || ''
+                      }
+                    />
+                  </div>
+
+                  {/* 操作推进按钮 */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '10px', paddingTop: '8px' }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowAhaModal(false);
+                        handleAdvanceToNextStep();
+                      }}
+                      className="step-next-large-btn"
+                      style={{ height: '38px', padding: '0 20px', fontSize: '13px' }}
+                    >
+                      <span>
+                        {activeStepIndex + 1 < inquirySteps.length
+                          ? isEn ? 'Next Step ➜' : '开启下一步骤 ➜'
+                          : isEn ? 'Enter Free Play' : '全量达成 · 自由把玩'}
+                      </span>
+                      <ChevronRight size={14} />
+                    </button>
+                  </div>
+                </div>
               </div>
-              <p style={{ margin: 0 }}>
-                {(isEn ? currentSandbox.descEn : currentSandbox.desc) ||
-                  currentSandbox.desc ||
-                  (isEn
-                    ? 'Drag sliders or points to observe variations of curves and shapes.'
-                    : '拖动控制条中的参数滑块或画布动点，实时观察函数曲线与几何图形的变化特征。')}
-              </p>
-            </div>
+            )}
           </div>
         )}
       </div>

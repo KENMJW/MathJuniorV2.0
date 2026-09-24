@@ -4,25 +4,26 @@
 
   <!-- Card Header -->
   <rect x="20" y="16" width="360" height="42" rx="10" fill="#f2f2f7" />
-  <text x="35" y="42" font-family="-apple-system, sans-serif" font-size="13" font-weight="700" fill="#0071e3">KP-101 · 数据分析</text>
-  <text x="365" y="42" text-anchor="end" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#1d1d1f">Variance and Standard Deviation</text>
+  <text x="35" y="42" font-family="-apple-system, sans-serif" font-size="13" font-weight="700" fill="#0071e3">KP-101 · Data Analysis</text>
+  <text x="365" y="42" text-anchor="end" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#1d1d1f">Variance &amp; Standard Deviation</text>
 
-
-  <!-- Statistical Histogram / Distribution -->
-  <g transform="translate(70, 90)">
-    <!-- Axis -->
-    <line class="layer-stage-1" x1="20" y1="130" x2="250" y2="130" stroke="#1d1d1f" stroke-width="2"/>
-    <line class="layer-stage-2" x1="20" y1="20" x2="20" y2="130" stroke="#1d1d1f" stroke-width="2"/>
-    <!-- Bars -->
-    <rect class="layer-stage-1" x="35" y="80" width="35" height="50" fill="#0071e3" fill-opacity="0.3" stroke="#0071e3" stroke-width="1.5"/>
-    <rect class="layer-stage-1" x="75" y="45" width="35" height="85" fill="#0071e3" fill-opacity="0.5" stroke="#0071e3" stroke-width="1.5"/>
-    <rect class="layer-stage-1" x="115" y="25" width="35" height="105" fill="#0071e3" fill-opacity="0.8" stroke="#0071e3" stroke-width="1.5"/>
-    <rect class="layer-stage-1" x="155" y="55" width="35" height="75" fill="#0071e3" fill-opacity="0.5" stroke="#0071e3" stroke-width="1.5"/>
-    <rect class="layer-stage-1" x="195" y="90" width="35" height="40" fill="#0071e3" fill-opacity="0.3" stroke="#0071e3" stroke-width="1.5"/>
-    <!-- Mean line -->
-    <line class="layer-stage-4" x1="132" y1="15" x2="132" y2="130" stroke="#ff3b30" stroke-width="2" stroke-dasharray="4,3"/>
-    <text class="layer-stage-4" x="135" y="18" font-size="12" font-weight="bold" fill="#ff3b30">x̄</text>
+  <!-- Core Content Graphic -->
+  <g transform="translate(45, 68)">
+    <line class="layer-stage-1" x1="20" y1="85" x2="270" y2="85" stroke="#16a34a" stroke-width="2"/>
+    <text class="layer-stage-1" x="275" y="90" font-size="11" font-weight="bold" fill="#15803d">x̄ (Mean)</text>
+    <circle class="layer-stage-2" cx="60" cy="50" r="5" fill="#2563eb"/>
+    <line class="layer-stage-2" x1="60" y1="50" x2="60" y2="85" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="2 2"/>
+    <circle class="layer-stage-2" cx="120" cy="120" r="5" fill="#2563eb"/>
+    <line class="layer-stage-2" x1="120" y1="85" x2="120" y2="120" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="2 2"/>
+    <circle class="layer-stage-2" cx="190" cy="40" r="5" fill="#2563eb"/>
+    <line class="layer-stage-2" x1="190" y1="40" x2="190" y2="85" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="2 2"/>
+    <text class="layer-stage-3 formal-labels" x="145" y="25" text-anchor="middle" font-size="11" font-weight="bold" fill="#dc2626">Deviation² (x_i - x̄)²</text>
+    <text class="layer-stage-4" x="145" y="155" text-anchor="middle" font-size="10" font-weight="bold" fill="#047857">Smaller variance indicates higher stability</text>
   </g>
-  <text class="layer-stage-4" x="200" y="265" text-anchor="middle" font-size="13" font-weight="600" fill="#1d1d1f">Central Tendency &amp; Dispersion (Variance)</text>
 
+  <!-- Footer Conclusion / Extrema / Vieta -->
+  <text class="layer-stage-4" x="200" y="262" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" font-weight="600" fill="#1d1d1f">
+    <tspan x="200" dy="0">Variance measures the</tspan>
+    <tspan x="200" dy="14">dispersion and fluctuation around the mean</tspan>
+  </text>
 </svg>

@@ -4,24 +4,29 @@
 
   <!-- Card Header -->
   <rect x="20" y="16" width="360" height="42" rx="10" fill="#f2f2f7" />
-  <text x="35" y="42" font-family="-apple-system, sans-serif" font-size="13" font-weight="700" fill="#0071e3">KP-082 · 图形变换</text>
-  <text x="365" y="42" text-anchor="end" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#1d1d1f">Central Symmetry and Centrally Symmetric Figures</text>
+  <text x="35" y="42" font-family="-apple-system, sans-serif" font-size="13" font-weight="700" fill="#0071e3">KP-082 · Transformations</text>
+  <text x="365" y="42" text-anchor="end" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#1d1d1f">Central Symmetry</text>
 
-
-  <!-- Rotation / Reflection Transformation -->
-  <g transform="translate(70, 80)">
-    <!-- Pre-image triangle -->
-    <polygon class="layer-stage-1" points="30,120 90,120 60,60" fill="#0071e3" fill-opacity="0.2" stroke="#0071e3" stroke-width="2"/>
-    <text class="layer-stage-3 formal-labels" x="55" y="105" font-size="12" font-weight="bold" fill="#0071e3">△ABC</text>
-    <!-- Center of rotation O -->
-    <circle class="layer-stage-2" cx="130" cy="90" r="4" fill="#1d1d1f"/>
-    <text class="layer-stage-3 formal-labels" x="127" y="110" font-size="12" font-weight="bold" fill="#1d1d1f">O</text>
-    <!-- Post-image rotated -->
-    <polygon class="layer-stage-2" points="170,60 230,60 200,120" fill="#34c759" fill-opacity="0.2" stroke="#34c759" stroke-width="2"/>
-    <text class="layer-stage-3 formal-labels" x="185" y="85" font-size="12" font-weight="bold" fill="#34c759">△A&apos;B&apos;C&apos;</text>
-    <!-- Rotation arcs -->
-    <path class="layer-stage-4" d="M 60 60 Q 130 30 200 120" fill="none" stroke="#ff9500" stroke-width="1.5" stroke-dasharray="3,3"/>
+  <!-- Core Content Graphic -->
+  <g transform="translate(60, 68)">
+    <circle class="layer-stage-1" cx="140" cy="85" r="5" fill="#dc2626"/>
+    <text class="layer-stage-1" x="140" y="70" text-anchor="middle" font-size="11" font-weight="bold" fill="#dc2626">Center O</text>
+    <line class="layer-stage-2" x1="50" y1="40" x2="230" y2="130" stroke="#2563eb" stroke-width="2"/>
+    <circle class="layer-stage-2" cx="50" cy="40" r="4.5" fill="#2563eb"/>
+    <circle class="layer-stage-2" cx="230" cy="130" r="4.5" fill="#2563eb"/>
+    <text class="layer-stage-2" x="40" y="35" font-size="11" font-weight="bold" fill="#1e40af">A</text>
+    <text class="layer-stage-2" x="240" y="135" font-size="11" font-weight="bold" fill="#1e40af">A'</text>
+    <line class="layer-stage-3 formal-labels" x1="70" y1="130" x2="210" y2="40" stroke="#16a34a" stroke-width="2"/>
+    <circle class="layer-stage-3 formal-labels" cx="70" cy="130" r="4.5" fill="#16a34a"/>
+    <circle class="layer-stage-3 formal-labels" cx="210" cy="40" r="4.5" fill="#16a34a"/>
+    <text class="layer-stage-3 formal-labels" x="60" y="145" font-size="11" font-weight="bold" fill="#15803d">B</text>
+    <text class="layer-stage-3 formal-labels" x="220" y="45" font-size="11" font-weight="bold" fill="#15803d">B'</text>
+    <text class="layer-stage-4" x="140" y="165" text-anchor="middle" font-size="11" font-weight="bold" fill="#047857">OA = OA', OB = OB'; 180° Rotation Invariance</text>
   </g>
-  <text class="layer-stage-4" x="200" y="265" text-anchor="middle" font-size="13" font-weight="600" fill="#1d1d1f">Rigid Motion: Isometric &amp; Angle-preserving</text>
 
+  <!-- Footer Conclusion / Extrema / Vieta -->
+  <text class="layer-stage-4" x="200" y="262" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" font-weight="600" fill="#1d1d1f">
+    <tspan x="200" dy="0">Central symmetry: segments</tspan>
+    <tspan x="200" dy="14">through center O bisected, 180° rotation invariance</tspan>
+  </text>
 </svg>

@@ -7,28 +7,22 @@
   <text x="35" y="42" font-family="-apple-system, sans-serif" font-size="13" font-weight="700" fill="#0071e3">KP-072 · 圆</text>
   <text x="365" y="42" text-anchor="end" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#1d1d1f">切线的判定与性质</text>
 
-
-  <!-- Circle with Chord, Radius and Tangent -->
-  <g transform="translate(200, 160)">
-    <!-- Main Circle -->
-    <circle class="layer-stage-1" cx="0" cy="0" r="70" fill="#0071e3" fill-opacity="0.08" stroke="#0071e3" stroke-width="2.5"/>
-    <circle class="layer-stage-2" cx="0" cy="0" r="4" fill="#1d1d1f"/>
-    <text class="layer-stage-3 formal-labels" x="-12" y="-5" font-weight="bold" font-size="13" fill="#1d1d1f">O</text>
-    <!-- Chord AB -->
-    <line class="layer-stage-2" x1="-55" y1="43" x2="55" y2="43" stroke="#ff9500" stroke-width="2"/>
-    <!-- Perpendicular radius to chord -->
-    <line class="layer-stage-2" x1="0" y1="0" x2="0" y2="70" stroke="#34c759" stroke-width="2"/>
-    <rect class="layer-stage-2" x="0" y="33" width="10" height="10" fill="none" stroke="#1d1d1f" stroke-width="1.2"/>
-    <!-- Tangent line at bottom (0, 70) -->
-    <line class="layer-stage-4" x1="-80" y1="70" x2="80" y2="70" stroke="#ff3b30" stroke-width="2.5"/>
-    <!-- Points -->
-    <circle class="layer-stage-2" cx="-55" cy="43" r="3.5" fill="#ff9500"/>
-    <circle class="layer-stage-2" cx="55" cy="43" r="3.5" fill="#ff9500"/>
-    <circle class="layer-stage-4" cx="0" cy="70" r="4" fill="#ff3b30"/>
-    <text class="layer-stage-3 formal-labels" x="-65" y="45" font-size="12" font-weight="bold" fill="#1d1d1f">A</text>
-    <text class="layer-stage-3 formal-labels" x="62" y="45" font-size="12" font-weight="bold" fill="#1d1d1f">B</text>
-    <text class="layer-stage-4" x="5" y="85" font-size="12" font-weight="bold" fill="#ff3b30">T</text>
+  <!-- Core Content Graphic -->
+  <g transform="translate(60, 68)">
+    <circle class="layer-stage-1" cx="140" cy="80" r="55" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+    <circle class="layer-stage-1" cx="140" cy="80" r="4" fill="#1e40af"/>
+    <text class="layer-stage-1" x="140" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e40af">O</text>
+    <!-- Radius OT -->
+    <line class="layer-stage-2" x1="140" y1="80" x2="140" y2="135" stroke="#dc2626" stroke-width="2"/>
+    <circle class="layer-stage-2" cx="140" cy="135" r="4.5" fill="#dc2626"/>
+    <text class="layer-stage-2" x="155" y="130" font-size="12" font-weight="bold" fill="#dc2626">切点 T</text>
+    <!-- Tangent line l -->
+    <line class="layer-stage-3 formal-labels" x1="40" y1="135" x2="240" y2="135" stroke="#16a34a" stroke-width="3"/>
+    <rect class="layer-stage-3 formal-labels" x="140" y="123" width="12" height="12" fill="none" stroke="#dc2626" stroke-width="1.5"/>
+    <text class="layer-stage-3 formal-labels" x="245" y="140" font-size="12" font-weight="bold" fill="#15803d">切线 l</text>
+    <text class="layer-stage-4" x="140" y="165" text-anchor="middle" font-size="12" font-weight="bold" fill="#15803d">性质定理: 圆的切线垂直于经过切点的半径 (OT ⊥ l)</text>
   </g>
-  <text class="layer-stage-4" x="200" y="270" text-anchor="middle" font-size="13" font-weight="600" fill="#1d1d1f">垂径定理与切线垂直性质</text>
 
+  <!-- Footer Conclusion / Extrema / Vieta -->
+  <text class="layer-stage-4" x="200" y="270" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#1d1d1f">切线性质定理：经过半径外端并且垂直于这条半径的直线是圆的切线</text>
 </svg>

@@ -4,31 +4,24 @@
 
   <!-- Card Header -->
   <rect x="20" y="16" width="360" height="42" rx="10" fill="#f2f2f7" />
-  <text x="35" y="42" font-family="-apple-system, sans-serif" font-size="13" font-weight="700" fill="#0071e3">KP-043 · 函数</text>
+  <text x="35" y="42" font-family="-apple-system, sans-serif" font-size="13" font-weight="700" fill="#0071e3">KP-043 · 函数建模</text>
   <text x="365" y="42" text-anchor="end" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#1d1d1f">函数的实际应用与建模</text>
 
-
-  <!-- Function Coordinate System and Parabola -->
-  <g transform="translate(50, 75)">
-    <!-- Axis -->
-    <line class="layer-stage-1" x1="20" y1="140" x2="280" y2="140" stroke="#1d1d1f" stroke-width="1.5"/>
-    <line class="layer-stage-1" x1="150" y1="15" x2="150" y2="175" stroke="#1d1d1f" stroke-width="1.5"/>
-    <!-- Grid dotted -->
-    <line class="layer-stage-4" x1="90" y1="15" x2="90" y2="175" stroke="#e5e5ea" stroke-width="1" stroke-dasharray="3,3"/>
-    <line class="layer-stage-4" x1="210" y1="15" x2="210" y2="175" stroke="#e5e5ea" stroke-width="1" stroke-dasharray="3,3"/>
-    <!-- Parabola: y = -a(x-h)^2 + k -->
-    <path class="layer-stage-1" d="M 60 170 Q 150 10 240 170" fill="none" stroke="#0071e3" stroke-width="3"/>
-    <!-- Vertex -->
-    <circle class="layer-stage-4" cx="150" cy="50" r="5" fill="#ff3b30"/>
-    <text class="layer-stage-4" x="150" y="38" text-anchor="middle" font-family="monospace" font-size="12" font-weight="bold" fill="#ff3b30">Vertex(h, k)</text>
-    <!-- Axis of symmetry -->
-    <line class="layer-stage-4" x1="150" y1="15" x2="150" y2="175" stroke="#af52de" stroke-width="1.5" stroke-dasharray="4,4"/>
-    <!-- Intercepts -->
-    <circle class="layer-stage-2" cx="85" cy="140" r="4" fill="#ff9500"/>
-    <circle class="layer-stage-2" cx="215" cy="140" r="4" fill="#ff9500"/>
-    <text class="layer-stage-3 formal-labels" x="85" y="158" text-anchor="middle" font-size="11" fill="#86868b">x₁</text>
-    <text class="layer-stage-3 formal-labels" x="215" y="158" text-anchor="middle" font-size="11" fill="#86868b">x₂</text>
+  <!-- Core Content Graphic -->
+  <g transform="translate(45, 68)">
+    <!-- Water surface / x-axis -->
+    <line class="layer-stage-1" x1="20" y1="130" x2="280" y2="130" stroke="#0284c7" stroke-width="2"/>
+    <text class="layer-stage-1" x="280" y="145" font-size="11" fill="#0284c7">水面 (x轴)</text>
+    <!-- Bridge Arch -->
+    <path class="layer-stage-2" d="M50,130 Q150,20 250,130" fill="none" stroke="#475569" stroke-width="3"/>
+    <!-- Arch height h -->
+    <line class="layer-stage-3 formal-labels" x1="150" y1="130" x2="150" y2="48" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="3 3"/>
+    <text class="layer-stage-3 formal-labels" x="158" y="90" font-size="11" font-weight="bold" fill="#dc2626">拱高 h</text>
+    <!-- Span L -->
+    <line class="layer-stage-4" x1="50" y1="140" x2="250" y2="140" stroke="#16a34a" stroke-width="2"/>
+    <text class="layer-stage-4" x="150" y="155" text-anchor="middle" font-size="11" font-weight="bold" fill="#15803d">跨径跨度 L</text>
   </g>
-  <text class="layer-stage-4" x="200" y="272" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#1d1d1f">y = ax² + bx + c (a ≠ 0)</text>
 
+  <!-- Footer Conclusion / Extrema / Vieta -->
+  <text class="layer-stage-4" x="200" y="270" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#1d1d1f">建立直角坐标系将拱桥跨度与拱高转化为抛物线解析式求解</text>
 </svg>

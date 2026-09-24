@@ -4,25 +4,21 @@
 
   <!-- Card Header -->
   <rect x="20" y="16" width="360" height="42" rx="10" fill="#f2f2f7" />
-  <text x="35" y="42" font-family="-apple-system, sans-serif" font-size="13" font-weight="700" fill="#0071e3">KP-065 · 四边形</text>
-  <text x="365" y="42" text-anchor="end" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#1d1d1f">Properties and Criteria of Rhombuses</text>
+  <text x="35" y="42" font-family="-apple-system, sans-serif" font-size="13" font-weight="700" fill="#0071e3">KP-065 · Quadrilaterals</text>
+  <text x="365" y="42" text-anchor="end" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#1d1d1f">Rhombus Properties &amp; Criteria</text>
 
-
-  <!-- Parallelogram with Diagonals -->
-  <g transform="translate(70, 85)">
-    <!-- Parallelogram vertices -->
-    <polygon class="layer-stage-1" points="60,30 230,30 180,140 10,140" fill="#af52de" fill-opacity="0.1" stroke="#af52de" stroke-width="2.5"/>
-    <!-- Diagonals -->
-    <line class="layer-stage-4" x1="60" y1="30" x2="180" y2="140" stroke="#ff9500" stroke-width="1.5" stroke-dasharray="4,3"/>
-    <line class="layer-stage-4" x1="230" y1="30" x2="10" y2="140" stroke="#0071e3" stroke-width="1.5" stroke-dasharray="4,3"/>
-    <circle class="layer-stage-4" cx="120" cy="85" r="4" fill="#ff3b30"/>
-    <text class="layer-stage-4" x="120" y="75" text-anchor="middle" font-size="12" font-weight="bold" fill="#ff3b30">O</text>
-    <!-- Vertices -->
-    <text class="layer-stage-4" x="50" y="24" font-weight="bold" font-size="13" fill="#1d1d1f">A</text>
-    <text class="layer-stage-4" x="238" y="28" font-weight="bold" font-size="13" fill="#1d1d1f">B</text>
-    <text class="layer-stage-3 formal-labels" x="188" y="152" font-weight="bold" font-size="13" fill="#1d1d1f">C</text>
-    <text class="layer-stage-3 formal-labels" x="0" y="152" font-weight="bold" font-size="13" fill="#1d1d1f">D</text>
+  <!-- Core Content Graphic -->
+  <g transform="translate(60, 68)">
+    <polygon class="layer-stage-1" points="110,20 190,85 110,150 30,85" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+    <line class="layer-stage-2" x1="110" y1="20" x2="110" y2="150" stroke="#dc2626" stroke-width="2"/>
+    <line class="layer-stage-2" x1="30" y1="85" x2="190" y2="85" stroke="#dc2626" stroke-width="2"/>
+    <rect class="layer-stage-3 formal-labels" x="110" y="75" width="10" height="10" fill="none" stroke="#dc2626" stroke-width="1.5"/>
+    <text class="layer-stage-4" x="110" y="168" text-anchor="middle" font-size="11" font-weight="bold" fill="#b45309">All 4 sides equal; Diagonals AC ⊥ BD bisect angles</text>
   </g>
-  <text class="layer-stage-4" x="200" y="265" text-anchor="middle" font-size="13" font-weight="600" fill="#1d1d1f">Diagonals Bisect Each Other</text>
 
+  <!-- Footer Conclusion / Extrema / Vieta -->
+  <text class="layer-stage-4" x="200" y="262" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" font-weight="600" fill="#1d1d1f">
+    <tspan x="200" dy="0">All sides equal; diagonals</tspan>
+    <tspan x="200" dy="14">are perpendicular bisectors of each other</tspan>
+  </text>
 </svg>

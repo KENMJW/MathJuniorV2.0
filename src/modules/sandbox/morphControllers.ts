@@ -305,6 +305,493 @@ export function createDefaultMorphingState(model: LeapSandboxModel): MorphingSta
   };
 }
 
+export type MorphSolverFn = (
+  points: CarrierPoint[],
+  params: Record<string, number>
+) => CarrierPoint[];
+
+/**
+ * 通用默认解算器
+ */
+export function solveGenericMorph(
+  points: CarrierPoint[],
+  _params: Record<string, number>
+): CarrierPoint[] {
+  return points.map((p) => ({ ...p }));
+}
+
+/**
+ * LM-8A-09: 倍长中线与中点构造全等解算器
+ * - 若参数包含 vertex_ax, vertex_ay，更新动点 A 的坐标
+ * - 若参数包含 extend_ratio，以中点 D(0,0) 为基准计算倍长点 E = -A * extend_ratio
+ */
+export function solveLM8A09(
+  points: CarrierPoint[],
+  params: Record<string, number>
+): CarrierPoint[] {
+  const result = points.map((p) => ({ ...p }));
+  let ptA = result.find((p) => p.id === 'A' || p.name === 'A');
+
+  if (ptA) {
+    if (params.vertex_ax !== undefined) ptA.x = params.vertex_ax;
+    if (params.vertex_ay !== undefined) ptA.y = params.vertex_ay;
+  } else if (params.vertex_ax !== undefined || params.vertex_ay !== undefined) {
+    ptA = {
+      id: 'A',
+      name: 'A',
+      x: params.vertex_ax ?? 0,
+      y: params.vertex_ay ?? 6,
+      color: 'var(--ios-blue, #38bdf8)',
+      size: 4,
+      isFixed: false,
+    };
+    result.push(ptA);
+  }
+
+  const ax = ptA ? ptA.x : (params.vertex_ax ?? 0);
+  const ay = ptA ? ptA.y : (params.vertex_ay ?? 6);
+
+  // 确保中点 D(0,0) 存在
+  let ptD = result.find((p) => p.id === 'D' || p.name === 'D');
+  if (ptD) {
+    ptD.x = 0;
+    ptD.y = 0;
+  } else if (params.extend_ratio !== undefined) {
+    result.push({
+      id: 'D',
+      name: 'D',
+      x: 0,
+      y: 0,
+      color: 'var(--ios-green, #10b981)',
+      size: 4,
+      isFixed: true,
+    });
+  }
+
+  // 若参数包含 extend_ratio，以中点 D(0,0) 为基准计算倍长点 E = -A * extend_ratio
+  if (params.extend_ratio !== undefined) {
+    const ratio = params.extend_ratio;
+    const ex = Math.round(-ax * ratio * 1000) / 1000;
+    const ey = Math.round(-ay * ratio * 1000) / 1000;
+
+    let ptE = result.find((p) => p.id === 'E' || p.name === 'E');
+    if (ptE) {
+      ptE.x = ex;
+      ptE.y = ey;
+    } else {
+      result.push({
+        id: 'E',
+        name: 'E',
+        x: ex,
+        y: ey,
+        color: 'var(--ios-orange, #f59e0b)',
+        size: 4,
+        isFixed: false,
+      });
+    }
+  }
+
+  return result;
+}
+
+/**
+ * LM-7B-04: 造桥选址平移最短路径解算器
+ * - 根据 bridge_x, river_d 更新桥头动点 P1, P2 与平移村庄 A'(xA, yA - river_d)
+ */
+export function solveLM7B04(
+  points: CarrierPoint[],
+  params: Record<string, number>
+): CarrierPoint[] {
+  const result = points.map((p) => ({ ...p }));
+  const bridgeX = params.bridge_x;
+  const riverD = params.river_d;
+
+  const ptA = result.find((p) => p.id === 'A' || p.name?.startsWith('A'));
+  const xA = ptA ? ptA.x : -4;
+  const yA = ptA ? ptA.y : 4;
+  const d = riverD !== undefined ? riverD : 2;
+
+  // 平移村庄 A'(xA, yA - river_d)
+  const aPrimeX = xA;
+  const aPrimeY = yA - d;
+
+  let ptAPrime = result.find((p) => p.id === 'A_prime' || p.id === "A'" || p.name === "A'");
+  if (ptAPrime) {
+    ptAPrime.x = aPrimeX;
+    ptAPrime.y = aPrimeY;
+  } else if (riverD !== undefined || bridgeX !== undefined) {
+    result.push({
+      id: 'A_prime',
+      name: "A'",
+      x: aPrimeX,
+      y: aPrimeY,
+      color: 'var(--ios-purple, #a855f7)',
+      size: 4,
+      isFixed: true,
+    });
+  }
+
+  // 桥头动点 P1, P2
+  const ptP1 = result.find((p) => p.id === 'P1' || p.name?.startsWith('P1'));
+  const ptP2 = result.find((p) => p.id === 'P2' || p.name?.startsWith('P2'));
+  const bx = bridgeX !== undefined ? bridgeX : (ptP1 ? ptP1.x : -1);
+
+  if (ptP1) {
+    ptP1.x = bx;
+    if (riverD !== undefined) ptP1.y = d / 2;
+  }
+  if (ptP2) {
+    ptP2.x = bx;
+    if (riverD !== undefined) ptP2.y = -d / 2;
+  }
+
+  return result;
+}
+
+/**
+ * LM-7A-02: 线段双中点与角平分线和差解算器
+ * - 根据 len_ab 驱动 B 点距离
+ * - 根据 angle_alpha 驱动射线旋转角
+ */
+export function solveLM7A02(
+  points: CarrierPoint[],
+  params: Record<string, number>
+): CarrierPoint[] {
+  const result = points.map((p) => ({ ...p }));
+  const lenAB = params.len_ab;
+  const angleAlpha = params.angle_alpha;
+
+  if (lenAB !== undefined) {
+    const ptB = result.find((p) => p.id === 'B' || p.name === 'B');
+    if (ptB) ptB.x = lenAB;
+    const ptM2 = result.find((p) => p.id === 'M2' || p.name === 'M2');
+    if (ptM2) ptM2.x = Math.round((lenAB / 2) * 1000) / 1000;
+  }
+
+  if (angleAlpha !== undefined) {
+    const ptP = result.find((p) => p.id === 'P' || p.name === 'P');
+    if (ptP) {
+      const radius = Math.hypot(ptP.x, ptP.y) || 4;
+      const rad = (angleAlpha * Math.PI) / 180;
+      ptP.x = Math.round(radius * Math.cos(rad) * 1000) / 1000;
+      ptP.y = Math.round(radius * Math.sin(rad) * 1000) / 1000;
+    }
+  }
+
+  return result;
+}
+
+/**
+ * LM-7B-03: 非负数之和为零解算器
+ * - 根据 var_x, var_y, target_x0, target_y0 驱动动点向目标零点平滑逼近
+ */
+export function solveLM7B03(
+  points: CarrierPoint[],
+  params: Record<string, number>
+): CarrierPoint[] {
+  const result = points.map((p) => ({ ...p }));
+  const targetX0 = params.target_x0 ?? 0;
+  const targetY0 = params.target_y0 ?? 0;
+  const vx = params.var_x !== undefined ? params.var_x : targetX0;
+  const vy = params.var_y !== undefined ? params.var_y : targetY0;
+
+  if (
+    params.var_x !== undefined ||
+    params.var_y !== undefined ||
+    params.target_x0 !== undefined ||
+    params.target_y0 !== undefined
+  ) {
+    let ptP = result.find((p) => p.id === 'P' || p.name === 'P');
+    if (ptP) {
+      ptP.x = vx;
+      ptP.y = vy;
+    } else {
+      const unfixedA = result.find((p) => p.id === 'A' && !p.isFixed);
+      if (unfixedA) {
+        unfixedA.x = vx;
+        unfixedA.y = vy;
+      } else {
+        result.push({
+          id: 'P',
+          name: 'P',
+          x: vx,
+          y: vy,
+          color: 'var(--ios-orange, #f59e0b)',
+          size: 5,
+          isFixed: false,
+        });
+      }
+    }
+
+    const ptOrigin = result.find((p) => p.id === 'Origin' || p.id === 'O');
+    if (ptOrigin && (params.target_x0 !== undefined || params.target_y0 !== undefined)) {
+      ptOrigin.x = targetX0;
+      ptOrigin.y = targetY0;
+    }
+  }
+
+  return result;
+}
+
+/**
+ * LM-7B-05: 二元一次方程组与坐标系交点解算器
+ * - 根据 slope_k1, intercept_b1, slope_k2, intercept_b2 联立求解交点 P 坐标
+ */
+export function solveLM7B05(
+  points: CarrierPoint[],
+  params: Record<string, number>
+): CarrierPoint[] {
+  const result = points.map((p) => ({ ...p }));
+  const k1 = params.slope_k1;
+  const b1 = params.intercept_b1;
+  const k2 = params.slope_k2;
+  const b2 = params.intercept_b2;
+
+  if (k1 !== undefined || b1 !== undefined || k2 !== undefined || b2 !== undefined) {
+    const slope1 = k1 !== undefined ? k1 : 1;
+    const intercept1 = b1 !== undefined ? b1 : 1;
+    const slope2 = k2 !== undefined ? k2 : -1;
+    const intercept2 = b2 !== undefined ? b2 : 5;
+
+    if (Math.abs(slope1 - slope2) > 1e-6) {
+      const xp = (intercept2 - intercept1) / (slope1 - slope2);
+      const yp = slope1 * xp + intercept1;
+      const roundedX = Math.round(xp * 1000) / 1000;
+      const roundedY = Math.round(yp * 1000) / 1000;
+
+      let ptP = result.find((p) => p.id === 'P' || p.name?.includes('P') || p.name?.includes('Sol'));
+      if (ptP) {
+        ptP.x = roundedX;
+        ptP.y = roundedY;
+      } else {
+        result.push({
+          id: 'P',
+          name: 'P',
+          x: roundedX,
+          y: roundedY,
+          color: 'var(--ios-orange, #f59e0b)',
+          size: 5,
+          isFixed: false,
+        });
+      }
+
+      const ptA1 = result.find((p) => p.id === 'A1');
+      if (ptA1) {
+        ptA1.x = roundedX - 3;
+        ptA1.y = Math.round((slope1 * (roundedX - 3) + intercept1) * 1000) / 1000;
+      }
+      const ptA2 = result.find((p) => p.id === 'A2');
+      if (ptA2) {
+        ptA2.x = roundedX + 3;
+        ptA2.y = Math.round((slope2 * (roundedX + 3) + intercept2) * 1000) / 1000;
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
+ * LM-8A-06: 乘法公式面积割补与配方恒等解算器
+ * - 根据 side_a, side_b 驱动割补矩形长宽
+ */
+export function solveLM8A06(
+  points: CarrierPoint[],
+  params: Record<string, number>
+): CarrierPoint[] {
+  const result = points.map((p) => ({ ...p }));
+  const sideA = params.side_a;
+  const sideB = params.side_b;
+
+  if (sideA !== undefined || sideB !== undefined) {
+    const ptA = result.find((p) => p.id === 'A' || p.name === 'A');
+    const ptB = result.find((p) => p.id === 'B' || p.name === 'B');
+    const ptP = result.find((p) => p.id === 'P' || p.name?.includes('P'));
+
+    if (sideA !== undefined && ptA) ptA.x = sideA;
+    if (sideB !== undefined && ptB) ptB.y = sideB;
+
+    if (ptP) {
+      const currentWidth = ptA ? ptA.x : (sideA ?? 6);
+      const currentHeight = ptB ? ptB.y : (sideB ?? 4);
+      ptP.x = Math.round(currentWidth * 0.6 * 1000) / 1000;
+      ptP.y = Math.round(currentHeight * 0.5 * 1000) / 1000;
+    }
+  }
+
+  return result;
+}
+
+/**
+ * LM-8A-10: 截长补短线段和差证明解算器
+ * - 根据 pos_e, pos_f 驱动截长点与补短点
+ */
+export function solveLM8A10(
+  points: CarrierPoint[],
+  params: Record<string, number>
+): CarrierPoint[] {
+  const result = points.map((p) => ({ ...p }));
+  const posE = params.pos_e;
+  const posF = params.pos_f;
+
+  if (posE !== undefined) {
+    let ptE = result.find((p) => p.id === 'E' || p.name === 'E');
+    if (ptE) {
+      ptE.x = posE;
+    } else {
+      result.push({
+        id: 'E',
+        name: 'E',
+        x: posE,
+        y: 0,
+        color: 'var(--ios-orange, #f59e0b)',
+        size: 4,
+        isFixed: false,
+      });
+    }
+  }
+
+  if (posF !== undefined) {
+    let ptF = result.find((p) => p.id === 'F' || p.name === 'F');
+    if (ptF) {
+      ptF.x = posF;
+    } else {
+      result.push({
+        id: 'F',
+        name: 'F',
+        x: posF,
+        y: 0,
+        color: 'var(--ios-green, #10b981)',
+        size: 4,
+        isFixed: false,
+      });
+    }
+  }
+
+  return result;
+}
+
+/**
+ * LM-8B-14: 十字架对角线垂直与中点四边形解算器
+ * - 根据 vert_a_y, vert_c_y, vert_b_x, vert_d_x 驱动垂直对角线顶点
+ */
+export function solveLM8B14(
+  points: CarrierPoint[],
+  params: Record<string, number>
+): CarrierPoint[] {
+  const result = points.map((p) => ({ ...p }));
+  const vertAY = params.vert_a_y;
+  const vertCY = params.vert_c_y;
+  const vertBX = params.vert_b_x;
+  const vertDX = params.vert_d_x;
+
+  if (vertAY !== undefined) {
+    const ptA = result.find((p) => p.id === 'A' || p.name === 'A');
+    if (ptA) ptA.y = vertAY;
+  }
+  if (vertCY !== undefined) {
+    const ptC = result.find((p) => p.id === 'C' || p.name === 'C');
+    if (ptC) ptC.y = vertCY;
+  }
+  if (vertBX !== undefined) {
+    const ptB = result.find((p) => p.id === 'B' || p.name === 'B');
+    if (ptB) ptB.x = vertBX;
+  }
+  if (vertDX !== undefined) {
+    const ptD = result.find((p) => p.id === 'D' || p.name === 'D');
+    if (ptD) ptD.x = vertDX;
+  }
+
+  return result;
+}
+
+/**
+ * LM-9B-29: 一线三等角(K字型相似)解算器
+ * - 根据 slider_xc 驱动底边动点 C 位移，两侧直角三角形按母子相似动态变形
+ */
+export function solveLM9B29(
+  points: CarrierPoint[],
+  params: Record<string, number>
+): CarrierPoint[] {
+  const result = points.map((p) => ({ ...p }));
+  const sliderXC = params.slider_xc;
+
+  if (sliderXC !== undefined) {
+    const ptA = result.find((p) => p.id === 'A' || p.name === 'A');
+    const ptB = result.find((p) => p.id === 'B' || p.name === 'B');
+    const ptC = result.find((p) => p.id === 'C' || p.name === 'C');
+    const ptD = result.find((p) => p.id === 'D' || p.name === 'D');
+    const ptE = result.find((p) => p.id === 'E' || p.name === 'E');
+
+    const xA = ptA ? ptA.x : -4;
+    const xB = ptB ? ptB.x : 5;
+    const adHeight = ptD ? ptD.y : 3;
+    const xc = sliderXC;
+
+    if (ptC) {
+      ptC.x = xc;
+      ptC.y = 0;
+    }
+
+    // 母子相似: △DAC ~ △EBC => AD / EB = AC / CB => EB = AD * (CB / AC)
+    const ac = Math.max(0.1, xc - xA);
+    const cb = Math.max(0.1, xB - xc);
+    const eb = adHeight * (cb / ac);
+
+    if (ptE) {
+      ptE.y = Math.round(eb * 1000) / 1000;
+    }
+  }
+
+  return result;
+}
+
+/**
+ * 4D 专属模型参数动力学解算器映射总表 (覆盖全库 37 个 4D 模型)
+ */
+export const MODEL_MORPH_SOLVERS: Record<string, MorphSolverFn> = {
+  // 9 大专属解析解算器
+  'LM-8A-09': solveLM8A09,
+  'LM-7B-04': solveLM7B04,
+  'LM-7A-02': solveLM7A02,
+  'LM-7B-03': solveLM7B03,
+  'LM-7B-05': solveLM7B05,
+  'LM-8A-06': solveLM8A06,
+  'LM-8A-10': solveLM8A10,
+  'LM-8B-14': solveLM8B14,
+  'LM-9B-29': solveLM9B29,
+
+  // 基础与进阶跃迁模型通用解算器全量覆盖 (共 37 个模型)
+  'LM-7A-01': solveGenericMorph,
+  'LM-8A-01': solveGenericMorph,
+  'LM-8A-07': solveGenericMorph,
+  'LM-8A-08': solveGenericMorph,
+  'LM-8A-11': solveGenericMorph,
+  'LM-8A-12': solveGenericMorph,
+  'LM-8B-13': solveGenericMorph,
+  'LM-8B-15': solveGenericMorph,
+  'LM-8B-16': solveGenericMorph,
+  'LM-8B-17': solveGenericMorph,
+  'LM-9A-18': solveGenericMorph,
+  'LM-9A-19': solveGenericMorph,
+  'LM-9A-20': solveGenericMorph,
+  'LM-9A-21': solveGenericMorph,
+  'LM-9A-22': solveGenericMorph,
+  'LM-9A-23': solveGenericMorph,
+  'LM-9A-24': solveGenericMorph,
+  'LM-9A-25': solveGenericMorph,
+  'LM-9A-26': solveGenericMorph,
+  'LM-9A-27': solveGenericMorph,
+  'LM-9A-28': solveGenericMorph,
+  'LM-9B-30': solveGenericMorph,
+  'LM-9B-31': solveGenericMorph,
+  'LM-9B-32': solveGenericMorph,
+  'LM-9B-33': solveGenericMorph,
+  'LM-9B-34': solveGenericMorph,
+  'LM-9B-35': solveGenericMorph,
+  'LM-9B-36': solveGenericMorph,
+};
+
 /**
  * 4D 变异综合编译调度器：
  * 将 LeapSandboxModel + MorphingState 动态编译为标准 SandboxConfig
@@ -356,7 +843,70 @@ export function compileMorphingSandboxConfig(
 
   // 4. 对动点执行 4D 坐标变换 (纯数学变换，无 eval)
   const rawPoints = currentCarrier?.points || [];
-  const transformedPoints = rawPoints.map((pt) => {
+  const currentModelId = model?.model_id || '';
+  const paramValues = state?.parameterValues || {};
+
+  // 专属滑块参数探测
+  const hasCustomParams = Boolean(
+    paramValues.vertex_ax !== undefined ||
+    paramValues.vertex_ay !== undefined ||
+    paramValues.extend_ratio !== undefined ||
+    paramValues.bridge_x !== undefined ||
+    paramValues.river_d !== undefined ||
+    paramValues.len_ab !== undefined ||
+    paramValues.angle_alpha !== undefined ||
+    paramValues.var_x !== undefined ||
+    paramValues.var_y !== undefined ||
+    paramValues.target_x0 !== undefined ||
+    paramValues.target_y0 !== undefined ||
+    paramValues.slope_k1 !== undefined ||
+    paramValues.intercept_b1 !== undefined ||
+    paramValues.slope_k2 !== undefined ||
+    paramValues.intercept_b2 !== undefined ||
+    paramValues.side_a !== undefined ||
+    paramValues.side_b !== undefined ||
+    paramValues.pos_e !== undefined ||
+    paramValues.pos_f !== undefined ||
+    paramValues.vert_a_y !== undefined ||
+    paramValues.vert_c_y !== undefined ||
+    paramValues.vert_b_x !== undefined ||
+    paramValues.vert_d_x !== undefined ||
+    paramValues.slider_xc !== undefined
+  );
+
+  let solvedPoints = rawPoints;
+  const solver = MODEL_MORPH_SOLVERS[currentModelId] || MODEL_MORPH_SOLVERS[currentModelId.toUpperCase()];
+
+  if (solver && solver !== solveGenericMorph) {
+    solvedPoints = solver(rawPoints, paramValues);
+  } else if (hasCustomParams) {
+    if (paramValues.extend_ratio !== undefined || paramValues.vertex_ax !== undefined || paramValues.vertex_ay !== undefined) {
+      solvedPoints = solveLM8A09(rawPoints, paramValues);
+    } else if (paramValues.bridge_x !== undefined || paramValues.river_d !== undefined) {
+      solvedPoints = solveLM7B04(rawPoints, paramValues);
+    } else if (paramValues.len_ab !== undefined || paramValues.angle_alpha !== undefined) {
+      solvedPoints = solveLM7A02(rawPoints, paramValues);
+    } else if (paramValues.var_x !== undefined || paramValues.target_x0 !== undefined) {
+      solvedPoints = solveLM7B03(rawPoints, paramValues);
+    } else if (paramValues.slope_k1 !== undefined || paramValues.intercept_b1 !== undefined) {
+      solvedPoints = solveLM7B05(rawPoints, paramValues);
+    } else if (paramValues.side_a !== undefined || paramValues.side_b !== undefined) {
+      solvedPoints = solveLM8A06(rawPoints, paramValues);
+    } else if (paramValues.pos_e !== undefined || paramValues.pos_f !== undefined) {
+      solvedPoints = solveLM8A10(rawPoints, paramValues);
+    } else if (paramValues.vert_a_y !== undefined || paramValues.vert_c_y !== undefined || paramValues.vert_b_x !== undefined || paramValues.vert_d_x !== undefined) {
+      solvedPoints = solveLM8B14(rawPoints, paramValues);
+    } else if (paramValues.slider_xc !== undefined) {
+      solvedPoints = solveLM9B29(rawPoints, paramValues);
+    }
+  }
+
+  const isCustomDriven = hasCustomParams;
+
+  const transformedPoints = solvedPoints.map((pt) => {
+    // 全库 89 处硬编码数字动点名称正则清洗：彻底剔除像 A(-1,5)、B(-4,0)、村庄A(-4,4)、交点P(2,3) 这样的硬编码死数字
+    const cleanName = pt.name ? pt.name.replace(/\s*\(-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?\)/g, '') : '';
+
     if (pt.isFixed) {
       // 刚体姿态变换：固定锚点不随 param_t 动点平移位移，但必须参与整机旋转/镜像/缩放！
       // 杜绝基准点留在原地而动点旋转产生的模型姿态严重撕裂
@@ -369,13 +919,16 @@ export function compileMorphingSandboxConfig(
       );
       return {
         ...pt,
+        name: cleanName,
         x: coords.x,
         y: coords.y,
       };
     }
-    // 动点随 param_t 产生横向/垂直平滑位移
-    const shiftedX = pt.x + paramTDisplacement;
-    const shiftedY = pt.y + (Math.abs(pt.y) > 0.01 ? paramTDisplacement * 0.3 : 0);
+    // 动点随 param_t 产生横向/垂直平滑位移 (专属参数驱动时保持解算器精确输出)
+    const shiftedX = isCustomDriven ? pt.x : pt.x + paramTDisplacement;
+    const shiftedY = isCustomDriven
+      ? pt.y
+      : pt.y + (Math.abs(pt.y) > 0.01 ? paramTDisplacement * 0.3 : 0);
 
     const coords = transformPointCoords(
       shiftedX,
@@ -386,6 +939,7 @@ export function compileMorphingSandboxConfig(
     );
     return {
       ...pt,
+      name: cleanName,
       x: coords.x,
       y: coords.y,
     };
@@ -405,6 +959,15 @@ export function compileMorphingSandboxConfig(
     transformedPoints.forEach((p) => {
       pointCoordMap[p.id] = { x: p.x, y: p.y };
       if (p.name) pointCoordMap[p.name] = { x: p.x, y: p.y };
+    });
+    // 同样补充 rawPoints 原始名称以防旧版干扰层配置
+    rawPoints.forEach((p) => {
+      if (p.name) {
+        const found = transformedPoints.find((tp) => tp.id === p.id);
+        if (found) {
+          pointCoordMap[p.name] = { x: found.x, y: found.y };
+        }
+      }
     });
 
     distractorLayers.forEach((layer) => {

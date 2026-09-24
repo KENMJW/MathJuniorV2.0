@@ -7,22 +7,23 @@
   <text x="35" y="42" font-family="-apple-system, sans-serif" font-size="13" font-weight="700" fill="#0071e3">KP-100 · 数据分析</text>
   <text x="365" y="42" text-anchor="end" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#1d1d1f">极差</text>
 
-
-  <!-- Statistical Histogram / Distribution -->
-  <g transform="translate(70, 90)">
-    <!-- Axis -->
-    <line class="layer-stage-1" x1="20" y1="130" x2="250" y2="130" stroke="#1d1d1f" stroke-width="2"/>
-    <line class="layer-stage-2" x1="20" y1="20" x2="20" y2="130" stroke="#1d1d1f" stroke-width="2"/>
-    <!-- Bars -->
-    <rect class="layer-stage-1" x="35" y="80" width="35" height="50" fill="#0071e3" fill-opacity="0.3" stroke="#0071e3" stroke-width="1.5"/>
-    <rect class="layer-stage-1" x="75" y="45" width="35" height="85" fill="#0071e3" fill-opacity="0.5" stroke="#0071e3" stroke-width="1.5"/>
-    <rect class="layer-stage-1" x="115" y="25" width="35" height="105" fill="#0071e3" fill-opacity="0.8" stroke="#0071e3" stroke-width="1.5"/>
-    <rect class="layer-stage-1" x="155" y="55" width="35" height="75" fill="#0071e3" fill-opacity="0.5" stroke="#0071e3" stroke-width="1.5"/>
-    <rect class="layer-stage-1" x="195" y="90" width="35" height="40" fill="#0071e3" fill-opacity="0.3" stroke="#0071e3" stroke-width="1.5"/>
-    <!-- Mean line -->
-    <line class="layer-stage-4" x1="132" y1="15" x2="132" y2="130" stroke="#ff3b30" stroke-width="2" stroke-dasharray="4,3"/>
-    <text class="layer-stage-4" x="135" y="18" font-size="12" font-weight="bold" fill="#ff3b30">x̄</text>
+  <!-- Core Content Graphic -->
+  <g transform="translate(45, 75)">
+    <line class="layer-stage-1" x1="20" y1="70" x2="270" y2="70" stroke="#94a3b8" stroke-width="2"/>
+    <!-- Min point -->
+    <circle class="layer-stage-2" cx="50" cy="70" r="6" fill="#2563eb"/>
+    <text class="layer-stage-2" x="50" y="95" text-anchor="middle" font-size="12" font-weight="bold" fill="#2563eb">最小值 x_min</text>
+    <!-- Max point -->
+    <circle class="layer-stage-2" cx="240" cy="70" r="6" fill="#2563eb"/>
+    <text class="layer-stage-2" x="240" y="95" text-anchor="middle" font-size="12" font-weight="bold" fill="#2563eb">最大值 x_max</text>
+    <!-- Range span arrow -->
+    <line class="layer-stage-3 formal-labels" x1="50" y1="45" x2="240" y2="45" stroke="#ea580c" stroke-width="2.5"/>
+    <polygon class="layer-stage-3 formal-labels" points="50,45 58,40 58,50" fill="#ea580c"/>
+    <polygon class="layer-stage-3 formal-labels" points="240,45 232,40 232,50" fill="#ea580c"/>
+    <text class="layer-stage-4" x="145" y="35" text-anchor="middle" font-size="13" font-weight="bold" fill="#ea580c">极差 R = x_max - x_min</text>
+    <text class="layer-stage-4" x="145" y="130" text-anchor="middle" font-size="12" font-weight="bold" fill="#047857">粗略反映数据变化的极端跨度范围</text>
   </g>
-  <text class="layer-stage-4" x="200" y="265" text-anchor="middle" font-size="13" font-weight="600" fill="#1d1d1f">集中趋势(均值/中位数)与离散程度(方差)</text>
 
+  <!-- Footer Conclusion / Extrema / Vieta -->
+  <text class="layer-stage-4" x="200" y="270" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#1d1d1f">极差是一组数据中最大值与最小值的差，反映数据波动范围的大小</text>
 </svg>

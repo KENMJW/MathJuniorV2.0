@@ -4,26 +4,27 @@
 
   <!-- Card Header -->
   <rect x="20" y="16" width="360" height="42" rx="10" fill="#f2f2f7" />
-  <text x="35" y="42" font-family="-apple-system, sans-serif" font-size="13" font-weight="700" fill="#0071e3">KP-047 · 几何基础</text>
-  <text x="365" y="42" text-anchor="end" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#1d1d1f">Intersecting Lines and Perpendicular Lines</text>
+  <text x="35" y="42" font-family="-apple-system, sans-serif" font-size="13" font-weight="700" fill="#0071e3">KP-047 · Foundations</text>
+  <text x="365" y="42" text-anchor="end" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#1d1d1f">Intersecting &amp; Perpendicular Lines</text>
 
-
-  <!-- Parallel Lines with Transversal -->
-  <g transform="translate(60, 80)">
-    <!-- Line l1 -->
-    <line class="layer-stage-1" x1="20" y1="50" x2="260" y2="50" stroke="#0071e3" stroke-width="2.5"/>
-    <text class="layer-stage-3 formal-labels" x="268" y="54" font-size="12" font-weight="bold" fill="#0071e3">l₁</text>
-    <!-- Line l2 -->
-    <line class="layer-stage-1" x1="20" y1="120" x2="260" y2="120" stroke="#0071e3" stroke-width="2.5"/>
-    <text class="layer-stage-3 formal-labels" x="268" y="124" font-size="12" font-weight="bold" fill="#0071e3">l₂</text>
-    <!-- Transversal line t -->
-    <line class="layer-stage-2" x1="60" y1="15" x2="210" y2="155" stroke="#ff9500" stroke-width="2"/>
-    <!-- Angles -->
-    <circle class="layer-stage-2" cx="97" cy="50" r="14" fill="none" stroke="#af52de" stroke-width="2"/>
-    <text x="115" y="42" font-size="12" font-weight="bold" fill="#af52de">∠1</text>
-    <circle class="layer-stage-2" cx="172" cy="120" r="14" fill="none" stroke="#af52de" stroke-width="2"/>
-    <text class="layer-stage-3 formal-labels" x="190" y="112" font-size="12" font-weight="bold" fill="#af52de">∠2</text>
+  <!-- Core Content Graphic -->
+  <g transform="translate(50, 70)">
+    <line class="layer-stage-1" x1="20" y1="120" x2="260" y2="120" stroke="#475569" stroke-width="2"/>
+    <text class="layer-stage-1" x="265" y="125" font-size="11" fill="#475569">l</text>
+    <circle class="layer-stage-1" cx="120" cy="30" r="5" fill="#2563eb"/>
+    <text class="layer-stage-1" x="120" y="20" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e40af">P</text>
+    <line class="layer-stage-2" x1="120" y1="30" x2="120" y2="120" stroke="#16a34a" stroke-width="2.5"/>
+    <rect class="layer-stage-2" x="120" y="108" width="12" height="12" fill="none" stroke="#16a34a" stroke-width="1.5"/>
+    <text class="layer-stage-2" x="120" y="140" text-anchor="middle" font-size="11" font-weight="bold" fill="#15803d">Foot H</text>
+    <line class="layer-stage-3 formal-labels" x1="120" y1="30" x2="200" y2="120" stroke="#ea580c" stroke-width="1.5" stroke-dasharray="3 3"/>
+    <circle class="layer-stage-3 formal-labels" cx="200" cy="120" r="4" fill="#ea580c"/>
+    <text class="layer-stage-3 formal-labels" x="200" y="140" text-anchor="middle" font-size="10" font-weight="bold" fill="#ea580c">Point A</text>
+    <text class="layer-stage-4" x="140" y="75" font-size="11" font-weight="bold" fill="#15803d">Perpendicular Shortest: PH &lt; PA</text>
   </g>
-  <text class="layer-stage-4" x="200" y="265" text-anchor="middle" font-size="13" font-weight="600" fill="#1d1d1f">l₁ // l₂ ⇒ Corresponding / Alternate Angles Equal</text>
 
+  <!-- Footer Conclusion / Extrema / Vieta -->
+  <text class="layer-stage-4" x="200" y="262" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" font-weight="600" fill="#1d1d1f">
+    <tspan x="200" dy="0">Perpendicular segment from a</tspan>
+    <tspan x="200" dy="14">point to a line is the shortest</tspan>
+  </text>
 </svg>

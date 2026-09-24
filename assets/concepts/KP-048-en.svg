@@ -4,26 +4,26 @@
 
   <!-- Card Header -->
   <rect x="20" y="16" width="360" height="42" rx="10" fill="#f2f2f7" />
-  <text x="35" y="42" font-family="-apple-system, sans-serif" font-size="13" font-weight="700" fill="#0071e3">KP-048 · 几何基础</text>
-  <text x="365" y="42" text-anchor="end" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#1d1d1f">Criteria and Properties of Parallel Lines</text>
+  <text x="35" y="42" font-family="-apple-system, sans-serif" font-size="13" font-weight="700" fill="#0071e3">KP-048 · Foundations</text>
+  <text x="365" y="42" text-anchor="end" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#1d1d1f">Parallel Lines Criteria &amp; Propert…</text>
 
-
-  <!-- Parallel Lines with Transversal -->
-  <g transform="translate(60, 80)">
-    <!-- Line l1 -->
-    <line class="layer-stage-1" x1="20" y1="50" x2="260" y2="50" stroke="#0071e3" stroke-width="2.5"/>
-    <text class="layer-stage-3 formal-labels" x="268" y="54" font-size="12" font-weight="bold" fill="#0071e3">l₁</text>
-    <!-- Line l2 -->
-    <line class="layer-stage-1" x1="20" y1="120" x2="260" y2="120" stroke="#0071e3" stroke-width="2.5"/>
-    <text class="layer-stage-3 formal-labels" x="268" y="124" font-size="12" font-weight="bold" fill="#0071e3">l₂</text>
-    <!-- Transversal line t -->
-    <line class="layer-stage-2" x1="60" y1="15" x2="210" y2="155" stroke="#ff9500" stroke-width="2"/>
-    <!-- Angles -->
-    <circle class="layer-stage-2" cx="97" cy="50" r="14" fill="none" stroke="#af52de" stroke-width="2"/>
-    <text x="115" y="42" font-size="12" font-weight="bold" fill="#af52de">∠1</text>
-    <circle class="layer-stage-2" cx="172" cy="120" r="14" fill="none" stroke="#af52de" stroke-width="2"/>
-    <text class="layer-stage-3 formal-labels" x="190" y="112" font-size="12" font-weight="bold" fill="#af52de">∠2</text>
+  <!-- Core Content Graphic -->
+  <g transform="translate(45, 68)">
+    <line class="layer-stage-1" x1="20" y1="50" x2="260" y2="50" stroke="#2563eb" stroke-width="2"/>
+    <text class="layer-stage-1" x="265" y="55" font-size="10" font-weight="bold" fill="#2563eb">l₁</text>
+    <line class="layer-stage-1" x1="20" y1="120" x2="260" y2="120" stroke="#2563eb" stroke-width="2"/>
+    <text class="layer-stage-1" x="265" y="125" font-size="10" font-weight="bold" fill="#2563eb">l₂</text>
+    <line class="layer-stage-2" x1="70" y1="20" x2="190" y2="150" stroke="#475569" stroke-width="2"/>
+    <path class="layer-stage-3 formal-labels" d="M110,50 A15,15 0 0,0 102,38" fill="none" stroke="#ea580c" stroke-width="2.5"/>
+    <text class="layer-stage-3 formal-labels" x="115" y="42" font-size="10" font-weight="bold" fill="#ea580c">∠1</text>
+    <path class="layer-stage-3 formal-labels" d="M152,120 A15,15 0 0,1 160,132" fill="none" stroke="#ea580c" stroke-width="2.5"/>
+    <text class="layer-stage-3 formal-labels" x="145" y="138" font-size="10" font-weight="bold" fill="#ea580c">∠2</text>
+    <text class="layer-stage-4" x="140" y="90" text-anchor="middle" font-size="11" font-weight="bold" fill="#15803d">l₁ ∥ l₂ ⇔ Corresponding / Alternate Angles Equal</text>
   </g>
-  <text class="layer-stage-4" x="200" y="265" text-anchor="middle" font-size="13" font-weight="600" fill="#1d1d1f">l₁ // l₂ ⇒ Corresponding / Alternate Angles Equal</text>
 
+  <!-- Footer Conclusion / Extrema / Vieta -->
+  <text class="layer-stage-4" x="200" y="262" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" font-weight="600" fill="#1d1d1f">
+    <tspan x="200" dy="0">Parallel lines cut by</tspan>
+    <tspan x="200" dy="14">transversal: alternate &amp; corresponding angles equal</tspan>
+  </text>
 </svg>

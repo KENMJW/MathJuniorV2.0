@@ -7,22 +7,26 @@
   <text x="35" y="42" font-family="-apple-system, sans-serif" font-size="13" font-weight="700" fill="#0071e3">KP-103 · 概率</text>
   <text x="365" y="42" text-anchor="end" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#1d1d1f">随机事件与确定性事件</text>
 
-
-  <!-- Probability Tree / Spinner Diagram -->
-  <g transform="translate(200, 160)">
-    <!-- Probability Spinner Wheel -->
-    <circle class="layer-stage-1" cx="-60" cy="0" r="55" fill="#f8fafc" stroke="#1d1d1f" stroke-width="2"/>
-    <path class="layer-stage-1" d="M -60 0 L -60 -55 A 55 55 0 0 1 -5 0 Z" fill="#0071e3" fill-opacity="0.4"/>
-    <path class="layer-stage-2" d="M -60 0 L -5 0 A 55 55 0 0 1 -60 55 Z" fill="#34c759" fill-opacity="0.4"/>
-    <path class="layer-stage-2" d="M -60 0 L -60 55 A 55 55 0 0 1 -115 0 Z" fill="#ff9500" fill-opacity="0.4"/>
-    <path class="layer-stage-1" d="M -60 0 L -115 0 A 55 55 0 0 1 -60 -55 Z" fill="#af52de" fill-opacity="0.4"/>
-    <!-- Center pointer -->
-    <circle class="layer-stage-2" cx="-60" cy="0" r="5" fill="#1d1d1f"/>
-    <line class="layer-stage-4" x1="-60" y1="0" x2="-35" y2="-25" stroke="#ff3b30" stroke-width="2.5"/>
-    <!-- Probability Formulas -->
-    <text class="layer-stage-4" x="40" y="-15" font-family="monospace" font-size="14" font-weight="bold" fill="#0071e3">P(A) = m / n</text>
-    <text class="layer-stage-4" x="40" y="15" font-size="12" fill="#86868b">0 ≤ P(A) ≤ 1</text>
+  <!-- Core Content Graphic -->
+  <g transform="translate(45, 75)">
+    <line class="layer-stage-1" x1="20" y1="75" x2="270" y2="75" stroke="#94a3b8" stroke-width="3"/>
+    <!-- Left endpoint P=0 -->
+    <circle class="layer-stage-2" cx="40" cy="75" r="6" fill="#dc2626"/>
+    <text class="layer-stage-2" x="40" y="100" text-anchor="middle" font-size="11" font-weight="bold" fill="#dc2626">P = 0</text>
+    <text class="layer-stage-2" x="40" y="120" text-anchor="middle" font-size="11" fill="#dc2626">不可能事件</text>
+    <!-- Right endpoint P=1 -->
+    <circle class="layer-stage-2" cx="250" cy="75" r="6" fill="#16a34a"/>
+    <text class="layer-stage-2" x="250" y="100" text-anchor="middle" font-size="11" font-weight="bold" fill="#15803d">P = 1</text>
+    <text class="layer-stage-2" x="250" y="120" text-anchor="middle" font-size="11" fill="#15803d">必然事件</text>
+    <!-- Interval (0, 1) Random Events -->
+    <rect class="layer-stage-3 formal-labels" x="70" y="35" width="150" height="25" rx="6" fill="#fef3c7" stroke="#d97706"/>
+    <text class="layer-stage-3 formal-labels" x="145" y="52" text-anchor="middle" font-size="12" font-weight="bold" fill="#b45309">随机事件 (0 &lt; P &lt; 1)</text>
+    <text class="layer-stage-4" x="145" y="150" text-anchor="middle" font-size="12" font-weight="bold" fill="#047857">确定性事件 (P=0 或 P=1) 与 随机不确定事件</text>
   </g>
-  <text class="layer-stage-4" x="200" y="268" text-anchor="middle" font-size="13" font-weight="600" fill="#1d1d1f">等可能古典概型与频率大数逼近</text>
 
+  <!-- Footer Conclusion / Extrema / Vieta -->
+  <text class="layer-stage-4" x="200" y="262" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" font-weight="600" fill="#1d1d1f">
+    <tspan x="200" dy="0">必然事件概率为 1，不可能事件概率为 0，随机事件概率介于</tspan>
+    <tspan x="200" dy="14">0 与 1 之间</tspan>
+  </text>
 </svg>

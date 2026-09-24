@@ -7,22 +7,21 @@
   <text x="35" y="42" font-family="-apple-system, sans-serif" font-size="13" font-weight="700" fill="#0071e3">KP-064 · 四边形</text>
   <text x="365" y="42" text-anchor="end" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#1d1d1f">矩形的性质与判定</text>
 
-
-  <!-- Parallelogram with Diagonals -->
-  <g transform="translate(70, 85)">
-    <!-- Parallelogram vertices -->
-    <polygon class="layer-stage-1" points="60,30 230,30 180,140 10,140" fill="#af52de" fill-opacity="0.1" stroke="#af52de" stroke-width="2.5"/>
-    <!-- Diagonals -->
-    <line class="layer-stage-4" x1="60" y1="30" x2="180" y2="140" stroke="#ff9500" stroke-width="1.5" stroke-dasharray="4,3"/>
-    <line class="layer-stage-4" x1="230" y1="30" x2="10" y2="140" stroke="#0071e3" stroke-width="1.5" stroke-dasharray="4,3"/>
-    <circle class="layer-stage-4" cx="120" cy="85" r="4" fill="#ff3b30"/>
-    <text class="layer-stage-4" x="120" y="75" text-anchor="middle" font-size="12" font-weight="bold" fill="#ff3b30">O</text>
-    <!-- Vertices -->
-    <text class="layer-stage-4" x="50" y="24" font-weight="bold" font-size="13" fill="#1d1d1f">A</text>
-    <text class="layer-stage-4" x="238" y="28" font-weight="bold" font-size="13" fill="#1d1d1f">B</text>
-    <text class="layer-stage-3 formal-labels" x="188" y="152" font-weight="bold" font-size="13" fill="#1d1d1f">C</text>
-    <text class="layer-stage-3 formal-labels" x="0" y="152" font-weight="bold" font-size="13" fill="#1d1d1f">D</text>
+  <!-- Core Content Graphic -->
+  <g transform="translate(50, 68)">
+    <rect class="layer-stage-1" x="30" y="30" width="180" height="110" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+    <!-- Four 90-degree corner markers -->
+    <rect class="layer-stage-2" x="30" y="30" width="12" height="12" fill="none" stroke="#2563eb" stroke-width="1.5"/>
+    <rect class="layer-stage-2" x="198" y="30" width="12" height="12" fill="none" stroke="#2563eb" stroke-width="1.5"/>
+    <rect class="layer-stage-2" x="198" y="128" width="12" height="12" fill="none" stroke="#2563eb" stroke-width="1.5"/>
+    <rect class="layer-stage-2" x="30" y="128" width="12" height="12" fill="none" stroke="#2563eb" stroke-width="1.5"/>
+    <!-- Diagonals AC and BD -->
+    <line class="layer-stage-3 formal-labels" x1="30" y1="30" x2="210" y2="140" stroke="#dc2626" stroke-width="2"/>
+    <line class="layer-stage-3 formal-labels" x1="210" y1="30" x2="30" y2="140" stroke="#dc2626" stroke-width="2"/>
+    <text class="layer-stage-4" x="120" y="80" text-anchor="middle" font-size="13" font-weight="bold" fill="#dc2626">AC = BD (对角线相等)</text>
+    <text class="layer-stage-4" x="120" y="165" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e40af">四个角都是直角 90° 的平行四边形是矩形</text>
   </g>
-  <text class="layer-stage-4" x="200" y="265" text-anchor="middle" font-size="13" font-weight="600" fill="#1d1d1f">对角线互相平分 (OA=OC, OB=OD)</text>
 
+  <!-- Footer Conclusion / Extrema / Vieta -->
+  <text class="layer-stage-4" x="200" y="270" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#1d1d1f">矩形四个角都是直角，对角线相等且互相平分</text>
 </svg>

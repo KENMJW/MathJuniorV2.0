@@ -7,22 +7,19 @@
   <text x="35" y="42" font-family="-apple-system, sans-serif" font-size="13" font-weight="700" fill="#0071e3">KP-063 · 四边形</text>
   <text x="365" y="42" text-anchor="end" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#1d1d1f">平行四边形的判定</text>
 
-
-  <!-- Parallelogram with Diagonals -->
-  <g transform="translate(70, 85)">
-    <!-- Parallelogram vertices -->
-    <polygon class="layer-stage-1" points="60,30 230,30 180,140 10,140" fill="#af52de" fill-opacity="0.1" stroke="#af52de" stroke-width="2.5"/>
-    <!-- Diagonals -->
-    <line class="layer-stage-4" x1="60" y1="30" x2="180" y2="140" stroke="#ff9500" stroke-width="1.5" stroke-dasharray="4,3"/>
-    <line class="layer-stage-4" x1="230" y1="30" x2="10" y2="140" stroke="#0071e3" stroke-width="1.5" stroke-dasharray="4,3"/>
-    <circle class="layer-stage-4" cx="120" cy="85" r="4" fill="#ff3b30"/>
-    <text class="layer-stage-4" x="120" y="75" text-anchor="middle" font-size="12" font-weight="bold" fill="#ff3b30">O</text>
-    <!-- Vertices -->
-    <text class="layer-stage-4" x="50" y="24" font-weight="bold" font-size="13" fill="#1d1d1f">A</text>
-    <text class="layer-stage-4" x="238" y="28" font-weight="bold" font-size="13" fill="#1d1d1f">B</text>
-    <text class="layer-stage-3 formal-labels" x="188" y="152" font-weight="bold" font-size="13" fill="#1d1d1f">C</text>
-    <text class="layer-stage-3 formal-labels" x="0" y="152" font-weight="bold" font-size="13" fill="#1d1d1f">D</text>
+  <!-- Core Content Graphic -->
+  <g transform="translate(50, 68)">
+    <polygon class="layer-stage-1" points="60,35 210,35 180,135 30,135" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+    <!-- Parallel arrows on AD and BC -->
+    <polygon class="layer-stage-2" points="135,35 127,31 127,39" fill="#15803d"/>
+    <polygon class="layer-stage-2" points="105,135 97,131 97,139" fill="#15803d"/>
+    <!-- Equal length ticks -->
+    <line class="layer-stage-3 formal-labels" x1="135" y1="30" x2="135" y2="40" stroke="#dc2626" stroke-width="2"/>
+    <line class="layer-stage-3 formal-labels" x1="105" y1="130" x2="105" y2="140" stroke="#dc2626" stroke-width="2"/>
+    <text class="layer-stage-4" x="120" y="85" text-anchor="middle" font-size="12" font-weight="bold" fill="#15803d">AD ∥ BC 且 AD = BC</text>
+    <text class="layer-stage-4" x="120" y="160" text-anchor="middle" font-size="12" font-weight="bold" fill="#166534">判定定理: 一组对边平行且相等的四边形是平行四边形</text>
   </g>
-  <text class="layer-stage-4" x="200" y="265" text-anchor="middle" font-size="13" font-weight="600" fill="#1d1d1f">对角线互相平分 (OA=OC, OB=OD)</text>
 
+  <!-- Footer Conclusion / Extrema / Vieta -->
+  <text class="layer-stage-4" x="200" y="270" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#1d1d1f">一组对边平行且相等（或两组对边分别相等）的四边形是平行四边形</text>
 </svg>

@@ -4,25 +4,24 @@
 
   <!-- Card Header -->
   <rect x="20" y="16" width="360" height="42" rx="10" fill="#f2f2f7" />
-  <text x="35" y="42" font-family="-apple-system, sans-serif" font-size="13" font-weight="700" fill="#0071e3">KP-095 · 数据收集整理</text>
+  <text x="35" y="42" font-family="-apple-system, sans-serif" font-size="13" font-weight="700" fill="#0071e3">KP-095 · 数据分析</text>
   <text x="365" y="42" text-anchor="end" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#1d1d1f">折线统计图</text>
 
-
-  <!-- Statistical Histogram / Distribution -->
-  <g transform="translate(70, 90)">
-    <!-- Axis -->
-    <line class="layer-stage-1" x1="20" y1="130" x2="250" y2="130" stroke="#1d1d1f" stroke-width="2"/>
-    <line class="layer-stage-2" x1="20" y1="20" x2="20" y2="130" stroke="#1d1d1f" stroke-width="2"/>
-    <!-- Bars -->
-    <rect class="layer-stage-1" x="35" y="80" width="35" height="50" fill="#0071e3" fill-opacity="0.3" stroke="#0071e3" stroke-width="1.5"/>
-    <rect class="layer-stage-1" x="75" y="45" width="35" height="85" fill="#0071e3" fill-opacity="0.5" stroke="#0071e3" stroke-width="1.5"/>
-    <rect class="layer-stage-1" x="115" y="25" width="35" height="105" fill="#0071e3" fill-opacity="0.8" stroke="#0071e3" stroke-width="1.5"/>
-    <rect class="layer-stage-1" x="155" y="55" width="35" height="75" fill="#0071e3" fill-opacity="0.5" stroke="#0071e3" stroke-width="1.5"/>
-    <rect class="layer-stage-1" x="195" y="90" width="35" height="40" fill="#0071e3" fill-opacity="0.3" stroke="#0071e3" stroke-width="1.5"/>
-    <!-- Mean line -->
-    <line class="layer-stage-4" x1="132" y1="15" x2="132" y2="130" stroke="#ff3b30" stroke-width="2" stroke-dasharray="4,3"/>
-    <text class="layer-stage-4" x="135" y="18" font-size="12" font-weight="bold" fill="#ff3b30">x̄</text>
+  <!-- Core Content Graphic -->
+  <g transform="translate(45, 68)">
+    <line class="layer-stage-1" x1="20" y1="140" x2="280" y2="140" stroke="#94a3b8" stroke-width="1.5"/>
+    <line class="layer-stage-1" x1="40" y1="20" x2="40" y2="150" stroke="#94a3b8" stroke-width="1.5"/>
+    <text class="layer-stage-1" x="280" y="135" font-size="11" fill="#64748b">时间</text>
+    <polyline class="layer-stage-2" points="50,110 100,60 150,90 200,40 250,70" fill="none" stroke="#2563eb" stroke-width="2.5"/>
+    <circle class="layer-stage-3 formal-labels" cx="50" cy="110" r="4.5" fill="#dc2626"/>
+    <circle class="layer-stage-3 formal-labels" cx="100" cy="60" r="4.5" fill="#dc2626"/>
+    <circle class="layer-stage-3 formal-labels" cx="150" cy="90" r="4.5" fill="#dc2626"/>
+    <circle class="layer-stage-3 formal-labels" cx="200" cy="40" r="4.5" fill="#dc2626"/>
+    <circle class="layer-stage-3 formal-labels" cx="250" cy="70" r="4.5" fill="#dc2626"/>
+    <text class="layer-stage-4" x="200" y="30" font-size="11" font-weight="bold" fill="#dc2626">峰值</text>
+    <text class="layer-stage-4" x="140" y="160" text-anchor="middle" font-size="11" font-weight="bold" fill="#047857">动态变化与波动趋势</text>
   </g>
-  <text class="layer-stage-4" x="200" y="265" text-anchor="middle" font-size="13" font-weight="600" fill="#1d1d1f">集中趋势(均值/中位数)与离散程度(方差)</text>
 
+  <!-- Footer Conclusion / Extrema / Vieta -->
+  <text class="layer-stage-4" x="200" y="270" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#1d1d1f">折线统计图能清晰反映数据随时间的波动与增减趋势</text>
 </svg>

@@ -17,6 +17,7 @@ import { MathRenderer } from '../../components/math/MathRenderer';
 import { Icon } from '../../components/common/Icon';
 import { evaluateSafeExpression } from '../sandbox/safeExpression';
 import { Sparkles, ChevronRight, ChevronLeft, X, Compass, Sliders, RotateCcw } from 'lucide-react';
+import { StepMetricsHUD } from './StepMetricsHUD';
 import '../sandbox/sandbox.css';
 
 export interface InquiryStep {
@@ -208,6 +209,7 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
   const initialPointsRef = useRef<Record<string, Point2D> | null>(null);
   const [showAhaModal, setShowAhaModal] = useState<boolean>(false);
   const [currentAhaStep, setCurrentAhaStep] = useState<InquiryStep | null>(null);
+  const [isTelemetryCollapsed, setIsTelemetryCollapsed] = useState<boolean>(false);
 
   // 用户主动交互标记（调节滑块或拖拽动点）
   const markUserInteracted = useCallback(() => {
@@ -363,11 +365,11 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
         ? currentStep.titleEn || currentStep.titleZh || currentStep.title
         : currentStep.titleZh || currentStep.title
       : '';
-    const currentStepGuide = currentStep
+    const currentStepGuide: string = (currentStep
       ? isEn
         ? currentStep.guideTextEn || currentStep.guideTextZh || currentStep.guide_text
-      : currentStep.guideTextZh || currentStep.guide_text
-      : '';
+        : currentStep.guideTextZh || currentStep.guide_text
+      : '') || '';
 
     return (
       <div
@@ -392,7 +394,7 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
           </div>
 
           {/* 右侧仪表盘 (.sandbox-guide-15, Slate 900 暗室配色) */}
-          <div className="sandbox-guide-15 w-full lg:w-64 shrink-0 flex flex-col gap-2.5 rounded-2xl bg-slate-800/90 dark:bg-slate-950/95 border border-slate-700/60 p-3.5 text-slate-100 shadow-inner justify-between overflow-y-auto">
+          <div className="sandbox-guide-15 w-full lg:w-72 shrink-0 flex flex-col gap-2 rounded-2xl bg-slate-800/90 dark:bg-slate-950/95 border border-slate-700/60 p-3 text-slate-100 shadow-inner overflow-y-auto">
             {/* 1~3 步自适应探究引导胶囊 */}
             <div className="flex flex-col gap-2">
               <div className="flex flex-col gap-2 pb-2 border-b border-slate-700/60">
@@ -479,6 +481,16 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
                   <p className="text-xs text-slate-300 leading-relaxed m-0 font-normal">
                     {currentStepGuide}
                   </p>
+
+                  {/* 核心数据实时对比 Live HUD (PLAN-MODEL-REPAIR-V2 轨道 1) */}
+                  <StepMetricsHUD
+                    sandboxId={sandboxId || undefined}
+                    stepIndex={activeStepIndex}
+                    guideText={currentStepGuide}
+                    paramValues={paramValues}
+                    invariants={invariants}
+                    locale={locale}
+                  />
 
                   {/* 达成状态与名师秘籍查看入口 (解决问题 2) */}
                   <div className="flex items-center justify-between gap-1 pt-1 border-t border-slate-800 text-[11px]">
@@ -567,12 +579,31 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
                       ? 'Freely drag dynamic points and adjust sliders to discover mathematical invariants.'
                       : '已解除步骤限制，可随意拖拽动点与滑动参数，深入观测几何守恒。点击上方步骤标签可随时切回引导。'}
                   </p>
+
+                  {/* 自由把玩实时 HUD */}
+                  <StepMetricsHUD
+                    sandboxId={sandboxId || undefined}
+                    stepIndex={activeStepIndex}
+                    guideText={isEn ? 'Free play mode' : '自由把玩模式'}
+                    paramValues={paramValues}
+                    invariants={invariants}
+                    locale={locale}
+                  />
                 </div>
+              ) : !hasSteps ? (
+                <StepMetricsHUD
+                  sandboxId={sandboxId || undefined}
+                  stepIndex={0}
+                  guideText=""
+                  paramValues={paramValues}
+                  invariants={invariants}
+                  locale={locale}
+                />
               ) : null}
             </div>
 
-            {/* 不变量遥测与动点坐标实时监控 (解决问题 3: 拖拽实时更新) */}
-            <div className="flex flex-col gap-2">
+            {/* 不变量遥测与动点坐标实时监控 (紧凑折叠卡片，防小屏视口截断) */}
+            <div className="flex flex-col gap-1.5 pt-1">
               {/* 动点实时坐标指示 (动态响应拖拽) */}
               {Object.keys(livePoints).length > 0 && (
                 <div className="flex flex-col gap-1 p-2 rounded-xl bg-slate-900/80 border border-slate-700/50">
@@ -595,41 +626,63 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
                 </div>
               )}
 
-              {/* 几何不变量与代数守恒清单 (全量多项实时更新) */}
-              <div className="telemetry-readings flex flex-col gap-1.5 p-2.5 rounded-xl bg-slate-900/80 border border-slate-700/50">
-                {invariants.length > 0 ? (
-                  invariants.slice(0, 4).map((inv, i) => (
-                    <div
-                      key={inv.id || i}
-                      className="flex flex-col gap-0.5 border-b border-slate-800/80 pb-1.5 last:border-b-0 last:pb-0"
-                    >
+              {/* 几何不变量与代数守恒清单 (全量多项实时更新，紧凑折叠卡片) */}
+              <div className="telemetry-readings flex flex-col gap-1.5 p-2 rounded-xl bg-slate-900/80 border border-slate-700/50">
+                <button
+                  type="button"
+                  onClick={() => setIsTelemetryCollapsed(!isTelemetryCollapsed)}
+                  className="flex items-center justify-between w-full text-[11px] font-semibold text-slate-300 hover:text-white transition-colors"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-sky-400" />
+                    <span>{isEn ? 'Telemetry Readings' : '全量守恒遥测'}</span>
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-mono">
+                    {isTelemetryCollapsed ? (isEn ? 'Expand ▾' : '展开 ▾') : (isEn ? 'Collapse ▴' : '折叠 ▴')}
+                  </span>
+                </button>
+
+                <div
+                  className={`flex flex-col gap-1 overflow-hidden transition-all ${
+                    isTelemetryCollapsed
+                      ? 'max-h-0 opacity-0 pointer-events-none'
+                      : 'max-h-36 overflow-y-auto opacity-100'
+                  }`}
+                >
+                  {invariants.length > 0 ? (
+                    invariants.slice(0, 4).map((inv, i) => (
+                      <div
+                        key={inv.id || i}
+                        className="flex flex-col gap-0.5 border-b border-slate-800/80 pb-1 last:border-b-0 last:pb-0"
+                      >
+                        <span className="telemetry-tag-invariant text-xs font-mono text-sky-300 font-semibold break-words">
+                          <MathRenderer content={inv.text} />
+                        </span>
+                        <span className="telemetry-tag-secondary text-[10px] text-slate-400">
+                          {inv.isConstant
+                            ? isEn
+                              ? '[Absolute Invariant]'
+                              : '[绝对恒定]'
+                            : isEn
+                            ? '[Dynamic Observation]'
+                            : '[动态观测中]'}
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="flex flex-col gap-0.5">
                       <span className="telemetry-tag-invariant text-xs font-mono text-sky-300 font-semibold break-words">
-                        <MathRenderer content={inv.text} />
+                        {isEn ? 'Area and segment ratio conserved' : '面积与线段比例守恒'}
                       </span>
-                      <span className="telemetry-tag-secondary text-[10px] text-slate-400">
-                        {inv.isConstant
-                          ? isEn
-                            ? '[Absolute Invariant]'
-                            : '[绝对恒定]'
-                          : isEn
-                          ? '[Dynamic Observation]'
-                          : '[动态观测中]'}
+                      <span className="telemetry-tag-secondary text-[11px] text-slate-400">
+                        {isEn ? 'Status: [Absolute Invariant]' : '状态：[绝对恒定]'}
                       </span>
                     </div>
-                  ))
-                ) : (
-                  <div className="flex flex-col gap-0.5">
-                    <span className="telemetry-tag-invariant text-xs font-mono text-sky-300 font-semibold break-words">
-                      {isEn ? 'Area and segment ratio conserved' : '面积与线段比例守恒'}
-                    </span>
-                    <span className="telemetry-tag-secondary text-[11px] text-slate-400">
-                      {isEn ? 'Status: [Absolute Invariant]' : '状态：[绝对恒定]'}
-                    </span>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
 
-              <div className="telemetry-tag-conclusion text-[11px] text-emerald-400 font-medium p-2 rounded-lg bg-emerald-950/40 border border-emerald-500/20 text-center">
+              <div className="telemetry-tag-conclusion text-[11px] text-emerald-400 font-medium p-1.5 rounded-lg bg-emerald-950/40 border border-emerald-500/20 text-center">
                 {isEn
                   ? 'Conclusion: Geometric intuitive verification passed'
                   : '结论：几何直观验证通过'}

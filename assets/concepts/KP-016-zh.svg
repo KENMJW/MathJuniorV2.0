@@ -7,14 +7,26 @@
   <text x="35" y="42" font-family="-apple-system, sans-serif" font-size="13" font-weight="700" fill="#0071e3">KP-016 · 分式</text>
   <text x="365" y="42" text-anchor="end" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#1d1d1f">分式的基本性质</text>
 
-
-  <!-- Rational Expressions Structure -->
-  <g transform="translate(80, 100)">
-    <rect class="layer-stage-1" x="0" y="0" width="240" height="120" rx="14" fill="#f8fafc" stroke="#e5e5ea" stroke-width="2"/>
-    <text class="layer-stage-3 formal-labels" x="120" y="45" text-anchor="middle" font-family="monospace" font-size="20" font-weight="bold" fill="#0071e3">A(x)</text>
-    <line class="layer-stage-2" x1="50" y1="60" x2="190" y2="60" stroke="#1d1d1f" stroke-width="3"/>
-    <text class="layer-stage-3 formal-labels" x="120" y="95" text-anchor="middle" font-family="monospace" font-size="20" font-weight="bold" fill="#ff9500">B(x)</text>
+  <!-- Core Content Graphic -->
+  <g transform="translate(45, 75)">
+    <!-- Base fraction 1/2 -->
+    <rect class="layer-stage-1" x="20" y="25" width="100" height="90" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
+    <line class="layer-stage-1" x1="70" y1="25" x2="70" y2="115" stroke="#3b82f6" stroke-width="1.5"/>
+    <rect class="layer-stage-2" x="20" y="25" width="50" height="90" fill="#93c5fd" opacity="0.6"/>
+    <text class="layer-stage-2" x="45" y="75" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e40af">A/B</text>
+    <text class="layer-stage-3 formal-labels" x="145" y="75" text-anchor="middle" font-size="20" font-weight="bold" fill="#64748b">=</text>
+    <!-- Scaled fraction (A·M)/(B·M) -->
+    <rect class="layer-stage-3 formal-labels" x="170" y="25" width="100" height="90" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+    <line class="layer-stage-3 formal-labels" x1="220" y1="25" x2="220" y2="115" stroke="#2563eb" stroke-width="1.5"/>
+    <line class="layer-stage-3 formal-labels" x1="170" y1="70" x2="270" y2="70" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="3 3"/>
+    <rect class="layer-stage-4" x="170" y="25" width="50" height="45" fill="#60a5fa" opacity="0.8"/>
+    <rect class="layer-stage-4" x="170" y="70" width="50" height="45" fill="#60a5fa" opacity="0.8"/>
+    <text class="layer-stage-4" x="220" y="135" text-anchor="middle" font-size="12" font-weight="bold" fill="#1d4ed8">(A·M) / (B·M)</text>
   </g>
-  <text class="layer-stage-4" x="200" y="255" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="bold" fill="#ff3b30">B(x) ≠ 0 (分母非零根基)</text>
 
+  <!-- Footer Conclusion / Extrema / Vieta -->
+  <text class="layer-stage-4" x="200" y="262" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" font-weight="600" fill="#1d1d1f">
+    <tspan x="200" dy="0">分式分子分母同乘非零整式M，分式的值不变: A/B =</tspan>
+    <tspan x="200" dy="14">AM/BM</tspan>
+  </text>
 </svg>

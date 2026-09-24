@@ -221,3 +221,9 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     });
   },
 }));
+
+if (typeof window !== 'undefined') {
+  (window as any).__sessionStore = useSessionStore;
+}
+
+

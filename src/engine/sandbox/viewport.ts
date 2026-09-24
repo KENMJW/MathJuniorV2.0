@@ -229,7 +229,7 @@ export function calculateAdaptiveViewport(
 /**
  * 安全解析 DB 中的 viewbox_spec_json
  */
-export function parseViewboxSpec(raw: string | null): ViewboxSpec {
+export function parseViewboxSpec(raw: string | null | undefined): ViewboxSpec {
   const defaultBox: BoundingBox = { minX: -10, maxX: 10, minY: -10, maxY: 10 };
   if (!raw) {
     return { baseBox: defaultBox, preserveAspectRatio: true };

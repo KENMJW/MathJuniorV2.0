@@ -7,22 +7,23 @@
   <text x="35" y="42" font-family="-apple-system, sans-serif" font-size="13" font-weight="700" fill="#0071e3">KP-049 · 三角形</text>
   <text x="365" y="42" text-anchor="end" font-family="-apple-system, sans-serif" font-size="12" font-weight="600" fill="#1d1d1f">三角形的基本性质</text>
 
-
-  <!-- Right Triangle / Congruence Model -->
-  <g transform="translate(90, 85)">
-    <!-- Triangle ABC: C is right angle at (40, 140) -->
-    <polygon class="layer-stage-1" points="40,140 200,140 40,30" fill="#0071e3" fill-opacity="0.12" stroke="#0071e3" stroke-width="2.5"/>
-    <!-- Right angle mark -->
-    <rect class="layer-stage-2" x="40" y="122" width="18" height="18" fill="none" stroke="#1d1d1f" stroke-width="1.5"/>
-    <!-- Vertex Labels -->
-    <text class="layer-stage-4" x="30" y="25" font-weight="bold" font-size="14" fill="#1d1d1f">A</text>
-    <text class="layer-stage-3 formal-labels" x="20" y="155" font-weight="bold" font-size="14" fill="#1d1d1f">C</text>
-    <text class="layer-stage-3 formal-labels" x="210" y="150" font-weight="bold" font-size="14" fill="#1d1d1f">B</text>
-    <!-- Side Labels -->
-    <text class="layer-stage-3 formal-labels" x="22" y="90" font-family="monospace" font-size="14" font-weight="bold" fill="#ff9500">b</text>
-    <text class="layer-stage-3 formal-labels" x="115" y="160" font-family="monospace" font-size="14" font-weight="bold" fill="#34c759">a</text>
-    <text class="layer-stage-3 formal-labels" x="125" y="75" font-family="monospace" font-size="14" font-weight="bold" fill="#0071e3">c</text>
+  <!-- Core Content Graphic -->
+  <g transform="translate(50, 68)">
+    <!-- Triangle ABC: A(130, 45), B(40, 140), C(220, 140) -->
+    <polygon class="layer-stage-1" points="130,45 40,140 220,140" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
+    <!-- Auxiliary line through A parallel to BC -->
+    <line class="layer-stage-2" x1="20" y1="45" x2="240" y2="45" stroke="#ea580c" stroke-width="1.5" stroke-dasharray="3 3"/>
+    <text class="layer-stage-2" x="245" y="48" font-size="10" fill="#ea580c">l ∥ BC</text>
+    <!-- Angles at vertex A -->
+    <text class="layer-stage-3 formal-labels" x="90" y="40" font-size="11" font-weight="bold" fill="#dc2626">∠B</text>
+    <text class="layer-stage-3 formal-labels" x="130" y="65" text-anchor="middle" font-size="11" font-weight="bold" fill="#2563eb">∠A</text>
+    <text class="layer-stage-3 formal-labels" x="170" y="40" font-size="11" font-weight="bold" fill="#16a34a">∠C</text>
+    <text class="layer-stage-4" x="130" y="160" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e40af">内角和定理: ∠A + ∠B + ∠C = 180°</text>
   </g>
-  <text class="layer-stage-4" x="200" y="268" text-anchor="middle" font-family="monospace" font-size="14" font-weight="700" fill="#1d1d1f">a² + b² = c² (∠C = 90°)</text>
 
+  <!-- Footer Conclusion / Extrema / Vieta -->
+  <text class="layer-stage-4" x="200" y="262" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" font-weight="600" fill="#1d1d1f">
+    <tspan x="200" dy="0">三角形三个内角和等于</tspan>
+    <tspan x="200" dy="14">180°；三角形的外角等于与它不相邻两内角和</tspan>
+  </text>
 </svg>
