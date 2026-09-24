@@ -20,18 +20,27 @@
   - 红线铁律：`LeapLab.tsx` 与模块二/三泳道大厅保持 0 修改，源码 0 emoji，模块一内联样式仅 2 处（<= 5）。
 - 验收报告：`outbox/RESULT-FE-0021.md`
 
-## [🚀 正在执行] TASK-FE-0022 【任务三&四：跃迁沙盒重绘与模块四移动端极速出卷】36 动力模型与实战测评全量交互闭环
-- **TASK-FE-0022**（进行中，派发至 `inbox/TASK-FE-0022.md`，`NEXT.md = TASK-FE-0022`）：
-  - **模块三（36 动力学跃迁沙盒 LeapLab & 模块二主线旗舰沙盒）**：
+## [✅ 已验收归档] TASK-FE-0022 【任务三&四：跃迁沙盒重绘与模块四移动端极速出卷】36 动力模型与实战测评全量交互闭环（2026-09-24 架构师量化验收归档）
+- **TASK-FE-0022**（已验收，归档至 `archive/RESULT-FE-0022.md`）：
+  - **分支 A（36 动力学跃迁沙盒 LeapLab 重构）**：
     - 更名 `[ 🔍 中考题眼透视 ]`，锁定上方 320px 画布右下角悬浮毛玻璃宝石按钮；
     - 进场默认停在【💡 分步推演】模式；单轨思维阶梯（原型 ➔ 变式 ➔ 测度 ➔ 破局）帧同步渐进式演化（点击下一步画布与文本卡片联动演进，自由穿透可点击）；
-    - 5 维变异端差异化：手机端隐化进推演步进，电脑端在自由探索下保留 5 维切换按钮；手机端画布 `touch-action: none`；
-  - **模块四（实战测评 · 智能组卷中心 MobilePaperWorkbench）**：
-    - 核心铁律红线：底层组卷代码（`drawQuestions.ts`、`verifyPaperInventory.ts`、`difficultyRipple.ts`）**绝对 0 修改**；
-    - 手机端界面全面做减法（砍掉 107 考点打勾网格、L1~L5 溢出滑块、单题分值、A4 打印）；
-    - 极简微调抽屉（Bottom Sheet，默认值一律最左焦点：100分标准制 / 7上 / 基础夯实 7:2:1）；
-    - 内容滚动容器末尾强制注入 `h-[88px]` 的 `BottomSafeSpacer`，彻底消除底栏 Tab 遮挡按钮 Bug；
-    - 在线考场 `OnlineExam` 手机端单列纯净瀑布流与 48px 大选项卡片。
+    - 5 维变异端差异化：手机端隐化进推演步进，电脑端在自由探索下保留 5 维切换按钮；手机端画布与动点强制 `touch-action: none`；
+  - **分支 B（实战测评 · 智能组卷中心 MobilePaperWorkbench 重塑）**：
+    - 核心铁律红线：底层组卷代码（`drawQuestions.ts`、`verifyPaperInventory.ts`、`difficultyRipple.ts`、`presetPapers.ts`）**绝对 0 修改，0 diff**；
+    - 手机端界面全面做减法（彻底砍掉 107 考点打勾网格、L1~L5 溢出滑块、单题分值、A4 打印）；
+    - 极简微调抽屉（iOS 27 Modal Bottom Sheet，默认值严格锁定最左焦点：100分标准制 / 7上 / 基础夯实 7:2:1）；
+    - 内容滚动容器末尾强制注入 `h-[88px]` 的 `BottomSafeSpacer`，彻底根除底栏 Tab 遮挡按钮 Bug；
+    - 在线考场 `OnlineExam` 手机端单列纯净瀑布流与 48px 大选项卡片，右下角悬浮进度胶囊 `[ 📋 进度 (已答/总数) ]`；
+    - 错题卡片附带 `[ 📖 回看概念精讲 ]` 和 `[ 🔍 题眼透视 ]` 双向反哺闭环；
+  - **分支 C（沙盒渲染加固、公式 KaTeX 全量编译与多语言 i18n 覆盖）**：
+    - `wrapFormulaLatex` 与 `formatInvariantText` 自动包裹 LaTeX 公式为 `$...$`，全量接入 `<MathRenderer>`，彻底消灭裸露转义代码；
+    - CSS 注入 `word-break: break-word; overflow-wrap: break-word` 防溢出兜底，手机端自适应流式排版；
+    - 核心控制与遥测标签完整支持英文模式与动态热响应；
+  - **全量独立量化验证**：
+    - 56 套件、342 用例持续 100% 绿灯；`tsc` 0 错误；`index.js` 打包后仅 **257.71 kB**（gzip 85.17 kB），远优于 350 kB 预算；
+    - Chrome 无头 CDP 实测 10 张独立截图核验通过，控制台 0 错误，手机端 0 水平溢出（390===390）。
+- 验收报告：`archive/RESULT-FE-0022.md`
 
 ---
 
