@@ -110,11 +110,11 @@ export function injectSvgStageLayers(svgRaw: string): string {
   }
 }
 
-const STAGE_THEMES: Record<StageNumber, { title: string; color: string; desc: string }> = {
-  1: { title: '① 原点溯源', color: '#0071e3', desc: '原点模型基底' },
-  2: { title: '② 本真透视', color: '#30b0c7', desc: '几何割补与结构透视' },
-  3: { title: '③ 法典严定', color: '#af52de', desc: '精确定义与公式标签' },
-  4: { title: '④ 本体辨正', color: '#ff9500', desc: '临界题眼与极值反例' },
+const STAGE_THEMES: Record<StageNumber, { title: string; color: string; textColor: string; dotBg: string; dotShadow: string; desc: string }> = {
+  1: { title: '① 原点溯源', color: '#0071e3', textColor: 'text-[#0071e3]', dotBg: 'bg-[#0071e3]', dotShadow: 'shadow-[0_0_6px_#0071e3]', desc: '原点模型基底' },
+  2: { title: '② 本真透视', color: '#30b0c7', textColor: 'text-[#30b0c7]', dotBg: 'bg-[#30b0c7]', dotShadow: 'shadow-[0_0_6px_#30b0c7]', desc: '几何割补与结构透视' },
+  3: { title: '③ 法典严定', color: '#af52de', textColor: 'text-[#af52de]', dotBg: 'bg-[#af52de]', dotShadow: 'shadow-[0_0_6px_#af52de]', desc: '精确定义与公式标签' },
+  4: { title: '④ 本体辨正', color: '#ff9500', textColor: 'text-[#ff9500]', dotBg: 'bg-[#ff9500]', dotShadow: 'shadow-[0_0_6px_#ff9500]', desc: '临界题眼与极值反例' },
 };
 
 /**
@@ -130,7 +130,7 @@ export const SvgLayerReveal: React.FC<SvgLayerRevealProps> = ({
   activeStage,
   pointId = 'KP-023',
   className = '',
-  style = {},
+  style: _style = {},
   svgAssetPath,
 }) => {
   const [svgContent, setSvgContent] = useState<string | null>(null);
@@ -177,22 +177,7 @@ export const SvgLayerReveal: React.FC<SvgLayerRevealProps> = ({
 
   return (
     <div
-      className={`concept-svg-container svg-layer-reveal stage-${activeStage} ${className} ${hideFormalLabels ? 'hide-formal-labels' : ''}`}
-      style={{
-        width: '100%',
-        maxWidth: '500px',
-        aspectRatio: '1 / 1',
-        margin: '0 auto',
-        background: 'var(--glass-bg, rgba(255,255,255,0.7))',
-        borderRadius: 'var(--radius-lg, 24px)',
-        border: '1px solid var(--glass-border, rgba(255,255,255,0.8))',
-        boxShadow: 'var(--glass-shadow, 0 8px 32px rgba(0,0,0,0.06))',
-        padding: '1.5rem',
-        boxSizing: 'border-box',
-        overflow: 'hidden',
-        position: 'relative',
-        ...style,
-      }}
+      className={`concept-svg-container svg-layer-reveal stage-${activeStage} w-full max-w-[500px] aspect-square mx-auto bg-white/70 dark:bg-slate-900/70 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xl p-6 box-border overflow-hidden relative ${className} ${hideFormalLabels ? 'hide-formal-labels' : ''}`}
     >
       <style>{`
         .concept-svg-container .layer-stage-1,
@@ -245,64 +230,35 @@ export const SvgLayerReveal: React.FC<SvgLayerRevealProps> = ({
       {/* 动态四图层微光状态指示胶囊 */}
       <div
         data-testid="svg-stage-indicator"
-        style={{
-          position: 'absolute',
-          top: '12px',
-          right: '16px',
-          zIndex: 10,
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '6px',
-          padding: '4px 10px',
-          borderRadius: 'var(--radius-pill, 9999px)',
-          background: 'rgba(255, 255, 255, 0.92)',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
-          border: '1px solid rgba(0, 0, 0, 0.06)',
-          fontSize: '11px',
-          fontWeight: 600,
-          color: currentTheme.color,
-          pointerEvents: 'none',
-          userSelect: 'none',
-          transition: 'all 0.25s ease',
-        }}
+        className={`absolute top-3 right-4 z-10 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/90 dark:bg-slate-800/90 shadow-sm border border-slate-200/60 dark:border-slate-700/60 text-[11px] font-semibold pointer-events-none select-none transition-all duration-250 ${currentTheme.textColor}`}
       >
         <span
-          style={{
-            width: '6px',
-            height: '6px',
-            borderRadius: '50%',
-            background: currentTheme.color,
-            boxShadow: `0 0 6px ${currentTheme.color}`,
-          }}
+          className={`w-1.5 h-1.5 rounded-full ${currentTheme.dotBg} ${currentTheme.dotShadow}`}
         />
         <span>{currentTheme.title} · 图层 1~{activeStage}</span>
-        <div style={{ display: 'inline-flex', gap: '2px', marginLeft: '2px' }}>
+        <div className="inline-flex gap-0.5 ml-0.5">
           {([1, 2, 3, 4] as StageNumber[]).map((s) => (
             <span
               key={s}
-              style={{
-                width: '4px',
-                height: '4px',
-                borderRadius: '50%',
-                background: s <= activeStage ? currentTheme.color : 'rgba(0, 0, 0, 0.15)',
-                transition: 'background 0.2s ease',
-              }}
+              className={`w-1 h-1 rounded-full transition-colors duration-200 ${
+                s <= activeStage ? currentTheme.dotBg : 'bg-black/15 dark:bg-white/15'
+              }`}
             />
           ))}
         </div>
       </div>
 
       {error ? (
-        <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>
+        <div className="flex h-full items-center justify-center text-slate-400 dark:text-slate-500 text-sm">
           [ 图解缺失: {pointId} ]
         </div>
       ) : svgContent ? (
         <div
-          style={{ width: '100%', height: '100%' }}
+          className="w-full h-full"
           dangerouslySetInnerHTML={{ __html: svgContent }}
         />
       ) : (
-        <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>
+        <div className="flex h-full items-center justify-center text-slate-400 dark:text-slate-500 text-sm">
           加载图解中...
         </div>
       )}

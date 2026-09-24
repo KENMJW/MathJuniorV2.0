@@ -67,6 +67,20 @@ export function tokenize(expr: string): Token[] {
       continue;
     }
 
+    // 自动剥离 Math. 前缀 (如 Math.abs, Math.sqrt 等)
+    if (expr.slice(i, i + 5) === 'Math.') {
+      i += 5;
+      continue;
+    }
+
+    // 三字符操作符
+    const threeChars = expr.slice(i, i + 3);
+    if (threeChars === '===' || threeChars === '!==') {
+      tokens.push({ type: 'OPERATOR', value: threeChars === '===' ? '==' : '!=' });
+      i += 3;
+      continue;
+    }
+
     // 两字符操作符
     const twoChars = expr.slice(i, i + 2);
     if (['>=', '<=', '==', '!=', '&&', '||'].includes(twoChars)) {
@@ -112,10 +126,14 @@ export function tokenize(expr: string): Token[] {
       continue;
     }
 
-    // 标识符 (变量或函数名，支持含下划线、字母、数字)
+    // 标识符 (变量或函数名，支持含下划线、字母、数字、点号属性访问)
     if (/[a-zA-Z_\u4e00-\u9fa5]/.test(ch)) {
       let ident = '';
-      while (i < n && /[a-zA-Z0-9_\u4e00-\u9fa5]/.test(expr[i])) {
+      while (i < n && /[a-zA-Z0-9_\u4e00-\u9fa5.]/.test(expr[i])) {
+        // 如果是点号，但下一个字符不是字母/下划线，则停止（避免混淆浮点数）
+        if (expr[i] === '.' && (i + 1 >= n || !/[a-zA-Z_]/.test(expr[i + 1]))) {
+          break;
+        }
         ident += expr[i];
         i++;
       }
@@ -338,6 +356,28 @@ class Parser {
 
       // 别名归一化查找变量
       const normalizedKey = ident.toLowerCase();
+
+      // 支持对象属性访问如 p_intersect.x
+      if (ident.includes('.')) {
+        const parts = ident.split('.');
+        let cur: any = this.vars;
+        for (const p of parts) {
+          if (cur && typeof cur === 'object') {
+            cur = cur[p] ?? cur[p.toLowerCase()] ?? cur[`param_${p}`];
+          } else {
+            cur = undefined;
+            break;
+          }
+        }
+        if (cur !== undefined) return cur;
+        const underKey = ident.replace(/\./g, '_').toLowerCase();
+        for (const [k, v] of Object.entries(this.vars)) {
+          if (k.toLowerCase() === underKey || k.replace(/^param_/, '').toLowerCase() === underKey) {
+            return v;
+          }
+        }
+      }
+
       for (const [k, v] of Object.entries(this.vars)) {
         if (k.toLowerCase() === normalizedKey) {
           return v;

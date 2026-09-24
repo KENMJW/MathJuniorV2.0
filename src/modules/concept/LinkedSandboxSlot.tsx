@@ -1,18 +1,37 @@
 /**
- * 链接沙盒插槽与 CLS=0 防抖等大占位卡 (任务 9.2, 设计文档 §7.1, 铁律 3, 铁律 10)
+ * 链接沙盒插槽与 CLS=0 防抖等大占位卡 (TASK-FE-0021 步骤 3)
  *
- * 核心设计：
+ * 核心特性：
  * 1. 考点有 sandbox_id 且有 config 时：挂载通用声明式 <SandboxRenderer>，渲染动态几何动力学探究画布；
- * 2. 考点无 sandbox_id 时：渲染物理等大的占位卡（默认 560px 高度，与沙盒严格等大），确保视口防跳动（Cumulative Layout Shift, CLS = 0）；
- * 3. 文本上屏全部经由 <MathRenderer> 渲染；
- * 4. 严格遵循 iOS 27 液态玻璃设计 Token。
+ * 2. 1~3 步自适应引导状态机与 Aha! 顿悟微弹窗（名师核心顿悟秘籍，自动判定 targetCondition）；
+ * 3. 常驻提供 [ 直接开启自由把玩 ] 胶囊按钮，学生随时跳过引导直接操作；
+ * 4. 考点无 sandbox_id 时：渲染物理等大的占位卡（与沙盒严格等大），确保视口防跳动（CLS = 0）；
+ * 5. 纯 Tailwind CSS 原子类与 iOS 27 液态玻璃 Token，模块一内联样式严格归零；
+ * 6. 铁律 3：文本与公式全部经由 <MathRenderer> 渲染。
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { SandboxConfig, SandboxRenderer } from '../sandbox/SandboxRenderer';
 import { MathRenderer } from '../../components/math/MathRenderer';
 import { Icon } from '../../components/common/Icon';
+import { evaluateSafeExpression } from '../sandbox/safeExpression';
+import { Sparkles, ChevronRight, X, Compass, Sliders } from 'lucide-react';
 import '../sandbox/sandbox.css';
+
+export interface InquiryStep {
+  step: number;
+  title?: string;
+  titleZh?: string;
+  titleEn?: string;
+  guide_text?: string;
+  guideTextZh?: string;
+  guideTextEn?: string;
+  target_condition?: string;
+  targetCondition?: string;
+  aha_insight?: string;
+  ahaInsightZh?: string;
+  ahaInsightEn?: string;
+}
 
 export interface LinkedSandboxSlotProps {
   sandboxId?: string | null;
@@ -25,7 +44,7 @@ export interface LinkedSandboxSlotProps {
 }
 
 export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
-  sandboxId,
+  sandboxId: propSandboxId,
   config,
   height = 560,
   className = '',
@@ -33,6 +52,7 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
   pointNameZh: _pointNameZh = '当前知识考点',
   locale = 'zh-CN',
 }) => {
+  const sandboxId = propSandboxId || config?.point_id;
   const containerHeight = typeof height === 'number' ? `${height}px` : height;
   const isEn = String(locale).toLowerCase().startsWith('en');
 
@@ -68,77 +88,243 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
     ];
   }, [config, isEn]);
 
+  // 解析 1~3 步自适应引导数据 (TASK-FE-0021 步骤 3)
+  const inquirySteps: InquiryStep[] = useMemo(() => {
+    try {
+      if (config?.inquiry_steps_json) {
+        const parsed = JSON.parse(config.inquiry_steps_json);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch (e) {}
+    return [];
+  }, [config?.inquiry_steps_json]);
+
   const [paramValues, setParamValues] = useState<Record<string, number>>({});
   const [invariants, setInvariants] = useState<Array<{ id: string; text: string; isConstant: boolean }>>([]);
 
+  // 引导步骤状态机
+  const [activeStepIndex, setActiveStepIndex] = useState<number>(0);
+  const [isFreePlayMode, setIsFreePlayMode] = useState<boolean>(false);
+  const [completedStepIndices, setCompletedStepIndices] = useState<Set<number>>(new Set());
+  const [showAhaModal, setShowAhaModal] = useState<boolean>(false);
+  const [currentAhaStep, setCurrentAhaStep] = useState<InquiryStep | null>(null);
+
+  // 初始化参数与步骤
   useEffect(() => {
     const initial: Record<string, number> = {};
     sliders.forEach((s) => {
       initial[s.id] = s.default;
     });
     setParamValues(initial);
-  }, [sandboxId, sliders]);
+    setActiveStepIndex(0);
+    setIsFreePlayMode(false);
+    setCompletedStepIndices(new Set());
+    setShowAhaModal(false);
+    setCurrentAhaStep(null);
+  }, [sandboxId, sliders, inquirySteps.length]);
 
-  // 分支 1：有沙盒且配置完备，渲染 SandboxRenderer + 参数控制条 + 遥测栏
+  // 目标条件即时判定纯函数
+  const checkTargetCondition = useCallback(
+    (step: InquiryStep, currentParams: Record<string, number>) => {
+      const cond = step.target_condition || step.targetCondition;
+      if (!cond) return false;
+
+      // 组装求值上下文 scope
+      const scope: Record<string, any> = { ...currentParams };
+      Object.entries(currentParams).forEach(([k, v]) => {
+        scope[k.toLowerCase()] = v;
+        if (k.startsWith('param_')) {
+          scope[k.replace(/^param_/, '')] = v;
+        }
+      });
+
+      try {
+        const result = evaluateSafeExpression(cond, scope);
+        return Boolean(result);
+      } catch (err) {
+        return false;
+      }
+    },
+    []
+  );
+
+  // 动态监听参数变化进行 Aha 达成触发
+  useEffect(() => {
+    if (isFreePlayMode || inquirySteps.length === 0) return;
+    if (activeStepIndex >= inquirySteps.length) return;
+
+    const currentStep = inquirySteps[activeStepIndex];
+    if (!currentStep) return;
+
+    if (!completedStepIndices.has(activeStepIndex)) {
+      const isAchieved = checkTargetCondition(currentStep, paramValues);
+      if (isAchieved) {
+        setCompletedStepIndices((prev) => {
+          const next = new Set(prev);
+          next.add(activeStepIndex);
+          return next;
+        });
+        setCurrentAhaStep(currentStep);
+        setShowAhaModal(true);
+      }
+    }
+  }, [paramValues, activeStepIndex, isFreePlayMode, inquirySteps, completedStepIndices, checkTargetCondition]);
+
+  const handleNextStepOrFreePlay = () => {
+    setShowAhaModal(false);
+    if (activeStepIndex + 1 < inquirySteps.length) {
+      setActiveStepIndex((prev) => prev + 1);
+    } else {
+      setIsFreePlayMode(true);
+    }
+  };
+
+  // 分支 1：有沙盒且配置完备，渲染 SandboxRenderer + 1~3 步自适应引导 + 参数控制条 + 遥测栏
   if (sandboxId && config) {
+    const hasSteps = inquirySteps.length > 0;
+    const currentStep = hasSteps && activeStepIndex < inquirySteps.length ? inquirySteps[activeStepIndex] : null;
+    const currentStepTitle = currentStep
+      ? isEn
+        ? currentStep.titleEn || currentStep.titleZh || currentStep.title
+        : currentStep.titleZh || currentStep.title
+      : '';
+    const currentStepGuide = currentStep
+      ? isEn
+        ? currentStep.guideTextEn || currentStep.guideTextZh || currentStep.guide_text
+      : currentStep.guideTextZh || currentStep.guide_text
+      : '';
+
     return (
       <div
         data-testid="linked-sandbox-active"
-        className={className}
-        style={{
-          width: '100%',
-          height: containerHeight,
-          minHeight: containerHeight,
-          overflow: 'hidden',
-          borderRadius: 'var(--radius-lg, 24px)',
-          border: '1px solid var(--border-subtle, rgba(0, 0, 0, 0.08))',
-          boxShadow: 'var(--glass-shadow)',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '12px',
-          padding: '16px',
-          boxSizing: 'border-box',
-          backgroundColor: 'var(--bg-card, #ffffff)',
-          ...style,
-        }}
+        className={`w-full overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl flex flex-col gap-3 p-4 box-border relative ${className}`}
+        style={{ minHeight: containerHeight, height: containerHeight, ...style }}
       >
-        {/* 画布主视口 + 侧边不变量遥测栏 */}
-        <div className="sandbox-split-box" style={{ flex: 1, minHeight: 0, display: 'flex', gap: '14px' }}>
-          <div className="sandbox-viewport-85" style={{ flex: '1 1 78%', height: '100%', minHeight: 0 }}>
+        {/* 画布主视口 + 侧边不变量遥测栏与步骤指示 */}
+        <div className="sandbox-split-box flex-1 min-h-0 flex flex-col lg:flex-row gap-3.5">
+          {/* 主视口 (JSXGraph 画布) */}
+          <div className="sandbox-viewport-85 flex-[1_1_78%] h-full min-h-0 relative">
             <SandboxRenderer
               key={sandboxId}
               config={config}
               paramValues={paramValues}
               onInvariantsChange={setInvariants}
               locale={locale}
-              style={{ height: '100%', width: '100%' }}
+              className="h-full w-full"
             />
           </div>
 
-          <div className="sandbox-guide-15" style={{ width: '220px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div className="telemetry-readings">
-              <span className="telemetry-tag-invariant">
-                {isEn ? 'Invariant: ' : '几何不变量：'}{invariants[0]?.text || (isEn ? 'Area and segment ratio conserved' : '面积与线段比例守恒')}
-              </span>
-              <span className="telemetry-tag-secondary">
-                {isEn ? 'Status: ' : '状态：'}{invariants[0]?.isConstant ? (isEn ? '[Absolute Invariant]' : '[绝对恒定]') : (isEn ? '[Dynamic Observation]' : '[动态观测中]')}
-              </span>
+          {/* 右侧仪表盘 (.sandbox-guide-15, Slate 900 暗室配色) */}
+          <div className="sandbox-guide-15 w-full lg:w-64 shrink-0 flex flex-col gap-2.5 rounded-2xl bg-slate-800/90 dark:bg-slate-950/95 border border-slate-700/60 p-3.5 text-slate-100 shadow-inner justify-between overflow-y-auto">
+            {/* 1~3 步自适应探究引导胶囊 */}
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between gap-1.5 pb-2 border-b border-slate-700/60">
+                <div className="flex items-center gap-1.5">
+                  <Compass className="w-4 h-4 text-sky-400" />
+                  <span className="text-xs font-bold tracking-wide text-sky-300">
+                    {isEn ? 'Inquiry Mission' : '核心探究任务'}
+                  </span>
+                </div>
+
+                {hasSteps && (
+                  <button
+                    type="button"
+                    onClick={() => setIsFreePlayMode(!isFreePlayMode)}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-sky-500/20 text-sky-300 hover:bg-sky-500/30 transition-all active:scale-[0.98]"
+                  >
+                    <Sparkles className="w-3 h-3 text-amber-400" />
+                    <span>
+                      {isFreePlayMode
+                        ? isEn
+                          ? 'Guided Mode'
+                          : '返回引导探究'
+                        : isEn
+                        ? 'Free Play'
+                        : '直接自由把玩'}
+                    </span>
+                  </button>
+                )}
+              </div>
+
+              {hasSteps && !isFreePlayMode && currentStep ? (
+                <div className="flex flex-col gap-1.5 p-2 rounded-xl bg-slate-900/80 border border-sky-500/30">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-sky-400">
+                      {isEn
+                        ? `Step ${activeStepIndex + 1}/${inquirySteps.length}`
+                        : `步骤 ${activeStepIndex + 1}/${inquirySteps.length}`}
+                    </span>
+                    <span className="text-[11px] text-slate-300 truncate max-w-[120px] font-medium">
+                      {currentStepTitle}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed m-0 font-normal">
+                    {currentStepGuide}
+                  </p>
+                </div>
+              ) : hasSteps && isFreePlayMode ? (
+                <div className="flex flex-col gap-1 p-2 rounded-xl bg-slate-900/60 border border-emerald-500/30">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-400">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                    <span>{isEn ? 'Free Play Active' : '自由把玩已开启'}</span>
+                  </div>
+                  <p className="text-[11px] text-slate-400 leading-normal m-0">
+                    {isEn
+                      ? 'Freely drag dynamic points and adjust sliders to discover mathematical invariants.'
+                      : '已解除步骤限制，可随意拖拽动点与滑动参数，深入观测几何守恒。'}
+                  </p>
+                </div>
+              ) : null}
             </div>
-            <div className="telemetry-tag-conclusion">
-              {isEn ? 'Conclusion: Geometric intuitive verification passed' : '结论：几何直观验证通过'}
+
+            {/* 不变量遥测与结论栏 */}
+            <div className="flex flex-col gap-2">
+              <div className="telemetry-readings flex flex-col gap-1.5 p-2.5 rounded-xl bg-slate-900/80 border border-slate-700/50">
+                <span className="telemetry-tag-invariant text-xs font-mono text-sky-300 font-semibold break-words">
+                  {isEn ? 'Invariant: ' : '几何不变量：'}
+                  {invariants[0]?.text ||
+                    (isEn ? 'Area and segment ratio conserved' : '面积与线段比例守恒')}
+                </span>
+                <span className="telemetry-tag-secondary text-[11px] text-slate-400">
+                  {isEn ? 'Status: ' : '状态：'}
+                  {invariants[0]?.isConstant
+                    ? isEn
+                      ? '[Absolute Invariant]'
+                      : '[绝对恒定]'
+                    : isEn
+                    ? '[Dynamic Observation]'
+                    : '[动态观测中]'}
+                </span>
+              </div>
+
+              <div className="telemetry-tag-conclusion text-[11px] text-emerald-400 font-medium p-2 rounded-lg bg-emerald-950/40 border border-emerald-500/20 text-center">
+                {isEn
+                  ? 'Conclusion: Geometric intuitive verification passed'
+                  : '结论：几何直观验证通过'}
+              </div>
             </div>
           </div>
         </div>
 
         {/* 底部参数滑块控制条 */}
-        <div className="sandbox-controls-bar">
-          <div style={{ display: 'flex', gap: '20px', width: '100%', flexWrap: 'wrap', alignItems: 'center' }}>
+        <div className="sandbox-controls-bar w-full p-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/50">
+          <div className="flex gap-4 w-full flex-wrap items-center">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 mr-2">
+              <Sliders className="w-3.5 h-3.5" />
+              <span>{isEn ? 'Sliders' : '参数调控'}</span>
+            </div>
             {sliders.map((s) => {
               const val = paramValues[s.id] ?? s.default;
               return (
-                <div key={s.id} className="slider-group">
-                  <label htmlFor={`linked-slider-${s.id}`} style={{ whiteSpace: 'nowrap' }}>
-                    {s.name}: <strong style={{ color: 'var(--ios-blue)' }}>{val}{s.unit || ''}</strong>
+                <div key={s.id} className="slider-group flex items-center gap-2">
+                  <label htmlFor={`linked-slider-${s.id}`} className="text-xs text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                    {s.name}:{' '}
+                    <strong className="text-blue-600 dark:text-sky-400 font-semibold">
+                      {val}
+                      {s.unit || ''}
+                    </strong>
                   </label>
                   <input
                     id={`linked-slider-${s.id}`}
@@ -151,13 +337,77 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
                       const next = parseFloat(e.target.value);
                       setParamValues((prev) => ({ ...prev, [s.id]: next }));
                     }}
-                    style={{ cursor: 'pointer', accentColor: 'var(--ios-blue)' }}
+                    className="w-24 sm:w-32 cursor-pointer accent-blue-600"
                   />
                 </div>
               );
             })}
           </div>
         </div>
+
+        {/* Aha! 顿悟微弹窗 (iOS 27 浅色毛玻璃浮层) */}
+        {showAhaModal && currentAhaStep && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-md animate-in fade-in duration-200">
+            <div className="w-full max-w-md rounded-3xl bg-white/95 dark:bg-slate-900/95 border border-amber-500/40 shadow-2xl p-6 flex flex-col gap-4 transform transition-all scale-100 animate-in zoom-in-95">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-9 h-9 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-500">
+                    <Sparkles className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                      {isEn ? 'Aha! Breakthrough' : 'Aha! 名师顿悟秘籍'}
+                    </span>
+                    <h3 className="text-base font-extrabold text-slate-900 dark:text-white m-0">
+                      {isEn
+                        ? currentAhaStep.titleEn || currentAhaStep.titleZh || currentAhaStep.title
+                        : currentAhaStep.titleZh || currentAhaStep.title}
+                    </h3>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowAhaModal(false)}
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-white bg-slate-100 dark:bg-slate-800 transition-all"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* 核心顿悟内容 */}
+              <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-slate-800 dark:text-slate-200 text-sm leading-relaxed">
+                <MathRenderer
+                  content={
+                    (isEn
+                      ? currentAhaStep.ahaInsightEn || currentAhaStep.ahaInsightZh || currentAhaStep.aha_insight
+                      : currentAhaStep.ahaInsightZh || currentAhaStep.aha_insight) || ''
+                  }
+                />
+              </div>
+
+              {/* 操作推进按钮 */}
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={handleNextStepOrFreePlay}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-lg shadow-blue-500/30 active:scale-[0.98] transition-all"
+                >
+                  <span>
+                    {activeStepIndex + 1 < inquirySteps.length
+                      ? isEn
+                        ? 'Next Step ➜'
+                        : '开启下一步骤 ➜'
+                      : isEn
+                      ? 'Enter Free Play'
+                      : '全量达成 · 自由把玩'}
+                  </span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -166,87 +416,30 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
   return (
     <div
       data-testid="linked-sandbox-placeholder"
-      className={className}
-      style={{
-        width: '100%',
-        height: containerHeight,
-        minHeight: containerHeight,
-        boxSizing: 'border-box',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '2rem',
-        borderRadius: 'var(--radius-lg, 24px)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        background: 'var(--glass-bg, rgba(255, 255, 255, 0.68))',
-        border: '1px solid var(--glass-border, rgba(255, 255, 255, 0.8))',
-        boxShadow: 'var(--glass-shadow)',
-        transition: 'all 0.2s var(--spring-smooth)',
-        userSelect: 'none',
-        ...style,
-      }}
+      className={`w-full flex flex-col items-center justify-center p-8 rounded-3xl backdrop-blur-xl bg-white/70 dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 shadow-xl select-none transition-all box-border ${className}`}
+      style={{ minHeight: containerHeight, height: containerHeight, ...style }}
     >
-      <div
-        style={{
-          maxWidth: '420px',
-          textAlign: 'center',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '1rem',
-        }}
-      >
+      <div className="max-w-md text-center flex flex-col items-center gap-4">
         {/* 占位徽章 */}
-        <div
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            padding: '0.35rem 0.85rem',
-            borderRadius: 'var(--radius-pill, 9999px)',
-            fontSize: '0.75rem',
-            fontWeight: 700,
-            background: 'var(--bg-card-hover)',
-            color: 'var(--text-secondary)',
-            border: '1px solid var(--border-subtle)',
-          }}
-        >
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+          <span className="inline-flex items-center gap-1.5">
             <Icon name="ruler" size={13} />
-            <span>纯数式/概念考点</span>
+            <span>{isEn ? 'Pure Algebraic Concept' : '纯数式/概念考点'}</span>
           </span>
-          <span>基础定理直读</span>
+          <span>·</span>
+          <span>{isEn ? 'Direct Theorem Reading' : '基础定理直读'}</span>
         </div>
 
         {/* 核心提示蓝框 */}
-        <div
-          style={{
-            padding: '1rem 1.5rem',
-            borderRadius: 'var(--radius-md, 18px)',
-            background: 'rgba(0, 113, 227, 0.06)',
-            border: '1px solid rgba(0, 113, 227, 0.18)',
-            fontSize: '0.85rem',
-            color: 'var(--ios-blue)',
-            lineHeight: 1.65,
-            textAlign: 'center',
-            width: '100%',
-            boxSizing: 'border-box',
-          }}
-        >
+        <div className="p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-xs sm:text-sm text-blue-600 dark:text-sky-400 leading-relaxed text-center w-full box-border">
           <MathRenderer content="本考点聚焦于代数数式运算、逻辑公理与严谨公式定义，无需动力学几何拖拽模拟。" />
         </div>
 
         {/* 快捷指引 */}
-        <p
-          style={{
-            margin: 0,
-            fontSize: '0.72rem',
-            color: 'var(--text-tertiary)',
-          }}
-        >
-          您可直接滑动或进入下一步【③ 考点母题】与【④ 单点快练】
+        <p className="m-0 text-xs text-slate-400 dark:text-slate-500">
+          {isEn
+            ? 'You can switch directly to Master Example and Quick Practice.'
+            : '您可直接滑动或进入下一步【③ 考点母题】与【④ 单点快练】'}
         </p>
       </div>
     </div>

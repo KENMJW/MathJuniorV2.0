@@ -12,6 +12,7 @@ import {
 import { normalizeOptionAnswer } from '../../engine/judge/normalizeOptionAnswer';
 import { useSessionStore } from '../../store/sessionStore';
 import { getSafeStem } from '../../engine/i18n/stemGuard';
+import { BookOpen, Star, RefreshCw, CheckCircle2, XCircle, ArrowRight } from 'lucide-react';
 
 export interface QuickPracticeProps {
   pointId: string;
@@ -22,30 +23,35 @@ export interface QuickPracticeProps {
   locale?: string;
   onAnswer?: (questionId: string, isCorrect: boolean, score: number) => void;
   onRefreshBatch?: () => void;
+  onReturnToConcept?: () => void;
 }
 
 /**
- * 探本溯源·概念精讲 - 单点快练组件 (任务 9.4, 设计文档 §7.1.1)
+ * 探本溯源·概念精讲 - 单点快练组件 (TASK-FE-0021 步骤 5)
  *
  * 铁律规范：
- * 1. 铁律 3：题干、选项文本、解析全部经由 <MathRenderer> 出口渲染，严禁 import katex 或裸 innerHTML
- * 2. 业务锁：严格锁 L1~L3 难度、question_type='single_choice'
- * 3. 即答即判：点击选项立即计算正误并录入 sessionStore.practiceScores
- * 4. 闭环台账 H2：换一批练习在未做题 < 3 时调用 clearPresentedIds() 重置去重池，严禁错调 resetScores()！
- * 5. UI 严格采用 iOS 27 液态玻璃设计 Token
+ * 1. 铁律 3：题干、选项文本、解析全部经由 <MathRenderer> 出口渲染，严禁 import katex 或裸 innerHTML；
+ * 2. 业务锁：严格锁 L1~L3 难度、question_type='single_choice'；
+ * 3. 48px 热区即答即判：点击选项立即计算正误并录入 sessionStore.practiceScores；
+ * 4. 错题点拨与 [ 回看概念精讲 ] 直达入口；
+ * 5. 3 题作答完毕后 1~3 星素养掌握度结算卡片；
+ * 6. 纯 Tailwind CSS 原子类与 iOS 27 液态玻璃设计，内联样式归零；
+ * 7. 源码绝对零 emoji。
  */
 export const QuickPractice: React.FC<QuickPracticeProps> = ({
   pointId,
   allQuestions = [],
   initialQuestions,
   className = '',
-  style = {},
+  style: _style = {},
   locale: propLocale,
   onAnswer,
   onRefreshBatch,
+  onReturnToConcept,
 }) => {
   const storeLocale = useSessionStore((state) => state.locale);
   const locale = propLocale || storeLocale || 'zh-CN';
+  const isEn = String(locale).toLowerCase().startsWith('en');
   const presentedIds = useSessionStore((state) => state.presentedIds);
   const addPresentedIds = useSessionStore((state) => state.addPresentedIds);
   const clearPresentedIds = useSessionStore((state) => state.clearPresentedIds);
@@ -58,7 +64,7 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
     }
     const eligible = filterEligibleQuestions(allQuestions, pointId);
     if (eligible.length < 3) {
-      return []; // 不足 3 题直接返回空，由 UI 渲染缺省提示 (D2 缺陷)
+      return [];
     }
     const { drawnQuestions } = drawFromPool(eligible, presentedIds, []);
     return drawnQuestions;
@@ -86,112 +92,78 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
   const handleNextBatch = () => {
     const eligible = filterEligibleQuestions(allQuestions, pointId);
     if (eligible.length < 3) {
-      setToastMessage(locale === 'en' ? 'Not enough practice questions (min 3)' : '该考点题库不足3题，无法组卷');
+      setToastMessage(isEn ? 'Not enough practice questions (min 3)' : '该考点题库不足3题，无法组卷');
       return;
     }
 
-    // 抽样去重逻辑 (Property 13), 传入当前批次 ID 以排除紧邻重复 (D2 缺陷)
-    const currentBatchIds = currentQuestions.map(q => q.question_id);
+    const currentBatchIds = currentQuestions.map((q) => q.question_id);
     const result = drawFromPool(eligible, presentedIds, currentBatchIds);
 
     if (result.poolExhausted) {
-      // 台账 H2：池耗尽时明确调用 clearPresentedIds()，严禁调用 resetScores()！
-      // 这里的清空是为了清空 sessionStore 的旧状态，随后用新的 nextPresentedIds 重新填充
       clearPresentedIds();
       addPresentedIds(Array.from(result.nextPresentedIds));
       setToastMessage(
-        locale === 'en'
+        isEn
           ? 'Question pool exhausted. Reset and loaded new batch!'
           : '考点题池已轮空，已重置去重池并换入新一组题目！'
       );
     } else {
       addPresentedIds(result.drawnQuestions.map((q) => q.question_id));
-      setToastMessage(locale === 'en' ? 'New batch loaded' : '已换一批练习');
+      setToastMessage(isEn ? 'New batch loaded' : '已换一批练习');
     }
 
     setCurrentQuestions(result.drawnQuestions);
-    setSelectedAnswers({}); // 清空本轮作答选择
+    setSelectedAnswers({});
     onRefreshBatch?.();
 
     setTimeout(() => setToastMessage(null), 3000);
   };
 
+  // 计算结算星级 (1~3 星)
+  const answeredCount = Object.keys(selectedAnswers).length;
+  const isAllAnswered = currentQuestions.length > 0 && answeredCount === currentQuestions.length;
+
+  const correctCount = currentQuestions.filter((q) => {
+    const userChoice = selectedAnswers[q.question_id];
+    return userChoice && normalizeOptionAnswer(userChoice) === normalizeOptionAnswer(q.answer_standard);
+  }).length;
+
+  const starRating = correctCount === 3 ? 3 : correctCount === 2 ? 2 : 1;
+
+  const handleGoToConcept = () => {
+    if (onReturnToConcept) {
+      onReturnToConcept();
+    } else {
+      window.dispatchEvent(new CustomEvent('concept-navigate-tab', { detail: 'stages' }));
+    }
+  };
+
   return (
     <div
-      className={`quick-practice ${className}`.trim()}
+      className={`quick-practice w-full max-w-6xl mx-auto flex flex-col gap-5 p-6 rounded-3xl backdrop-blur-xl bg-white/70 dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 shadow-xl text-slate-900 dark:text-slate-100 box-border ${className}`}
       data-testid="quick-practice"
       data-point-id={pointId}
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '1.25rem',
-        padding: '1.5rem',
-        background: 'var(--glass-bg, rgba(255, 255, 255, 0.72))',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        borderRadius: 'var(--radius-lg, 24px)',
-        border: '1px solid var(--glass-border, rgba(255, 255, 255, 0.8))',
-        boxShadow: 'var(--glass-shadow-deep, 0 20px 50px rgba(0, 0, 0, 0.08))',
-        color: 'var(--text-primary)',
-        boxSizing: 'border-box',
-        width: '100%',
-        maxWidth: '1200px',
-        margin: '0 auto',
-        ...style,
-      }}
     >
       {/* 头部标题与操作 */}
-      <header
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          borderBottom: '1px solid var(--glass-border, rgba(0,0,0,0.06))',
-          paddingBottom: '0.875rem',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <span
-            style={{
-              padding: '0.2rem 0.65rem',
-              borderRadius: 'var(--radius-pill, 9999px)',
-              background: 'var(--ios-blue-glow, rgba(0, 113, 227, 0.15))',
-              color: 'var(--ios-blue)',
-              fontSize: '0.85rem',
-              fontWeight: 700,
-            }}
-          >
-            {locale === 'en' ? 'Quick Practice' : '单点快练'}
+      <header className="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 pb-3.5 flex-wrap gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
+          <span className="px-3 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-sky-400 text-xs sm:text-sm font-bold border border-blue-500/20">
+            {isEn ? 'Quick Practice' : '单点快练'}
           </span>
-          <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 600 }}>
-            {locale === 'en' ? 'Targeted Practice (L1~L3)' : '3题即答即判·基础巩固'}
+          <h3 className="m-0 text-base sm:text-lg font-bold">
+            {isEn ? 'Targeted Practice (L1~L3)' : '3题即答即判·基础巩固'}
           </h3>
-          <span
-            style={{
-              fontSize: '0.78rem',
-              color: 'var(--text-secondary)',
-              padding: '0.15rem 0.5rem',
-              borderRadius: '6px',
-              background: 'rgba(0,0,0,0.04)',
-            }}
-          >
-            {locale === 'en' ? 'L1~L3 Single Choice' : 'L1~L3 单选锁定'}
+          <span className="text-xs text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60">
+            {isEn ? 'L1~L3 Single Choice' : 'L1~L3 单选锁定'}
           </span>
         </div>
 
         {/* 换一批练习按钮 (台账 H2 验证触发点) */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div className="flex items-center gap-3">
           {toastMessage && (
             <span
               data-testid="quick-practice-toast"
-              style={{
-                fontSize: '0.82rem',
-                color: 'var(--ios-blue)',
-                background: 'rgba(0, 113, 227, 0.1)',
-                padding: '0.3rem 0.75rem',
-                borderRadius: 'var(--radius-pill, 9999px)',
-                animation: 'fadeIn 0.3s ease',
-              }}
+              className="text-xs text-blue-600 dark:text-sky-400 bg-blue-500/10 px-3 py-1 rounded-full animate-in fade-in"
             >
               {toastMessage}
             </span>
@@ -200,97 +172,44 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
             type="button"
             data-testid="refresh-batch-btn"
             onClick={handleNextBatch}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.35rem',
-              border: '1px solid var(--ios-blue)',
-              background: 'var(--glass-bg-elevated)',
-              color: 'var(--ios-blue)',
-              padding: '0.45rem 1rem',
-              borderRadius: 'var(--radius-pill, 9999px)',
-              cursor: 'pointer',
-              fontWeight: 600,
-              fontSize: '0.85rem',
-              boxShadow: 'var(--glass-shadow, 0 4px 12px rgba(0,0,0,0.05))',
-              transition: 'all 0.2s var(--spring-smooth, ease)',
-            }}
+            className="inline-flex items-center gap-1.5 border border-blue-500/40 bg-white/80 dark:bg-slate-800/80 text-blue-600 dark:text-sky-400 px-4 py-1.5 rounded-full cursor-pointer font-bold text-xs sm:text-sm shadow-sm hover:bg-blue-500/10 active:scale-[0.98] transition-all"
           >
-            <Icon name="refresh" size={14} />
-            <span>{locale === 'en' ? 'Refresh Batch' : '换一批练习'}</span>
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span>{isEn ? 'Refresh Batch' : '换一批练习'}</span>
           </button>
         </div>
       </header>
 
       {/* 题目列表 (单屏 3 题自闭环) */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+      <div className="flex flex-col gap-5">
         {currentQuestions.length === 0 ? (
-          <div
-            style={{
-              padding: '2.5rem',
-              textAlign: 'center',
-              color: 'var(--text-secondary)',
-              background: 'rgba(0,0,0,0.02)',
-              borderRadius: 'var(--radius-md, 18px)',
-            }}
-          >
-            {locale === 'en' ? 'No practice questions found.' : '暂无符合条件的快练题目'}
+          <div className="p-10 text-center text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-200/60 dark:border-slate-700/60">
+            {isEn ? 'No practice questions found.' : '暂无符合条件的快练题目'}
           </div>
         ) : (
           currentQuestions.map((q, idx) => {
             const userChoice = selectedAnswers[q.question_id];
             const isAnswered = !!userChoice;
             const isCorrect = normalizeOptionAnswer(userChoice) === normalizeOptionAnswer(q.answer_standard);
-            const stem = getSafeStem(q, String(locale).toLowerCase().startsWith('en'));
+            const stem = getSafeStem(q, isEn);
 
             return (
               <div
                 key={q.question_id}
                 data-testid={`practice-item-${idx + 1}`}
                 data-question-id={q.question_id}
-                style={{
-                  padding: '1.2rem',
-                  borderRadius: 'var(--radius-md, 18px)',
-                  background: 'var(--glass-bg-elevated, rgba(255, 255, 255, 0.85))',
-                  border: '1px solid var(--glass-border, rgba(255, 255, 255, 0.9))',
-                  boxShadow: 'var(--glass-shadow, 0 6px 20px rgba(0,0,0,0.03))',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0.85rem',
-                }}
+                className="p-5 rounded-2xl bg-white/80 dark:bg-slate-850/80 border border-slate-200/80 dark:border-slate-800 shadow-md flex flex-col gap-3.5"
               >
                 {/* 题号与难度标签 */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span
-                      style={{
-                        width: '24px',
-                        height: '24px',
-                        borderRadius: '50%',
-                        background: 'var(--ios-blue)',
-                        color: "var(--glass-bg-elevated)",
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '0.8rem',
-                        fontWeight: 700,
-                      }}
-                    >
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-blue-600 text-white inline-flex items-center justify-center text-xs font-bold shrink-0">
                       {idx + 1}
                     </span>
-                    <span
-                      style={{
-                        fontSize: '0.78rem',
-                        padding: '0.1rem 0.4rem',
-                        borderRadius: '4px',
-                        background: 'rgba(0, 113, 227, 0.1)',
-                        color: 'var(--ios-blue)',
-                        fontWeight: 600,
-                      }}
-                    >
-                      {locale === 'en' ? `Level L${q.difficulty_level}` : `难度 L${q.difficulty_level}`}
+                    <span className="text-xs px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-sky-400 font-bold border border-blue-500/20">
+                      {isEn ? `Level L${q.difficulty_level}` : `难度 L${q.difficulty_level}`}
                     </span>
-                    <span style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)' }}>
+                    <span className="text-xs text-slate-400 font-mono">
                       {q.question_id}
                     </span>
                   </div>
@@ -299,24 +218,19 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
                   {isAnswered && (
                     <span
                       data-testid={`badge-status-${q.question_id}`}
-                      style={{
-                        fontSize: '0.82rem',
-                        fontWeight: 600,
-                        color: isCorrect ? 'var(--ios-green)' : 'var(--ios-red)',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        flexWrap: 'wrap',
-                        gap: '0.25rem',
-                        wordBreak: 'break-word',
-                        overflowWrap: 'anywhere',
-                        maxWidth: '100%',
-                      }}
+                      className={`text-xs font-bold inline-flex items-center gap-1.5 flex-wrap ${
+                        isCorrect ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
+                      }`}
                     >
                       {isCorrect ? (
-                        locale === 'en' ? '✓ Correct (+2)' : '✓ 回答正确 (+2分)'
+                        <>
+                          <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                          <span>{isEn ? '✓ Correct (+2)' : '✓ 回答正确 (+2分)'}</span>
+                        </>
                       ) : (
                         <>
-                          <span>{locale === 'en' ? '✗ Incorrect (Ans: ' : '✗ 回答错误 (正确答案: '}</span>
+                          <XCircle className="w-4 h-4 text-red-500" />
+                          <span>{isEn ? '✗ Incorrect (Ans: ' : '✗ 回答错误 (正确答案: '}</span>
                           <MathRenderer content={q.answer_standard || ''} />
                           <span>)</span>
                         </>
@@ -325,53 +239,35 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
                   )}
                 </div>
 
-                {/* 铁律 3：题干通过 MathRenderer 渲染，统一内容字号与行高 */}
-                <div
-                  className="question-stem db-content-body"
-                  style={{
-                    fontSize: 'var(--content-font-size-body)',
-                    lineHeight: 'var(--content-line-height-body)',
-                    color: 'var(--text-primary)',
-                    overflowWrap: 'anywhere',
-                    wordBreak: 'break-word',
-                    maxWidth: '100%',
-                  }}
-                >
-                  <QuestionContent content={stem} images={q.image_paths_json} locale={locale.startsWith('en') ? 'en' : 'zh'} />
+                {/* 铁律 3：题干通过 MathRenderer 渲染 */}
+                <div className="question-stem db-content-body text-sm sm:text-base text-slate-900 dark:text-slate-100 leading-relaxed overflow-hidden break-words max-w-full">
+                  <QuestionContent
+                    content={stem}
+                    images={q.image_paths_json}
+                    locale={isEn ? 'en' : 'zh'}
+                  />
                 </div>
 
-                {/* 选项按钮列表 (A, B, C, D) */}
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-                    gap: '0.65rem',
-                  }}
-                >
+                {/* 选项按钮列表 (A, B, C, D) - 严格 48px 热区与物理按压反馈 */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {q.options.map((opt) => {
                     const isSelected = userChoice === opt.key;
                     const isStandard = normalizeOptionAnswer(q.answer_standard) === normalizeOptionAnswer(opt.key);
-                    const optText = locale === 'en' ? opt.text_en || opt.text_zh : opt.text_zh;
+                    const optText = isEn ? opt.text_en || opt.text_zh : opt.text_zh;
 
-                    // 颜色状态判定
-                    let bg = 'rgba(0,0,0,0.03)';
-                    let border = '1px solid rgba(0,0,0,0.08)';
-                    let textColor = 'var(--text-primary)';
+                    let btnStyle = 'border-slate-200 dark:border-slate-750 bg-slate-50/70 dark:bg-slate-800/40 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/70';
 
                     if (isAnswered) {
                       if (isSelected) {
                         if (isCorrect) {
-                          bg = 'rgba(52, 199, 89, 0.15)';
-                          border = '1.5px solid var(--ios-green)';
-                          textColor = 'var(--ios-green)';
+                          btnStyle = 'border-emerald-500 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-semibold ring-1 ring-emerald-500';
                         } else {
-                          bg = 'rgba(255, 59, 48, 0.15)';
-                          border = '1.5px solid var(--ios-red)';
-                          textColor = 'var(--ios-red)';
+                          btnStyle = 'border-red-500 bg-red-500/15 text-red-700 dark:text-red-300 font-semibold ring-1 ring-red-500';
                         }
                       } else if (isStandard) {
-                        // 标出正确答案
-                        border = '1.5px dashed var(--ios-green)';
+                        btnStyle = 'border-dashed border-emerald-500 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 font-medium';
+                      } else {
+                        btnStyle = 'border-slate-200/50 dark:border-slate-800/50 opacity-40 text-slate-400';
                       }
                     }
 
@@ -382,35 +278,12 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
                         data-testid={`option-btn-${q.question_id}-${opt.key}`}
                         disabled={isAnswered}
                         onClick={() => handleSelectOption(q, opt.key)}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.65rem',
-                          padding: '0.6rem 0.85rem',
-                          borderRadius: 'var(--radius-sm, 12px)',
-                          background: bg,
-                          border,
-                          color: textColor,
-                          cursor: isAnswered ? 'default' : 'pointer',
-                          textAlign: 'left',
-                          fontSize: 'var(--content-font-size-sub)',
-                          lineHeight: 'var(--content-line-height-body)',
-                          transition: 'all 0.2s ease',
-                          overflowWrap: 'anywhere',
-                          wordBreak: 'break-word',
-                        }}
+                        className={`min-h-[48px] px-4 py-3 rounded-xl border flex items-center gap-3 text-left transition-all active:scale-[0.98] ${btnStyle}`}
                       >
-                        <span
-                          style={{
-                            fontWeight: 700,
-                            fontSize: '0.86rem',
-                            minWidth: '1.2rem',
-                          }}
-                        >
+                        <span className="font-extrabold text-sm min-w-[1.2rem] text-blue-600 dark:text-sky-400">
                           {opt.key}.
                         </span>
-                        {/* 选项内容 (有图走 QuestionImage，无图走 MathRenderer) */}
-                        <div className="db-content-sub" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.25rem', overflowWrap: 'anywhere', wordBreak: 'break-word' }}>
+                        <div className="db-content-sub flex-1 flex flex-col gap-1 overflow-hidden break-words text-xs sm:text-sm">
                           {opt.img ? (
                             <QuestionImage role="option" src={opt.img} alt={`选项 ${opt.key}`} />
                           ) : (
@@ -422,41 +295,39 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
                   })}
                 </div>
 
-                {/* 错误时展开解答思路 (支持图锚点混合渲染) */}
-                {isAnswered && !isCorrect && q.solutions_json && (
+                {/* 错误时展开名师错因辨析与常驻直达回看精讲按钮 */}
+                {isAnswered && !isCorrect && (
                   <div
                     data-testid={`solution-${q.question_id}`}
-                    className="db-content-sub"
-                    style={{
-                      padding: '0.75rem 1rem',
-                      borderRadius: 'var(--radius-sm, 12px)',
-                      background: 'rgba(255, 149, 0, 0.08)',
-                      borderLeft: '3px solid var(--ios-orange)',
-                      fontSize: 'var(--content-font-size-sub)',
-                      lineHeight: 'var(--content-line-height-body)',
-                      color: 'var(--text-primary)',
-                      overflowWrap: 'anywhere',
-                      wordBreak: 'break-word',
-                    }}
+                    className="p-4 rounded-xl bg-amber-500/10 border-l-4 border-l-amber-500 border border-amber-500/20 flex flex-col gap-2.5 animate-in fade-in"
                   >
-                    <div
-                      style={{
-                        fontWeight: 600,
-                        color: 'var(--ios-orange)',
-                        marginBottom: '0.25rem',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '0.35rem',
-                      }}
-                    >
-                      <Icon name="bulb" size={14} />
-                      <span>{locale === 'en' ? 'Solution Explanation' : '解析指引'}</span>
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-amber-700 dark:text-amber-400">
+                        <Icon name="bulb" size={14} />
+                        <span>{isEn ? 'Teacher Pitfall Diagnosis' : '名师错因辨析与关键题眼'}</span>
+                      </div>
+
+                      {/* 常驻直达按钮：[ 回看概念精讲 ] */}
+                      <button
+                        type="button"
+                        onClick={handleGoToConcept}
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm active:scale-[0.98] transition-all"
+                      >
+                        <BookOpen className="w-3.5 h-3.5" />
+                        <span>{isEn ? 'Review Concept Guide' : '回看概念精讲'}</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </button>
                     </div>
-                    <SolutionList
-                      solutions={q.solutions_json}
-                      images={q.image_paths_json}
-                      locale={locale.startsWith('en') ? 'en' : 'zh'}
-                    />
+
+                    {q.solutions_json && (
+                      <div className="db-content-sub text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed overflow-hidden break-words">
+                        <SolutionList
+                          solutions={q.solutions_json}
+                          images={q.image_paths_json}
+                          locale={isEn ? 'en' : 'zh'}
+                        />
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -464,6 +335,73 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
           })
         )}
       </div>
+
+      {/* 3 题作答完毕后：输出核心素养掌握度星级评定 (1~3 星结算) */}
+      {isAllAnswered && (
+        <div
+          data-testid="quick-practice-settlement"
+          className="p-6 rounded-3xl bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-amber-500/10 border border-blue-500/30 flex flex-col sm:flex-row items-center justify-between gap-4 animate-in zoom-in-95 shadow-lg"
+        >
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1">
+              {[1, 2, 3].map((starIdx) => (
+                <Star
+                  key={starIdx}
+                  className={`w-7 h-7 ${
+                    starIdx <= starRating
+                      ? 'fill-amber-400 text-amber-400 drop-shadow'
+                      : 'text-slate-300 dark:text-slate-700'
+                  }`}
+                />
+              ))}
+            </div>
+
+            <div className="flex flex-col gap-0.5">
+              <span className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+                {isEn ? 'Competency Mastery Assessment' : '考点核心素养掌握度评定'}
+              </span>
+              <h4 className="m-0 text-base sm:text-lg font-black text-slate-900 dark:text-white">
+                {starRating === 3
+                  ? isEn
+                    ? '3-Star Full Mastery (100% Score)'
+                    : '★★★ 核心素养卓越！100% 满分达成'
+                  : starRating === 2
+                  ? isEn
+                    ? '2-Star Solid Competency (Good Job)'
+                    : '★★☆ 掌握良好！建议复习错题题眼'
+                  : isEn
+                  ? '1-Star Needs Reinforcement'
+                  : '★☆☆ 基础待巩固，建议回看概念精讲'}
+              </h4>
+              <p className="m-0 text-xs text-slate-500 dark:text-slate-400">
+                {isEn
+                  ? `Correct: ${correctCount} / 3 questions completed`
+                  : `本次作答正答 ${correctCount} / 3 题`}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 shrink-0">
+            <button
+              type="button"
+              onClick={handleGoToConcept}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-blue-500/40 bg-white/80 dark:bg-slate-800 text-blue-600 dark:text-sky-400 font-bold text-xs shadow-sm hover:bg-blue-500/10 active:scale-[0.98] transition-all"
+            >
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>{isEn ? 'Review Concept Guide' : '回看概念精讲'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleNextBatch}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-500/25 active:scale-[0.98] transition-all"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>{isEn ? 'Next Batch ➜' : '换一批练习 ➜'}</span>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

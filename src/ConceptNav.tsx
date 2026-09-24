@@ -299,6 +299,8 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
             invariants_display_json: row.invariants_display_json,
             inquiry_guide_zh: row.inquiry_guide_zh,
             inquiry_guide_en: row.inquiry_guide_en,
+            visual_elements_json: row.visual_elements_json ? String(row.visual_elements_json) : undefined,
+            inquiry_steps_json: row.inquiry_steps_json ? String(row.inquiry_steps_json) : undefined,
           });
         } else if (active) {
           setDbSandboxConfig(null);
@@ -352,16 +354,7 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
   return (
     <div
       data-testid="concept-nav-root"
-      className={`concept-nav-container ${className}`.trim()}
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        width: "100%",
-        maxWidth: "1240px",
-        margin: "0 auto",
-        boxSizing: "border-box",
-        position: "relative",
-      }}
+      className={`concept-nav-container w-full max-w-[1240px] mx-auto flex flex-col relative box-border ${className}`.trim()}
     >
       {/* 
         顶部二级导航栏：纯白底色（与图二、图三对齐），吸顶常驻，不随滚动消失
@@ -370,67 +363,24 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
         右侧：4 个扁平分段胶囊：[四段论精讲] [链接沙盒] [考点母题] [单点快练]
       */}
       <header
-        className="concept-nav-header"
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          flexWrap: "wrap",
-          gap: "0.75rem",
-          padding: "16px 28px",
-          background: "var(--bg-card, #ffffff)",
-          borderTopLeftRadius: "var(--radius-lg, 22px)",
-          borderTopRightRadius: "var(--radius-lg, 22px)",
-          borderBottomLeftRadius: 0,
-          borderBottomRightRadius: 0,
-          border: "1px solid var(--border-subtle, rgba(0, 0, 0, 0.07))",
-          borderBottom: "1px solid rgba(0, 0, 0, 0.05)",
-          position: "sticky",
-          top: 0,
-          zIndex: 40,
-          boxSizing: "border-box",
-          width: "100%",
-          boxShadow: "0 2px 10px rgba(0, 0, 0, 0.02)",
-        }}
+        className="concept-nav-header w-full flex items-center justify-between flex-wrap gap-3 px-7 py-4 bg-white dark:bg-slate-900 rounded-t-[22px] border border-slate-200/80 dark:border-slate-800 border-b-slate-200/50 sticky top-0 z-40 box-border shadow-sm"
       >
         {/* 左侧：[ 考点名称 · 9年级 上学期 ▾ ] 胶囊按钮 (左侧对齐 32px，与下方【原点溯源】完全平齐) */}
         <button
           type="button"
           data-testid="concept-drawer-trigger"
-          className="concept-drawer-trigger-btn"
+          className="concept-drawer-trigger-btn inline-flex items-center gap-1.5 px-4 py-1.5 bg-white dark:bg-slate-800 border-[1.5px] border-blue-600 dark:border-sky-400 rounded-full text-blue-600 dark:text-sky-400 text-xs font-bold cursor-pointer shadow-sm active:scale-[0.98] transition-all max-w-full shrink-0"
           onClick={() => setIsDrawerOpen((prev) => !prev)}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "6px",
-            padding: "6px 16px",
-            background: "#ffffff",
-            border: "1.5px solid var(--ios-blue, #0071e3)",
-            borderRadius: "var(--radius-pill, 9999px)",
-            color: "var(--ios-blue, #0071e3)",
-            fontSize: "12px",
-            fontWeight: 700,
-            cursor: "pointer",
-            boxShadow: "0 1px 4px rgba(0, 113, 227, 0.12)",
-            transition: "all 0.18s ease",
-            maxWidth: "100%",
-            whiteSpace: "nowrap",
-            flexShrink: 0,
-          }}
         >
           <Icon name="pin" size={13} />
-          <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          <span className="whitespace-nowrap overflow-hidden text-ellipsis">
             {locale === "en" ? (currentPoint.name_en || currentPoint.name_zh) : currentPoint.name_zh} · {locale === "en" ? `Grade ${currentPoint.grade} Sem ${currentPoint.semester}` : `${currentPoint.grade}年级 ${currentPoint.semester === 1 ? '上学期' : '下学期'}`}
           </span>
-          <span style={{ display: "none" }}>{currentPoint.point_id}</span>
+          <span className="hidden">{currentPoint.point_id}</span>
           <Icon
             name="chevron-down"
             size={12}
-            style={{
-              transform: isDrawerOpen ? "rotate(180deg)" : "none",
-              transition: "transform 0.2s ease",
-              flexShrink: 0,
-            }}
+            className={`shrink-0 transition-transform duration-200 ${isDrawerOpen ? "rotate-180" : ""}`}
           />
         </button>
 
@@ -453,21 +403,11 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
         />
 
         {/* 中间：Flex 自适应留白 (Negative Space，严禁微光竖线) */}
-        <div style={{ flex: 1 }} />
+        <div className="flex-1" />
 
         {/* 右侧：4 个扁平分段胶囊 (按图二风格：灰底胶囊槽 + 12px + 纯白微阴影活动态) */}
         <div
-          className="dimension-segmented-control stage-segmented-control"
-          style={{
-            position: "relative",
-            display: "inline-flex",
-            background: "rgba(0, 0, 0, 0.04)",
-            padding: "3px",
-            borderRadius: "var(--radius-pill, 9999px)",
-            border: "1px solid rgba(0, 0, 0, 0.03)",
-            gap: "2px",
-            whiteSpace: "nowrap",
-          }}
+          className="dimension-segmented-control stage-segmented-control relative inline-flex bg-black/[0.04] dark:bg-white/[0.06] p-[3px] rounded-full border border-black/[0.03] dark:border-white/[0.05] gap-0.5 whitespace-nowrap"
         >
           {[
             { key: "stages", label: locale === "en" ? "Concept Lecture" : "四段论精讲", icon: "book" },
@@ -482,26 +422,14 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
                 type="button"
                 data-testid={`subtab-${tab.key}`}
                 onClick={() => setActiveSubTab(tab.key as any)}
-                style={{
-                  border: "none",
-                  padding: "6px 16px",
-                  borderRadius: "var(--radius-pill, 9999px)",
-                  background: active ? "var(--bg-card, #ffffff)" : "transparent",
-                  color: active ? "var(--ios-blue)" : "var(--text-secondary)",
-                  fontWeight: active ? 700 : 500,
-                  fontSize: "12px",
-                  cursor: "pointer",
-                  boxShadow: active ? "0 2px 8px rgba(0, 0, 0, 0.06)" : "none",
-                  transition: "all 0.18s ease",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  whiteSpace: "nowrap",
-                  flexShrink: 0,
-                }}
+                className={`border-none py-1.5 px-4 rounded-full text-xs font-bold cursor-pointer transition-all inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 active:scale-[0.98] ${
+                  active
+                    ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-sky-400 shadow-sm"
+                    : "bg-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                }`}
               >
                 <Icon name={tab.icon} size={13} />
-                <span style={{ whiteSpace: "nowrap" }}>{tab.label}</span>
+                <span className="whitespace-nowrap">{tab.label}</span>
               </button>
             );
           })}
@@ -517,35 +445,18 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
         ④ 单点快练
       */}
       <div
-        className="concept-main-card"
-        style={{
-          width: "100%",
-          boxSizing: "border-box",
-          minHeight: "740px",
-          background: "var(--bg-card, #ffffff)",
-          borderTopLeftRadius: 0,
-          borderTopRightRadius: 0,
-          borderBottomLeftRadius: "var(--radius-lg, 22px)",
-          borderBottomRightRadius: "var(--radius-lg, 22px)",
-          border: "1px solid var(--border-subtle, rgba(0, 0, 0, 0.07))",
-          borderTop: "none",
-          boxShadow: "0 2px 16px rgba(0, 0, 0, 0.03)",
-          padding: "20px 28px 28px 28px",
-          position: "relative",
-        }}
+        className="concept-main-card w-full box-border min-h-[740px] bg-white dark:bg-slate-900 rounded-b-[22px] border border-slate-200/80 dark:border-slate-800 border-t-0 shadow-sm p-5 sm:p-7 relative"
       >
         <main
           ref={mainStageRef}
           data-testid="concept-main-stage"
-          style={{
-            width: "100%",
-            minHeight: "640px",
-            display: "flex",
-            flexDirection: "column",
-          }}
+          className="w-full min-h-[640px] flex flex-col"
         >
           {activeSubTab === "stages" && (
-            <ConceptFourStages knowledgePoint={currentPoint} />
+            <ConceptFourStages
+              knowledgePoint={currentPoint}
+              onNavigateToMaster={() => setActiveSubTab("master")}
+            />
           )}
 
           {activeSubTab === "sandbox" && (
@@ -567,6 +478,7 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
               pointId={currentPoint.point_id}
               initialQuestions={practiceQuestions}
               allQuestions={practiceQuestions}
+              onReturnToConcept={() => setActiveSubTab("stages")}
             />
           )}
         </main>

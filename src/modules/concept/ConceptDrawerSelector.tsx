@@ -158,158 +158,43 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
         <div
           data-testid="concept-drawer-backdrop"
           onClick={onClose}
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 90,
-            background: 'rgba(0, 0, 0, 0.18)',
-            backdropFilter: 'blur(4px)',
-            WebkitBackdropFilter: 'blur(4px)',
-            animation: 'fadeIn 0.2s ease',
-          }}
+          className="fixed inset-0 z-[90] bg-black/20 backdrop-blur-sm animate-fadeIn"
         />
       )}
 
       {/* 4级抽屉选择器浮动面板 (手机端原生 iOS Bottom Sheet / 平板端居中模态 / 桌面端 Popover) */}
       <aside
         data-testid="concept-tree-sidebar"
-        className={`concept-drawer-panel ${isOpen ? 'is-open' : 'is-closed'}`}
-        style={
+        className={`concept-drawer-panel ${isOpen ? 'is-open flex flex-col' : 'is-closed hidden'} ${
           isMobile
-            ? {
-                display: isOpen ? 'flex' : 'none',
-                flexDirection: 'column',
-                position: 'fixed',
-                bottom: 0,
-                left: 0,
-                right: 0,
-                top: 'auto',
-                zIndex: 100,
-                width: '100%',
-                maxWidth: '100vw',
-                height: '82vh',
-                maxHeight: '82vh',
-                background: 'var(--glass-bg-elevated, #ffffff)',
-                backdropFilter: 'blur(30px)',
-                WebkitBackdropFilter: 'blur(30px)',
-                border: '1px solid var(--border-subtle, rgba(0, 0, 0, 0.12))',
-                borderRadius: '20px 20px 0 0',
-                borderBottom: 'none',
-                boxShadow: '0 -12px 40px rgba(0, 0, 0, 0.22)',
-                overflow: 'hidden',
-                boxSizing: 'border-box',
-                animation: 'drawerSlideUpMobile 0.24s cubic-bezier(0.16, 1, 0.3, 1)',
-              }
+            ? 'fixed bottom-0 left-0 right-0 z-[100] w-full max-w-[100vw] h-[82vh] max-h-[82vh] rounded-t-[20px] shadow-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-slate-200 dark:border-slate-800 border-b-0 overflow-hidden'
             : isTablet
-            ? {
-                display: isOpen ? 'flex' : 'none',
-                flexDirection: 'column',
-                position: 'fixed',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                zIndex: 100,
-                width: '640px',
-                maxWidth: '90vw',
-                height: '560px',
-                maxHeight: '80vh',
-                background: 'var(--glass-bg-elevated, #ffffff)',
-                backdropFilter: 'blur(30px)',
-                WebkitBackdropFilter: 'blur(30px)',
-                border: '1px solid var(--border-subtle, rgba(0, 0, 0, 0.12))',
-                borderRadius: '20px',
-                boxShadow: '0 24px 60px rgba(0, 0, 0, 0.24)',
-                overflow: 'hidden',
-                boxSizing: 'border-box',
-                animation: 'fadeIn 0.2s ease',
-              }
-            : {
-                display: isOpen ? 'flex' : 'none',
-                flexDirection: 'column',
-                position: 'absolute',
-                top: 'calc(100% + 10px)',
-                left: 0,
-                zIndex: 100,
-                width: '680px',
-                maxWidth: '92vw',
-                maxHeight: '78vh',
-                background: 'var(--glass-bg-elevated, #ffffff)',
-                backdropFilter: 'blur(30px)',
-                WebkitBackdropFilter: 'blur(30px)',
-                border: '1px solid var(--border-subtle, rgba(0, 0, 0, 0.12))',
-                borderRadius: 'var(--radius-lg, 20px)',
-                boxShadow: '0 24px 60px rgba(0, 0, 0, 0.16)',
-                overflow: 'hidden',
-                boxSizing: 'border-box',
-                animation: 'drawerSlideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-              }
-        }
+            ? 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] w-[640px] max-w-[90vw] h-[560px] max-h-[80vh] rounded-[20px] shadow-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-slate-200 dark:border-slate-800 overflow-hidden'
+            : 'absolute top-[calc(100%+10px)] left-0 z-[100] w-[680px] max-w-[92vw] max-h-[78vh] rounded-[20px] shadow-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-slate-200 dark:border-slate-800 overflow-hidden'
+        }`}
       >
         {/* 顶部居中药丸拖动手柄 (手机端原生 iOS 视觉规范) */}
         <div
           data-testid="drawer-drag-handle"
-          className="drawer-drag-handle"
-          style={{
-            width: '36px',
-            height: '4px',
-            borderRadius: '2px',
-            background: 'rgba(0, 0, 0, 0.2)',
-            margin: '8px auto 0 auto',
-            flexShrink: 0,
-            display: isMobile ? 'block' : 'none',
-          }}
+          className={`drawer-drag-handle w-9 h-1 rounded-full bg-black/20 dark:bg-white/20 mt-2 mx-auto shrink-0 ${isMobile ? 'block' : 'hidden'}`}
         />
         {/* 顶部搜索栏与抽屉标题 */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem',
-            padding: '1rem 1.25rem',
-            borderBottom: '1px solid var(--border-subtle, rgba(0, 0, 0, 0.08))',
-            background: 'var(--bg-canvas, rgba(0, 0, 0, 0.02))',
-          }}
-        >
-          <div
-            style={{
-              flex: 1,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              padding: '0.45rem 0.85rem',
-              background: 'var(--bg-card, #ffffff)',
-              borderRadius: 'var(--radius-pill, 9999px)',
-              border: '1px solid var(--border-subtle, rgba(0, 0, 0, 0.15))',
-            }}
-          >
-            <Icon name="search" size={15} style={{ color: 'var(--text-secondary)' }} />
+        <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-200/80 dark:border-slate-800/80 bg-slate-500/5">
+          <div className="flex-1 flex items-center gap-2 px-3.5 py-1.5 bg-white dark:bg-slate-800 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm">
+            <Icon name="search" size={15} className="text-slate-400 dark:text-slate-500" />
             <input
               type="text"
               data-testid="concept-search-input"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={locale === 'en' ? 'Search points by name, pinyin, or KP-ID...' : '实时搜索考点名称、拼音或编号 (如: 配方法, pff, KP-023)...'}
-              style={{
-                flex: 1,
-                border: 'none',
-                outline: 'none',
-                background: 'transparent',
-                fontSize: '0.85rem',
-                color: 'var(--text-primary)',
-              }}
+              className="flex-1 border-none outline-none bg-transparent text-[0.85rem] text-slate-800 dark:text-slate-100 placeholder-slate-400"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
-                style={{
-                  border: 'none',
-                  background: 'transparent',
-                  cursor: 'pointer',
-                  color: 'var(--text-secondary)',
-                  padding: 0,
-                  display: 'inline-flex',
-                }}
+                className="border-none bg-transparent cursor-pointer text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0 inline-flex"
               >
                 <Icon name="x" size={13} />
               </button>
@@ -320,44 +205,25 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
             type="button"
             data-testid="drawer-close-btn"
             onClick={onClose}
-            style={{
-              border: 'none',
-              background: 'var(--bg-card, rgba(0, 0, 0, 0.05))',
-              width: '32px',
-              height: '32px',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              color: 'var(--text-secondary)',
-              transition: 'background 0.15s ease',
-            }}
+            className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 transition-colors border-none"
           >
             <Icon name="x" size={16} />
           </button>
         </div>
 
         {/* 主体区：搜索结果 OR 4级级联筛选 */}
-        <div className="concept-drawer-body" style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+        <div className="concept-drawer-body flex flex-1 min-h-0 overflow-hidden">
           {searchQuery ? (
             /* 搜索模式：直接展示全局匹配考点 */
             <div
               data-testid="search-results-container"
-              style={{
-                flex: 1,
-                padding: '1rem',
-                overflowY: 'auto',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '0.5rem',
-              }}
+              className="flex-1 p-4 overflow-y-auto flex flex-col gap-2"
             >
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
+              <div className="text-[0.78rem] text-slate-500 dark:text-slate-400 mb-1">
                 {locale === 'en' ? `Found ${searchResults.length} matching points` : `找到 ${searchResults.length} 个相关考点`}
               </div>
               {searchResults.length === 0 ? (
-                <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-tertiary)' }}>
+                <div className="p-8 text-center text-slate-400 dark:text-slate-500">
                   {locale === 'en' ? 'No matching knowledge points found' : '未找到匹配的大纲考点'}
                 </div>
               ) : (
@@ -368,51 +234,28 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
                       key={pt.point_id}
                       data-testid={`search-item-${pt.point_id}`}
                       onClick={() => handlePointClick(pt)}
-                      style={{
-                        padding: '0.65rem 0.9rem',
-                        borderRadius: 'var(--radius-md, 12px)',
-                        border: active ? '1.5px solid var(--ios-blue)' : '1px solid var(--border-subtle)',
-                        background: active ? 'var(--ios-blue-glow, rgba(0, 113, 227, 0.1))' : 'var(--bg-card)',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        transition: 'all 0.15s ease',
-                      }}
+                      className={`p-2.5 px-3.5 rounded-xl cursor-pointer flex items-center justify-between transition-all duration-150 ${
+                        active
+                          ? 'border-[1.5px] border-[#0071e3] bg-[#0071e3]/10 dark:bg-[#0071e3]/20 shadow-sm'
+                          : 'border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800'
+                      }`}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--ios-blue)' }}>
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-[0.75rem] font-bold text-[#0071e3]">
                           {pt.point_id}
                         </span>
-                        <span style={{ fontSize: '0.88rem', fontWeight: active ? 700 : 500, color: 'var(--text-primary)' }}>
+                        <span className={`text-[0.88rem] ${active ? 'font-bold text-slate-900 dark:text-white' : 'font-medium text-slate-700 dark:text-slate-200'}`}>
                           {locale === 'en' ? pt.name_en : pt.name_zh}
                         </span>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                        <span
-                          style={{
-                            fontSize: '0.72rem',
-                            padding: '0.15rem 0.45rem',
-                            borderRadius: '4px',
-                            background: 'rgba(0, 0, 0, 0.05)',
-                            color: 'var(--text-secondary)',
-                          }}
-                        >
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[0.72rem] px-2 py-0.5 rounded bg-black/5 dark:bg-white/10 text-slate-500 dark:text-slate-400">
                           {isEn
                             ? `Grade ${pt.grade} Sem ${pt.semester} · ${(pt as any).subcategory_en || getSubcategoryName(pt.subcategory, true)}`
                             : `${pt.grade}年级${pt.semester === 1 ? '上' : '下'} · ${pt.subcategory}`}
                         </span>
                         {pt.is_mandatory ? (
-                          <span
-                            style={{
-                              fontSize: '0.68rem',
-                              padding: '0.1rem 0.35rem',
-                              borderRadius: '4px',
-                              background: 'var(--ios-red, #ff3b30)',
-                              color: '#ffffff',
-                              fontWeight: 600,
-                            }}
-                          >
+                          <span className="text-[0.68rem] px-1.5 py-0.5 rounded bg-[#ff3b30] text-white font-semibold">
                             {locale === 'en' ? 'Core' : '必考'}
                           </span>
                         ) : null}
@@ -424,47 +267,17 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
             </div>
           ) : (
             /* 正常 4 级下钻盒模式 */
-            <div className="concept-drawer-columns" style={{ display: 'flex', width: '100%', minHeight: '380px' }}>
+            <div className="concept-drawer-columns flex w-full min-h-[380px]">
               {/* 左侧控制栏：1级年级 + 2级学期 + 3级领域/单元 */}
-              <div
-                className="concept-drawer-left-col"
-                style={{
-                  width: '280px',
-                  minWidth: '280px',
-                  borderRight: '1px solid var(--border-subtle, rgba(0,0,0,0.08))',
-                  padding: '1rem',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0.85rem',
-                  overflowY: 'auto',
-                  background: 'var(--bg-canvas, rgba(0,0,0,0.01))',
-                }}
-              >
+              <div className="concept-drawer-left-col w-[280px] min-w-[280px] border-r border-slate-200/80 dark:border-slate-800 p-4 flex flex-col gap-3.5 overflow-y-auto bg-slate-500/5">
                 {/* 1级与2级: 年级与学期选择 (移动端单行并排紧凑, 桌面端分块) */}
-                <div
-                  className="concept-drawer-level1-2-wrap"
-                  style={{
-                    display: 'flex',
-                    flexDirection: isMobile ? 'row' : 'column',
-                    gap: isMobile ? '0.45rem' : '0.85rem',
-                    width: '100%',
-                  }}
-                >
+                <div className={`concept-drawer-level1-2-wrap flex ${isMobile ? 'flex-row gap-2' : 'flex-col gap-3.5'} w-full`}>
                   {/* 1级: 年级选择 */}
-                  <div style={{ flex: isMobile ? 3 : undefined }}>
-                    <label
-                      className="concept-drawer-level-label"
-                      style={{
-                        display: isMobile ? 'none' : 'block',
-                        fontSize: '0.76rem',
-                        fontWeight: 700,
-                        color: 'var(--text-secondary)',
-                        marginBottom: '0.35rem',
-                      }}
-                    >
+                  <div className={isMobile ? 'flex-[3]' : undefined}>
+                    <label className={`concept-drawer-level-label ${isMobile ? 'hidden' : 'block'} text-[0.76rem] font-bold text-slate-500 dark:text-slate-400 mb-1.5`}>
                       {locale === 'en' ? 'Level 1 · Grade' : `第一级 · ${t('nav.grade', effectiveLocale, '年级')}`}
                     </label>
-                    <div style={{ display: 'flex', gap: '0.35rem' }}>
+                    <div className="flex gap-1.5">
                       {availableGrades.map((g) => {
                         const active = selectedGrade === g;
                         const label = locale === 'en' ? `Grade ${g}` : g === 7 ? '七年级' : g === 8 ? '八年级' : '九年级';
@@ -482,19 +295,11 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
                                 onSelectSubcategory?.(subPoints[0].subcategory);
                               }
                             }}
-                            style={{
-                              flex: 1,
-                              minHeight: isMobile ? '30px' : '34px',
-                              border: active ? '1.5px solid var(--ios-blue)' : '1px solid var(--border-subtle)',
-                              borderRadius: 'var(--radius-sm, 8px)',
-                              background: active ? 'var(--ios-blue)' : 'var(--bg-card)',
-                              color: active ? '#ffffff' : 'var(--text-primary)',
-                              fontWeight: active ? 700 : 500,
-                              fontSize: isMobile ? '0.75rem' : '0.8rem',
-                              cursor: 'pointer',
-                              transition: 'all 0.15s ease',
-                              padding: isMobile ? '0 4px' : undefined,
-                            }}
+                            className={`flex-1 ${isMobile ? 'min-h-[30px] text-[0.75rem] px-1' : 'min-h-[34px] text-[0.8rem]'} rounded-lg font-medium cursor-pointer transition-all duration-150 border ${
+                              active
+                                ? 'border-[#0071e3] bg-[#0071e3] text-white font-bold shadow-sm'
+                                : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:border-slate-300'
+                            }`}
                           >
                             {label}
                           </button>
@@ -504,20 +309,11 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
                   </div>
 
                   {/* 2级: 学期选择 */}
-                  <div style={{ flex: isMobile ? 2 : undefined }}>
-                    <label
-                      className="concept-drawer-level-label"
-                      style={{
-                        display: isMobile ? 'none' : 'block',
-                        fontSize: '0.76rem',
-                        fontWeight: 700,
-                        color: 'var(--text-secondary)',
-                        marginBottom: '0.35rem',
-                      }}
-                    >
+                  <div className={isMobile ? 'flex-[2]' : undefined}>
+                    <label className={`concept-drawer-level-label ${isMobile ? 'hidden' : 'block'} text-[0.76rem] font-bold text-slate-500 dark:text-slate-400 mb-1.5`}>
                       {locale === 'en' ? 'Level 2 · Semester' : `第二级 · ${t('nav.semester', effectiveLocale, '学期')}`}
                     </label>
-                    <div style={{ display: 'flex', gap: '0.35rem' }}>
+                    <div className="flex gap-1.5">
                       {availableSemesters.map((s) => {
                         const active = selectedSemester === s;
                         const label = locale === 'en' ? (s === 1 ? 'Sem 1 (Fall)' : 'Sem 2 (Spring)') : s === 1 ? '上学期 (1)' : '下学期 (2)';
@@ -534,19 +330,11 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
                                 onSelectSubcategory?.(subPoints[0].subcategory);
                               }
                             }}
-                            style={{
-                              flex: 1,
-                              minHeight: isMobile ? '30px' : '34px',
-                              border: active ? '1.5px solid var(--ios-blue)' : '1px solid var(--border-subtle)',
-                              borderRadius: 'var(--radius-sm, 8px)',
-                              background: active ? 'var(--ios-blue)' : 'var(--bg-card)',
-                              color: active ? '#ffffff' : 'var(--text-primary)',
-                              fontWeight: active ? 700 : 500,
-                              fontSize: isMobile ? '0.75rem' : '0.8rem',
-                              cursor: 'pointer',
-                              transition: 'all 0.15s ease',
-                              padding: isMobile ? '0 4px' : undefined,
-                            }}
+                            className={`flex-1 ${isMobile ? 'min-h-[30px] text-[0.75rem] px-1' : 'min-h-[34px] text-[0.8rem]'} rounded-lg font-medium cursor-pointer transition-all duration-150 border ${
+                              active
+                                ? 'border-[#0071e3] bg-[#0071e3] text-white font-bold shadow-sm'
+                                : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:border-slate-300'
+                            }`}
                           >
                             {label}
                           </button>
@@ -558,22 +346,12 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
 
                 {/* 3级: 领域与课程单元 (15 个 subcategory 核心分类) */}
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '0.35rem' }}>
+                  <label className="block text-[0.76rem] font-bold text-slate-500 dark:text-slate-400 mb-1.5">
                     {locale === 'en' ? 'Level 3 · Domain / Unit' : `第三级 · ${t('nav.domain', effectiveLocale, '领域')} / 课程单元`}
                   </label>
 
                   {/* 领域快速过滤 pills (保证 productShell 测试通过) */}
-                  <div
-                    style={{
-                      display: 'flex',
-                      gap: '0.3rem',
-                      marginBottom: '0.35rem',
-                      flexWrap: isMobile ? 'nowrap' : 'wrap',
-                      overflowX: isMobile ? 'auto' : 'visible',
-                      WebkitOverflowScrolling: 'touch',
-                      scrollbarWidth: 'none',
-                    }}
-                  >
+                  <div className={`flex gap-1.5 mb-1.5 ${isMobile ? 'flex-nowrap overflow-x-auto no-scrollbar' : 'flex-wrap'}`}>
                     {availableDomains.map((dom) => {
                       const active = selectedDomain === dom && !selectedSubcategory;
                       const domLabel =
@@ -597,16 +375,11 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
                             onSelectDomain(dom);
                             onSelectSubcategory?.('');
                           }}
-                          style={{
-                            padding: '0.25rem 0.55rem',
-                            border: active ? '1.5px solid var(--ios-indigo, #5856d6)' : '1px solid var(--border-subtle)',
-                            borderRadius: 'var(--radius-sm, 6px)',
-                            background: active ? 'var(--ios-indigo, #5856d6)' : 'var(--bg-card)',
-                            color: active ? '#ffffff' : 'var(--text-secondary)',
-                            fontWeight: active ? 700 : 500,
-                            fontSize: '0.74rem',
-                            cursor: 'pointer',
-                          }}
+                          className={`px-2.5 py-1 rounded-md text-[0.74rem] font-medium cursor-pointer transition-all border ${
+                            active
+                              ? 'border-[#5856d6] bg-[#5856d6] text-white font-bold shadow-sm'
+                              : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:border-slate-300'
+                          }`}
                         >
                           {domLabel}
                         </button>
@@ -615,7 +388,7 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
                   </div>
 
                   {/* 课程单元列表 (15 个 subcategory) */}
-                  <div className="concept-drawer-subcat-list" style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                  <div className="concept-drawer-subcat-list flex flex-col gap-1.5">
                     {availableSubcategories.map((subcat) => {
                       const active = selectedSubcategory === subcat;
                       const count = knowledgePoints.filter(
@@ -635,23 +408,14 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
                               onSelectDomain(found.domain);
                             }
                           }}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            padding: '0.4rem 0.65rem',
-                            borderRadius: 'var(--radius-sm, 6px)',
-                            border: active ? '1.5px solid var(--ios-blue)' : '1px solid var(--border-subtle)',
-                            background: active ? 'var(--ios-blue-glow, rgba(0, 113, 227, 0.1))' : 'var(--bg-card)',
-                            color: active ? 'var(--ios-blue)' : 'var(--text-primary)',
-                            fontWeight: active ? 700 : 500,
-                            fontSize: '0.8rem',
-                            cursor: 'pointer',
-                            textAlign: 'left',
-                          }}
+                          className={`flex items-center justify-between px-3 py-1.5 rounded-md text-[0.8rem] text-left cursor-pointer transition-all border ${
+                            active
+                              ? 'border-[#0071e3] bg-[#0071e3]/10 dark:bg-[#0071e3]/20 text-[#0071e3] font-bold'
+                              : 'border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
+                          }`}
                         >
                           <span>{isEn ? getSubcategoryName(subcat, true) : subcat}</span>
-                          <span style={{ fontSize: '0.7rem', opacity: 0.65 }}>
+                          <span className="text-[0.7rem] opacity-65">
                             {count} {isEn ? 'Points' : '考点'}
                           </span>
                         </button>
@@ -662,22 +426,12 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
               </div>
 
               {/* 右侧大纲考点列表 (4级大纲考点) */}
-              <div
-                className="concept-drawer-right-col"
-                style={{
-                  flex: 1,
-                  padding: '1rem',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  minHeight: 0,
-                  overflowY: 'auto',
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                  <label style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
+              <div className="concept-drawer-right-col flex-1 p-4 flex flex-col min-h-0 overflow-y-auto">
+                <div className="flex justify-between items-center mb-2">
+                  <label className="text-[0.78rem] font-bold text-slate-500 dark:text-slate-400">
                     {locale === 'en' ? 'Level 4 · Curriculum Points' : `第四级 · ${t('nav.points', effectiveLocale, '大纲考点')}`}
                   </label>
-                  <span style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)' }}>
+                  <span className="text-[0.72rem] text-slate-400 dark:text-slate-500">
                     {locale === 'en'
                       ? `${filteredPoints.length} Points · Click to switch`
                       : `${filteredPoints.length} 个考点 · 点击立即切换`}
@@ -686,12 +440,7 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
 
                 <div
                   data-testid="concept-points-list"
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '0.45rem',
-                    paddingRight: '0.25rem',
-                  }}
+                  className="flex flex-col gap-2 pr-1"
                 >
                   {filteredPoints.map((pt) => {
                     const active = pt.point_id === currentPoint.point_id;
@@ -700,43 +449,28 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
                         key={pt.point_id}
                         data-testid={`point-item-${pt.point_id}`}
                         onClick={() => handlePointClick(pt)}
-                        style={{
-                          padding: '0.65rem 0.85rem',
-                          borderRadius: 'var(--radius-md, 10px)',
-                          border: active ? '1.5px solid var(--ios-blue)' : '1px solid var(--border-subtle)',
-                          background: active ? 'var(--ios-blue-glow, rgba(0, 113, 227, 0.12))' : 'var(--bg-card)',
-                          cursor: 'pointer',
-                          transition: 'all 0.15s ease',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '0.2rem',
-                        }}
+                        className={`p-2.5 px-3.5 rounded-xl cursor-pointer transition-all duration-150 flex flex-col gap-1 border ${
+                          active
+                            ? 'border-[#0071e3] bg-[#0071e3]/12 dark:bg-[#0071e3]/20 shadow-sm'
+                            : 'border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800'
+                        }`}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <span style={{ fontSize: '0.72rem', fontWeight: 700, color: active ? 'var(--ios-blue)' : 'var(--text-secondary)' }}>
+                        <div className="flex items-center justify-between">
+                          <span className={`text-[0.72rem] font-bold ${active ? 'text-[#0071e3]' : 'text-slate-500 dark:text-slate-400'}`}>
                             {pt.point_id}
                           </span>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                            <span style={{ fontSize: '0.68rem', color: 'var(--text-tertiary)' }}>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[0.68rem] text-slate-400 dark:text-slate-500">
                               {pt.subcategory}
                             </span>
                             {pt.is_mandatory ? (
-                              <span
-                                style={{
-                                  fontSize: '0.65rem',
-                                  padding: '0.08rem 0.35rem',
-                                  borderRadius: '3px',
-                                  background: 'var(--ios-red, #ff3b30)',
-                                  color: '#ffffff',
-                                  fontWeight: 600,
-                                }}
-                              >
+                              <span className="text-[0.65rem] px-1.5 py-0.5 rounded bg-[#ff3b30] text-white font-semibold">
                                 {locale === 'en' ? 'Core' : '必考'}
                               </span>
                             ) : null}
                           </div>
                         </div>
-                        <div style={{ fontSize: '0.88rem', fontWeight: active ? 700 : 500, color: 'var(--text-primary)' }}>
+                        <div className={`text-[0.88rem] ${active ? 'font-bold text-slate-900 dark:text-white' : 'font-medium text-slate-800 dark:text-slate-200'}`}>
                           {locale === 'en' ? (pt.name_en || pt.name_zh) : pt.name_zh}
                         </div>
                       </div>

@@ -161,6 +161,8 @@ export const MathJuniorHome: React.FC = () => {
                 : undefined,
               inquiry_guide_zh: r.inquiry_guide_zh ? String(r.inquiry_guide_zh) : undefined,
               inquiry_guide_en: r.inquiry_guide_en ? String(r.inquiry_guide_en) : undefined,
+              visual_elements_json: r.visual_elements_json ? String(r.visual_elements_json) : undefined,
+              inquiry_steps_json: r.inquiry_steps_json ? String(r.inquiry_steps_json) : undefined,
             },
             desc: String(r.inquiry_guide_zh || '动态几何与参数不变量探究'),
           }));

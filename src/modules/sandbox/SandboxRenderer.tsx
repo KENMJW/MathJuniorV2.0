@@ -27,6 +27,8 @@ export interface SandboxConfig {
   custom_behavior_id?: string;
   inquiry_guide_zh?: string;
   inquiry_guide_en?: string;
+  visual_elements_json?: string;
+  inquiry_steps_json?: string;
   [key: string]: any;
 }
 
@@ -868,6 +870,33 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
 
     const currentScope = buildCurrentScope();
 
+    // 解析 46 概念沙盒声明式几何填充面与直角标规格 (TASK-FE-0021 步骤 2)
+    let visualElements: {
+      color_semantics?: Record<string, string>;
+      polygons?: Array<{ pts: string[]; fillColor?: string; strokeColor?: string; fillOpacity?: number; strokeWidth?: number }>;
+      rightAngles?: Array<{ vertex: string; arm1: string; arm2: string }>;
+    } | null = null;
+    try {
+      if (config.visual_elements_json) {
+        visualElements = typeof config.visual_elements_json === 'string'
+          ? JSON.parse(config.visual_elements_json)
+          : config.visual_elements_json;
+      }
+    } catch (e) {}
+
+    const resolvePoint = (ref: any): any => {
+      if (!ref) return null;
+      if (typeof ref === 'object' && typeof ref.X === 'function') return ref;
+      if (typeof ref === 'string') {
+        if (elements[ref]) return elements[ref];
+        const matchKey = Object.keys(elements).find((k) => k.toLowerCase() === ref.toLowerCase());
+        if (matchKey) return elements[matchKey];
+        const byName = Object.values(elements).find((el: any) => el && el.name === ref);
+        if (byName) return byName;
+      }
+      return null;
+    };
+
     // 3. 检查是否有声明式 carrier 规范 (如 LM-9A-18 规格的 carrier.elements)
     let declarativeCarrier: any = null;
     if (config.carrier_json) {
@@ -974,9 +1003,9 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
                 strokeColor: ptStroke,
                 strokeWidth: 2,
                 fixed: isCarrierFixed,
-                highlightSize: 14,
-                snapSizeX: 20,
-                snapSizeY: 20,
+                highlightSize: 24,
+                snapSizeX: 24,
+                snapSizeY: 24,
                 label: {
                   color: '#ffffff',
                   fontSize: 12,
@@ -1219,9 +1248,9 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
           strokeColor: '#ffffff',
           strokeWidth: 2,
           fixed: isPtFixed,
-          highlightSize: 14,
-          snapSizeX: 20,
-          snapSizeY: 20,
+          highlightSize: 24,
+          snapSizeX: 24,
+          snapSizeY: 24,
           label: {
             color: '#ffffff',
             fontSize: 12,
@@ -1574,25 +1603,72 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
       }
       // (八) 基础多边形降级回退
       else {
-        if (primaryPoints.length === 2) {
-          board.create('segment', [primaryPoints[0], primaryPoints[1]], {
-            strokeColor: '#38bdf8',
-            strokeWidth: 3,
-          });
-        } else if (primaryPoints.length === 3) {
-          board.create('polygon', primaryPoints, {
-            borders: { strokeColor: '#38bdf8', strokeWidth: 2.5 },
-            fillColor: '#38bdf8',
-            fillOpacity: 0.22,
-          });
-        } else if (primaryPoints.length >= 4) {
-          board.create('polygon', primaryPoints, {
-            borders: { strokeColor: '#38bdf8', strokeWidth: 2.5 },
-            fillColor: '#38bdf8',
-            fillOpacity: 0.22,
-          });
+        const hasExplicitPolys = Array.isArray(visualElements?.polygons) && visualElements.polygons.length > 0;
+        if (!hasExplicitPolys) {
+          if (primaryPoints.length === 2) {
+            board.create('segment', [primaryPoints[0], primaryPoints[1]], {
+              strokeColor: '#38bdf8',
+              strokeWidth: 3,
+            });
+          } else if (primaryPoints.length === 3) {
+            board.create('polygon', primaryPoints, {
+              borders: { strokeColor: '#38bdf8', strokeWidth: 2.5 },
+              fillColor: '#38bdf8',
+              fillOpacity: 0.22,
+            });
+          } else if (primaryPoints.length >= 4) {
+            board.create('polygon', primaryPoints, {
+              borders: { strokeColor: '#38bdf8', strokeWidth: 2.5 },
+              fillColor: '#38bdf8',
+              fillOpacity: 0.22,
+            });
+          }
         }
       }
+    }
+
+    // (九) 46 概念沙盒声明式几何填充面与直角标渲染引擎 (TASK-FE-0021 步骤 2)
+    if (visualElements?.polygons && Array.isArray(visualElements.polygons)) {
+      visualElements.polygons.forEach((poly) => {
+        const rawPts = poly.pts || (poly as any).points;
+        if (!Array.isArray(rawPts) || rawPts.length < 3) return;
+        const pts = rawPts.map(resolvePoint).filter(Boolean);
+        if (pts.length >= 3) {
+          const fillColor = ensureVisibleOnDark(poly.fillColor, 'rgba(0, 113, 227, 0.18)');
+          const strokeColor = ensureVisibleOnDark(poly.strokeColor, '#0071e3');
+          board.create('polygon', pts, {
+            fillColor,
+            fillOpacity: poly.fillOpacity ?? 0.22,
+            borders: {
+              strokeColor,
+              strokeWidth: poly.strokeWidth ?? 1.8,
+            },
+            hasInnerPoints: true,
+          });
+        }
+      });
+    }
+
+    if (visualElements?.rightAngles && Array.isArray(visualElements.rightAngles)) {
+      visualElements.rightAngles.forEach((ra) => {
+        const vertexPt = resolvePoint(ra.vertex);
+        const arm1Pt = resolvePoint(ra.arm1);
+        const arm2Pt = resolvePoint(ra.arm2);
+        if (vertexPt && arm1Pt && arm2Pt) {
+          try {
+            board.create('angle', [arm1Pt, vertexPt, arm2Pt], {
+              type: 'square',
+              orthoType: 'square',
+              orthoSensitivity: 360,
+              radius: 0.5,
+              strokeColor: '#cbd5e1',
+              fillColor: 'rgba(203, 213, 225, 0.12)',
+              strokeWidth: 1.5,
+              withLabel: false,
+            });
+          } catch (e) {}
+        }
+      });
     }
 
     // 6. 不变量与遥测指标实时外调
@@ -1685,14 +1761,14 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
         borderRadius: '14px',
         overflow: 'hidden',
         position: 'relative',
-        touchAction: 'pan-y',
+        touchAction: 'none',
         ...style,
       }}
     >
       <div
         id={containerId}
         ref={containerRef}
-        style={{ width: '100%', height: '100%', touchAction: 'pan-y' }}
+        style={{ width: '100%', height: '100%', touchAction: 'none' }}
       />
     </div>
   );
