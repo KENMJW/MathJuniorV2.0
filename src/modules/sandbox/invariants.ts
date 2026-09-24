@@ -139,11 +139,22 @@ export function evaluateInvariantValue(
 ): number | null {
   const { type, deps } = spec;
 
+  const getPt = (id?: string): Point2D | null => {
+    if (!id) return null;
+    return (
+      pointMap[id] ||
+      pointMap[id.toLowerCase()] ||
+      pointMap[`p_${id}`] ||
+      pointMap[id.replace(/^p_/, '')] ||
+      null
+    );
+  };
+
   switch (type) {
     case 'distance': {
       if (!deps || deps.length < 2) return null;
-      const p1 = pointMap[deps[0]];
-      const p2 = pointMap[deps[1]];
+      const p1 = getPt(deps[0]);
+      const p2 = getPt(deps[1]);
       if (!p1 || !p2) return null;
       return Math.hypot(p1.x - p2.x, p1.y - p2.y);
     }
@@ -151,33 +162,33 @@ export function evaluateInvariantValue(
     case 'distance_sum': {
       if (!deps || deps.length < 3) return null;
       if (deps.length >= 4) {
-        const p1 = pointMap[deps[0]];
-        const p2 = pointMap[deps[1]];
-        const p3 = pointMap[deps[2]];
-        const p4 = pointMap[deps[3]];
+        const p1 = getPt(deps[0]);
+        const p2 = getPt(deps[1]);
+        const p3 = getPt(deps[2]);
+        const p4 = getPt(deps[3]);
         if (!p1 || !p2 || !p3 || !p4) return null;
         return Math.hypot(p1.x - p2.x, p1.y - p2.y) + Math.hypot(p3.x - p4.x, p3.y - p4.y);
       }
-      const pP = pointMap[deps[0]];
-      const pA = pointMap[deps[1]];
-      const pB = pointMap[deps[2]];
+      const pP = getPt(deps[0]);
+      const pA = getPt(deps[1]);
+      const pB = getPt(deps[2]);
       if (!pP || !pA || !pB) return null;
       return Math.hypot(pP.x - pA.x, pP.y - pA.y) + Math.hypot(pP.x - pB.x, pP.y - pB.y);
     }
 
     case 'angle': {
       if (!deps || deps.length < 3) return null;
-      const pA = pointMap[deps[0]];
-      const pO = pointMap[deps[1]];
-      const pB = pointMap[deps[2]];
+      const pA = getPt(deps[0]);
+      const pO = getPt(deps[1]);
+      const pB = getPt(deps[2]);
       if (!pA || !pO || !pB) return null;
       return calculateAngle(pA, pO, pB);
     }
 
     case 'vertical_distance': {
       if (!deps || deps.length < 2) return null;
-      const p1 = pointMap[deps[0]];
-      const p2 = pointMap[deps[1]];
+      const p1 = getPt(deps[0]);
+      const p2 = getPt(deps[1]);
       if (!p1 || !p2) return null;
       return calculateVerticalDistance(p1, p2);
     }
@@ -185,9 +196,9 @@ export function evaluateInvariantValue(
     case 'area':
     case 'area_triangle': {
       if (!deps || deps.length < 3) return null;
-      const pA = pointMap[deps[0]];
-      const pB = pointMap[deps[1]];
-      const pC = pointMap[deps[2]];
+      const pA = getPt(deps[0]);
+      const pB = getPt(deps[1]);
+      const pC = getPt(deps[2]);
       if (!pA || !pB || !pC) return null;
       return calculateTriangleArea(pA, pB, pC);
     }
@@ -197,29 +208,29 @@ export function evaluateInvariantValue(
       if (!deps || deps.length < 3) return null;
       // 修复 4 点比值截断：若依赖 4 个点 [A1, B1, A, B]，计算 dist(p0,p1) / dist(p2,p3)
       if (deps.length >= 4) {
-        const p1 = pointMap[deps[0]];
-        const p2 = pointMap[deps[1]];
-        const p3 = pointMap[deps[2]];
-        const p4 = pointMap[deps[3]];
+        const p1 = getPt(deps[0]);
+        const p2 = getPt(deps[1]);
+        const p3 = getPt(deps[2]);
+        const p4 = getPt(deps[3]);
         if (!p1 || !p2 || !p3 || !p4) return null;
         const d1 = Math.hypot(p1.x - p2.x, p1.y - p2.y);
         const d2 = Math.hypot(p3.x - p4.x, p3.y - p4.y);
         if (d2 <= 1e-9) return 0;
         return d1 / d2;
       }
-      const pP = pointMap[deps[0]];
-      const pA = pointMap[deps[1]];
-      const pB = pointMap[deps[2]];
+      const pP = getPt(deps[0]);
+      const pA = getPt(deps[1]);
+      const pB = getPt(deps[2]);
       if (!pP || !pA || !pB) return null;
       return calculateDistanceRatio(pP, pA, pB);
     }
 
     case 'product': {
       if (!deps || deps.length < 4) return null;
-      const p1 = pointMap[deps[0]];
-      const p2 = pointMap[deps[1]];
-      const p3 = pointMap[deps[2]];
-      const p4 = pointMap[deps[3]];
+      const p1 = getPt(deps[0]);
+      const p2 = getPt(deps[1]);
+      const p3 = getPt(deps[2]);
+      const p4 = getPt(deps[3]);
       if (!p1 || !p2 || !p3 || !p4) return null;
       return Math.hypot(p1.x - p2.x, p1.y - p2.y) * Math.hypot(p3.x - p4.x, p3.y - p4.y);
     }
@@ -245,6 +256,17 @@ export function formatInvariantText(
     currentScope[k] = pt;
     currentScope[`${k}_x`] = pt.x;
     currentScope[`${k}_y`] = pt.y;
+    currentScope[`pt_${k}_x`] = pt.x;
+    currentScope[`pt_${k}_y`] = pt.y;
+    const cleanK = k.replace(/^p_/, '');
+    currentScope[cleanK] = pt;
+    currentScope[`${cleanK}_x`] = pt.x;
+    currentScope[`${cleanK}_y`] = pt.y;
+    currentScope[`pt_${cleanK}_x`] = pt.x;
+    currentScope[`pt_${cleanK}_y`] = pt.y;
+    currentScope[k.toLowerCase()] = pt;
+    currentScope[`${k.toLowerCase()}_x`] = pt.x;
+    currentScope[`${k.toLowerCase()}_y`] = pt.y;
   });
 
   // 1. condition 条件显隐

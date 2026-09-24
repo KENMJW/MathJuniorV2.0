@@ -39,6 +39,7 @@ export interface SandboxRendererProps {
   locale?: string;
   paramValues?: Record<string, number>;
   onInvariantsChange?: (invariants: Array<{ id: string; text: string; isConstant: boolean }>) => void;
+  onPointsChange?: (pointMap: Record<string, Point2D>) => void;
   onParamChange?: (patch: Record<string, number>) => void;
   xrayActive?: boolean;
 }
@@ -750,6 +751,7 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
   style,
   paramValues = {},
   onInvariantsChange,
+  onPointsChange,
   onParamChange,
   xrayActive = false,
   locale = 'zh-CN',
@@ -761,6 +763,8 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
   onParamChangeRef.current = onParamChange;
   const onInvariantsChangeRef = useRef(onInvariantsChange);
   onInvariantsChangeRef.current = onInvariantsChange;
+  const onPointsChangeRef = useRef(onPointsChange);
+  onPointsChangeRef.current = onPointsChange;
   const lastInvariantsKeyRef = useRef<string>('');
 
   const tpl = config.canvas_template || '';
@@ -895,6 +899,63 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
         if (byName) return byName;
       }
       return null;
+    };
+
+    // 不变量与遥测指标实时计算器 (提前定义供动点拖拽与画布监听实时调用)
+    let invariants: any[] = [];
+    try {
+      const parsed = JSON.parse(config.invariants_display_json || '[]');
+      invariants = Array.isArray(parsed) ? parsed : [parsed];
+    } catch (e) {}
+
+    const updateInvariants = () => {
+      const pointMap: Record<string, Point2D> = {};
+      Object.keys(elements).forEach((id) => {
+        const el = elements[id];
+        if (el && typeof el.X === 'function') pointMap[id] = { x: el.X(), y: el.Y() };
+      });
+
+      const scope = buildCurrentScope();
+      Object.keys(pointMap).forEach((id) => {
+        const pt = pointMap[id];
+        scope[id] = pt;
+        scope[`${id}_x`] = pt.x;
+        scope[`${id}_y`] = pt.y;
+        scope[`pt_${id}_x`] = pt.x;
+        scope[`pt_${id}_y`] = pt.y;
+        const cleanId = id.replace(/^p_/, '');
+        scope[cleanId] = pt;
+        scope[`${cleanId}_x`] = pt.x;
+        scope[`${cleanId}_y`] = pt.y;
+        scope[`pt_${cleanId}_x`] = pt.x;
+        scope[`pt_${cleanId}_y`] = pt.y;
+        scope[id.toLowerCase()] = pt;
+        scope[`${id.toLowerCase()}_x`] = pt.x;
+        scope[`${id.toLowerCase()}_y`] = pt.y;
+      });
+
+      const results: Array<{ id: string; text: string; isConstant: boolean }> = [];
+      invariants.forEach((inv, idx) => {
+        const text = formatInvariantText(inv, pointMap, locale, scope);
+        if (text !== null) {
+          results.push({
+            id: inv.id || `inv-${idx}`,
+            text,
+            isConstant: !!inv.isConstant,
+          });
+        }
+      });
+
+      const nextKey = results.map((r) => `${r.id}:${r.text}`).join('|');
+      if (nextKey !== lastInvariantsKeyRef.current) {
+        lastInvariantsKeyRef.current = nextKey;
+        if (onInvariantsChangeRef.current) {
+          onInvariantsChangeRef.current(results);
+        }
+      }
+      if (onPointsChangeRef.current) {
+        onPointsChangeRef.current(pointMap);
+      }
     };
 
     // 3. 检查是否有声明式 carrier 规范 (如 LM-9A-18 规格的 carrier.elements)
@@ -1231,15 +1292,256 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
         return { ...ptDef, x, y };
       });
 
-      // 创建动点
+      // 创建动点 (支持 46 概念沙盒 dynamic constraints 声明式约束动力学求解)
       dragPoints.forEach((ptDef) => {
         const isCenter = ptDef.id === 'O' || ptDef.id === 'Origin' || ptDef.id === 'o';
         const ptColor = isCenter ? '#34c759' : ensureVisibleOnDark(ptDef.color, '#38bdf8');
         const isDistractor = !!ptDef.isDistractor || String(ptDef.id).startsWith('distractor_');
         const showLabel = !isDistractor && Boolean(ptDef.name);
-        const isPtFixed = isCenter || isDistractor || ptDef.isFixed === true;
 
-        const pt = board.create('point', [ptDef.x ?? 0, ptDef.y ?? 0], {
+        let coords: [any, any] = [ptDef.x ?? 0, ptDef.y ?? 0];
+        let hasConstraint = false;
+        const cStr = typeof ptDef.constraints === 'string' ? ptDef.constraints.trim() : '';
+
+        if (cStr && cStr !== 'free' && cStr !== 'fixed') {
+          // 1. translation(parent, dx, dy)
+          const transMatch = cStr.match(/^translation\(([^,]+),\s*([^,]+),\s*([^)]+)\)$/);
+          if (transMatch) {
+            hasConstraint = true;
+            const [, parentId, dxKey, dyKey] = transMatch;
+            coords = [
+              () => {
+                const parent = resolvePoint(parentId.trim());
+                const dx = Number(paramValues[dxKey.trim()] ?? 0);
+                return (parent && typeof parent.X === 'function' ? parent.X() : (ptDef.x ?? 0)) + dx;
+              },
+              () => {
+                const parent = resolvePoint(parentId.trim());
+                const dy = Number(paramValues[dyKey.trim()] ?? 0);
+                return (parent && typeof parent.Y === 'function' ? parent.Y() : (ptDef.y ?? 0)) + dy;
+              },
+            ];
+          }
+
+          // 2. rotation(center, parent, theta)
+          const rotMatch = !hasConstraint && cStr.match(/^rotation\(([^,]+),\s*([^,]+),\s*([^)]+)\)$/);
+          if (rotMatch) {
+            hasConstraint = true;
+            const [, centerId, parentId, thetaKey] = rotMatch;
+            coords = [
+              () => {
+                const center = resolvePoint(centerId.trim());
+                const parent = resolvePoint(parentId.trim());
+                const cx = center && typeof center.X === 'function' ? center.X() : 0;
+                const cy = center && typeof center.Y === 'function' ? center.Y() : 0;
+                const px = parent && typeof parent.X === 'function' ? parent.X() : (ptDef.x ?? 0);
+                const py = parent && typeof parent.Y === 'function' ? parent.Y() : (ptDef.y ?? 0);
+                const rad = (Number(paramValues[thetaKey.trim()] ?? 0) * Math.PI) / 180;
+                return cx + (px - cx) * Math.cos(rad) - (py - cy) * Math.sin(rad);
+              },
+              () => {
+                const center = resolvePoint(centerId.trim());
+                const parent = resolvePoint(parentId.trim());
+                const cx = center && typeof center.X === 'function' ? center.X() : 0;
+                const cy = center && typeof center.Y === 'function' ? center.Y() : 0;
+                const px = parent && typeof parent.X === 'function' ? parent.X() : (ptDef.x ?? 0);
+                const py = parent && typeof parent.Y === 'function' ? parent.Y() : (ptDef.y ?? 0);
+                const rad = (Number(paramValues[thetaKey.trim()] ?? 0) * Math.PI) / 180;
+                return cy + (px - cx) * Math.sin(rad) + (py - cy) * Math.cos(rad);
+              },
+            ];
+          }
+
+          // 3. central_symmetry(center, parent)
+          const symMatch = !hasConstraint && cStr.match(/^central_symmetry\(([^,]+),\s*([^)]+)\)$/);
+          if (symMatch) {
+            hasConstraint = true;
+            const [, centerId, parentId] = symMatch;
+            coords = [
+              () => {
+                const center = resolvePoint(centerId.trim());
+                const parent = resolvePoint(parentId.trim());
+                const cx = center && typeof center.X === 'function' ? center.X() : 0;
+                const px = parent && typeof parent.X === 'function' ? parent.X() : (ptDef.x ?? 0);
+                return 2 * cx - px;
+              },
+              () => {
+                const center = resolvePoint(centerId.trim());
+                const parent = resolvePoint(parentId.trim());
+                const cy = center && typeof center.Y === 'function' ? center.Y() : 0;
+                const py = parent && typeof parent.Y === 'function' ? parent.Y() : (ptDef.y ?? 0);
+                return 2 * cy - py;
+              },
+            ];
+          }
+
+          // 4. midpoint(p1, p2)
+          const midMatch = !hasConstraint && cStr.match(/^midpoint\(([^,]+),\s*([^)]+)\)$/);
+          if (midMatch) {
+            hasConstraint = true;
+            const [, id1, id2] = midMatch;
+            coords = [
+              () => {
+                const p1 = resolvePoint(id1.trim());
+                const p2 = resolvePoint(id2.trim());
+                const x1 = p1 && typeof p1.X === 'function' ? p1.X() : 0;
+                const x2 = p2 && typeof p2.X === 'function' ? p2.X() : 0;
+                return (x1 + x2) / 2;
+              },
+              () => {
+                const p1 = resolvePoint(id1.trim());
+                const p2 = resolvePoint(id2.trim());
+                const y1 = p1 && typeof p1.Y === 'function' ? p1.Y() : 0;
+                const y2 = p2 && typeof p2.Y === 'function' ? p2.Y() : 0;
+                return (y1 + y2) / 2;
+              },
+            ];
+          }
+
+          // 5. reflection(parent, axis)
+          const refMatch = !hasConstraint && cStr.match(/^reflection\(([^,]+)(?:,\s*([^)]+))?\)$/);
+          if (refMatch) {
+            hasConstraint = true;
+            const [, parentId, axis = 'y'] = refMatch;
+            coords = [
+              () => {
+                const p = resolvePoint(parentId.trim());
+                const px = p && typeof p.X === 'function' ? p.X() : (ptDef.x ?? 0);
+                return axis.includes('x') ? px : -px;
+              },
+              () => {
+                const p = resolvePoint(parentId.trim());
+                const py = p && typeof p.Y === 'function' ? p.Y() : (ptDef.y ?? 0);
+                return axis.includes('x') ? -py : py;
+              },
+            ];
+          }
+
+          // 6. homothety(center, parent, kParam)
+          const homoMatch = !hasConstraint && cStr.match(/^homothety\(([^,]+),\s*([^,]+),\s*([^)]+)\)$/);
+          if (homoMatch) {
+            hasConstraint = true;
+            const [, centerId, parentId, kKey] = homoMatch;
+            coords = [
+              () => {
+                const center = resolvePoint(centerId.trim());
+                const parent = resolvePoint(parentId.trim());
+                const cx = center && typeof center.X === 'function' ? center.X() : 0;
+                const px = parent && typeof parent.X === 'function' ? parent.X() : (ptDef.x ?? 0);
+                const k = Number(paramValues[kKey.trim()] ?? 1);
+                return cx + (px - cx) * k;
+              },
+              () => {
+                const center = resolvePoint(centerId.trim());
+                const parent = resolvePoint(parentId.trim());
+                const cy = center && typeof center.Y === 'function' ? center.Y() : 0;
+                const py = parent && typeof parent.Y === 'function' ? parent.Y() : (ptDef.y ?? 0);
+                const k = Number(paramValues[kKey.trim()] ?? 1);
+                return cy + (py - cy) * k;
+              },
+            ];
+          }
+
+          // 7. vector_closed(pA, pB, pC)
+          const vecMatch = !hasConstraint && cStr.match(/^vector_closed\(([^,]+),\s*([^,]+),\s*([^)]+)\)$/);
+          if (vecMatch) {
+            hasConstraint = true;
+            const [, idA, idB, idC] = vecMatch;
+            coords = [
+              () => {
+                const pA = resolvePoint(idA.trim());
+                const pB = resolvePoint(idB.trim());
+                const pC = resolvePoint(idC.trim());
+                const xA = pA && typeof pA.X === 'function' ? pA.X() : 0;
+                const xB = pB && typeof pB.X === 'function' ? pB.X() : 0;
+                const xC = pC && typeof pC.X === 'function' ? pC.X() : 0;
+                return xA + (xC - xB);
+              },
+              () => {
+                const pA = resolvePoint(idA.trim());
+                const pB = resolvePoint(idB.trim());
+                const pC = resolvePoint(idC.trim());
+                const yA = pA && typeof pA.Y === 'function' ? pA.Y() : 0;
+                const yB = pB && typeof pB.Y === 'function' ? pB.Y() : 0;
+                const yC = pC && typeof pC.Y === 'function' ? pC.Y() : 0;
+                return yA + (yC - yB);
+              },
+            ];
+          }
+
+          // 8. centroid(A, B, C)
+          const centMatch = !hasConstraint && cStr.match(/^centroid\(([^,]+),\s*([^,]+),\s*([^)]+)\)$/);
+          if (centMatch) {
+            hasConstraint = true;
+            const [, idA, idB, idC] = centMatch;
+            coords = [
+              () => {
+                const pA = resolvePoint(idA.trim());
+                const pB = resolvePoint(idB.trim());
+                const pC = resolvePoint(idC.trim());
+                return ((pA?.X?.() ?? 0) + (pB?.X?.() ?? 0) + (pC?.X?.() ?? 0)) / 3;
+              },
+              () => {
+                const pA = resolvePoint(idA.trim());
+                const pB = resolvePoint(idB.trim());
+                const pC = resolvePoint(idC.trim());
+                return ((pA?.Y?.() ?? 0) + (pB?.Y?.() ?? 0) + (pC?.Y?.() ?? 0)) / 3;
+              },
+            ];
+          }
+
+          // 9. Coordinate assignments like x=..., y=...
+          if (!hasConstraint && cStr.includes('=')) {
+            const parts = cStr.split(',').map((s: string) => s.trim());
+            const evalExpr = (expr: string) => {
+              if (expr === '0') return 0;
+              if (paramValues[expr] !== undefined) return Number(paramValues[expr]);
+              if (expr.includes('/2')) {
+                const key = expr.replace('/2', '').replace('-', '').trim();
+                const sign = expr.startsWith('-') ? -1 : 1;
+                return (sign * Number(paramValues[key] ?? 0)) / 2;
+              }
+              if (expr.endsWith('.x')) {
+                const p = resolvePoint(expr.split('.')[0]);
+                return p && typeof p.X === 'function' ? p.X() : (ptDef.x ?? 0);
+              }
+              if (expr.endsWith('.y')) {
+                const p = resolvePoint(expr.split('.')[0]);
+                return p && typeof p.Y === 'function' ? p.Y() : (ptDef.y ?? 0);
+              }
+              if (expr.includes('hypot_c*cos(angle_A)')) {
+                const c = Number(paramValues['hypot_c'] ?? 5);
+                const a = Number(paramValues['angle_A'] ?? 30);
+                return c * Math.cos((a * Math.PI) / 180);
+              }
+              if (expr.includes('hypot_c*sin(angle_A)')) {
+                const c = Number(paramValues['hypot_c'] ?? 5);
+                const a = Number(paramValues['angle_A'] ?? 30);
+                return c * Math.sin((a * Math.PI) / 180);
+              }
+              return Number(paramValues[expr] ?? ptDef.x ?? 0);
+            };
+
+            let xValFn: (() => number) | null = null;
+            let yValFn: (() => number) | null = null;
+            parts.forEach((p: string) => {
+              const [lhs, rhs] = p.split('=').map((s: string) => s.trim());
+              if (lhs === 'x') xValFn = () => evalExpr(rhs);
+              if (lhs === 'y') yValFn = () => evalExpr(rhs);
+            });
+            if (xValFn || yValFn) {
+              hasConstraint = true;
+              coords = [
+                xValFn || (() => ptDef.x ?? 0),
+                yValFn || (() => ptDef.y ?? 0),
+              ];
+            }
+          }
+        }
+
+        const isPtFixed = hasConstraint || isCenter || isDistractor || ptDef.isFixed === true;
+
+        const pt = board.create('point', coords, {
           name: showLabel ? (ptDef.name || ptDef.id) : '',
           withLabel: showLabel,
           visible: !isDistractor,
@@ -1290,9 +1592,11 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
                 config
               );
             }
+            updateInvariants();
           });
           pt.on('up', () => {
             isDraggingRef.current = false;
+            updateInvariants();
           });
         }
       });
@@ -1671,43 +1975,10 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
       });
     }
 
-    // 6. 不变量与遥测指标实时外调
-    let invariants: any[] = [];
-    try {
-      const parsed = JSON.parse(config.invariants_display_json || '[]');
-      invariants = Array.isArray(parsed) ? parsed : [parsed];
-    } catch (e) {}
-
-    const updateInvariants = () => {
-      if (!onInvariantsChangeRef.current || invariants.length === 0) return;
-      const pointMap: Record<string, Point2D> = {};
-      Object.keys(elements).forEach((id) => {
-        const el = elements[id];
-        if (el && typeof el.X === 'function') pointMap[id] = { x: el.X(), y: el.Y() };
-      });
-
-      const scope = buildCurrentScope();
-
-      const results: Array<{ id: string; text: string; isConstant: boolean }> = [];
-      invariants.forEach((inv, idx) => {
-        const text = formatInvariantText(inv, pointMap, locale, scope);
-        if (text !== null) {
-          results.push({
-            id: inv.id || `inv-${idx}`,
-            text,
-            isConstant: !!inv.isConstant,
-          });
-        }
-      });
-
-      const nextKey = results.map((r) => `${r.id}:${r.text}`).join('|');
-      if (nextKey !== lastInvariantsKeyRef.current) {
-        lastInvariantsKeyRef.current = nextKey;
-        onInvariantsChangeRef.current(results);
-      }
-    };
-
+    // 6. 不变量与遥测指标实时外调与画布全事件绑定
     board.on('update', updateInvariants);
+    board.on('drag', updateInvariants);
+    board.on('move', updateInvariants);
     setTimeout(updateInvariants, 80);
 
     return () => {

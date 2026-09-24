@@ -50,4 +50,40 @@ describe('LinkedSandboxSlot (Task 9.2 & CLS=0 验收)', () => {
     expect(content).toContain('MathRenderer');
     expect(content).not.toContain('dangerouslySetInnerHTML');
   });
+
+  it('4. 验证核心探究任务步骤选择器胶囊、重新开始按钮及进入下一步手动推进控件', () => {
+    const multiStepConfig: SandboxConfig = {
+      sandbox_id: 'SB-TEST-MULTI',
+      canvas_template: 'euclidean',
+      viewbox_spec_json: '{"xMin":-5,"xMax":5,"yMin":-5,"yMax":5}',
+      drag_points_json: '[{"id":"A","name":"A","x":-3,"y":1}]',
+      inquiry_steps_json: JSON.stringify([
+        { step: 1, titleZh: '观察第一阶段', guideTextZh: '请移动点 A 观察', target_condition: 'A_x > 0' },
+        { step: 2, titleZh: '探究第二阶段', guideTextZh: '继续调整参数', target_condition: 'A_x > 2' },
+      ]),
+    };
+
+    const html = renderToString(
+      <LinkedSandboxSlot
+        sandboxId="SB-TEST-MULTI"
+        config={multiStepConfig}
+        locale="zh-CN"
+      />
+    );
+
+    // 验证步骤切换胶囊与重置按钮 (解决问题 1)
+    expect(html).toContain('步骤 1');
+    expect(html).toContain('步骤 2');
+    expect(html).toContain('重新开始');
+
+    // 验证步骤卡片与推进操作按钮 (解决问题 2)
+    expect(html).toContain('步骤 1/2');
+    expect(html).toContain('观察第一阶段');
+    expect(html).toContain('上一步');
+    expect(html).toContain('进入下一步');
+
+    // 验证动点实时坐标与不变量遥测区域 (解决问题 3)
+    expect(html).toContain('面积与线段比例守恒');
+    expect(html).toContain('结论：几何直观验证通过');
+  });
 });
