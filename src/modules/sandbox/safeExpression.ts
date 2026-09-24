@@ -378,6 +378,11 @@ class Parser {
         }
       }
 
+      // 优先严格同名匹配 (区分大小写，如斜边标量 c 与点对象 C)
+      if (this.vars[ident] !== undefined) {
+        return this.vars[ident];
+      }
+
       for (const [k, v] of Object.entries(this.vars)) {
         if (k.toLowerCase() === normalizedKey) {
           return v;

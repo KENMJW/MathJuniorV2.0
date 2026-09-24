@@ -146,6 +146,18 @@ export function ensureVisibleOnDark(
 }
 
 /**
+ * 校验是否为数轴动力学与实数类模板 (支持契约 10 大类及各变体别名)
+ */
+export const isNumberAxisTemplate = (tpl: string = ''): boolean => {
+  return (
+    tpl.startsWith('number_axis') ||
+    tpl.includes('number_line') ||
+    tpl === 'axis' ||
+    tpl === 'number_axis_dynamic'
+  );
+};
+
+/**
  * 识别能够明确反解参数的模型与主控动点 (TASK-FE-0016 块 A)
  * 严格遵循保守原则：对无法明确反解参数的 (如二次函数抛物线顶点)，返回 false，保持 fixed: true
  */
@@ -203,7 +215,9 @@ export function canInvertParam(
   if (
     tpl.startsWith('number_axis') ||
     tpl.includes('number_line') ||
-    config?.sandbox_id === 'LM-7A-01'
+    tpl === 'axis' ||
+    tpl === 'number_axis_dynamic' ||
+    config?.sandbox_id?.includes('LM-7A-01')
   ) {
     if (id === 'P' || name.includes('P') || id === 'A' || id === 'B') {
       return true;
@@ -324,7 +338,9 @@ export function handleParamInversion(
   if (
     tpl.startsWith('number_axis') ||
     tpl.includes('number_line') ||
-    config?.sandbox_id === 'LM-7A-01'
+    tpl === 'axis' ||
+    tpl === 'number_axis_dynamic' ||
+    config?.sandbox_id?.includes('LM-7A-01')
   ) {
     if (id === 'P' || name.includes('P')) {
       const curX = pt.X();
@@ -625,16 +641,30 @@ export function computeSandboxBoundingBox(
     let x = ptDef.x ?? 0;
     let y = ptDef.y ?? 0;
 
-    if (tpl.startsWith('number_axis')) {
+    if (
+      tpl.startsWith('number_axis') ||
+      tpl.includes('number_line') ||
+      tpl === 'axis' ||
+      tpl === 'number_axis_dynamic'
+    ) {
       const x0 = Number(paramValues['param_x0'] ?? 0);
       const v = Number(paramValues['param_v'] ?? 1);
       const t = Number(paramValues['param_t'] ?? 0);
       const pVal = paramValues['pos_p'] ?? paramValues['point_x'] ?? paramValues['pt_x'] ?? paramValues['val'];
 
-      if (pVal !== undefined && (ptDef.id === 'P' || ptDef.name === 'P')) {
+      if (pVal !== undefined && (ptDef.id === 'P' || ptDef.name === 'P' || ptDef.name?.includes('P'))) {
         x = Number(pVal);
-      } else if (paramValues['param_t'] !== undefined && (ptDef.id === 'P' || ptDef.name === 'P')) {
-        x = x0 + v * t;
+      } else if (
+        paramValues['param_t'] !== undefined &&
+        (ptDef.id === 'P' || ptDef.name === 'P' || ptDef.name?.includes('P'))
+      ) {
+        if (paramValues['param_x0'] !== undefined || paramValues['param_v'] !== undefined) {
+          x = x0 + v * t;
+        } else if (config.sandbox_id?.startsWith('LEAP-') && typeof ptDef.x === 'number') {
+          x = ptDef.x;
+        } else {
+          x = x0 + v * t;
+        }
       }
 
       if (ptDef.id === 'A' && (paramValues['point_a'] !== undefined || paramValues['interval_a'] !== undefined)) {
@@ -807,6 +837,9 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
     const isAxis =
       config.canvas_template === 'axis' ||
       tpl.startsWith('number_axis') ||
+      tpl.includes('number_line') ||
+      tpl === 'axis' ||
+      tpl === 'number_axis_dynamic' ||
       tpl.startsWith('function_') ||
       tpl.includes('vieta') ||
       tpl.includes('linear') ||
@@ -1193,7 +1226,12 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
         let y = ptDef.y ?? 0;
 
         // 数轴模板：动点 X 坐标响应 param_x0 + param_v * param_t 或 p_num / q_den
-        if (tpl.startsWith('number_axis') || tpl.includes('number_line')) {
+        if (
+          tpl.startsWith('number_axis') ||
+          tpl.includes('number_line') ||
+          tpl === 'axis' ||
+          tpl === 'number_axis_dynamic'
+        ) {
           const x0 = Number(paramValues['param_x0'] ?? 0);
           const v = Number(paramValues['param_v'] ?? 1);
           const t = Number(paramValues['param_t'] ?? 0);
@@ -1204,10 +1242,19 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
             const q = Number(paramValues['q_den'] ?? 1) || 1;
             const u = Number(paramValues['unit_scale'] ?? 1) || 1;
             x = (p / q) * u;
-          } else if (pVal !== undefined && (ptDef.id === 'P' || ptDef.name === 'P')) {
+          } else if (pVal !== undefined && (ptDef.id === 'P' || ptDef.name === 'P' || ptDef.name?.includes('P'))) {
             x = Number(pVal);
-          } else if (paramValues['param_t'] !== undefined && (ptDef.id === 'P' || ptDef.name === 'P')) {
-            x = x0 + v * t;
+          } else if (
+            paramValues['param_t'] !== undefined &&
+            (ptDef.id === 'P' || ptDef.name === 'P' || ptDef.name?.includes('P'))
+          ) {
+            if (paramValues['param_x0'] !== undefined || paramValues['param_v'] !== undefined) {
+              x = x0 + v * t;
+            } else if (config.sandbox_id?.startsWith('LEAP-') && typeof ptDef.x === 'number') {
+              x = ptDef.x;
+            } else {
+              x = x0 + v * t;
+            }
           }
 
           if (paramValues['unit_scale'] !== undefined && (ptDef.id === 'U' || ptDef.name === '1')) {
@@ -1569,7 +1616,12 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
           });
           pt.on('drag', () => {
             isDraggingRef.current = true;
-            if (tpl.startsWith('number_axis') || tpl.includes('number_line')) {
+            if (
+              tpl.startsWith('number_axis') ||
+              tpl.includes('number_line') ||
+              tpl === 'axis' ||
+              tpl === 'number_axis_dynamic'
+            ) {
               const coordsMode =
                 typeof window !== 'undefined' && (window as any).JXG?.COORDS_BY_USER !== undefined
                   ? (window as any).JXG.COORDS_BY_USER
@@ -1653,7 +1705,12 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
         }
       }
       // (二) 数轴动力学与实数夹逼类
-      else if (tpl.startsWith('number_axis_')) {
+      else if (
+        tpl.startsWith('number_axis') ||
+        tpl.includes('number_line') ||
+        tpl === 'axis' ||
+        tpl === 'number_axis_dynamic'
+      ) {
         if (!isAxis) {
           board.create('axis', [[0, 0], [1, 0]], {
             strokeColor: '#475569',
@@ -1661,7 +1718,12 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
           });
         }
         // 若存在两个点，连接两点形成区间距离线段
-        if (primaryPoints.length >= 2) {
+        if (elements['A'] && elements['B']) {
+          board.create('segment', [elements['A'], elements['B']], {
+            strokeColor: '#38bdf8',
+            strokeWidth: 3.5,
+          });
+        } else if (primaryPoints.length >= 2) {
           board.create('segment', [primaryPoints[0], primaryPoints[1]], {
             strokeColor: '#38bdf8',
             strokeWidth: 3.5,

@@ -564,6 +564,8 @@ export function compileMorphingSandboxConfig(
     carrierId.includes('tangent')
   ) {
     canvasTemplate = 'geometry_tangent_segment_carrier';
+  } else if (carrierId.includes('number_line') || carrierId.includes('number_axis') || modelId === 'lm-7a-01') {
+    canvasTemplate = 'number_axis_dynamic';
   } else if (currentCarrier?.isAxis) {
     canvasTemplate = 'axis';
   }

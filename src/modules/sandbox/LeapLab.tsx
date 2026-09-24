@@ -278,8 +278,14 @@ export const LeapLab: React.FC<LeapLabProps> = ({
       };
     });
 
-    if (cfg.sliders && cfg.sliders['rotationAngle'] !== undefined) {
-      setRotationAngle(cfg.sliders['rotationAngle']);
+    const rotVal =
+      cfg.sliders?.['rotationAngle'] ??
+      cfg.sliders?.['rot_theta'] ??
+      cfg.sliders?.['rot_angle'] ??
+      cfg.sliders?.['angle_alpha'] ??
+      cfg.sliders?.['theta'];
+    if (rotVal !== undefined) {
+      setRotationAngle(Number(rotVal));
     }
   }, [currentStepIndex, stages, labMode]);
 
@@ -447,6 +453,9 @@ export const LeapLab: React.FC<LeapLabProps> = ({
       ...prev,
       parameterValues: { ...prev.parameterValues, [sliderId]: val },
     }));
+    if (['rotationAngle', 'rot_theta', 'rot_angle', 'angle_alpha', 'theta'].includes(sliderId)) {
+      setRotationAngle(val);
+    }
   };
 
   const handleParamChange = useCallback((patch: Record<string, number>) => {
@@ -454,6 +463,15 @@ export const LeapLab: React.FC<LeapLabProps> = ({
       ...prev,
       parameterValues: { ...prev.parameterValues, ...patch },
     }));
+    const rotVal =
+      patch['rotationAngle'] ??
+      patch['rot_theta'] ??
+      patch['rot_angle'] ??
+      patch['angle_alpha'] ??
+      patch['theta'];
+    if (rotVal !== undefined) {
+      setRotationAngle(Number(rotVal));
+    }
   }, []);
 
   const handleSelectPosture = (postureId: string, rotDeg?: number) => {

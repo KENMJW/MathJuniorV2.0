@@ -11,6 +11,7 @@ import {
 } from '../morphControllers';
 import { XRayLayer } from '../XRayLayer';
 import { LeapLab } from '../LeapLab';
+import { isNumberAxisTemplate, canInvertParam } from '../SandboxRenderer';
 
 describe('4D Morphing Controllers & X-Ray (Task 11.4 & 铁律 1/3 校验)', () => {
   const testModel = mockLeapSandboxModels[0]; // LM-8A-01
@@ -195,5 +196,102 @@ describe('4D Morphing Controllers & X-Ray (Task 11.4 & 铁律 1/3 校验)', () =
     expect(triggerHiddenHtml).toContain('sandbox-title-text');
     expect(triggerHiddenHtml).toContain('LM-8A-01');
     expect(triggerHiddenHtml).toContain('手拉手全等与勾股跃迁模型');
+  });
+
+  it('9. TASK-FE-0024: LM-7A-01 编译输出 canvas_template 为 number_axis_dynamic 且动点计算生效', () => {
+    const lm7a01 = mockLeapSandboxModels.find((m) => m.model_id === 'LM-7A-01');
+    expect(lm7a01).toBeDefined();
+
+    // 默认状态 (param_t 默认为 5)
+    const defaultState = createDefaultMorphingState(lm7a01!);
+    const configDefault = compileMorphingSandboxConfig(lm7a01!, defaultState);
+    expect(configDefault.canvas_template).toBe('number_axis_dynamic');
+
+    const defaultPoints = JSON.parse(configDefault.drag_points_json);
+    const ptPDefault = defaultPoints.find((p: any) => p.id === 'P');
+    expect(ptPDefault).toBeDefined();
+    // 原始 x=1, param_t=5 时位移为 (5-5)*0.5 = 0, 所以 x=1
+    expect(ptPDefault.x).toBeCloseTo(1, 2);
+
+    // param_t = 10 驱动动点平移位移 (1 + (10-5)*0.5 = 3.5)
+    const state10 = {
+      ...defaultState,
+      parameterValues: { ...defaultState.parameterValues, param_t: 10 },
+    };
+    const config10 = compileMorphingSandboxConfig(lm7a01!, state10);
+    expect(config10.canvas_template).toBe('number_axis_dynamic');
+    const points10 = JSON.parse(config10.drag_points_json);
+    const ptP10 = points10.find((p: any) => p.id === 'P');
+    expect(ptP10.x).toBeCloseTo(3.5, 2);
+
+    // param_t = 0 驱动动点向负方向平移位移 (1 + (0-5)*0.5 = -1.5)
+    const state0 = {
+      ...defaultState,
+      parameterValues: { ...defaultState.parameterValues, param_t: 0 },
+    };
+    const config0 = compileMorphingSandboxConfig(lm7a01!, state0);
+    const points0 = JSON.parse(config0.drag_points_json);
+    const ptP0 = points0.find((p: any) => p.id === 'P');
+    expect(ptP0.x).toBeCloseTo(-1.5, 2);
+
+    // 验证固定锚点 A(-3,0), B(3,0) 不受动点平移影响，严格保持坐标
+    const ptA = points10.find((p: any) => p.id === 'A');
+    const ptB = points10.find((p: any) => p.id === 'B');
+    expect(ptA.x).toBeCloseTo(-3, 2);
+    expect(ptB.x).toBeCloseTo(3, 2);
+  });
+
+  it('10. TASK-FE-0024: 旋转角别名兼容器驱动手拉手模型 (LM-9A-19 等) 角度更新', () => {
+    // 验证旋转角参数别名提取解析：支持 rotationAngle, rot_theta, rot_angle, angle_alpha, theta
+    const resolveRotation = (sliders?: Record<string, number>) =>
+      sliders?.['rotationAngle'] ??
+      sliders?.['rot_theta'] ??
+      sliders?.['rot_angle'] ??
+      sliders?.['angle_alpha'] ??
+      sliders?.['theta'];
+
+    expect(resolveRotation({ rot_theta: 60 })).toBe(60);
+    expect(resolveRotation({ rot_theta: 90 })).toBe(90);
+    expect(resolveRotation({ rot_theta: 45 })).toBe(45);
+    expect(resolveRotation({ rot_angle: 75 })).toBe(75);
+    expect(resolveRotation({ angle_alpha: 30 })).toBe(30);
+    expect(resolveRotation({ theta: 120 })).toBe(120);
+    expect(resolveRotation({ rotationAngle: 15 })).toBe(15);
+
+    // 源码门禁检查：验证 LeapLab.tsx 中分步推演状态同步包含 rot_theta 及相关别名
+    const leapLabCode = fs.readFileSync(path.resolve(__dirname, '../LeapLab.tsx'), 'utf-8');
+    expect(leapLabCode).toContain("cfg.sliders?.['rot_theta']");
+    expect(leapLabCode).toContain("cfg.sliders?.['rotationAngle']");
+    expect(leapLabCode).toContain("setRotationAngle(Number(rotVal))");
+
+    // 验证 LM-9A-19 模型存在且在手拉手全等谱系中
+    const lm9a19 = mockLeapSandboxModels.find((m) => m.model_id === 'LM-9A-19');
+    expect(lm9a19).toBeDefined();
+    expect(lm9a19?.model_name_zh).toContain('手拉手');
+  });
+
+  it('11. TASK-FE-0024: SandboxRenderer 统一支持 number_axis_dynamic / number_line / axis 并杜绝退化多边形', () => {
+    // 模板识别一致性验证
+    expect(isNumberAxisTemplate('number_axis_dynamic')).toBe(true);
+    expect(isNumberAxisTemplate('number_axis_linear')).toBe(true);
+    expect(isNumberAxisTemplate('number_line')).toBe(true);
+    expect(isNumberAxisTemplate('axis')).toBe(true);
+    expect(isNumberAxisTemplate('euclidean')).toBe(false);
+
+    // 动点反解权限验证
+    const ptP = { id: 'P', name: 'P(动点)', isFixed: false };
+    expect(canInvertParam('number_axis_dynamic', ptP, false)).toBe(true);
+    expect(canInvertParam('axis', ptP, false)).toBe(true);
+    expect(canInvertParam('number_line', ptP, false)).toBe(true);
+
+    // 固定点 Origin 不参与反解
+    const ptO = { id: 'Origin', name: 'O', isFixed: true };
+    expect(canInvertParam('number_axis_dynamic', ptO, false)).toBe(false);
+
+    // 源码门禁：检查 SandboxRenderer.tsx 统一模板支持条件并避免退化多边形
+    const rendererCode = fs.readFileSync(path.resolve(__dirname, '../SandboxRenderer.tsx'), 'utf-8');
+    expect(rendererCode).toContain("tpl === 'number_axis_dynamic'");
+    expect(rendererCode).toContain("tpl.includes('number_line')");
+    expect(rendererCode).toContain("tpl === 'axis'");
   });
 });

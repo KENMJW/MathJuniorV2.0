@@ -32,6 +32,8 @@ export interface InquiryStep {
   aha_insight?: string;
   ahaInsightZh?: string;
   ahaInsightEn?: string;
+  preset_params?: Record<string, number>;
+  presetParams?: Record<string, number>;
 }
 
 export interface LinkedSandboxSlotProps {
@@ -42,6 +44,98 @@ export interface LinkedSandboxSlotProps {
   style?: React.CSSProperties;
   pointNameZh?: string;
   locale?: string;
+}
+
+/**
+ * 目标条件即时判定纯函数 (融入滑块参数、几何动点坐标、线段距离标量与勾股斜边)
+ * (TASK-FE-0024 轨道 A 运行时引擎增强)
+ */
+export function checkTargetCondition(
+  step: InquiryStep,
+  currentParams: Record<string, number>,
+  currentPoints: Record<string, Point2D>
+): boolean {
+  const cond = step.target_condition || step.targetCondition;
+  if (!cond) return false;
+
+  // 组装求值上下文 scope
+  const scope: Record<string, any> = { ...currentParams };
+  Object.entries(currentParams).forEach(([k, v]) => {
+    scope[k.toLowerCase()] = v;
+    if (k.startsWith('param_')) {
+      scope[k.replace(/^param_/, '')] = v;
+    }
+  });
+
+  // 勾股斜边标量注入 (彻底解决 SB-KP057 步骤 3 的 c * c = NaN 死锁)
+  const legA = Number(currentParams['leg_a'] ?? currentParams['a'] ?? 0);
+  const legB = Number(currentParams['leg_b'] ?? currentParams['b'] ?? 0);
+  const hypot = Math.hypot(legA, legB);
+  scope['hypot'] = hypot;
+  scope['c_len'] = hypot;
+  scope['hypotenuse'] = hypot;
+  if (hypot > 0) {
+    scope['c'] = hypot;
+  }
+
+  // 注入动点坐标 (支持 A_x, A_y, pt_A_x, pt_A_y, A.x, A.y 等多种写法)
+  Object.entries(currentPoints).forEach(([k, pt]) => {
+    if (!pt) return;
+    scope[k] = pt;
+    scope[`${k}_x`] = pt.x;
+    scope[`${k}_y`] = pt.y;
+    scope[`pt_${k}_x`] = pt.x;
+    scope[`pt_${k}_y`] = pt.y;
+    const cleanId = k.replace(/^p_/, '');
+    scope[cleanId] = pt;
+    scope[`${cleanId}_x`] = pt.x;
+    scope[`${cleanId}_y`] = pt.y;
+    scope[`pt_${cleanId}_x`] = pt.x;
+    scope[`pt_${cleanId}_y`] = pt.y;
+    // 防御小写 c 被 Point2D 对象覆盖
+    if (k.toLowerCase() !== 'c' || hypot <= 0) {
+      scope[k.toLowerCase()] = pt;
+    }
+    scope[`${k.toLowerCase()}_x`] = pt.x;
+    scope[`${k.toLowerCase()}_y`] = pt.y;
+  });
+
+  // 防御小写 c 被 Point2D 对象覆盖 (确保 c 作为合法数值用于求值运算)
+  if (hypot > 0 && (scope['c'] === undefined || typeof scope['c'] === 'object')) {
+    scope['c'] = hypot;
+  }
+
+  // 注入几何线段距离标量 (彻底解决 SB-KP056 等沙盒中 CM, AB 等未定义变量问题)
+  const ptEntries = Object.entries(currentPoints).filter(([_, pt]) => Boolean(pt && typeof pt.x === 'number' && typeof pt.y === 'number'));
+  for (let i = 0; i < ptEntries.length; i++) {
+    for (let j = 0; j < ptEntries.length; j++) {
+      if (i === j) continue;
+      const [idA, ptA] = ptEntries[i];
+      const [idB, ptB] = ptEntries[j];
+      const dist = Math.hypot(ptA.x - ptB.x, ptA.y - ptB.y);
+      scope[`${idA}${idB}`] = dist;
+      scope[`${idA.toUpperCase()}${idB.toUpperCase()}`] = dist;
+      scope[`len_${idA}${idB}`] = dist;
+      scope[`dist_${idA}_${idB}`] = dist;
+
+      // 兼容 p_ 前缀点标识符 (如 p_C 与 p_M 产生 CM)
+      const cleanA = idA.replace(/^p_/, '');
+      const cleanB = idB.replace(/^p_/, '');
+      if (cleanA !== idA || cleanB !== idB) {
+        scope[`${cleanA}${cleanB}`] = dist;
+        scope[`${cleanA.toUpperCase()}${cleanB.toUpperCase()}`] = dist;
+        scope[`len_${cleanA}${cleanB}`] = dist;
+        scope[`dist_${cleanA}_${cleanB}`] = dist;
+      }
+    }
+  }
+
+  try {
+    const result = evaluateSafeExpression(cond, scope);
+    return Boolean(result);
+  } catch (err) {
+    return false;
+  }
 }
 
 export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
@@ -189,53 +283,25 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
     setCurrentAhaStep(null);
   }, [sliders]);
 
-  // 目标条件即时判定纯函数 (融入滑块参数与几何动点坐标)
-  const checkTargetCondition = useCallback(
-    (
-      step: InquiryStep,
-      currentParams: Record<string, number>,
-      currentPoints: Record<string, Point2D>
-    ) => {
-      const cond = step.target_condition || step.targetCondition;
-      if (!cond) return false;
-
-      // 组装求值上下文 scope
-      const scope: Record<string, any> = { ...currentParams };
-      Object.entries(currentParams).forEach(([k, v]) => {
-        scope[k.toLowerCase()] = v;
-        if (k.startsWith('param_')) {
-          scope[k.replace(/^param_/, '')] = v;
-        }
-      });
-
-      // 注入动点坐标 (支持 A_x, A_y, pt_A_x, pt_A_y, A.x, A.y 等多种写法)
-      Object.entries(currentPoints).forEach(([k, pt]) => {
-        if (!pt) return;
-        scope[k] = pt;
-        scope[`${k}_x`] = pt.x;
-        scope[`${k}_y`] = pt.y;
-        scope[`pt_${k}_x`] = pt.x;
-        scope[`pt_${k}_y`] = pt.y;
-        const cleanId = k.replace(/^p_/, '');
-        scope[cleanId] = pt;
-        scope[`${cleanId}_x`] = pt.x;
-        scope[`${cleanId}_y`] = pt.y;
-        scope[`pt_${cleanId}_x`] = pt.x;
-        scope[`pt_${cleanId}_y`] = pt.y;
-        scope[k.toLowerCase()] = pt;
-        scope[`${k.toLowerCase()}_x`] = pt.x;
-        scope[`${k.toLowerCase()}_y`] = pt.y;
-      });
-
+  // 步骤初态联动辅助函数 (Step Preset Hints)
+  const applyStepPreset = useCallback((stepObj?: InquiryStep | null) => {
+    if (!stepObj) return;
+    const rawPreset = stepObj.preset_params ?? stepObj.presetParams;
+    let preset: Record<string, number> | null = null;
+    if (rawPreset && typeof rawPreset === 'object' && !Array.isArray(rawPreset)) {
+      preset = rawPreset;
+    } else if (typeof rawPreset === 'string') {
       try {
-        const result = evaluateSafeExpression(cond, scope);
-        return Boolean(result);
-      } catch (err) {
-        return false;
-      }
-    },
-    []
-  );
+        const parsed = JSON.parse(rawPreset);
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+          preset = parsed;
+        }
+      } catch {}
+    }
+    if (preset) {
+      setParamValues((prev) => ({ ...prev, ...preset }));
+    }
+  }, []);
 
   // 动态监听参数与动点变化进行 Aha 达成判定 (仅在用户主动交互后触发，杜绝初始挂载秒达标)
   useEffect(() => {
@@ -265,7 +331,6 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
     inquirySteps,
     completedStepIndices,
     interactedStepIndices,
-    checkTargetCondition,
   ]);
 
   // 前进至下一步或自由把玩 (解决问题 2: 步骤卡片与弹窗共用推进函数)
@@ -277,7 +342,9 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
       return next;
     });
     if (activeStepIndex + 1 < inquirySteps.length) {
-      setActiveStepIndex((prev) => prev + 1);
+      const nextIdx = activeStepIndex + 1;
+      setActiveStepIndex(nextIdx);
+      applyStepPreset(inquirySteps[nextIdx]);
     } else {
       setIsFreePlayMode(true);
     }
@@ -370,6 +437,7 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
                           onClick={() => {
                             setIsFreePlayMode(false);
                             setActiveStepIndex(idx);
+                            applyStepPreset(s);
                           }}
                           className={`px-2 py-0.5 rounded-full text-[11px] font-semibold transition-all ${
                             isCurrent
@@ -445,7 +513,11 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
                     <button
                       type="button"
                       disabled={activeStepIndex === 0}
-                      onClick={() => setActiveStepIndex(Math.max(0, activeStepIndex - 1))}
+                      onClick={() => {
+                        const prevIdx = Math.max(0, activeStepIndex - 1);
+                        setActiveStepIndex(prevIdx);
+                        applyStepPreset(inquirySteps[prevIdx]);
+                      }}
                       className="px-2.5 py-1 rounded-lg text-xs font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:pointer-events-none transition-all flex items-center gap-0.5"
                     >
                       <ChevronLeft className="w-3.5 h-3.5" />
@@ -483,6 +555,7 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
                       onClick={() => {
                         setIsFreePlayMode(false);
                         setActiveStepIndex(0);
+                        applyStepPreset(inquirySteps[0]);
                       }}
                       className="text-[11px] text-sky-400 hover:text-sky-300 underline underline-offset-2"
                     >

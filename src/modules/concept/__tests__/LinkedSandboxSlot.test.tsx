@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { renderToString } from 'react-dom/server';
 import fs from 'fs';
 import path from 'path';
-import { LinkedSandboxSlot } from '../LinkedSandboxSlot';
+import { LinkedSandboxSlot, checkTargetCondition, InquiryStep } from '../LinkedSandboxSlot';
 import { SandboxConfig } from '../../sandbox/SandboxRenderer';
 
 describe('LinkedSandboxSlot (Task 9.2 & CLS=0 验收)', () => {
@@ -117,5 +117,104 @@ describe('LinkedSandboxSlot (Task 9.2 & CLS=0 验收)', () => {
     expect(html).toContain('调节参数或动点探究');
     expect(html).toContain('进入下一步');
     expect(html).not.toContain('已达成 · 下一步');
+  });
+
+  it('6. checkTargetCondition 成功求值真实线段距离标量 (SB-KP056: CM 与 AB 标量注入)', () => {
+    // 直角三角形 ABC, C(0,0), A(0,4), B(3,0), 斜边中点 M(1.5, 2)
+    // 线段 AB 长度为 hypot(0-3, 4-0) = 5
+    // 线段 CM 长度为 hypot(0-1.5, 0-2) = 2.5
+    // 验证 point_t === 0.5 && Math.abs(CM - 0.5 * AB) < 0.01 满足条件
+    const step: InquiryStep = {
+      step: 1,
+      target_condition: 'point_t === 0.5 && Math.abs(CM - 0.5 * AB) < 0.01',
+    };
+    const params = {
+      point_t: 0.5,
+      leg_a: 3,
+      leg_b: 4,
+    };
+    const points = {
+      C: { x: 0, y: 0 },
+      A: { x: 0, y: 4 },
+      B: { x: 3, y: 0 },
+      M: { x: 1.5, y: 2 },
+    };
+
+    const isMatch = checkTargetCondition(step, params, points);
+    expect(isMatch).toBe(true);
+
+    // 当 point_t 偏离 0.5 时，应返回 false
+    expect(checkTargetCondition(step, { ...params, point_t: 0.2 }, points)).toBe(false);
+
+    // 验证带有 p_ 前缀的点名也能正确合成线段距离 (p_C 与 p_M 合成 CM, p_A 与 p_B 合成 AB)
+    const pointsWithPrefix = {
+      p_C: { x: 0, y: 0 },
+      p_A: { x: 0, y: 4 },
+      p_B: { x: 3, y: 0 },
+      p_M: { x: 1.5, y: 2 },
+    };
+    expect(checkTargetCondition(step, params, pointsWithPrefix)).toBe(true);
+  });
+
+  it('7. checkTargetCondition 成功求值勾股斜边标量且防御动点对象污染 (SB-KP057: c 与 hypot 标量注入)', () => {
+    // 直角三角形直角边 leg_a = 4, leg_b = 3
+    // hypot = 5, c = 5
+    // 并且 points 包含动点 C: { x: 0, y: 0 }, 防御小写 c 被 Point2D 对象覆盖导致 NaN
+    const stepC: InquiryStep = {
+      step: 3,
+      target_condition: 'Math.abs(c * c - (leg_a * leg_a + leg_b * leg_b)) < 0.01',
+    };
+    const stepHypot: InquiryStep = {
+      step: 3,
+      target_condition: 'Math.abs(hypot * hypot - (leg_a * leg_a + leg_b * leg_b)) < 0.01',
+    };
+    const params = {
+      leg_a: 4,
+      leg_b: 3,
+    };
+    const points = {
+      C: { x: 0, y: 0 },
+      A: { x: 0, y: 3 },
+      B: { x: 4, y: 0 },
+    };
+
+    // 验证 c * c 不报 NaN 且正确返回 true
+    const resultC = checkTargetCondition(stepC, params, points);
+    expect(resultC).toBe(true);
+
+    // 验证 hypot * hypot 不报 NaN 且正确返回 true
+    const resultHypot = checkTargetCondition(stepHypot, params, points);
+    expect(resultHypot).toBe(true);
+  });
+
+  it('8. 步骤切换推荐初态联动 (Step Preset Hints 规格验证)', () => {
+    const presetConfig: SandboxConfig = {
+      sandbox_id: 'SB-TEST-PRESET',
+      canvas_template: 'euclidean',
+      viewbox_spec_json: '{"xMin":-5,"xMax":5,"yMin":-5,"yMax":5}',
+      drag_points_json: '[]',
+      param_sliders_json: JSON.stringify([
+        { id: 'leg_a', name: '直角边 a', min: 1, max: 10, default: 3 },
+        { id: 'leg_b', name: '直角边 b', min: 1, max: 10, default: 4 },
+      ]),
+      inquiry_steps_json: JSON.stringify([
+        {
+          step: 1,
+          titleZh: '初始探索',
+          preset_params: { leg_a: 6, leg_b: 8 },
+          target_condition: 'leg_a == 6 && leg_b == 8',
+        },
+      ]),
+    };
+
+    const html = renderToString(
+      <LinkedSandboxSlot
+        sandboxId="SB-TEST-PRESET"
+        config={presetConfig}
+        locale="zh-CN"
+      />
+    );
+    expect(html).toContain('步骤 1');
+    expect(html).toContain('初始探索');
   });
 });
