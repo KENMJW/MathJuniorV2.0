@@ -1,14 +1,25 @@
 # 数据线待办 Backlog（Kiro 维护，非即时任务）
 
-## [🚀 当前进行中] TASK-DATA-0013 概念与跃迁沙盒底层教研数据全量增强（剧情推演、语义着色、显式填充面与自适应探究步骤）
-- 依据教学体验升级与重构决策，在保持行数守恒（46 概念 + 37 跃迁）与零 DDL 破坏的前提下：
-  - 1. 概念沙盒 46 行：语义色彩 (`color_semantics`)、显式填充面与直角弧 (`visual_elements_json`)、自适应 1~3 步探究 (`inquiry_steps_json`)；
-  - 2. 跃迁沙盒 37 行：自适应 2~4 幕沉浸式剧情推演 (`story_stages_json`：原初骨架 ➜ 变式拉伸 ➜ 出题人伪装揭秘 ➜ 🩻 破案透视与秒杀秘籍)；
-  - 3. 编排规范：`concurrency: 8`，8 路子 Agent 并发处理独立物理分片输出 `tmp/data0013/partN.jsonl`，主 Agent 单事务校验落库；
-  - 4. 强制物理备份 `data/sandbox.db.bak_before_task0013`，双库同步，323 测试无损绿灯。
-- 任务书：`inbox/TASK-DATA-0013.md`
+## [🚀 当前进行中] TASK-DATA-0014 概念与跃迁沙盒教研步骤与剧情推演全量补齐双语英文
+- 为 `data/sandbox.db` 中两大核心表全量补齐高质量英文双语字段：
+  - 1. 概念沙盒 46 行：补齐 `titleEn`、`guideTextEn`、`ahaInsightEn`；
+  - 2. 跃迁沙盒 37 行：补齐 `titleEn`、`guideTextEn`、`teacherSecretEn`；
+  - 3. 编排规范：`concurrency: 8`，8 路子 Agent 分片并行翻译，保持原有中文与逻辑参数零篡改；
+  - 4. 前置备份 `data/sandbox.db.bak_before_task0014`，单事务写库，双库同步，323 测试无损绿灯。
+- 任务书：`inbox/TASK-DATA-0014.md`
 
 ---
+
+## [✅ 已完成] TASK-DATA-0013 概念与跃迁沙盒底层教研数据全量增强（2026-09-24 验收归档）
+- 依据教学体验升级与重构决策，在保持行数绝对守恒（46 概念 + 37 跃迁）与零 DDL 破坏的前提下全量增强完成：
+  - 1. 概念沙盒 46 行：语义色彩 (`color_semantics`)、显式填充面与直角弧 (`visual_elements_json`)、自适应 1~3 步探究 (`inquiry_steps_json`) 覆盖率 100%；
+  - 2. 跃迁沙盒 37 行：自适应 4 幕沉浸式剧情推演 (`story_stages_json`：原初骨架 ➜ 变式拉伸 ➜ 出题人伪装揭秘 ➜ 🩻 破案透视与秒杀秘籍) 覆盖率 100%，与 4D 状态机参数严格绑定；
+  - 3. 编排规范：`concurrency: 8`，8 路子 Agent 并发处理独立分片，生成 189,399 字节高质量教研数据，主 Agent 单事务校验落库；
+  - 4. 强制物理备份 `data/sandbox.db.bak_before_task0013` (348,160 字节)，双库 SHA256 逐字节一致，323 测试无损绿灯。
+- 验收报告：`archive/RESULT-DATA-0013.md`
+
+---
+
 
 沙盒诊断（FE-0012）中非SVG的数据错配已修并经 Kiro 独立查库复核属实：
 - 抛物线系数补齐（SB-KP038 补 c=-4、SB-KP040 补 b=-2）、SB-KP080 滑块越界修正、SB-KP035 交点归位
