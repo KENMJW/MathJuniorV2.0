@@ -18,20 +18,20 @@ export interface DeviceResponsiveState {
  */
 export function useDeviceResponsive(): DeviceResponsiveState {
   const getSnapshot = (): DeviceResponsiveState => {
+    const device = detectDeviceProfile();
     if (typeof window === 'undefined') {
       return {
-        device: 'DESKTOP',
-        isMobile: false,
-        isTablet: false,
-        isDesktop: true,
-        orientation: 'landscape',
-        width: 1440,
-        height: 900,
+        device,
+        isMobile: device === 'MOBILE',
+        isTablet: device === 'TABLET',
+        isDesktop: device === 'DESKTOP',
+        orientation: device === 'MOBILE' ? 'portrait' : 'landscape',
+        width: device === 'MOBILE' ? 390 : device === 'TABLET' ? 820 : 1440,
+        height: device === 'MOBILE' ? 844 : device === 'TABLET' ? 1180 : 900,
       };
     }
     const width = window.innerWidth;
     const height = window.innerHeight;
-    const device = detectDeviceProfile();
     return {
       device,
       isMobile: device === 'MOBILE',

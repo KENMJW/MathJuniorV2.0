@@ -12,6 +12,7 @@ import { QuickPracticeQuestion, mapRawRowsToQuestions } from "./modules/concept/
 import { useSessionStore } from "./store/sessionStore";
 import { Icon } from "./components/common/Icon";
 import { dbClient } from "./engine/db/dbClient";
+import { useDeviceResponsive } from "./hooks/useDeviceResponsive";
 
 export interface ConceptNavProps {
   knowledgePoints?: KnowledgePointRecord[];
@@ -125,6 +126,13 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
   const locale = useSessionStore((state) => state.locale);
   const selectedConceptPointId = useSessionStore((state) => state.selectedConceptPointId);
   const setSelectedConceptPointId = useSessionStore((state) => state.setSelectedConceptPointId);
+  const conceptSubTab = useSessionStore((state) => state.conceptSubTab);
+  const setConceptSubTab = useSessionStore((state) => state.setConceptSubTab);
+  const isConceptDrawerOpen = useSessionStore((state) => state.isConceptDrawerOpen);
+  const setIsConceptDrawerOpen = useSessionStore((state) => state.setIsConceptDrawerOpen);
+
+  const responsive = useDeviceResponsive();
+  const isMobile = responsive.isMobile;
 
   // 异步从 core.db 读真实考点数据 (真机运行时)
   const [dbKnowledgePoints, setDbKnowledgePoints] = useState<KnowledgePointRecord[] | null>(null);
@@ -169,7 +177,7 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
     initialPointId || selectedConceptPointId || "KP-001"
   );
   // 当前子视窗 Tab (四段论 / 沙盒 / 母题 / 快练)
-  const [activeSubTab, setActiveSubTab] = useState<"stages" | "sandbox" | "master" | "practice">("stages");
+  const [activeSubTab, setActiveSubTab] = useState<"stages" | "sandbox" | "master" | "practice">(conceptSubTab || "stages");
   const mainStageRef = useRef<HTMLElement>(null);
 
   // 四级导航下钻状态
@@ -178,9 +186,24 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
   const [selectedDomain, setSelectedDomain] = useState<string>("图形与几何");
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>("三角形");
 
+  // 同步外部 sessionStore 选中的考点
+  useEffect(() => {
+    if (selectedConceptPointId && selectedConceptPointId !== selectedPointId) {
+      setSelectedPointId(selectedConceptPointId);
+    }
+  }, [selectedConceptPointId]);
+
+  // 同步外部 sessionStore 选中的二级子视窗 Tab
+  useEffect(() => {
+    if (conceptSubTab && conceptSubTab !== activeSubTab) {
+      setActiveSubTab(conceptSubTab);
+    }
+  }, [conceptSubTab]);
+
   // 切换考点时重置 Tab 到四段论并置顶
   useEffect(() => {
     setActiveSubTab("stages");
+    setConceptSubTab("stages");
     if (mainStageRef.current) {
       mainStageRef.current.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -226,6 +249,8 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
     if (point.subcategory) {
       setSelectedSubcategory(point.subcategory);
     }
+    setIsDrawerOpen(false);
+    setIsConceptDrawerOpen(false);
     if (onSelectPoint) {
       onSelectPoint(point);
     }
@@ -357,84 +382,93 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
       className={`concept-nav-container w-full max-w-[1240px] mx-auto flex flex-col relative box-border ${className}`.trim()}
     >
       {/* 
-        顶部二级导航栏：纯白底色（与图二、图三对齐），吸顶常驻，不随滚动消失
-        左侧：[ 考点名称 · 9年级 上学期 ▾ ] 胶囊按钮 (点击唤起 4 级抽屉)
-        中间：Flex 留白
-        右侧：4 个扁平分段胶囊：[四段论精讲] [链接沙盒] [考点母题] [单点快练]
+        4 级抽屉盒选择器 (浮动 Popover / 移动端 80vh Bottom Sheet)
+        支持外部 sessionStore (移动端标题胶囊触发) 与桌面端内嵌按钮共同驱动
       */}
-      <header
-        className="concept-nav-header w-full flex items-center justify-between flex-wrap gap-3 px-7 py-4 bg-white dark:bg-slate-900 rounded-t-[22px] border border-slate-200/80 dark:border-slate-800 border-b-slate-200/50 sticky top-0 z-40 box-border shadow-sm"
-      >
-        {/* 左侧：[ 考点名称 · 9年级 上学期 ▾ ] 胶囊按钮 (左侧对齐 32px，与下方【原点溯源】完全平齐) */}
-        <button
-          type="button"
-          data-testid="concept-drawer-trigger"
-          className="concept-drawer-trigger-btn inline-flex items-center gap-1.5 px-4 py-1.5 bg-white dark:bg-slate-800 border-[1.5px] border-blue-600 dark:border-sky-400 rounded-full text-blue-600 dark:text-sky-400 text-xs font-bold cursor-pointer shadow-sm active:scale-[0.98] transition-all max-w-full shrink-0"
-          onClick={() => setIsDrawerOpen((prev) => !prev)}
+      <ConceptDrawerSelector
+        isOpen={isDrawerOpen || (isMobile && isConceptDrawerOpen)}
+        onClose={() => {
+          setIsDrawerOpen(false);
+          setIsConceptDrawerOpen(false);
+        }}
+        knowledgePoints={knowledgePoints}
+        currentPoint={currentPoint}
+        selectedGrade={selectedGrade}
+        selectedSemester={selectedSemester}
+        selectedDomain={selectedDomain}
+        selectedSubcategory={selectedSubcategory}
+        onSelectGrade={setSelectedGrade}
+        onSelectSemester={setSelectedSemester}
+        onSelectDomain={setSelectedDomain}
+        onSelectSubcategory={setSelectedSubcategory}
+        onSelectPoint={handleSelectPoint}
+        locale={locale}
+      />
+
+      {/* 
+        顶部二级导航栏：纯白底色（与图二、图三对齐），吸顶常驻，不随滚动消失
+        手机端在顶轨双轨船坞中统一承载，此处手机端完全清空 (DOM 计数 = 0)
+      */}
+      {!isMobile && (
+        <header
+          className="concept-nav-header w-full flex items-center justify-between flex-wrap gap-3 px-7 py-4 bg-white dark:bg-slate-900 rounded-t-[22px] border border-slate-200/80 dark:border-slate-800 border-b-slate-200/50 sticky top-0 z-40 box-border shadow-sm"
         >
-          <Icon name="pin" size={13} />
-          <span className="whitespace-nowrap overflow-hidden text-ellipsis">
-            {locale === "en" ? (currentPoint.name_en || currentPoint.name_zh) : currentPoint.name_zh} · {locale === "en" ? `Grade ${currentPoint.grade} Sem ${currentPoint.semester}` : `${currentPoint.grade}年级 ${currentPoint.semester === 1 ? '上学期' : '下学期'}`}
-          </span>
-          <span className="hidden">{currentPoint.point_id}</span>
-          <Icon
-            name="chevron-down"
-            size={12}
-            className={`shrink-0 transition-transform duration-200 ${isDrawerOpen ? "rotate-180" : ""}`}
-          />
-        </button>
+          {/* 左侧：[ 考点名称 · 9年级 上学期 ▾ ] 胶囊按钮 (左侧对齐 32px，与下方【原点溯源】完全平齐) */}
+          <button
+            type="button"
+            data-testid="concept-drawer-trigger"
+            className="concept-drawer-trigger-btn inline-flex items-center gap-1.5 px-4 py-1.5 bg-white dark:bg-slate-800 border-[1.5px] border-blue-600 dark:border-sky-400 rounded-full text-blue-600 dark:text-sky-400 text-xs font-bold cursor-pointer shadow-sm active:scale-[0.98] transition-all max-w-full shrink-0"
+            onClick={() => setIsDrawerOpen((prev) => !prev)}
+          >
+            <Icon name="pin" size={13} />
+            <span className="whitespace-nowrap overflow-hidden text-ellipsis">
+              {locale === "en" ? (currentPoint.name_en || currentPoint.name_zh) : currentPoint.name_zh} · {locale === "en" ? `Grade ${currentPoint.grade} Sem ${currentPoint.semester}` : `${currentPoint.grade}年级 ${currentPoint.semester === 1 ? '上学期' : '下学期'}`}
+            </span>
+            <span className="hidden">{currentPoint.point_id}</span>
+            <Icon
+              name="chevron-down"
+              size={12}
+              className={`shrink-0 transition-transform duration-200 ${isDrawerOpen ? "rotate-180" : ""}`}
+            />
+          </button>
 
-        {/* 4 级抽屉盒选择器 (浮动 Popover，支持实时搜索与 4 级级联下钻) */}
-        <ConceptDrawerSelector
-          isOpen={isDrawerOpen}
-          onClose={() => setIsDrawerOpen(false)}
-          knowledgePoints={knowledgePoints}
-          currentPoint={currentPoint}
-          selectedGrade={selectedGrade}
-          selectedSemester={selectedSemester}
-          selectedDomain={selectedDomain}
-          selectedSubcategory={selectedSubcategory}
-          onSelectGrade={setSelectedGrade}
-          onSelectSemester={setSelectedSemester}
-          onSelectDomain={setSelectedDomain}
-          onSelectSubcategory={setSelectedSubcategory}
-          onSelectPoint={handleSelectPoint}
-          locale={locale}
-        />
+          {/* 中间：Flex 自适应留白 (Negative Space，严禁微光竖线) */}
+          <div className="flex-1" />
 
-        {/* 中间：Flex 自适应留白 (Negative Space，严禁微光竖线) */}
-        <div className="flex-1" />
-
-        {/* 右侧：4 个扁平分段胶囊 (按图二风格：灰底胶囊槽 + 12px + 纯白微阴影活动态) */}
-        <div
-          className="dimension-segmented-control stage-segmented-control relative inline-flex bg-black/[0.04] dark:bg-white/[0.06] p-[3px] rounded-full border border-black/[0.03] dark:border-white/[0.05] gap-0.5 whitespace-nowrap"
-        >
-          {[
-            { key: "stages", label: locale === "en" ? "Concept Lecture" : "四段论精讲", icon: "book" },
-            { key: "sandbox", label: locale === "en" ? "Linked Sandbox" : "链接沙盒", icon: "flask" },
-            { key: "master", label: locale === "en" ? "Point Master" : "考点母题", icon: "trophy" },
-            { key: "practice", label: locale === "en" ? "Quick Practice" : "单点快练", icon: "bolt" },
-          ].map((tab) => {
-            const active = activeSubTab === tab.key;
-            return (
-              <button
-                key={tab.key}
-                type="button"
-                data-testid={`subtab-${tab.key}`}
-                onClick={() => setActiveSubTab(tab.key as any)}
-                className={`border-none py-1.5 px-4 rounded-full text-xs font-bold cursor-pointer transition-all inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 active:scale-[0.98] ${
-                  active
-                    ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-sky-400 shadow-sm"
-                    : "bg-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-                }`}
-              >
-                <Icon name={tab.icon} size={13} />
-                <span className="whitespace-nowrap">{tab.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </header>
+          {/* 右侧：4 个扁平分段胶囊 (按图二风格：灰底胶囊槽 + 12px + 纯白微阴影活动态) */}
+          <div
+            className="dimension-segmented-control stage-segmented-control relative inline-flex bg-black/[0.04] dark:bg-white/[0.06] p-[3px] rounded-full border border-black/[0.03] dark:border-white/[0.05] gap-0.5 whitespace-nowrap"
+          >
+            {[
+              { key: "stages", label: locale === "en" ? "Concept Lecture" : "四段论精讲", icon: "book" },
+              { key: "sandbox", label: locale === "en" ? "Linked Sandbox" : "链接沙盒", icon: "flask" },
+              { key: "master", label: locale === "en" ? "Point Master" : "考点母题", icon: "trophy" },
+              { key: "practice", label: locale === "en" ? "Quick Practice" : "单点快练", icon: "bolt" },
+            ].map((tab) => {
+              const active = activeSubTab === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  type="button"
+                  data-testid={`subtab-${tab.key}`}
+                  onClick={() => {
+                    setActiveSubTab(tab.key as any);
+                    setConceptSubTab(tab.key as any);
+                  }}
+                  className={`border-none py-1.5 px-4 rounded-full text-xs font-bold cursor-pointer transition-all inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 active:scale-[0.98] ${
+                    active
+                      ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-sky-400 shadow-sm"
+                      : "bg-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                  }`}
+                >
+                  <Icon name={tab.icon} size={13} />
+                  <span className="whitespace-nowrap">{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </header>
+      )}
 
       {/* 
         大卡片主体：纯白主舞台，与顶部书签无缝紧密相连，中间零分割线

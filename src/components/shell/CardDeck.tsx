@@ -5,6 +5,7 @@ export interface CardDeckProps {
   className?: string;
   style?: React.CSSProperties;
   header?: React.ReactNode;
+  subnav?: React.ReactNode;
   bottomSheet?: React.ReactNode;
 }
 
@@ -22,6 +23,7 @@ export const CardDeck: React.FC<CardDeckProps> = ({
   className = "",
   style = {},
   header,
+  subnav,
   bottomSheet,
 }) => {
   return (
@@ -40,10 +42,20 @@ export const CardDeck: React.FC<CardDeckProps> = ({
         </header>
       )}
 
+      {/* 36px 固化吸顶二级书签轨 (y = 44px ~ 80px) */}
+      {subnav && (
+        <div
+          data-testid="card-deck-subnav"
+          className="card-deck-subnav shrink-0 h-[36px] min-h-[36px] flex items-center justify-center px-2 bg-white/95 backdrop-blur-md border-b border-border-subtle z-10 box-border"
+        >
+          {subnav}
+        </div>
+      )}
+
       {/* 主卡片垂直单列流动容器 */}
       <main
         data-testid="card-deck-body"
-        className="flex-1 overflow-y-auto overflow-x-hidden p-2 pb-4 flex flex-col gap-3 box-border"
+        className="flex-1 overflow-y-auto overflow-x-hidden p-0 flex flex-col box-border"
         style={{ WebkitOverflowScrolling: "touch" }}
       >
         {children}

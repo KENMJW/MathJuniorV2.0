@@ -132,5 +132,45 @@ describe('GraphNav (TASK-FE-0015 模块二知识谱系重构核心验证)', () =
     expect(html).toContain('数与代数');
     expect(html).toContain('实数与数轴模型');
   });
+
+  it('6. 电脑端 12 谱系选择抽屉打开时，完整渲染 12 个谱系知识点选项并按四大领域分组', () => {
+    const html = renderToString(
+      <GraphNav
+        lines={mockLogicLines}
+        initialLineId="A1"
+        initialDrawerOpen={true}
+      />
+    );
+
+    // 抽屉面板与遮罩存在
+    expect(html).toContain('graph-line-drawer-panel');
+    expect(html).toContain('graph-line-drawer-backdrop');
+    expect(html).toContain('选择知识谱系');
+
+    // 12 谱系选项全量渲染
+    const all12LineIds = ['A1', 'A2', 'A3', 'A4', 'G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'P1', 'S1'];
+    for (const lineId of all12LineIds) {
+      expect(html).toContain(`data-testid="graph-line-option-${lineId}"`);
+    }
+
+    // 四大领域分组标题存在
+    expect(html).toContain('数与代数');
+    expect(html).toContain('图形与几何');
+    expect(html).toContain('统计与概率');
+  });
+
+  it('7. LineSwimlane 泳道图考点节点支持点击直达概念精讲 (含 role=button 与 title 属性)', () => {
+    const html = renderToString(
+      <GraphNav
+        lines={mockLogicLines}
+        initialLineId="A1"
+      />
+    );
+
+    // 泳道图内至少一个考点包含点击属性
+    expect(html).toContain('role="button"');
+    expect(html).toContain('直达考点精讲:');
+    expect(html).toContain('swimlane-point-KP-001');
+  });
 });
 

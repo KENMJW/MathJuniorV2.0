@@ -23,8 +23,10 @@ import {
   LogicLine,
 } from "./modules/graph/types";
 import { LeapSandboxModel } from "./modules/sandbox/morphControllers";
+import { ALL_107_KNOWLEDGE_POINTS } from "./modules/concept/allPointsData";
 import {
   ChevronLeft,
+  ChevronDown,
   Globe,
   Bell,
   User,
@@ -81,9 +83,39 @@ export const MathJuniorHome: React.FC = () => {
   const [currentOverride, setCurrentOverride] = useState<DeviceProfile | null>(getDeviceOverride());
   const deviceProfile = currentOverride || responsive.device;
 
+  // 状态感知与全局同步 (Session Store)
+  const selectedConceptPointId = useSessionStore((state) => state.selectedConceptPointId);
+  const selectedGraphLineId = useSessionStore((state) => state.selectedGraphLineId);
+  const storeLeapModelId = useSessionStore((state) => state.selectedLeapModelId);
+  const setStoreLeapModelId = useSessionStore((state) => state.setSelectedLeapModelId);
+  const conceptSubTab = useSessionStore((state) => state.conceptSubTab);
+  const setConceptSubTab = useSessionStore((state) => state.setConceptSubTab);
+  const graphSubTab = useSessionStore((state) => state.graphSubTab);
+  const setGraphSubTab = useSessionStore((state) => state.setGraphSubTab);
+  const leapSubTab = useSessionStore((state) => state.leapSubTab);
+  const setLeapSubTab = useSessionStore((state) => state.setLeapSubTab);
+  const setIsConceptDrawerOpen = useSessionStore((state) => state.setIsConceptDrawerOpen);
+  const setIsGraphDrawerOpen = useSessionStore((state) => state.setIsGraphDrawerOpen);
+  const setIsLeapDrawerOpen = useSessionStore((state) => state.setIsLeapDrawerOpen);
+
   // 模块内部状态
-  const [labSubView, setLabSubView] = useState<"concept_sandbox" | "leap_4d">("concept_sandbox");
-  const [selectedLeapModelId, setSelectedLeapModelId] = useState<string>("LM-7A-01");
+  const [labSubView, setLabSubView] = useState<"concept_sandbox" | "leap_4d">(
+    deviceProfile === "MOBILE" ? "leap_4d" : "concept_sandbox"
+  );
+  const [selectedLeapModelId, setSelectedLeapModelId] = useState<string>(storeLeapModelId || "LM-7A-01");
+
+  // 移动端默认进场聚焦 4D 跃迁沙盒
+  useEffect(() => {
+    if (deviceProfile === "MOBILE" && labSubView !== "leap_4d") {
+      setLabSubView("leap_4d");
+    }
+  }, [deviceProfile]);
+
+  useEffect(() => {
+    if (storeLeapModelId && storeLeapModelId !== selectedLeapModelId) {
+      setSelectedLeapModelId(storeLeapModelId);
+    }
+  }, [storeLeapModelId]);
       
   // 异步真库数据状态 (core.db 107 考点 + 12 主线)
   const [dbLines, setDbLines] = useState<LogicLine[] | null>(null);
@@ -377,22 +409,41 @@ export const MathJuniorHome: React.FC = () => {
     </div>
   );
 
-  // 移动端顶部栏组件
+  // 移动端 44px 紧凑顶轨 + 居中交互式标题胶囊 (>= 160x44px 触控区，点击弹出对应模块选择抽屉)
   const renderMobileHeader = () => {
-    const subModuleTitles: Record<string, { zh: string; en: string }> = {
-      concept: { zh: "概念精讲 · 107考点", en: "Concept Lecture" },
-      graph: { zh: "思维图谱 · 12主线", en: "Knowledge Graph" },
-      lab: { zh: "实验探究 · 动力沙盒", en: "Dynamics Sandbox" },
-      sandbox: { zh: "实验探究 · 动力沙盒", en: "Dynamics Sandbox" },
-      exam: { zh: "实战测评 · 全真模考", en: "Mock Exam Arena" },
-    };
-    const currentTitleObj = subModuleTitles[currentSubModule] || { zh: "初中数学工坊", en: "Junior Math" };
-    const mobileHeaderTitle = locale === "en" ? currentTitleObj.en : currentTitleObj.zh;
+    let moduleIcon = Compass;
+    let entityTitle = "";
+    let onCapsuleClick = () => {};
+
+    if (currentSubModule === "concept") {
+      moduleIcon = Compass;
+      const pt = (dbPoints || ALL_107_KNOWLEDGE_POINTS).find((p: any) => p.point_id === selectedConceptPointId);
+      const name = pt ? (locale === "en" ? (pt.name_en || pt.name_zh) : pt.name_zh) : "考点精讲";
+      entityTitle = `${selectedConceptPointId} · ${name}`;
+      onCapsuleClick = () => setIsConceptDrawerOpen((prev) => !prev);
+    } else if (currentSubModule === "graph") {
+      moduleIcon = GitBranch;
+      const line = effectiveLines.find((l) => l.line_id === selectedGraphLineId);
+      const name = line ? (locale === "en" ? (line.name_en || line.name_zh) : line.name_zh) : "主线图谱";
+      entityTitle = `${selectedGraphLineId} · ${name}`;
+      onCapsuleClick = () => setIsGraphDrawerOpen((prev) => !prev);
+    } else if (currentSubModule === "lab" || currentSubModule === "sandbox") {
+      moduleIcon = FlaskConical;
+      const model = effectiveLeapModels.find((m) => m.model_id === selectedLeapModelId);
+      const name = model ? (locale === "en" ? (model.model_name_en || model.model_name_zh) : model.model_name_zh) : "4D跃迁沙盒";
+      entityTitle = `${selectedLeapModelId} · ${name}`;
+      onCapsuleClick = () => setIsLeapDrawerOpen((prev) => !prev);
+    } else {
+      moduleIcon = ClipboardCheck;
+      entityTitle = locale === "en" ? "Assessment Arena" : "实战测评 · 极速组卷";
+    }
+
+    const ModuleIconComp = moduleIcon;
 
     return (
       <div
         data-testid="math-junior-mobile-header"
-        className="flex items-center justify-between w-full h-11 min-h-[44px] px-3 gap-2 box-border bg-white/80 backdrop-blur-xl border-b border-black/[0.06]"
+        className="flex items-center justify-between w-full h-[44px] min-h-[44px] px-2.5 gap-2 box-border bg-white/90 backdrop-blur-xl"
       >
         {/* 手机端精简返回按钮：极简图标 (<) 紧凑胶囊，热区 >= 36px */}
         <button
@@ -401,29 +452,149 @@ export const MathJuniorHome: React.FC = () => {
           onClick={handleBackToPortal}
           aria-label={t("nav.backToPortal", locale, "返回全科门户")}
           title={t("nav.backToPortal", locale, "返回全科门户")}
-          className="back-btn inline-flex items-center justify-center w-9 h-9 min-w-[36px] min-h-[36px] p-0 rounded-full border border-black/[0.08] bg-white text-text-primary cursor-pointer shrink-0 shadow-sm active:scale-95 transition-transform"
+          className="back-btn inline-flex items-center justify-center w-8 h-8 min-w-[32px] min-h-[32px] p-0 rounded-full border border-black/[0.08] bg-white text-text-primary cursor-pointer shrink-0 shadow-sm active:scale-95 transition-transform"
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
 
-        {/* 手机端标题：单行不换行，15px 粗体 */}
-        <span
-          data-testid="mobile-header-title"
-          className="text-[15px] font-bold text-text-primary whitespace-nowrap overflow-hidden text-ellipsis text-center flex-1 tracking-tight"
+        {/* 居中：交互式标题胶囊 (>= 160x44px 触控区，点击弹出对应模块选择抽屉) */}
+        <button
+          type="button"
+          data-testid="interactive-title-capsule"
+          onClick={onCapsuleClick}
+          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 min-w-[160px] h-[34px] rounded-full bg-black/[0.04] active:bg-black/[0.08] border border-black/[0.06] text-text-primary text-xs font-bold cursor-pointer transition-all shrink-0 max-w-[calc(100vw-130px)] shadow-xs"
         >
-          {mobileHeaderTitle}
-        </span>
+          <ModuleIconComp className="w-3.5 h-3.5 text-ios-blue shrink-0" />
+          <span
+            data-testid="mobile-header-title"
+            className="whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px]"
+          >
+            {entityTitle}
+          </span>
+          <ChevronDown className="w-3.5 h-3.5 text-text-secondary shrink-0 opacity-70" />
+        </button>
 
         {/* 手机端右侧语言切换：高度 28px 紧凑胶囊 */}
         <button
           type="button"
           data-testid="math-lang-toggle"
           onClick={() => setLocale(locale === "zh-CN" ? "en" : "zh-CN")}
-          className="h-7 px-2 rounded-full border border-black/[0.08] bg-white text-text-primary font-semibold text-xs inline-flex items-center gap-1 shrink-0 whitespace-nowrap shadow-sm"
+          className="h-7 px-2 rounded-full border border-black/[0.08] bg-white text-text-primary font-semibold text-xs inline-flex items-center gap-1 shrink-0 whitespace-nowrap shadow-sm active:scale-95"
         >
           <Globe className="w-3 h-3 text-text-secondary" />
           <span>{locale === "zh-CN" ? "EN" : "中"}</span>
         </button>
+      </div>
+    );
+  };
+
+  // 移动端 36px 固化吸顶二级书签轨 (y = 44px ~ 80px)
+  const renderMobileSubnav = () => {
+    let tabs: Array<{ key: string; label: string; active: boolean; onClick: () => void }> = [];
+
+    if (currentSubModule === "concept") {
+      tabs = [
+        {
+          key: "stages",
+          label: locale === "en" ? "① Lecture" : "① 概念精讲",
+          active: conceptSubTab === "stages",
+          onClick: () => setConceptSubTab("stages"),
+        },
+        {
+          key: "sandbox",
+          label: locale === "en" ? "② Sandbox" : "② 链接沙盒",
+          active: conceptSubTab === "sandbox",
+          onClick: () => setConceptSubTab("sandbox"),
+        },
+        {
+          key: "master",
+          label: locale === "en" ? "③ Master" : "③ 黄金母题",
+          active: conceptSubTab === "master",
+          onClick: () => setConceptSubTab("master"),
+        },
+        {
+          key: "practice",
+          label: locale === "en" ? "④ Practice" : "④ 单点快练",
+          active: conceptSubTab === "practice",
+          onClick: () => setConceptSubTab("practice"),
+        },
+      ];
+    } else if (currentSubModule === "graph") {
+      tabs = [
+        {
+          key: "concept",
+          label: locale === "en" ? "① Lecture" : "① 谱系精讲",
+          active: graphSubTab === "concept",
+          onClick: () => setGraphSubTab("concept"),
+        },
+        {
+          key: "sandbox",
+          label: locale === "en" ? "② Sandbox" : "② 闭环沙盒",
+          active: graphSubTab === "sandbox",
+          onClick: () => setGraphSubTab("sandbox"),
+        },
+        {
+          key: "master",
+          label: locale === "en" ? "③ Master" : "③ 压轴母题",
+          active: graphSubTab === "master",
+          onClick: () => setGraphSubTab("master"),
+        },
+        {
+          key: "practice",
+          label: locale === "en" ? "④ Practice" : "④ 综合快练",
+          active: graphSubTab === "practice",
+          onClick: () => setGraphSubTab("practice"),
+        },
+      ];
+    } else if (currentSubModule === "lab" || currentSubModule === "sandbox") {
+      tabs = [
+        {
+          key: "deduction",
+          label: locale === "en" ? "① Deduction" : "① 分步推演",
+          active: leapSubTab === "deduction",
+          onClick: () => setLeapSubTab("deduction"),
+        },
+        {
+          key: "free",
+          label: locale === "en" ? "② Free Exploration" : "② 自由探索",
+          active: leapSubTab === "free",
+          onClick: () => setLeapSubTab("free"),
+        },
+      ];
+    } else if (currentSubModule === "exam") {
+      tabs = [
+        {
+          key: "generate",
+          label: locale === "en" ? "① Fast Paper · Burn After Exam" : "① 极速组卷 · 考完即焚",
+          active: true,
+          onClick: () => {},
+        },
+      ];
+    }
+
+    return (
+      <div
+        data-testid="math-junior-mobile-subnav"
+        className="flex items-center justify-between w-full h-[36px] min-h-[36px] px-1 gap-1 box-border"
+      >
+        <div className="flex items-center justify-around w-full gap-1">
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              data-testid={`mobile-subnav-${tab.key}`}
+              onClick={tab.onClick}
+              className={cn(
+                "flex-1 h-[28px] px-2 rounded-full text-[11px] font-bold transition-all inline-flex items-center justify-center whitespace-nowrap cursor-pointer",
+                tab.active
+                  ? "bg-ios-blue text-white shadow-xs"
+                  : "bg-black/[0.03] text-text-secondary hover:text-text-primary"
+              )}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
     );
   };
@@ -520,7 +691,10 @@ export const MathJuniorHome: React.FC = () => {
             labSubView={labSubView}
             onLabSubViewChange={setLabSubView}
             selectedLeapModelId={selectedLeapModelId}
-            onSelectLeapModelId={setSelectedLeapModelId}
+            onSelectLeapModelId={(id: string) => {
+              setSelectedLeapModelId(id);
+              setStoreLeapModelId(id);
+            }}
           />
         );
 
@@ -537,6 +711,7 @@ export const MathJuniorHome: React.FC = () => {
     return (
       <CardDeck
         header={renderMobileHeader()}
+        subnav={renderMobileSubnav()}
         bottomSheet={renderMobileBottomBar()}
       >
         <div className="w-full box-border">{renderModuleContent()}</div>

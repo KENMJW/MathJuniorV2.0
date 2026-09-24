@@ -46,7 +46,31 @@ export interface SessionState {
   selectedConceptPointId: string;
   setSelectedConceptPointId: (id: string) => void;
 
-  // 7. 考完即焚 / 会话重置 (零持久化)
+  // 7. 模块二思维图谱全局锁定主线 ID (默认 A1)
+  selectedGraphLineId: string;
+  setSelectedGraphLineId: (id: string) => void;
+
+  // 8. 模块三动力沙盒全局锁定模型 ID (默认 LM-7A-01)
+  selectedLeapModelId: string;
+  setSelectedLeapModelId: (id: string) => void;
+
+  // 9. 移动端二级书签子视窗同步状态
+  conceptSubTab: 'stages' | 'sandbox' | 'master' | 'practice';
+  setConceptSubTab: (tab: 'stages' | 'sandbox' | 'master' | 'practice') => void;
+  leapSubTab: 'deduction' | 'free';
+  setLeapSubTab: (tab: 'deduction' | 'free') => void;
+  graphSubTab: 'concept' | 'sandbox' | 'master' | 'practice';
+  setGraphSubTab: (tab: 'concept' | 'sandbox' | 'master' | 'practice') => void;
+
+  // 10. 移动端 80vh Bottom Sheet 抽屉显隐控制
+  isConceptDrawerOpen: boolean;
+  setIsConceptDrawerOpen: (open: boolean | ((prev: boolean) => boolean)) => void;
+  isLeapDrawerOpen: boolean;
+  setIsLeapDrawerOpen: (open: boolean | ((prev: boolean) => boolean)) => void;
+  isGraphDrawerOpen: boolean;
+  setIsGraphDrawerOpen: (open: boolean | ((prev: boolean) => boolean)) => void;
+
+  // 11. 考完即焚 / 会话重置 (零持久化)
   resetAll: () => void;
 }
 
@@ -57,6 +81,14 @@ const initialState = {
   locale: 'zh-CN' as Locale,
   deviceOverride: null as DeviceProfile | null,
   selectedConceptPointId: 'KP-001',
+  selectedGraphLineId: 'A1',
+  selectedLeapModelId: 'LM-7A-01',
+  conceptSubTab: 'stages' as const,
+  leapSubTab: 'deduction' as const,
+  graphSubTab: 'concept' as const,
+  isConceptDrawerOpen: false,
+  isLeapDrawerOpen: false,
+  isGraphDrawerOpen: false,
 };
 
 export const useSessionStore = create<SessionState>((set, get) => ({
@@ -142,6 +174,44 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
   setSelectedConceptPointId: (id: string) => {
     set({ selectedConceptPointId: id });
+  },
+
+  setSelectedGraphLineId: (id: string) => {
+    set({ selectedGraphLineId: id });
+  },
+
+  setSelectedLeapModelId: (id: string) => {
+    set({ selectedLeapModelId: id });
+  },
+
+  setConceptSubTab: (tab: 'stages' | 'sandbox' | 'master' | 'practice') => {
+    set({ conceptSubTab: tab });
+  },
+
+  setLeapSubTab: (tab: 'deduction' | 'free') => {
+    set({ leapSubTab: tab });
+  },
+
+  setGraphSubTab: (tab: 'concept' | 'sandbox' | 'master' | 'practice') => {
+    set({ graphSubTab: tab });
+  },
+
+  setIsConceptDrawerOpen: (open: boolean | ((prev: boolean) => boolean)) => {
+    set((state) => ({
+      isConceptDrawerOpen: typeof open === 'function' ? open(state.isConceptDrawerOpen) : open,
+    }));
+  },
+
+  setIsLeapDrawerOpen: (open: boolean | ((prev: boolean) => boolean)) => {
+    set((state) => ({
+      isLeapDrawerOpen: typeof open === 'function' ? open(state.isLeapDrawerOpen) : open,
+    }));
+  },
+
+  setIsGraphDrawerOpen: (open: boolean | ((prev: boolean) => boolean)) => {
+    set((state) => ({
+      isGraphDrawerOpen: typeof open === 'function' ? open(state.isGraphDrawerOpen) : open,
+    }));
   },
 
   resetAll: () => {

@@ -15,6 +15,7 @@ export interface LineSwimlaneProps {
   lineId: string;
   lineName?: string;
   points: LineSwimlanePoint[];
+  onSelectPoint?: (pointId: string) => void;
   className?: string;
   style?: React.CSSProperties;
 }
@@ -53,6 +54,7 @@ export const LineSwimlane: React.FC<LineSwimlaneProps> = ({
   lineId,
   lineName,
   points = [],
+  onSelectPoint,
   className = '',
   style = {},
 }) => {
@@ -313,6 +315,10 @@ export const LineSwimlane: React.FC<LineSwimlaneProps> = ({
                           key={pt.point_id}
                           className="line-swimlane-point-item"
                           data-testid={`swimlane-point-${pt.point_id}`}
+                          onClick={onSelectPoint ? () => onSelectPoint(pt.point_id) : undefined}
+                          role={onSelectPoint ? 'button' : undefined}
+                          tabIndex={onSelectPoint ? 0 : undefined}
+                          title={onSelectPoint ? (isEn ? `Jump to Concept: ${pt.point_id}` : `直达考点精讲: ${pt.point_id}`) : undefined}
                           style={{
                             display: 'flex',
                             alignItems: 'center',
@@ -324,6 +330,8 @@ export const LineSwimlane: React.FC<LineSwimlaneProps> = ({
                             boxShadow: '0 1px 2px rgba(0, 0, 0, 0.02)',
                             boxSizing: 'border-box',
                             userSelect: 'text',
+                            cursor: onSelectPoint ? 'pointer' : 'default',
+                            transition: 'all 0.15s ease',
                           }}
                         >
                           {/* point_id 胶囊 */}

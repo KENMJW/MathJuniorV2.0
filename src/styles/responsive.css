@@ -76,6 +76,13 @@
     min-height: 44px !important;
   }
 
+  /* 36px 固化吸顶二级书签轨 (y = 44px ~ 80px) */
+  .card-deck-subnav {
+    padding: 0 0.5rem !important;
+    height: 36px !important;
+    min-height: 36px !important;
+  }
+
   /* 底部原生 iOS Tab Bar (56px) */
   .card-deck-bottom-sheet {
     min-height: 56px !important;
@@ -111,6 +118,29 @@
     border-bottom: none !important;
     box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.22) !important;
     z-index: 100 !important;
+    animation: drawerSlideUpMobile 0.24s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+
+  /* 实验探究模型抽屉与思维图谱谱系抽屉在手机端统一升级为 80vh Bottom Sheet */
+  .model-drawer-panel,
+  .graph-line-drawer-panel {
+    display: flex !important;
+    position: fixed !important;
+    bottom: 0 !important;
+    top: auto !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    height: 80vh !important;
+    max-height: 80vh !important;
+    margin: 0 !important;
+    border-radius: 20px 20px 0 0 !important;
+    border: 1px solid var(--border-subtle, rgba(0, 0, 0, 0.12)) !important;
+    border-bottom: none !important;
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.22) !important;
+    z-index: 100 !important;
+    overflow-y: auto !important;
     animation: drawerSlideUpMobile 0.24s cubic-bezier(0.16, 1, 0.3, 1) !important;
   }
 
@@ -293,18 +323,51 @@
     z-index: 99 !important;
   }
 
-  /* 模块三：沙盒探究在手机端适配 */
-  .workspace-stage-card {
-    padding: 12px 10px !important;
-    border-radius: 16px !important;
-    gap: 12px !important;
+  /* 模块三：沙盒探究在手机端适配 (零空白直接锚定 y = 80px) */
+  .workspace-stage-card,
+  .sandbox-stage-wrapper {
+    padding: 0 !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    gap: 0 !important;
+  }
+
+  /* 固化 36px 顶端双轨书签船坞下轨 */
+  .card-deck-subnav {
+    height: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
+    padding: 0 8px !important;
+    box-sizing: border-box !important;
+  }
+
+  .model-drawer-panel {
+    position: fixed !important;
+    bottom: 0 !important;
+    top: auto !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    max-height: 80vh !important;
+    margin: 0 !important;
+    border-radius: 20px 20px 0 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-bottom: none !important;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.22) !important;
+    z-index: 100 !important;
+    overflow-y: auto !important;
+    animation: drawerSlideUpMobile 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
   }
 
   /* 全模块二级菜单手机端滚动固定悬浮 (TASK-FE-0019 判据 1) */
   .concept-nav-header,
   .graph-nav-header,
   .graph-subnav-sticky-header,
-  .sandbox-sticky-header-container,
   .exam-subnav-sticky-header {
     position: sticky !important;
     top: 0 !important;
@@ -328,8 +391,12 @@
   }
 
   .sandbox-sticky-header-container {
-    padding: 10px 12px !important;
-    margin: -12px -10px 12px -10px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    position: static !important;
   }
 
   .sandbox-top-bar {

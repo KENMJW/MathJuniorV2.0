@@ -3,6 +3,8 @@ import { SandboxRenderer } from './SandboxRenderer';
 import { LeapLab, SEMESTER_CONFIG as LEAP_SEMESTER_CONFIG, formatSemester } from './LeapLab';
 import { MathRenderer } from '../../components/math/MathRenderer';
 import { Icon } from '../../components/common/Icon';
+import { useSessionStore } from '../../store/sessionStore';
+import { useDeviceResponsive } from '../../hooks/useDeviceResponsive';
 import './sandbox.css';
 
 export interface LabWorkspaceProps {
@@ -72,6 +74,16 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
   const selectedLeapModelId = controlledLeapId ?? internalLeapId;
   const setSelectedLeapModelId = onSelectLeapModelId ?? setInternalLeapId;
 
+  const responsive = useDeviceResponsive();
+  const isMobile = responsive.isMobile;
+
+  const sessionIsConceptDrawerOpen = useSessionStore((state) => state.isConceptDrawerOpen);
+  const setSessionIsConceptDrawerOpen = useSessionStore((state) => state.setIsConceptDrawerOpen);
+  const sessionIsLeapDrawerOpen = useSessionStore((state) => state.isLeapDrawerOpen);
+  const setSessionIsLeapDrawerOpen = useSessionStore((state) => state.setIsLeapDrawerOpen);
+  const sessionSelectedLeapModelId = useSessionStore((state) => state.selectedLeapModelId);
+  const setSessionSelectedLeapModelId = useSessionStore((state) => state.setSelectedLeapModelId);
+
   // 抽屉盒状态
   const [isConceptDrawerOpen, setIsConceptDrawerOpen] = useState<boolean>(false);
   const [isLeapDrawerOpen, setIsLeapDrawerOpen] = useState<boolean>(false);
@@ -79,6 +91,33 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
   const [filterGrade, setFilterGrade] = useState<number>(7);
   const [filterSemester, setFilterSemester] = useState<number>(1);
   const [filterCategory, setFilterCategory] = useState<string>('all');
+
+  // 同步外部 sessionStore 选中的跃迁模型 ID
+  useEffect(() => {
+    if (sessionSelectedLeapModelId && sessionSelectedLeapModelId !== selectedLeapModelId) {
+      setSelectedLeapModelId(sessionSelectedLeapModelId);
+    }
+  }, [sessionSelectedLeapModelId]);
+
+  // 同步外部 sessionStore 抽屉开关
+  useEffect(() => {
+    if (sessionIsConceptDrawerOpen !== isConceptDrawerOpen) {
+      setIsConceptDrawerOpen(sessionIsConceptDrawerOpen);
+    }
+  }, [sessionIsConceptDrawerOpen]);
+
+  useEffect(() => {
+    if (sessionIsLeapDrawerOpen !== isLeapDrawerOpen) {
+      setIsLeapDrawerOpen(sessionIsLeapDrawerOpen);
+    }
+  }, [sessionIsLeapDrawerOpen]);
+
+  // 手机端模式下同步强制使用 leap_4d
+  useEffect(() => {
+    if (isMobile && labSubView !== 'leap_4d') {
+      setLabSubView('leap_4d');
+    }
+  }, [isMobile, labSubView]);
 
   const [invariants, setInvariants] = useState<Array<{ id: string; text: string; isConstant: boolean }>>([]);
 
@@ -302,7 +341,9 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
 
   const handleSelectLeapModel = (modelId: string) => {
     setSelectedLeapModelId(modelId);
+    setSessionSelectedLeapModelId(modelId);
     setIsLeapDrawerOpen(false);
+    setSessionIsLeapDrawerOpen(false);
     setLeapSearchQuery('');
     const stage = document.querySelector('.workspace-stage-card') || document.querySelector('.sandbox-stage-wrapper');
     if (stage) {
@@ -313,6 +354,7 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
   const handleSelectSandbox = (id: string) => {
     setSelectedSandboxId(id);
     setIsConceptDrawerOpen(false);
+    setSessionIsConceptDrawerOpen(false);
     setConceptSearchQuery('');
     setConceptParamValues({});
     setInvariants([]);
@@ -323,87 +365,103 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
   };
 
   const toggleConceptDrawer = () => {
-    setIsConceptDrawerOpen((prev) => !prev);
+    setIsConceptDrawerOpen((prev) => {
+      const next = !prev;
+      setSessionIsConceptDrawerOpen(next);
+      return next;
+    });
     setIsLeapDrawerOpen(false);
+    setSessionIsLeapDrawerOpen(false);
   };
 
   const toggleLeapDrawer = () => {
-    setIsLeapDrawerOpen((prev) => !prev);
+    setIsLeapDrawerOpen((prev) => {
+      const next = !prev;
+      setSessionIsLeapDrawerOpen(next);
+      return next;
+    });
     setIsConceptDrawerOpen(false);
+    setSessionIsConceptDrawerOpen(false);
   };
 
   return (
     <div className="sandbox-stage-wrapper">
       <div className="workspace-stage-card">
-        {/* 顶部统一实验室切换器与抽屉选择面板 - 吸顶固定常驻 */}
-        <div
-          className={`sandbox-sticky-header-container ${(isConceptDrawerOpen || isLeapDrawerOpen) ? 'drawer-open' : ''}`}
-        >
-          <div className="sandbox-top-bar">
-            <div className="stage-segmented-control">
-              <button
-                type="button"
-                onClick={() => {
-                  setLabSubView("concept_sandbox");
-                  setIsLeapDrawerOpen(false);
-                }}
-                className={`seg-item ${labSubView === "concept_sandbox" ? "active" : ""}`}
-              >
-                <Icon name="flask" size={13} className="seg-icon" />
-                <span>
-                  {isEn
-                    ? `Concept Sandboxes (Lab 1 · ${effectiveSandboxes.length})`
-                    : `概念具象沙盒 (实验室一 · ${effectiveSandboxes.length})`}
-                </span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setLabSubView("leap_4d");
-                  setIsConceptDrawerOpen(false);
-                }}
-                className={`seg-item ${labSubView === "leap_4d" ? "active" : ""}`}
-              >
-                <Icon name="rocket" size={13} className="seg-icon" />
-                <span>
-                  {isEn
-                    ? `4D Leap Models (Lab 2 · ${effectiveLeapModels.length})`
-                    : `4D 跃迁模型 (实验室二 · ${effectiveLeapModels.length})`}
-                </span>
-              </button>
-            </div>
+        {/* 顶部统一实验室切换器与抽屉选择面板 - 吸顶固定常驻 (移动端无抽屉开启时彻底清零不渲染 DOM) */}
+        {(!isMobile || (labSubView === "concept_sandbox" ? isConceptDrawerOpen : isLeapDrawerOpen)) && (
+          <div
+            className={`sandbox-sticky-header-container ${(isConceptDrawerOpen || isLeapDrawerOpen) ? 'drawer-open' : ''}`}
+          >
+            {/* 手机端由顶层 80px 双轨书签船坞统领，此处在手机端彻底清零 (DOM 计数 = 0) */}
+            {!isMobile && (
+            <div className="sandbox-top-bar">
+              <div className="stage-segmented-control">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLabSubView("concept_sandbox");
+                    setIsLeapDrawerOpen(false);
+                    setSessionIsLeapDrawerOpen(false);
+                  }}
+                  className={`seg-item ${labSubView === "concept_sandbox" ? "active" : ""}`}
+                >
+                  <Icon name="flask" size={13} className="seg-icon" />
+                  <span>
+                    {isEn
+                      ? `Concept Sandboxes (Lab 1 · ${effectiveSandboxes.length})`
+                      : `概念具象沙盒 (实验室一 · ${effectiveSandboxes.length})`}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLabSubView("leap_4d");
+                    setIsConceptDrawerOpen(false);
+                    setSessionIsConceptDrawerOpen(false);
+                  }}
+                  className={`seg-item ${labSubView === "leap_4d" ? "active" : ""}`}
+                >
+                  <Icon name="rocket" size={13} className="seg-icon" />
+                  <span>
+                    {isEn
+                      ? `4D Leap Models (Lab 2 · ${effectiveLeapModels.length})`
+                      : `4D 跃迁模型 (实验室二 · ${effectiveLeapModels.length})`}
+                  </span>
+                </button>
+              </div>
 
-            {/* 统一模型/沙盒选择抽屉入口 (固定在二级菜单右侧) */}
-            {labSubView === "concept_sandbox" ? (
-              <button
-                type="button"
-                className="model-drawer-trigger-btn"
-                onClick={toggleConceptDrawer}
-              >
-                <Icon name="menu" size={13} />
-                <span>
-                  {isEn
-                    ? `Select Sandbox: ${(currentSandbox?.nameEn || currentSandbox?.nameZh) || currentSandbox?.id}`
-                    : `选择沙盒: ${currentSandbox?.nameZh || currentSandbox?.id}`}
-                </span>
-                <Icon name={isConceptDrawerOpen ? "chevron-up" : "chevron-down"} size={13} />
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="model-drawer-trigger-btn"
-                onClick={toggleLeapDrawer}
-              >
-                <Icon name="layers" size={13} />
-                <span>
-                  {isEn
-                    ? `Select Model: ${currentLeapModel?.model_id} · ${(currentLeapModel?.model_name_en || currentLeapModel?.model_name_zh) || ''}`
-                    : `选择模型: ${currentLeapModel?.model_id} · ${currentLeapModel?.model_name_zh}`}
-                </span>
-                <Icon name={isLeapDrawerOpen ? "chevron-up" : "chevron-down"} size={13} />
-              </button>
-            )}
-          </div>
+              {/* 统一模型/沙盒选择抽屉入口 (固定在二级菜单右侧) */}
+              {labSubView === "concept_sandbox" ? (
+                <button
+                  type="button"
+                  className="model-drawer-trigger-btn"
+                  onClick={toggleConceptDrawer}
+                >
+                  <Icon name="menu" size={13} />
+                  <span>
+                    {isEn
+                      ? `Select Sandbox: ${(currentSandbox?.nameEn || currentSandbox?.nameZh) || currentSandbox?.id}`
+                      : `选择沙盒: ${currentSandbox?.nameZh || currentSandbox?.id}`}
+                  </span>
+                  <Icon name={isConceptDrawerOpen ? "chevron-up" : "chevron-down"} size={13} />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="model-drawer-trigger-btn"
+                  onClick={toggleLeapDrawer}
+                >
+                  <Icon name="layers" size={13} />
+                  <span>
+                    {isEn
+                      ? `Select Model: ${currentLeapModel?.model_id} · ${(currentLeapModel?.model_name_en || currentLeapModel?.model_name_zh) || ''}`
+                      : `选择模型: ${currentLeapModel?.model_id} · ${currentLeapModel?.model_name_zh}`}
+                  </span>
+                  <Icon name={isLeapDrawerOpen ? "chevron-up" : "chevron-down"} size={13} />
+                </button>
+              )}
+            </div>
+          )}
 
           {/* 概念沙盒 4 级抽屉盒选择面板 */}
           {labSubView === "concept_sandbox" && isConceptDrawerOpen && (
@@ -642,6 +700,7 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
             </div>
           )}
         </div>
+      )}
 
         {/* 主舞台展示区 */}
         {labSubView === "leap_4d" ? (
@@ -653,75 +712,77 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
             hideDrawerTrigger={true}
           />
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%' }}>
-            {/* 概念沙盒标题栏 */}
-            <div className="sandbox-header-line">
-              <h3 className="sandbox-title-text">
-                <span>{(isEn ? currentSandbox.nameEn : currentSandbox.nameZh) || currentSandbox.nameZh}</span>
-                <span style={{ fontSize: '13px', color: 'var(--text-tertiary)', fontWeight: 400 }}>
-                  ({currentSandbox.id} · {isEn ? 'Concept Sandbox' : '考点具象沙盒'})
-                </span>
-              </h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 0 : '16px', width: '100%' }}>
+            {/* 概念沙盒标题栏：手机端由顶层 80px 双轨书签船坞统领，从 DOM 中彻底清零 */}
+            {!isMobile && (
+              <div className="sandbox-header-line">
+                <h3 className="sandbox-title-text">
+                  <span>{(isEn ? currentSandbox.nameEn : currentSandbox.nameZh) || currentSandbox.nameZh}</span>
+                  <span style={{ fontSize: '13px', color: 'var(--text-tertiary)', fontWeight: 400 }}>
+                    ({currentSandbox.id} · {isEn ? 'Concept Sandbox' : '考点具象沙盒'})
+                  </span>
+                </h3>
 
-              <div className="tier-pill-group" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <button
-                  type="button"
-                  data-testid="badge-concept-concrete"
-                  onClick={handleResetConcept}
-                  title={isEn ? 'Click to restore standard benchmark state' : '点击恢复当前考点的标准具象基准态'}
-                  className="nav-pill-btn"
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    padding: '3px 10px',
-                    height: '26px',
-                    borderRadius: 'var(--radius-pill, 9999px)',
-                    fontSize: '11px',
-                    fontWeight: 600,
-                    background: 'rgba(0, 113, 227, 0.08)',
-                    color: 'var(--ios-blue, #0071e3)',
-                    border: '1px solid rgba(0, 113, 227, 0.25)',
-                    cursor: 'pointer',
-                    userSelect: 'none',
-                    transition: 'all 0.18s cubic-bezier(0.16, 1, 0.3, 1)',
-                  }}
-                >
-                  <Icon name="check-circle" size={11} />
-                  <span>{isEn ? 'Concept Benchmark' : '概念具象化'}</span>
-                </button>
-                <button
-                  type="button"
-                  data-testid="badge-viewport-locked"
-                  onClick={handleToggleViewportLock}
-                  title={
-                    isViewportLocked
-                      ? (isEn ? 'Viewport damping locked, click to reset' : '视口物理阻尼锁定中，点击复位并居中')
-                      : (isEn ? 'Viewport free, click to lock' : '视口自由缩放中，点击重新锁定阻尼')
-                  }
-                  className="nav-pill-btn"
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    padding: '3px 10px',
-                    height: '26px',
-                    borderRadius: 'var(--radius-pill, 9999px)',
-                    fontSize: '11px',
-                    fontWeight: 600,
-                    background: isViewportLocked ? 'rgba(52, 199, 89, 0.08)' : 'var(--bg-card-subtle)',
-                    color: isViewportLocked ? '#2e7d32' : 'var(--text-secondary)',
-                    border: isViewportLocked ? '1px solid rgba(52, 199, 89, 0.25)' : '1px solid var(--border-subtle)',
-                    cursor: 'pointer',
-                    userSelect: 'none',
-                    transition: 'all 0.18s cubic-bezier(0.16, 1, 0.3, 1)',
-                  }}
-                >
-                  <Icon name={isViewportLocked ? 'lock' : 'unlock'} size={11} />
-                  <span>{isViewportLocked ? (isEn ? 'Viewport Locked' : '视口阻尼锁定') : (isEn ? 'Viewport Free' : '视口自由漫游')}</span>
-                </button>
+                <div className="tier-pill-group" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <button
+                    type="button"
+                    data-testid="badge-concept-concrete"
+                    onClick={handleResetConcept}
+                    title={isEn ? 'Click to restore standard benchmark state' : '点击恢复当前考点的标准具象基准态'}
+                    className="nav-pill-btn"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      padding: '3px 10px',
+                      height: '26px',
+                      borderRadius: 'var(--radius-pill, 9999px)',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      background: 'rgba(0, 113, 227, 0.08)',
+                      color: 'var(--ios-blue, #0071e3)',
+                      border: '1px solid rgba(0, 113, 227, 0.25)',
+                      cursor: 'pointer',
+                      userSelect: 'none',
+                      transition: 'all 0.18s cubic-bezier(0.16, 1, 0.3, 1)',
+                    }}
+                  >
+                    <Icon name="check-circle" size={11} />
+                    <span>{isEn ? 'Concept Benchmark' : '概念具象化'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    data-testid="badge-viewport-locked"
+                    onClick={handleToggleViewportLock}
+                    title={
+                      isViewportLocked
+                        ? (isEn ? 'Viewport damping locked, click to reset' : '视口物理阻尼锁定中，点击复位并居中')
+                        : (isEn ? 'Viewport free, click to lock' : '视口自由缩放中，点击重新锁定阻尼')
+                    }
+                    className="nav-pill-btn"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      padding: '3px 10px',
+                      height: '26px',
+                      borderRadius: 'var(--radius-pill, 9999px)',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      background: isViewportLocked ? 'rgba(52, 199, 89, 0.08)' : 'var(--bg-card-subtle)',
+                      color: isViewportLocked ? '#2e7d32' : 'var(--text-secondary)',
+                      border: isViewportLocked ? '1px solid rgba(52, 199, 89, 0.25)' : '1px solid var(--border-subtle)',
+                      cursor: 'pointer',
+                      userSelect: 'none',
+                      transition: 'all 0.18s cubic-bezier(0.16, 1, 0.3, 1)',
+                    }}
+                  >
+                    <Icon name={isViewportLocked ? 'lock' : 'unlock'} size={11} />
+                    <span>{isViewportLocked ? (isEn ? 'Viewport Locked' : '视口阻尼锁定') : (isEn ? 'Viewport Free' : '视口自由漫游')}</span>
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* 85% Canvas + 15% Telemetry */}
             <div className="sandbox-split-box" style={{ position: 'relative' }}>

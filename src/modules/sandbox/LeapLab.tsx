@@ -12,6 +12,7 @@ import { SandboxRenderer } from './SandboxRenderer';
 import { MathRenderer } from '../../components/math/MathRenderer';
 import { Icon } from '../../components/common/Icon';
 import { useDeviceResponsive } from '../../hooks/useDeviceResponsive';
+import { useSessionStore } from '../../store/sessionStore';
 import './sandbox.css';
 
 export type LeapLabMode = 'step_deduction' | 'free_explore';
@@ -172,7 +173,15 @@ export const LeapLab: React.FC<LeapLabProps> = ({
   const isMobile = responsive.isMobile;
 
   // 双模定义：默认停在【分步推演】模式 (A.2 进场默认态)
+  const sessionLeapSubTab = useSessionStore((state) => state.leapSubTab);
+  const setSessionLeapSubTab = useSessionStore((state) => state.setLeapSubTab);
   const [labMode, setLabMode] = useState<LeapLabMode>('step_deduction');
+
+  useEffect(() => {
+    if (isMobile) {
+      setLabMode(sessionLeapSubTab === 'free' ? 'free_explore' : 'step_deduction');
+    }
+  }, [sessionLeapSubTab, isMobile]);
 
   // 解析模型推演阶梯 (来自 leap_sandbox_models.story_stages_json)
   const stages: StoryStage[] = useMemo(() => {
@@ -538,101 +547,109 @@ export const LeapLab: React.FC<LeapLabProps> = ({
   const normalizedCm = (distAC / 14).toFixed(2);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%', position: 'relative' }}>
-      {/* 头部标题行与模型抽屉展开入口 */}
-      <div className="sandbox-header-line">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-          {hideModelDrawer ? (
-            <div className="model-drawer-static-title">
-              <Icon name="layers" size={14} />
-              <span style={{ fontWeight: 700 }}>
-                {currentModel.model_id} · {(isEn ? currentModel.model_name_en : currentModel.model_name_zh) || currentModel.model_name_zh}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 0 : '16px', width: '100%', position: 'relative' }}>
+      {/* 头部标题行与模型抽屉展开入口：手机端由顶层 80px 双轨书签船坞统领，从 DOM 中彻底清零 */}
+      {!isMobile && (
+        <div className="sandbox-header-line">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            {hideModelDrawer ? (
+              <div className="model-drawer-static-title">
+                <Icon name="layers" size={14} />
+                <span style={{ fontWeight: 700 }}>
+                  {currentModel.model_id} · {(isEn ? currentModel.model_name_en : currentModel.model_name_zh) || currentModel.model_name_zh}
+                </span>
+              </div>
+            ) : hideDrawerTrigger ? (
+              <h3 className="sandbox-title-text" style={{ margin: 0 }}>
+                <Icon name="layers" size={16} />
+                <span>{(isEn ? currentModel.model_name_en : currentModel.model_name_zh) || currentModel.model_name_zh}</span>
+                <span style={{ fontSize: '13px', color: 'var(--text-tertiary)', fontWeight: 400 }}>
+                  ({currentModel.model_id} · {isEn ? 'Primary Line' : '主线'} {currentModel.primary_line} · {formatSemesterZh(currentModel.unlocked_semester)})
+                </span>
+              </h3>
+            ) : (
+              <button
+                type="button"
+                className="model-drawer-trigger-btn"
+                onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+              >
+                <Icon name="layers" size={14} />
+                <span style={{ fontWeight: 700 }}>
+                  {currentModel.model_id} · {(isEn ? currentModel.model_name_en : currentModel.model_name_zh) || currentModel.model_name_zh}
+                </span>
+                <Icon name={isDrawerOpen ? 'chevron-up' : 'chevron-down'} size={14} />
+              </button>
+            )}
+
+            {!hideDrawerTrigger && (
+              <span style={{ fontSize: '12px', color: 'var(--text-tertiary)', fontWeight: 500 }}>
+                ({isEn ? 'Line' : '主线'} {currentModel.primary_line} · {formatSemester(currentModel.unlocked_semester, locale)})
               </span>
+            )}
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            {/* 双模切换入口：分步推演 vs 自由探索 */}
+            <div className="stage-segmented-control" role="tablist">
+              <button
+                type="button"
+                className={`seg-item ${labMode === 'step_deduction' ? 'active' : ''}`}
+                onClick={() => {
+                  setLabMode('step_deduction');
+                  setSessionLeapSubTab('deduction');
+                }}
+                role="tab"
+                aria-selected={labMode === 'step_deduction'}
+                title={isEn ? 'Step-by-step master deduction' : '分步推演：跟随名师思路进阶'}
+              >
+                <Icon name="bulb" size={13} className="seg-icon" />
+                <span>{isEn ? 'Step Deduction' : '分步推演'}</span>
+              </button>
+              <button
+                type="button"
+                className={`seg-item ${labMode === 'free_explore' ? 'active' : ''}`}
+                onClick={() => {
+                  setLabMode('free_explore');
+                  setSessionLeapSubTab('free');
+                }}
+                role="tab"
+                aria-selected={labMode === 'free_explore'}
+                title={isEn ? 'Free dynamic exploration' : '自由探索：动点滑块自主体验'}
+              >
+                <Icon name="gamepad" size={13} className="seg-icon" />
+                <span>{isEn ? 'Free Play' : '自由探索'}</span>
+              </button>
             </div>
-          ) : hideDrawerTrigger ? (
-            <h3 className="sandbox-title-text" style={{ margin: 0 }}>
-              <Icon name="layers" size={16} />
-              <span>{(isEn ? currentModel.model_name_en : currentModel.model_name_zh) || currentModel.model_name_zh}</span>
-              <span style={{ fontSize: '13px', color: 'var(--text-tertiary)', fontWeight: 400 }}>
-                ({currentModel.model_id} · {isEn ? 'Primary Line' : '主线'} {currentModel.primary_line} · {formatSemesterZh(currentModel.unlocked_semester)})
-              </span>
-            </h3>
-          ) : (
-            <button
-              type="button"
-              className="model-drawer-trigger-btn"
-              onClick={() => setIsDrawerOpen(!isDrawerOpen)}
-            >
-              <Icon name="layers" size={14} />
-              <span style={{ fontWeight: 700 }}>
-                {currentModel.model_id} · {(isEn ? currentModel.model_name_en : currentModel.model_name_zh) || currentModel.model_name_zh}
-              </span>
-              <Icon name={isDrawerOpen ? 'chevron-up' : 'chevron-down'} size={14} />
-            </button>
-          )}
 
-          {!hideDrawerTrigger && (
-            <span style={{ fontSize: '12px', color: 'var(--text-tertiary)', fontWeight: 500 }}>
-              ({isEn ? 'Line' : '主线'} {currentModel.primary_line} · {formatSemester(currentModel.unlocked_semester, locale)})
-            </span>
-          )}
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-          {/* 双模切换入口：分步推演 vs 自由探索 */}
-          <div className="stage-segmented-control" role="tablist">
-            <button
-              type="button"
-              className={`seg-item ${labMode === 'step_deduction' ? 'active' : ''}`}
-              onClick={() => setLabMode('step_deduction')}
-              role="tab"
-              aria-selected={labMode === 'step_deduction'}
-              title={isEn ? 'Step-by-step master deduction' : '分步推演：跟随名师思路进阶'}
-            >
-              <Icon name="bulb" size={13} className="seg-icon" />
-              <span>{isEn ? 'Step Deduction' : '分步推演'}</span>
-            </button>
-            <button
-              type="button"
-              className={`seg-item ${labMode === 'free_explore' ? 'active' : ''}`}
-              onClick={() => setLabMode('free_explore')}
-              role="tab"
-              aria-selected={labMode === 'free_explore'}
-              title={isEn ? 'Free dynamic exploration' : '自由探索：动点滑块自主体验'}
-            >
-              <Icon name="gamepad" size={13} className="seg-icon" />
-              <span>{isEn ? 'Free Play' : '自由探索'}</span>
-            </button>
-          </div>
-
-          <div className="tier-pill-group">
-            <button
-              type="button"
-              className={`nav-pill-btn ${tierLevel === 1 ? 'active' : ''}`}
-              onClick={() => handleTierChange(1)}
-              title={isEn ? 'L1 Archetype: Core skeleton & invariant' : 'L1 原型：核心基础骨架与本质不变性'}
-            >
-              {isEn ? 'Archetype' : '原型'}
-            </button>
-            <button
-              type="button"
-              className={`nav-pill-btn ${tierLevel === 2 ? 'active' : ''}`}
-              onClick={() => handleTierChange(2)}
-              title={isEn ? 'L2 Variation: Posture rotation & carrier expansion' : 'L2 变式：姿态翻折旋转与载体拓展'}
-            >
-              {isEn ? 'Variation' : '变式'}
-            </button>
-            <button
-              type="button"
-              className={`nav-pill-btn ${tierLevel === 3 ? 'active' : ''}`}
-              onClick={() => handleTierChange(3)}
-              title={isEn ? 'L3 Synthesis: Distractor camouflage & synthesis' : 'L3 综合：中考压轴加壳与极限综合态'}
-            >
-              {isEn ? 'Synthesis' : '综合'}
-            </button>
+            <div className="tier-pill-group">
+              <button
+                type="button"
+                className={`nav-pill-btn ${tierLevel === 1 ? 'active' : ''}`}
+                onClick={() => handleTierChange(1)}
+                title={isEn ? 'L1 Archetype: Core skeleton & invariant' : 'L1 原型：核心基础骨架与本质不变性'}
+              >
+                {isEn ? 'Archetype' : '原型'}
+              </button>
+              <button
+                type="button"
+                className={`nav-pill-btn ${tierLevel === 2 ? 'active' : ''}`}
+                onClick={() => handleTierChange(2)}
+                title={isEn ? 'L2 Variation: Posture rotation & carrier expansion' : 'L2 变式：姿态翻折旋转与载体拓展'}
+              >
+                {isEn ? 'Variation' : '变式'}
+              </button>
+              <button
+                type="button"
+                className={`nav-pill-btn ${tierLevel === 3 ? 'active' : ''}`}
+                onClick={() => handleTierChange(3)}
+                title={isEn ? 'L3 Synthesis: Distractor camouflage & synthesis' : 'L3 综合：中考压轴加壳与极限综合态'}
+              >
+                {isEn ? 'Synthesis' : '综合'}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* 2 级抽屉盒模型切换面板 */}
       {isDrawerOpen && !hideModelDrawer && !hideDrawerTrigger && (
