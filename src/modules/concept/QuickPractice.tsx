@@ -140,20 +140,20 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
 
   return (
     <div
-      className={`quick-practice w-full max-w-6xl mx-auto flex flex-col gap-5 p-6 rounded-3xl backdrop-blur-xl bg-white/70 dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 shadow-xl text-slate-900 dark:text-slate-100 box-border ${className}`}
+      className={`quick-practice w-full max-w-6xl mx-auto flex flex-col gap-5 p-6 rounded-3xl backdrop-blur-xl bg-white/70 border border-slate-200/80 shadow-xl text-slate-900 box-border ${className}`}
       data-testid="quick-practice"
       data-point-id={pointId}
     >
       {/* 头部标题与操作 */}
-      <header className="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 pb-3.5 flex-wrap gap-3">
+      <header className="flex items-center justify-between border-b border-slate-200/80 pb-3.5 flex-wrap gap-3">
         <div className="flex items-center gap-3 flex-wrap">
-          <span className="px-3 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-sky-400 text-xs sm:text-sm font-bold border border-blue-500/20">
+          <span className="px-3 py-1 rounded-full bg-blue-500/10 text-blue-600 text-xs sm:text-sm font-bold border border-blue-500/20">
             {isEn ? 'Quick Practice' : '单点快练'}
           </span>
           <h3 className="m-0 text-base sm:text-lg font-bold">
             {isEn ? 'Targeted Practice (L1~L3)' : '3题即答即判·基础巩固'}
           </h3>
-          <span className="text-xs text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60">
+          <span className="text-xs text-slate-500 px-2 py-0.5 rounded-md bg-slate-100 border border-slate-200/60">
             {isEn ? 'L1~L3 Single Choice' : 'L1~L3 单选锁定'}
           </span>
         </div>
@@ -163,7 +163,7 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
           {toastMessage && (
             <span
               data-testid="quick-practice-toast"
-              className="text-xs text-blue-600 dark:text-sky-400 bg-blue-500/10 px-3 py-1 rounded-full animate-in fade-in"
+              className="text-xs text-blue-600 bg-blue-500/10 px-3 py-1 rounded-full animate-in fade-in"
             >
               {toastMessage}
             </span>
@@ -172,7 +172,7 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
             type="button"
             data-testid="refresh-batch-btn"
             onClick={handleNextBatch}
-            className="inline-flex items-center gap-1.5 border border-blue-500/40 bg-white/80 dark:bg-slate-800/80 text-blue-600 dark:text-sky-400 px-4 py-1.5 rounded-full cursor-pointer font-bold text-xs sm:text-sm shadow-sm hover:bg-blue-500/10 active:scale-[0.98] transition-all"
+            className="inline-flex items-center gap-1.5 border border-blue-500/40 bg-white/80 text-blue-600 px-4 py-1.5 rounded-full cursor-pointer font-bold text-xs sm:text-sm shadow-sm hover:bg-blue-500/10 active:scale-[0.98] transition-all"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>{isEn ? 'Refresh Batch' : '换一批练习'}</span>
@@ -183,7 +183,7 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
       {/* 题目列表 (单屏 3 题自闭环) */}
       <div className="flex flex-col gap-5">
         {currentQuestions.length === 0 ? (
-          <div className="p-10 text-center text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-200/60 dark:border-slate-700/60">
+          <div className="p-10 text-center text-slate-500 bg-slate-50 rounded-2xl border border-slate-200/60">
             {isEn ? 'No practice questions found.' : '暂无符合条件的快练题目'}
           </div>
         ) : (
@@ -198,7 +198,7 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
                 key={q.question_id}
                 data-testid={`practice-item-${idx + 1}`}
                 data-question-id={q.question_id}
-                className="p-5 rounded-2xl bg-white/80 dark:bg-slate-850/80 border border-slate-200/80 dark:border-slate-800 shadow-md flex flex-col gap-3.5"
+                className="p-5 rounded-2xl bg-white/80 border border-slate-200/80 shadow-md flex flex-col gap-3.5"
               >
                 {/* 题号与难度标签 */}
                 <div className="flex items-center justify-between flex-wrap gap-2">
@@ -206,7 +206,7 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
                     <span className="w-6 h-6 rounded-full bg-blue-600 text-white inline-flex items-center justify-center text-xs font-bold shrink-0">
                       {idx + 1}
                     </span>
-                    <span className="text-xs px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-sky-400 font-bold border border-blue-500/20">
+                    <span className="text-xs px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 font-bold border border-blue-500/20">
                       {isEn ? `Level L${q.difficulty_level}` : `难度 L${q.difficulty_level}`}
                     </span>
                     <span className="text-xs text-slate-400 font-mono">
@@ -219,7 +219,7 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
                     <span
                       data-testid={`badge-status-${q.question_id}`}
                       className={`text-xs font-bold inline-flex items-center gap-1.5 flex-wrap ${
-                        isCorrect ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
+                        isCorrect ? 'text-emerald-600' : 'text-red-600'
                       }`}
                     >
                       {isCorrect ? (
@@ -240,7 +240,7 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
                 </div>
 
                 {/* 铁律 3：题干通过 MathRenderer 渲染 */}
-                <div className="question-stem db-content-body text-sm sm:text-base text-slate-900 dark:text-slate-100 leading-relaxed overflow-hidden break-words max-w-full">
+                <div className="question-stem db-content-body text-sm sm:text-base text-slate-900 leading-relaxed overflow-hidden break-words max-w-full">
                   <QuestionContent
                     content={stem}
                     images={q.image_paths_json}
@@ -255,19 +255,19 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
                     const isStandard = normalizeOptionAnswer(q.answer_standard) === normalizeOptionAnswer(opt.key);
                     const optText = isEn ? opt.text_en || opt.text_zh : opt.text_zh;
 
-                    let btnStyle = 'border-slate-200 dark:border-slate-750 bg-slate-50/70 dark:bg-slate-800/40 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/70';
+                    let btnStyle = 'border-slate-200 bg-slate-50/70 text-slate-700 hover:bg-slate-100';
 
                     if (isAnswered) {
                       if (isSelected) {
                         if (isCorrect) {
-                          btnStyle = 'border-emerald-500 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-semibold ring-1 ring-emerald-500';
+                          btnStyle = 'border-emerald-500 bg-emerald-500/15 text-emerald-700 font-semibold ring-1 ring-emerald-500';
                         } else {
-                          btnStyle = 'border-red-500 bg-red-500/15 text-red-700 dark:text-red-300 font-semibold ring-1 ring-red-500';
+                          btnStyle = 'border-red-500 bg-red-500/15 text-red-700 font-semibold ring-1 ring-red-500';
                         }
                       } else if (isStandard) {
-                        btnStyle = 'border-dashed border-emerald-500 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 font-medium';
+                        btnStyle = 'border-dashed border-emerald-500 bg-emerald-500/5 text-emerald-600 font-medium';
                       } else {
-                        btnStyle = 'border-slate-200/50 dark:border-slate-800/50 opacity-40 text-slate-400';
+                        btnStyle = 'border-slate-200/50 opacity-40 text-slate-400';
                       }
                     }
 
@@ -280,7 +280,7 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
                         onClick={() => handleSelectOption(q, opt.key)}
                         className={`min-h-[48px] px-4 py-3 rounded-xl border flex items-center gap-3 text-left transition-all active:scale-[0.98] ${btnStyle}`}
                       >
-                        <span className="font-extrabold text-sm min-w-[1.2rem] text-blue-600 dark:text-sky-400">
+                        <span className="font-extrabold text-sm min-w-[1.2rem] text-blue-600">
                           {opt.key}.
                         </span>
                         <div className="db-content-sub flex-1 flex flex-col gap-1 overflow-hidden break-words text-xs sm:text-sm">
@@ -302,7 +302,7 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
                     className="p-4 rounded-xl bg-amber-500/10 border-l-4 border-l-amber-500 border border-amber-500/20 flex flex-col gap-2.5 animate-in fade-in"
                   >
                     <div className="flex items-center justify-between flex-wrap gap-2">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-amber-700 dark:text-amber-400">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-amber-700">
                         <Icon name="bulb" size={14} />
                         <span>{isEn ? 'Teacher Pitfall Diagnosis' : '名师错因辨析与关键题眼'}</span>
                       </div>
@@ -320,7 +320,7 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
                     </div>
 
                     {q.solutions_json && (
-                      <div className="db-content-sub text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed overflow-hidden break-words">
+                      <div className="db-content-sub text-xs sm:text-sm text-slate-800 leading-relaxed overflow-hidden break-words">
                         <SolutionList
                           solutions={q.solutions_json}
                           images={q.image_paths_json}
@@ -350,17 +350,17 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
                   className={`w-7 h-7 ${
                     starIdx <= starRating
                       ? 'fill-amber-400 text-amber-400 drop-shadow'
-                      : 'text-slate-300 dark:text-slate-700'
+                      : 'text-slate-300'
                   }`}
                 />
               ))}
             </div>
 
             <div className="flex flex-col gap-0.5">
-              <span className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+              <span className="text-xs font-bold text-amber-600 uppercase tracking-wider">
                 {isEn ? 'Competency Mastery Assessment' : '考点核心素养掌握度评定'}
               </span>
-              <h4 className="m-0 text-base sm:text-lg font-black text-slate-900 dark:text-white">
+              <h4 className="m-0 text-base sm:text-lg font-black text-slate-900">
                 {starRating === 3
                   ? isEn
                     ? '3-Star Full Mastery (100% Score)'
@@ -373,7 +373,7 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
                   ? '1-Star Needs Reinforcement'
                   : '★☆☆ 基础待巩固，建议回看概念精讲'}
               </h4>
-              <p className="m-0 text-xs text-slate-500 dark:text-slate-400">
+              <p className="m-0 text-xs text-slate-500">
                 {isEn
                   ? `Correct: ${correctCount} / 3 questions completed`
                   : `本次作答正答 ${correctCount} / 3 题`}
@@ -385,7 +385,7 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
             <button
               type="button"
               onClick={handleGoToConcept}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-blue-500/40 bg-white/80 dark:bg-slate-800 text-blue-600 dark:text-sky-400 font-bold text-xs shadow-sm hover:bg-blue-500/10 active:scale-[0.98] transition-all"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-blue-500/40 bg-white/80 text-blue-600 font-bold text-xs shadow-sm hover:bg-blue-500/10 active:scale-[0.98] transition-all"
             >
               <BookOpen className="w-3.5 h-3.5" />
               <span>{isEn ? 'Review Concept Guide' : '回看概念精讲'}</span>

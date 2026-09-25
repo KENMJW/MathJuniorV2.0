@@ -167,34 +167,34 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
         data-testid="concept-tree-sidebar"
         className={`concept-drawer-panel ${isOpen ? 'is-open flex flex-col' : 'is-closed hidden'} ${
           isMobile
-            ? 'fixed bottom-0 left-0 right-0 z-[100] w-full max-w-[100vw] h-[82vh] max-h-[82vh] rounded-t-[20px] shadow-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-slate-200 dark:border-slate-800 border-b-0 overflow-hidden'
+            ? 'fixed bottom-0 left-0 right-0 z-[100] w-full max-w-[100vw] h-[82vh] max-h-[82vh] rounded-t-[20px] shadow-2xl bg-white/95 backdrop-blur-2xl border border-slate-200 border-b-0 overflow-hidden'
             : isTablet
-            ? 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] w-[640px] max-w-[90vw] h-[560px] max-h-[80vh] rounded-[20px] shadow-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-slate-200 dark:border-slate-800 overflow-hidden'
-            : 'absolute top-[calc(100%+10px)] left-0 z-[100] w-[680px] max-w-[92vw] max-h-[78vh] rounded-[20px] shadow-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-slate-200 dark:border-slate-800 overflow-hidden'
+            ? 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] w-[640px] max-w-[90vw] h-[560px] max-h-[80vh] rounded-[20px] shadow-2xl bg-white/95 backdrop-blur-2xl border border-slate-200 overflow-hidden'
+            : 'absolute top-[calc(100%+10px)] left-0 z-[100] w-[680px] max-w-[92vw] max-h-[78vh] rounded-[20px] shadow-2xl bg-white/95 backdrop-blur-2xl border border-slate-200 overflow-hidden'
         }`}
       >
         {/* 顶部居中药丸拖动手柄 (手机端原生 iOS 视觉规范) */}
         <div
           data-testid="drawer-drag-handle"
-          className={`drawer-drag-handle w-9 h-1 rounded-full bg-black/20 dark:bg-white/20 mt-2 mx-auto shrink-0 ${isMobile ? 'block' : 'hidden'}`}
+          className={`drawer-drag-handle w-9 h-1 rounded-full bg-black/20 mt-2 mx-auto shrink-0 ${isMobile ? 'block' : 'hidden'}`}
         />
         {/* 顶部搜索栏与抽屉标题 */}
-        <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-200/80 dark:border-slate-800/80 bg-slate-500/5">
-          <div className="flex-1 flex items-center gap-2 px-3.5 py-1.5 bg-white dark:bg-slate-800 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm">
-            <Icon name="search" size={15} className="text-slate-400 dark:text-slate-500" />
+        <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-200/80 bg-slate-500/5">
+          <div className="flex-1 flex items-center gap-2 px-3.5 py-1.5 bg-white rounded-full border border-slate-200 shadow-sm">
+            <Icon name="search" size={15} className="text-slate-400" />
             <input
               type="text"
               data-testid="concept-search-input"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={locale === 'en' ? 'Search points by name, pinyin, or KP-ID...' : '实时搜索考点名称、拼音或编号 (如: 配方法, pff, KP-023)...'}
-              className="flex-1 border-none outline-none bg-transparent text-[0.85rem] text-slate-800 dark:text-slate-100 placeholder-slate-400"
+              className="flex-1 border-none outline-none bg-transparent text-[0.85rem] text-slate-800 placeholder-slate-400"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
-                className="border-none bg-transparent cursor-pointer text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0 inline-flex"
+                className="border-none bg-transparent cursor-pointer text-slate-400 hover:text-slate-600 p-0 inline-flex"
               >
                 <Icon name="x" size={13} />
               </button>
@@ -205,7 +205,7 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
             type="button"
             data-testid="drawer-close-btn"
             onClick={onClose}
-            className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 transition-colors border-none"
+            className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer text-slate-500 hover:text-slate-800 bg-black/5 hover:bg-black/10 transition-colors border-none"
           >
             <Icon name="x" size={16} />
           </button>
@@ -219,11 +219,11 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
               data-testid="search-results-container"
               className="flex-1 p-4 overflow-y-auto flex flex-col gap-2"
             >
-              <div className="text-[0.78rem] text-slate-500 dark:text-slate-400 mb-1">
+              <div className="text-[0.78rem] text-slate-500 mb-1">
                 {locale === 'en' ? `Found ${searchResults.length} matching points` : `找到 ${searchResults.length} 个相关考点`}
               </div>
               {searchResults.length === 0 ? (
-                <div className="p-8 text-center text-slate-400 dark:text-slate-500">
+                <div className="p-8 text-center text-slate-400">
                   {locale === 'en' ? 'No matching knowledge points found' : '未找到匹配的大纲考点'}
                 </div>
               ) : (
@@ -236,20 +236,20 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
                       onClick={() => handlePointClick(pt)}
                       className={`p-2.5 px-3.5 rounded-xl cursor-pointer flex items-center justify-between transition-all duration-150 ${
                         active
-                          ? 'border-[1.5px] border-[#0071e3] bg-[#0071e3]/10 dark:bg-[#0071e3]/20 shadow-sm'
-                          : 'border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800'
+                          ? 'border-[1.5px] border-[#0071e3] bg-[#0071e3]/10 shadow-sm'
+                          : 'border border-slate-200/80 bg-white hover:bg-slate-50'
                       }`}
                     >
                       <div className="flex items-center gap-2.5">
                         <span className="text-[0.75rem] font-bold text-[#0071e3]">
                           {pt.point_id}
                         </span>
-                        <span className={`text-[0.88rem] ${active ? 'font-bold text-slate-900 dark:text-white' : 'font-medium text-slate-700 dark:text-slate-200'}`}>
+                        <span className={`text-[0.88rem] ${active ? 'font-bold text-slate-900' : 'font-medium text-slate-700'}`}>
                           {locale === 'en' ? pt.name_en : pt.name_zh}
                         </span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[0.72rem] px-2 py-0.5 rounded bg-black/5 dark:bg-white/10 text-slate-500 dark:text-slate-400">
+                        <span className="text-[0.72rem] px-2 py-0.5 rounded bg-black/5 text-slate-500">
                           {isEn
                             ? `Grade ${pt.grade} Sem ${pt.semester} · ${(pt as any).subcategory_en || getSubcategoryName(pt.subcategory, true)}`
                             : `${pt.grade}年级${pt.semester === 1 ? '上' : '下'} · ${pt.subcategory}`}
@@ -269,12 +269,12 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
             /* 正常 4 级下钻盒模式 */
             <div className="concept-drawer-columns flex w-full min-h-[380px]">
               {/* 左侧控制栏：1级年级 + 2级学期 + 3级领域/单元 */}
-              <div className="concept-drawer-left-col w-[280px] min-w-[280px] border-r border-slate-200/80 dark:border-slate-800 p-4 flex flex-col gap-3.5 overflow-y-auto bg-slate-500/5">
+              <div className="concept-drawer-left-col w-[280px] min-w-[280px] border-r border-slate-200/80 p-4 flex flex-col gap-3.5 overflow-y-auto bg-slate-500/5">
                 {/* 1级与2级: 年级与学期选择 (移动端单行并排紧凑, 桌面端分块) */}
                 <div className={`concept-drawer-level1-2-wrap flex ${isMobile ? 'flex-row gap-2' : 'flex-col gap-3.5'} w-full`}>
                   {/* 1级: 年级选择 */}
                   <div className={isMobile ? 'flex-[3]' : undefined}>
-                    <label className={`concept-drawer-level-label ${isMobile ? 'hidden' : 'block'} text-[0.76rem] font-bold text-slate-500 dark:text-slate-400 mb-1.5`}>
+                    <label className={`concept-drawer-level-label ${isMobile ? 'hidden' : 'block'} text-[0.76rem] font-bold text-slate-500 mb-1.5`}>
                       {locale === 'en' ? 'Level 1 · Grade' : `第一级 · ${t('nav.grade', effectiveLocale, '年级')}`}
                     </label>
                     <div className="flex gap-1.5">
@@ -298,7 +298,7 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
                             className={`flex-1 ${isMobile ? 'min-h-[30px] text-[0.75rem] px-1' : 'min-h-[34px] text-[0.8rem]'} rounded-lg font-medium cursor-pointer transition-all duration-150 border ${
                               active
                                 ? 'border-[#0071e3] bg-[#0071e3] text-white font-bold shadow-sm'
-                                : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:border-slate-300'
+                                : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
                             }`}
                           >
                             {label}
@@ -310,7 +310,7 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
 
                   {/* 2级: 学期选择 */}
                   <div className={isMobile ? 'flex-[2]' : undefined}>
-                    <label className={`concept-drawer-level-label ${isMobile ? 'hidden' : 'block'} text-[0.76rem] font-bold text-slate-500 dark:text-slate-400 mb-1.5`}>
+                    <label className={`concept-drawer-level-label ${isMobile ? 'hidden' : 'block'} text-[0.76rem] font-bold text-slate-500 mb-1.5`}>
                       {locale === 'en' ? 'Level 2 · Semester' : `第二级 · ${t('nav.semester', effectiveLocale, '学期')}`}
                     </label>
                     <div className="flex gap-1.5">
@@ -333,7 +333,7 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
                             className={`flex-1 ${isMobile ? 'min-h-[30px] text-[0.75rem] px-1' : 'min-h-[34px] text-[0.8rem]'} rounded-lg font-medium cursor-pointer transition-all duration-150 border ${
                               active
                                 ? 'border-[#0071e3] bg-[#0071e3] text-white font-bold shadow-sm'
-                                : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:border-slate-300'
+                                : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
                             }`}
                           >
                             {label}
@@ -346,7 +346,7 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
 
                 {/* 3级: 领域与课程单元 (15 个 subcategory 核心分类) */}
                 <div>
-                  <label className="block text-[0.76rem] font-bold text-slate-500 dark:text-slate-400 mb-1.5">
+                  <label className="block text-[0.76rem] font-bold text-slate-500 mb-1.5">
                     {locale === 'en' ? 'Level 3 · Domain / Unit' : `第三级 · ${t('nav.domain', effectiveLocale, '领域')} / 课程单元`}
                   </label>
 
@@ -378,7 +378,7 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
                           className={`px-2.5 py-1 rounded-md text-[0.74rem] font-medium cursor-pointer transition-all border ${
                             active
                               ? 'border-[#5856d6] bg-[#5856d6] text-white font-bold shadow-sm'
-                              : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:border-slate-300'
+                              : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
                           }`}
                         >
                           {domLabel}
@@ -410,8 +410,8 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
                           }}
                           className={`flex items-center justify-between px-3 py-1.5 rounded-md text-[0.8rem] text-left cursor-pointer transition-all border ${
                             active
-                              ? 'border-[#0071e3] bg-[#0071e3]/10 dark:bg-[#0071e3]/20 text-[#0071e3] font-bold'
-                              : 'border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
+                              ? 'border-[#0071e3] bg-[#0071e3]/10 text-[#0071e3] font-bold'
+                              : 'border-slate-200/80 bg-white text-slate-700 hover:bg-slate-50'
                           }`}
                         >
                           <span>{isEn ? getSubcategoryName(subcat, true) : subcat}</span>
@@ -428,10 +428,10 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
               {/* 右侧大纲考点列表 (4级大纲考点) */}
               <div className="concept-drawer-right-col flex-1 p-4 flex flex-col min-h-0 overflow-y-auto">
                 <div className="flex justify-between items-center mb-2">
-                  <label className="text-[0.78rem] font-bold text-slate-500 dark:text-slate-400">
+                  <label className="text-[0.78rem] font-bold text-slate-500">
                     {locale === 'en' ? 'Level 4 · Curriculum Points' : `第四级 · ${t('nav.points', effectiveLocale, '大纲考点')}`}
                   </label>
-                  <span className="text-[0.72rem] text-slate-400 dark:text-slate-500">
+                  <span className="text-[0.72rem] text-slate-400">
                     {locale === 'en'
                       ? `${filteredPoints.length} Points · Click to switch`
                       : `${filteredPoints.length} 个考点 · 点击立即切换`}
@@ -451,16 +451,16 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
                         onClick={() => handlePointClick(pt)}
                         className={`p-2.5 px-3.5 rounded-xl cursor-pointer transition-all duration-150 flex flex-col gap-1 border ${
                           active
-                            ? 'border-[#0071e3] bg-[#0071e3]/12 dark:bg-[#0071e3]/20 shadow-sm'
-                            : 'border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800'
+                            ? 'border-[#0071e3] bg-[#0071e3]/12 shadow-sm'
+                            : 'border-slate-200/80 bg-white hover:bg-slate-50'
                         }`}
                       >
                         <div className="flex items-center justify-between">
-                          <span className={`text-[0.72rem] font-bold ${active ? 'text-[#0071e3]' : 'text-slate-500 dark:text-slate-400'}`}>
+                          <span className={`text-[0.72rem] font-bold ${active ? 'text-[#0071e3]' : 'text-slate-500'}`}>
                             {pt.point_id}
                           </span>
                           <div className="flex items-center gap-1.5">
-                            <span className="text-[0.68rem] text-slate-400 dark:text-slate-500">
+                            <span className="text-[0.68rem] text-slate-400">
                               {pt.subcategory}
                             </span>
                             {pt.is_mandatory ? (
@@ -470,7 +470,7 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
                             ) : null}
                           </div>
                         </div>
-                        <div className={`text-[0.88rem] ${active ? 'font-bold text-slate-900 dark:text-white' : 'font-medium text-slate-800 dark:text-slate-200'}`}>
+                        <div className={`text-[0.88rem] ${active ? 'font-bold text-slate-900' : 'font-medium text-slate-800'}`}>
                           {locale === 'en' ? (pt.name_en || pt.name_zh) : pt.name_zh}
                         </div>
                       </div>

@@ -39,7 +39,7 @@ export const SystemFooter: React.FC<SystemFooterProps> = ({ className = '', loca
   return (
     <footer
       data-testid="system-footer"
-      className={`w-full mt-10 pt-5 pb-6 border-t border-black/[0.06] dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-text-tertiary select-none ${className}`}
+      className={`w-full mt-10 pt-5 pb-6 border-t border-black/[0.06] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-text-tertiary select-none ${className}`}
     >
       <div className="flex items-center gap-2 flex-wrap justify-center sm:justify-start">
         <span className="font-semibold text-text-secondary">
@@ -59,7 +59,7 @@ export const SystemFooter: React.FC<SystemFooterProps> = ({ className = '', loca
         </span>
         <span
           data-testid="app-release-version"
-          className="font-mono text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-black/[0.04] dark:bg-slate-800 text-text-secondary dark:text-slate-300 border border-black/[0.06] dark:border-slate-700"
+          className="font-mono text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-black/[0.04] text-text-secondary border border-black/[0.06]"
         >
           {APP_VERSION}
         </span>
@@ -68,7 +68,7 @@ export const SystemFooter: React.FC<SystemFooterProps> = ({ className = '', loca
           data-testid="force-purge-cache-btn"
           onClick={handleForcePurgeCache}
           title={isEn ? 'Purge local cache and reload latest assets' : '强制清除本地缓存并重载最新资产'}
-          className="inline-flex items-center gap-1 text-[11px] text-text-tertiary hover:text-ios-blue px-2 py-0.5 rounded-full hover:bg-black/[0.04] dark:hover:bg-slate-800 transition-colors cursor-pointer border border-transparent hover:border-black/[0.06] dark:hover:border-slate-700 active:scale-95"
+          className="inline-flex items-center gap-1 text-[11px] text-text-tertiary hover:text-ios-blue px-2 py-0.5 rounded-full hover:bg-black/[0.04] transition-colors cursor-pointer border border-transparent hover:border-black/[0.06] active:scale-95"
         >
           <RotateCcw className={`w-3 h-3 ${isPurging ? 'animate-spin text-ios-blue' : ''}`} />
           <span>{isEn ? 'Clear Cache' : '刷新缓存'}</span>

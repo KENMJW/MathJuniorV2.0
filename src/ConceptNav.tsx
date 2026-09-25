@@ -415,7 +415,7 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
       */}
       {!isMobile && (
         <header
-          className="concept-nav-header w-full flex items-center justify-between flex-wrap gap-3 px-7 py-4 bg-white dark:bg-slate-900 rounded-t-[22px] border border-slate-200/80 dark:border-slate-800 border-b-slate-200/50 sticky top-0 box-border shadow-sm"
+          className="concept-nav-header w-full flex items-center justify-between flex-wrap gap-3 px-7 py-4 bg-white rounded-t-[22px] border border-slate-200/80 border-b-slate-200/50 sticky top-0 box-border shadow-sm"
           style={{ zIndex: (isDrawerOpen || isConceptDrawerOpen) ? 95 : 40 }}
         >
           {/* 左侧：[ 考点名称 · 9年级 上学期 ▾ ] 胶囊按钮 + 桌面端 Popover 锚点容器 */}
@@ -423,7 +423,7 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
             <button
               type="button"
               data-testid="concept-drawer-trigger"
-              className="concept-drawer-trigger-btn inline-flex items-center gap-1.5 px-4 py-1.5 bg-white dark:bg-slate-800 border-[1.5px] border-blue-600 dark:border-sky-400 rounded-full text-blue-600 dark:text-sky-400 text-xs font-bold cursor-pointer shadow-sm active:scale-[0.98] transition-all max-w-full shrink-0"
+              className="concept-drawer-trigger-btn inline-flex items-center gap-1.5 px-4 py-1.5 bg-white border-[1.5px] border-blue-600 rounded-full text-blue-600 text-xs font-bold cursor-pointer shadow-sm active:scale-[0.98] transition-all max-w-full shrink-0"
               onClick={() => {
                 setIsDrawerOpen((prev) => !prev);
                 setIsConceptDrawerOpen((prev) => !prev);
@@ -468,7 +468,7 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
 
           {/* 右侧：4 个扁平分段胶囊 (按图二风格：灰底胶囊槽 + 12px + 纯白微阴影活动态) */}
           <div
-            className="dimension-segmented-control stage-segmented-control relative inline-flex bg-black/[0.04] dark:bg-white/[0.06] p-[3px] rounded-full border border-black/[0.03] dark:border-white/[0.05] gap-0.5 whitespace-nowrap"
+            className="dimension-segmented-control stage-segmented-control relative inline-flex bg-black/[0.04] p-[3px] rounded-full border border-black/[0.03] gap-0.5 whitespace-nowrap"
           >
             {[
               { key: "stages", label: locale === "en" ? "Concept Lecture" : "四段论精讲", icon: "book" },
@@ -488,8 +488,8 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
                   }}
                   className={`border-none py-1.5 px-4 rounded-full text-xs font-bold cursor-pointer transition-all inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 active:scale-[0.98] ${
                     active
-                      ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-sky-400 shadow-sm"
-                      : "bg-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                      ? "bg-white text-blue-600 shadow-sm"
+                      : "bg-transparent text-slate-500 hover:text-slate-700"
                   }`}
                 >
                   <Icon name={tab.icon} size={13} />
@@ -510,7 +510,7 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
         ④ 单点快练
       */}
       <div
-        className="concept-main-card w-full box-border min-h-[740px] bg-white dark:bg-slate-900 rounded-b-[22px] border border-slate-200/80 dark:border-slate-800 border-t-0 shadow-sm p-5 sm:p-7 relative"
+        className="concept-main-card w-full box-border min-h-[740px] bg-white rounded-b-[22px] border border-slate-200/80 border-t-0 shadow-sm p-5 sm:p-7 relative"
       >
         <main
           ref={mainStageRef}

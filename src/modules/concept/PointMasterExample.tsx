@@ -233,29 +233,29 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
   return (
     <div
       data-testid="point-master-example-card"
-      className={`w-full p-6 rounded-3xl backdrop-blur-xl bg-white/70 dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 shadow-xl flex flex-col gap-6 box-border ${className}`}
+      className={`w-full p-6 rounded-3xl backdrop-blur-xl bg-white/70 border border-slate-200/80 shadow-xl flex flex-col gap-6 box-border ${className}`}
     >
       {/* 头部元信息 */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200/80 dark:border-slate-800 pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200/80 pb-4">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2 flex-wrap min-w-0">
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-blue-500/10 text-blue-600 dark:text-sky-400 border border-blue-500/20 shrink-0">
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-blue-500/10 text-blue-600 border border-blue-500/20 shrink-0">
               {isEn ? `ME Master Example · ${example.example_id}` : `ME 考点母题 · ${example.example_id}`}
             </span>
             {example.source && (
               <SourceTag source={example.source} maxWidth="220px" />
             )}
           </div>
-          <h2 className="m-0 text-lg font-black text-slate-900 dark:text-white">
+          <h2 className="m-0 text-lg font-black text-slate-900">
             {isEn ? 'Master Example Deep Dive (4D Progressive Perspective)' : '压轴母题深度拆解 (四维步进透视)'}
           </h2>
         </div>
 
         {/* 步进进度指示 */}
         <div className="flex items-center gap-3">
-          <span className="text-xs text-slate-500 dark:text-slate-400">
+          <span className="text-xs text-slate-500">
             {isEn ? 'Progress: ' : '解锁进度：'}
-            <strong className="text-blue-600 dark:text-sky-400 font-bold">{unlockedDimensions.size}</strong>
+            <strong className="text-blue-600 font-bold">{unlockedDimensions.size}</strong>
             {isEn ? ` / ${maxAvailable} Dimensions` : ` / ${maxAvailable} 维`}
           </span>
           {nextToUnlock !== undefined && (
@@ -272,11 +272,11 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
       </div>
 
       {/* 母题题干 (严格走 MathRenderer) */}
-      <div className="p-5 rounded-2xl bg-slate-50/80 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/60 flex flex-col gap-3">
-        <span className="text-[11px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+      <div className="p-5 rounded-2xl bg-slate-50/80 border border-slate-200/80 flex flex-col gap-3">
+        <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">
           {isEn ? 'Master Example Stem' : '母题题干'}
         </span>
-        <div className="db-content-body text-slate-900 dark:text-slate-100 text-sm leading-relaxed overflow-hidden break-words max-w-full">
+        <div className="db-content-body text-slate-900 text-sm leading-relaxed overflow-hidden break-words max-w-full">
           <QuestionContent content={getSafeStem(example, isEn)} images={example.image_paths_json} />
         </div>
 
@@ -294,11 +294,11 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
                   key={k}
                   className={`flex items-start gap-2.5 p-3 rounded-xl border text-xs sm:text-sm font-medium transition-all ${
                     isCorrect
-                      ? 'border-blue-500 bg-blue-500/10 text-blue-700 dark:text-sky-300 font-semibold'
-                      : 'border-slate-200/80 dark:border-slate-700 bg-white/60 dark:bg-slate-800/40 text-slate-700 dark:text-slate-300'
+                      ? 'border-blue-500 bg-blue-500/10 text-blue-700 font-semibold'
+                      : 'border-slate-200/80 bg-white/60 text-slate-700'
                   }`}
                 >
-                  <span className="font-extrabold text-blue-600 dark:text-sky-400">{k}.</span>
+                  <span className="font-extrabold text-blue-600">{k}.</span>
                   <div className="flex-1 overflow-x-auto flex flex-col gap-1">
                     {opt.img ? (
                       <QuestionImage role="option" src={opt.img} alt={`选项 ${k}`} />
@@ -307,7 +307,7 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
                     )}
                   </div>
                   {isCorrect && (
-                    <span className="text-[11px] font-bold text-blue-600 dark:text-sky-400 inline-flex items-center gap-1 shrink-0">
+                    <span className="text-[11px] font-bold text-blue-600 inline-flex items-center gap-1 shrink-0">
                       <Check className="w-3.5 h-3.5" />
                       <span>{isEn ? 'Correct' : '正解'}</span>
                     </span>
@@ -322,7 +322,7 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
       {/* 1~4 阶思维阶梯手风琴序列 */}
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
-          <h3 className="m-0 text-xs font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+          <h3 className="m-0 text-xs font-extrabold text-slate-400 uppercase tracking-wider">
             {isEn ? '4D Cognitive Evolution' : '四维认知透视演进'}
           </h3>
           <span className="text-xs text-slate-400">
@@ -360,23 +360,23 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
                       handleUnlockDimension(dim.index);
                     }
                   }}
-                  className="p-4 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30 flex items-center justify-between gap-4 cursor-pointer hover:bg-slate-100/60 dark:hover:bg-slate-800/60 active:scale-[0.98] transition-all select-none"
+                  className="p-4 rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 flex items-center justify-between gap-4 cursor-pointer hover:bg-slate-100/60 active:scale-[0.98] transition-all select-none"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-slate-200/60 dark:bg-slate-700/60 flex items-center justify-center text-slate-400">
+                    <div className="w-8 h-8 rounded-xl bg-slate-200/60 flex items-center justify-center text-slate-400">
                       <Lock className="w-4 h-4" />
                     </div>
                     <div className="flex flex-col gap-0.5 text-left">
-                      <div className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300">
+                      <div className="text-xs sm:text-sm font-bold text-slate-700">
                         {stepTitle}
                       </div>
-                      <div className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
+                      <div className="text-[11px] text-slate-400 font-medium">
                         {legacyTitle} · {isEn ? dim.subtitleEn : dim.subtitleZh}
                       </div>
                     </div>
                   </div>
 
-                  <span className="text-[11px] text-slate-400 dark:text-slate-500 whitespace-nowrap hidden sm:inline">
+                  <span className="text-[11px] text-slate-400 whitespace-nowrap hidden sm:inline">
                     {isEn ? 'Click card or button above to unlock' : '点击卡片或上方按钮解锁'}
                   </span>
                 </div>
@@ -390,10 +390,10 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
                 data-testid={`master-dim-card-${dim.index}`}
                 className={`rounded-2xl border transition-all overflow-hidden ${
                   isTrapStep
-                    ? 'border-red-500/30 bg-red-500/5 dark:bg-red-500/10'
+                    ? 'border-red-500/30 bg-red-500/5'
                     : isRigorStep
-                    ? 'border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-500/10'
-                    : 'border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-850/80 shadow-md'
+                    ? 'border-emerald-500/30 bg-emerald-500/5'
+                    : 'border-slate-200/80 bg-white/80 shadow-md'
                 }`}
               >
                 {/* 手风琴头部触控条 */}
@@ -403,26 +403,26 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
                   className="w-full p-4 flex items-center justify-between gap-3 text-left bg-transparent border-none cursor-pointer active:scale-[0.98] transition-all"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+                    <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
                       {renderIcon(dim.iconType)}
                     </div>
                     <div className="flex flex-col gap-0.5 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white">
+                        <span className="text-xs sm:text-sm font-extrabold text-slate-900">
                           {stepTitle}
                         </span>
-                        <span className="text-[10px] sm:text-[11px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold shrink-0">
+                        <span className="text-[10px] sm:text-[11px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-semibold shrink-0">
                           {legacyTitle}
                         </span>
                       </div>
-                      <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                      <span className="text-[11px] text-slate-500 font-medium">
                         {isEn ? dim.subtitleEn : dim.subtitleZh}
                       </span>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25">
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-600 border border-emerald-500/25">
                       {isEn ? 'Unlocked' : '已解锁'}
                     </span>
                     <ChevronDown
@@ -435,10 +435,10 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
 
                 {/* 手风琴展开内容区 */}
                 {isExpanded && (
-                  <div className="px-4 pb-4 pt-1 border-t border-slate-200/50 dark:border-slate-800/60 animate-in fade-in duration-150">
+                  <div className="px-4 pb-4 pt-1 border-t border-slate-200/50 animate-in fade-in duration-150">
                     {/* 阶梯 4 避坑指南专属警告浮层 */}
                     {isTrapStep && (
-                      <div className="mb-2 p-2.5 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center gap-2 text-xs font-bold text-red-600 dark:text-red-400">
+                      <div className="mb-2 p-2.5 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center gap-2 text-xs font-bold text-red-600">
                         <AlertTriangle className="w-4 h-4 shrink-0" />
                         <span>
                           {isEn
@@ -450,7 +450,7 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
 
                     {/* 阶梯 3 严密推导中考踩分点专属提示 */}
                     {isRigorStep && (
-                      <div className="mb-2 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-2 text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                      <div className="mb-2 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-2 text-xs font-bold text-emerald-700">
                         <FileCheck2 className="w-4 h-4 shrink-0" />
                         <span>
                           {isEn
@@ -460,7 +460,7 @@ export const PointMasterExample: React.FC<PointMasterExampleProps> = ({
                       </div>
                     )}
 
-                    <div className="db-content-sub text-slate-800 dark:text-slate-200 text-xs sm:text-sm leading-relaxed overflow-hidden break-words max-w-full">
+                    <div className="db-content-sub text-slate-800 text-xs sm:text-sm leading-relaxed overflow-hidden break-words max-w-full">
                       <QuestionContent
                         content={content}
                         images={example.image_paths_json}
