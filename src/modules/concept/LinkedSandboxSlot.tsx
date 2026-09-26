@@ -374,13 +374,13 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
     return (
       <div
         data-testid="linked-sandbox-active"
-        className={`w-full overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-xl flex flex-col gap-3 p-4 box-border relative ${className}`}
+        className={`w-full overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl flex flex-col gap-3 p-4 box-border relative ${className}`}
         style={{ minHeight: containerHeight, height: containerHeight, ...style }}
       >
-        {/* 画布主视口 + 侧边不变量遥测栏与步骤指示 */}
-        <div className="sandbox-split-box flex-1 min-h-0 flex flex-col lg:flex-row gap-3.5">
+        {/* 画布主视口 + 侧边不变量遥测栏与步骤指示 (两边自动等高对齐) */}
+        <div className="sandbox-split-box desktop-unified flex-1 min-h-0 flex flex-col lg:flex-row gap-3.5 items-stretch">
           {/* 主视口 (JSXGraph 画布) */}
-          <div className="sandbox-viewport-85 flex-[1_1_78%] h-full min-h-0 relative">
+          <div className="sandbox-viewport-85 flex-[1_1_78%] h-full min-h-0 self-stretch relative rounded-2xl overflow-hidden bg-slate-950 border border-slate-800/80 shadow-inner block" style={{ width: '100%', height: '100%' }}>
             <SandboxRenderer
               key={sandboxId}
               config={config}
@@ -390,11 +390,12 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
               onParamChange={handleParamChange}
               locale={locale}
               className="h-full w-full"
+              style={{ width: '100%', height: '100%' }}
             />
           </div>
 
           {/* 右侧仪表盘 (.sandbox-guide-15, Slate 900 暗室配色) */}
-          <div className="sandbox-guide-15 w-full lg:w-72 shrink-0 flex flex-col gap-2 rounded-2xl bg-slate-800/90 border border-slate-700/60 p-3 text-slate-100 shadow-inner overflow-y-auto">
+          <div className="sandbox-guide-15 w-full lg:w-72 shrink-0 h-full self-stretch flex flex-col gap-2 rounded-2xl bg-slate-800/90 dark:bg-slate-950/95 border border-slate-700/60 p-3 text-slate-100 shadow-inner overflow-y-auto">
             {/* 1~3 步自适应探究引导胶囊 */}
             <div className="flex flex-col gap-2">
               <div className="flex flex-col gap-2 pb-2 border-b border-slate-700/60">
@@ -692,9 +693,9 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
         </div>
 
         {/* 底部参数滑块控制条 */}
-        <div className="sandbox-controls-bar w-full p-2.5 rounded-2xl bg-slate-50 border border-slate-200/80">
+        <div className="sandbox-controls-bar w-full p-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/50">
           <div className="flex gap-4 w-full flex-wrap items-center">
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 mr-2">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 mr-2">
               <Sliders className="w-3.5 h-3.5" />
               <span>{isEn ? 'Sliders' : '参数调控'}</span>
             </div>
@@ -702,9 +703,9 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
               const val = paramValues[s.id] ?? s.default;
               return (
                 <div key={s.id} className="slider-group flex items-center gap-2">
-                  <label htmlFor={`linked-slider-${s.id}`} className="text-xs text-slate-700 whitespace-nowrap">
+                  <label htmlFor={`linked-slider-${s.id}`} className="text-xs text-slate-700 dark:text-slate-300 whitespace-nowrap">
                     {s.name}:{' '}
-                    <strong className="text-blue-600 font-semibold">
+                    <strong className="text-blue-600 dark:text-sky-400 font-semibold">
                       {val}
                       {s.unit || ''}
                     </strong>
@@ -731,17 +732,17 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
         {/* Aha! 顿悟微弹窗 (iOS 27 浅色毛玻璃浮层) */}
         {showAhaModal && currentAhaStep && (
           <div className="absolute inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-md animate-in fade-in duration-200">
-            <div className="w-full max-w-md rounded-3xl bg-white/95 border border-amber-500/40 shadow-2xl p-6 flex flex-col gap-4 transform transition-all scale-100 animate-in zoom-in-95">
+            <div className="w-full max-w-md rounded-3xl bg-white/95 dark:bg-slate-900/95 border border-amber-500/40 shadow-2xl p-6 flex flex-col gap-4 transform transition-all scale-100 animate-in zoom-in-95">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="w-9 h-9 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-500">
                     <Sparkles className="w-5 h-5" />
                   </div>
                   <div>
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-amber-600">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
                       {isEn ? 'Aha! Breakthrough' : 'Aha! 名师顿悟秘籍'}
                     </span>
-                    <h3 className="text-base font-extrabold text-slate-900 m-0">
+                    <h3 className="text-base font-extrabold text-slate-900 dark:text-white m-0">
                       {isEn
                         ? currentAhaStep.titleEn || currentAhaStep.titleZh || currentAhaStep.title
                         : currentAhaStep.titleZh || currentAhaStep.title}
@@ -752,14 +753,14 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowAhaModal(false)}
-                  className="w-7 h-7 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 bg-slate-100 transition-all"
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-white bg-slate-100 dark:bg-slate-800 transition-all"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
               {/* 核心顿悟内容 */}
-              <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-slate-800 text-sm leading-relaxed">
+              <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-slate-800 dark:text-slate-200 text-sm leading-relaxed">
                 <MathRenderer
                   content={
                     (isEn
@@ -799,12 +800,12 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
   return (
     <div
       data-testid="linked-sandbox-placeholder"
-      className={`w-full flex flex-col items-center justify-center p-8 rounded-3xl backdrop-blur-xl bg-white/70 border border-slate-200/80 shadow-xl select-none transition-all box-border ${className}`}
+      className={`w-full flex flex-col items-center justify-center p-8 rounded-3xl backdrop-blur-xl bg-white/70 dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 shadow-xl select-none transition-all box-border ${className}`}
       style={{ minHeight: containerHeight, height: containerHeight, ...style }}
     >
       <div className="max-w-md text-center flex flex-col items-center gap-4">
         {/* 占位徽章 */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
           <span className="inline-flex items-center gap-1.5">
             <Icon name="ruler" size={13} />
             <span>{isEn ? 'Pure Algebraic Concept' : '纯数式/概念考点'}</span>
@@ -814,12 +815,12 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
         </div>
 
         {/* 核心提示蓝框 */}
-        <div className="p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-xs sm:text-sm text-blue-600 leading-relaxed text-center w-full box-border">
+        <div className="p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-xs sm:text-sm text-blue-600 dark:text-sky-400 leading-relaxed text-center w-full box-border">
           <MathRenderer content="本考点聚焦于代数数式运算、逻辑公理与严谨公式定义，无需动力学几何拖拽模拟。" />
         </div>
 
         {/* 快捷指引 */}
-        <p className="m-0 text-xs text-slate-400">
+        <p className="m-0 text-xs text-slate-400 dark:text-slate-500">
           {isEn
             ? 'You can switch directly to Master Example and Quick Practice.'
             : '您可直接滑动或进入下一步【③ 考点母题】与【④ 单点快练】'}

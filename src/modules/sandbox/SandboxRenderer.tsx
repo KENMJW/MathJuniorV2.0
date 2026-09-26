@@ -1292,6 +1292,16 @@ export function computeSandboxBoundingBox(
   return computeBoundingBoxFromPoints(points);
 }
 
+function safeFreeBoardInstance(b: any) {
+  if (!b) return;
+  try {
+    if (typeof b.stopResizeObserver === 'function') b.stopResizeObserver();
+    if (typeof b.stopIntersectionObserver === 'function') b.stopIntersectionObserver();
+    if (Array.isArray(b.resizeHandlers)) b.resizeHandlers = [];
+    JXG.JSXGraph.freeBoard(b);
+  } catch (e) {}
+}
+
 export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
   config,
   className,
@@ -1366,9 +1376,8 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
 
     // 清理旧实例
     if (boardRef.current) {
-      try {
-        JXG.JSXGraph.freeBoard(boardRef.current);
-      } catch (e) {}
+      safeFreeBoardInstance(boardRef.current);
+      boardRef.current = null;
     }
 
     // 初始化深色 Slate 视口
@@ -2993,14 +3002,28 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
     board.on('move', updateInvariants);
     setTimeout(updateInvariants, 80);
 
+    // 确保容器获得实际物理尺寸时自动适应（解决首帧尺寸延迟导致模型空白的问题）
+    const ensureDimensions = () => {
+      if (!boardRef.current || !containerRef.current) return;
+      const w = containerRef.current.clientWidth;
+      const h = containerRef.current.clientHeight;
+      if (w > 0 && h > 0) {
+        try {
+          boardRef.current.resizeContainer(w, h, true);
+        } catch (e) {}
+      }
+    };
+    const timer1 = setTimeout(ensureDimensions, 50);
+    const timer2 = setTimeout(ensureDimensions, 200);
+
     return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
       if (isDraggingRef.current) {
         return;
       }
       if (boardRef.current) {
-        try {
-          JXG.JSXGraph.freeBoard(boardRef.current);
-        } catch (e) {}
+        safeFreeBoardInstance(boardRef.current);
         boardRef.current = null;
       }
     };
@@ -3023,9 +3046,7 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
   useEffect(() => {
     return () => {
       if (boardRef.current) {
-        try {
-          JXG.JSXGraph.freeBoard(boardRef.current);
-        } catch (e) {}
+        safeFreeBoardInstance(boardRef.current);
         boardRef.current = null;
       }
     };
@@ -3051,7 +3072,16 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
       <div
         id={containerId}
         ref={containerRef}
-        style={{ width: '100%', height: '100%', touchAction: 'none' }}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: '100%',
+          height: '100%',
+          touchAction: 'none',
+        }}
       />
     </div>
   );

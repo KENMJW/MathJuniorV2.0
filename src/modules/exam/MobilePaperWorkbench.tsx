@@ -224,7 +224,7 @@ export const MobilePaperWorkbench: React.FC<MobilePaperWorkbenchProps> = ({
         <button
           type="button"
           onClick={() => setIsDrawerOpen(true)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-sky-600 text-xs font-semibold shadow-sm active:scale-95 transition-transform"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sky-600 dark:text-sky-400 text-xs font-semibold shadow-sm active:scale-95 transition-transform"
           data-testid="mobile-quick-tuning-trigger"
         >
           <Icon name="sliders" size={13} />
@@ -233,44 +233,44 @@ export const MobilePaperWorkbench: React.FC<MobilePaperWorkbenchProps> = ({
       </div>
 
       {/* 试卷概览大卡片 (iOS 27 液态玻璃设计) */}
-      <div className="flex flex-col gap-3.5 p-4 rounded-2xl bg-white border border-slate-200/80 shadow-sm">
+      <div className="flex flex-col gap-3.5 p-4 rounded-2xl bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/60 shadow-sm">
         {/* 当前配置三维标签 */}
         <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-50 text-sky-600 border border-sky-200">
+          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-800/60">
             {isEn ? spec.nameEn : spec.nameZh}
           </span>
-          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-50 text-indigo-600 border border-indigo-200">
+          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800/60">
             {isEn ? MOBILE_SEMESTERS.find((s) => s.key === semesterKey)?.labelEn : MOBILE_SEMESTERS.find((s) => s.key === semesterKey)?.labelZh}
           </span>
-          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">
+          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60">
             {isEn ? diffSpec.nameEn : diffSpec.nameZh}
           </span>
         </div>
 
         {/* 试卷指标汇总 */}
-        <div className="grid grid-cols-3 gap-2 py-2 border-y border-slate-100 text-center">
+        <div className="grid grid-cols-3 gap-2 py-2 border-y border-slate-100 dark:border-slate-700/60 text-center">
           <div className="flex flex-col">
             <span className="text-[11px] text-slate-400">{isEn ? 'Questions' : '试卷题量'}</span>
-            <span className="text-base font-extrabold text-slate-800">
+            <span className="text-base font-extrabold text-slate-800 dark:text-slate-100">
               {spec.totalQuestions} <span className="text-xs font-normal text-slate-400">{isEn ? 'items' : '题'}</span>
             </span>
           </div>
           <div className="flex flex-col">
             <span className="text-[11px] text-slate-400">{isEn ? 'Total Score' : '试卷满分'}</span>
-            <span className="text-base font-extrabold text-sky-600">
+            <span className="text-base font-extrabold text-sky-600 dark:text-sky-400">
               {spec.totalScore} <span className="text-xs font-normal text-slate-400">{isEn ? 'pts' : '分'}</span>
             </span>
           </div>
           <div className="flex flex-col">
             <span className="text-[11px] text-slate-400">{isEn ? 'Time Limit' : '考试时限'}</span>
-            <span className="text-base font-extrabold text-slate-800">
+            <span className="text-base font-extrabold text-slate-800 dark:text-slate-100">
               {spec.timeLimitMinutes} <span className="text-xs font-normal text-slate-400">{isEn ? 'min' : '分钟'}</span>
             </span>
           </div>
         </div>
 
         {/* 题型分布 */}
-        <div className="flex flex-col gap-1.5 text-xs text-slate-600">
+        <div className="flex flex-col gap-1.5 text-xs text-slate-600 dark:text-slate-300">
           <div className="flex items-center justify-between">
             <span className="text-slate-400">{isEn ? 'Multiple Choice' : '单选题'}</span>
             <span className="font-semibold">{spec.choiceCount} {isEn ? 'questions' : '道'} ({spec.choiceTotalScore} {isEn ? 'pts' : '分'})</span>
@@ -286,7 +286,7 @@ export const MobilePaperWorkbench: React.FC<MobilePaperWorkbenchProps> = ({
         </div>
 
         {/* 真题库就绪状态 */}
-        <div className="flex items-center gap-1.5 pt-1 text-[11px] text-emerald-600">
+        <div className="flex items-center gap-1.5 pt-1 text-[11px] text-emerald-600 dark:text-emerald-400">
           <Icon name="check" size={13} />
           <span>{isEn ? 'Standard question inventory ready' : '全真题库资源就绪 · 标准子集闭包校验通过'}</span>
         </div>
@@ -318,22 +318,22 @@ export const MobilePaperWorkbench: React.FC<MobilePaperWorkbenchProps> = ({
           <div className="absolute inset-0" onClick={() => setIsDrawerOpen(false)} />
 
           <div
-            className="relative z-10 w-full max-w-lg rounded-t-3xl bg-white border-t border-slate-200 p-5 shadow-2xl flex flex-col gap-4 animate-slide-up"
+            className="relative z-10 w-full max-w-lg rounded-t-3xl bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 p-5 shadow-2xl flex flex-col gap-4 animate-slide-up"
             data-testid="mobile-tuning-drawer"
           >
             {/* 抽屉把手条 */}
-            <div className="w-10 h-1 bg-slate-300 rounded-full mx-auto" />
+            <div className="w-10 h-1 bg-slate-300 dark:bg-slate-600 rounded-full mx-auto" />
 
             {/* 抽屉头部 */}
             <div className="flex items-center justify-between pb-1">
-              <h3 className="m-0 text-base font-bold text-slate-800 flex items-center gap-2">
+              <h3 className="m-0 text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                 <Icon name="sliders" size={16} className="text-sky-500" />
                 <span>{isEn ? 'Quick Settings' : '组卷快速微调'}</span>
               </h3>
               <button
                 type="button"
                 onClick={() => setIsDrawerOpen(false)}
-                className="p-1.5 rounded-full text-slate-400 hover:text-slate-600 active:scale-95"
+                className="p-1.5 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 active:scale-95"
               >
                 <Icon name="x" size={16} />
               </button>
@@ -341,7 +341,7 @@ export const MobilePaperWorkbench: React.FC<MobilePaperWorkbenchProps> = ({
 
             {/* 项 1：满分制体系 (最左项默认) */}
             <div className="flex flex-col gap-1.5">
-              <span className="text-xs font-semibold text-slate-500">
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
                 {isEn ? '1. Full Score System (Fixed items)' : '1. 满分制体系 (题目数量自动锁定)'}
               </span>
               <div className="grid grid-cols-3 gap-2">
@@ -356,7 +356,7 @@ export const MobilePaperWorkbench: React.FC<MobilePaperWorkbenchProps> = ({
                       className={`h-11 px-2 rounded-xl text-xs font-semibold flex flex-col items-center justify-center transition-all ${
                         isCur
                           ? 'bg-[#0071e3] text-white shadow-md shadow-blue-500/20'
-                          : 'bg-slate-100 text-slate-700 border border-slate-200/60'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700'
                       }`}
                       data-testid={`score-system-btn-${sys}`}
                     >
@@ -370,7 +370,7 @@ export const MobilePaperWorkbench: React.FC<MobilePaperWorkbenchProps> = ({
 
             {/* 项 2：学期范围 (最左项 7上 默认) */}
             <div className="flex flex-col gap-1.5">
-              <span className="text-xs font-semibold text-slate-500">
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
                 {isEn ? '2. Semester Coverage' : '2. 学期向后覆盖'}
               </span>
               <div className="grid grid-cols-3 gap-2">
@@ -384,7 +384,7 @@ export const MobilePaperWorkbench: React.FC<MobilePaperWorkbenchProps> = ({
                       className={`h-10 px-2 rounded-xl text-xs font-semibold flex items-center justify-center transition-all ${
                         isCur
                           ? 'bg-[#0071e3] text-white shadow-md shadow-blue-500/20'
-                          : 'bg-slate-100 text-slate-700 border border-slate-200/60'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700'
                       }`}
                       data-testid={`semester-btn-${s.key}`}
                     >
@@ -397,7 +397,7 @@ export const MobilePaperWorkbench: React.FC<MobilePaperWorkbenchProps> = ({
 
             {/* 项 3：难度倾向 (最左项 基础夯实 默认) */}
             <div className="flex flex-col gap-1.5">
-              <span className="text-xs font-semibold text-slate-500">
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
                 {isEn ? '3. Difficulty Tendency' : '3. 试卷难度倾向'}
               </span>
               <div className="grid grid-cols-3 gap-2">
@@ -412,7 +412,7 @@ export const MobilePaperWorkbench: React.FC<MobilePaperWorkbenchProps> = ({
                       className={`h-10 px-1.5 rounded-xl text-[11px] font-semibold flex items-center justify-center transition-all ${
                         isCur
                           ? 'bg-[#0071e3] text-white shadow-md shadow-blue-500/20'
-                          : 'bg-slate-100 text-slate-700 border border-slate-200/60'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700'
                       }`}
                       data-testid={`difficulty-btn-${d}`}
                     >

@@ -19,6 +19,8 @@ export interface LabWorkspaceProps {
   onLabSubViewChange?: (view: "concept_sandbox" | "leap_4d") => void;
   selectedLeapModelId?: string;
   onSelectLeapModelId?: (id: string) => void;
+  selectedSandboxId?: string;
+  onSelectSandboxId?: (id: string) => void;
 }
 
 const GRADES = [7, 8, 9] as const;
@@ -55,16 +57,20 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
   onLabSubViewChange,
   selectedLeapModelId: controlledLeapId,
   onSelectLeapModelId,
+  selectedSandboxId: controlledSandboxId,
+  onSelectSandboxId,
 }) => {
   const isEn = String(locale).toLowerCase().startsWith('en');
   // 默认开启概念具象沙盒 (实验室一)
   const [internalSubView, setInternalSubView] = useState<"concept_sandbox" | "leap_4d">("concept_sandbox");
-  const [selectedSandboxId, setSelectedSandboxId] = useState<string>(
+  const [internalSandboxId, setInternalSandboxId] = useState<string>(
     effectiveSandboxes.find((s) => s.id === 'SB-KP001')?.id ||
     effectiveSandboxes.find((s) => s.grade === 7 && s.semester === 1)?.id ||
     effectiveSandboxes[0]?.id ||
     ""
   );
+  const selectedSandboxId = controlledSandboxId ?? internalSandboxId;
+  const setSelectedSandboxId = onSelectSandboxId ?? setInternalSandboxId;
   const [internalLeapId, setInternalLeapId] = useState<string>(
     effectiveLeapModels.find((m) => m.model_id === 'LM-7A-01')?.model_id ||
     effectiveLeapModels.find((m) => m.model_id.startsWith('LM-7A'))?.model_id ||
@@ -900,7 +906,9 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
               </div>
             )}
 
-            {/* 85% Canvas + 15% Telemetry */}
+            {/* 85% Canvas + 15% Telemetry & Controls */}
+            {isMobile ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 0, width: '100%', position: 'relative' }}>
             <div className="sandbox-split-box" style={{ position: 'relative' }}>
               <div className="sandbox-viewport-85">
                 <SandboxRenderer
@@ -1185,6 +1193,309 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
               </div>
             </div>
 
+
+              </div>
+            ) : (
+              /* 电脑端统一大剧场卡片 (方案 B：左侧大视口 + 右侧任务/HUD一体化仪表盘 + 下方推演轨道与自由解锁滑块) */
+              <div className="w-full overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl flex flex-col gap-3.5 p-4 box-border relative">
+                {/* 上半区：左侧大视口 + 右侧一体化仪表盘 (两边自动等高对齐) */}
+                <div className="sandbox-split-box desktop-unified flex-1 min-h-0 flex flex-col lg:flex-row gap-3.5 items-stretch">
+                  {/* 左侧大视口 (JSXGraph 画布) */}
+                  <div className="sandbox-viewport-85 flex-[1_1_75%] h-full min-h-0 relative rounded-2xl overflow-hidden bg-slate-950 border border-slate-800/80 shadow-inner block" style={{ width: '100%', height: '100%' }}>
+                    <SandboxRenderer
+                      key={`${currentSandbox.id}-${sandboxResetCount}`}
+                      config={currentSandbox.config}
+                      paramValues={conceptParamValues}
+                      onInvariantsChange={setInvariants}
+                      onPointsChange={handleConceptPointsChange}
+                      onParamChange={handleConceptParamChange}
+                      locale={locale}
+                      className="w-full h-full"
+                      style={{ width: '100%', height: '100%' }}
+                    />
+                  </div>
+
+                  {/* 右侧一体化仪表盘 (专职任务引导、名师解析、HUD 测度与模式推进) */}
+                  <div className="sandbox-guide-15 w-full lg:w-80 shrink-0 h-full flex flex-col gap-2.5 rounded-2xl bg-slate-900/95 border border-slate-700/60 p-3.5 text-slate-100 shadow-inner overflow-y-auto">
+                    {/* 顶部标题行与自由探索切换 */}
+                    <div className="flex items-center justify-between gap-1.5 pb-2 border-b border-slate-700/60 shrink-0">
+                      <div className="flex items-center gap-1.5">
+                        <Icon name={conceptLabMode === 'step_deduction' ? 'bulb' : 'gamepad'} size={15} className="text-sky-400" />
+                        <span className="text-xs font-bold tracking-wide text-sky-300">
+                          {conceptLabMode === 'step_deduction'
+                            ? (isEn ? 'Inquiry Mission' : '核心探究任务')
+                            : (isEn ? 'Free Play Active' : '自由把玩模式')}
+                        </span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (conceptLabMode === 'step_deduction') {
+                            setConceptLabMode('free_explore');
+                          } else {
+                            setConceptLabMode('step_deduction');
+                          }
+                        }}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-sky-500/20 text-sky-300 hover:bg-sky-500/30 transition-all active:scale-[0.98]"
+                      >
+                        <Sparkles className="w-3 h-3 text-amber-400" />
+                        <span>
+                          {conceptLabMode === 'step_deduction'
+                            ? (isEn ? 'Free Play' : '直接自由把玩')
+                            : (isEn ? 'Back to Inquiry' : '返回分步推演')}
+                        </span>
+                      </button>
+                    </div>
+
+                    {/* 态 1：分步推演受控态 (认知与数据洞察严格只显示当前按钮选中的过程) */}
+                    {conceptLabMode === 'step_deduction' && inquirySteps[activeStepIndex] && (
+                      <div className="step-deduction-container flex flex-col gap-2.5 flex-1 min-h-0" data-testid="concept-step-deduction-view">
+                        {/* 步骤快速选择胶囊 (对齐标杆截图) */}
+                        <div className="flex items-center gap-1.5 flex-wrap pb-1">
+                          {inquirySteps.map((s, idx) => {
+                            const isCur = idx === activeStepIndex;
+                            const isDone = completedStepIndices.has(idx);
+                            return (
+                              <button
+                                key={s.step || idx}
+                                type="button"
+                                onClick={() => {
+                                  setActiveStepIndex(idx);
+                                  applyStepPreset(s);
+                                }}
+                                className={`px-2 py-0.5 rounded-full text-[11px] font-semibold transition-all ${
+                                  isCur
+                                    ? 'bg-blue-600 text-white shadow-sm ring-1 ring-blue-400'
+                                    : isDone
+                                    ? 'bg-emerald-500/25 text-emerald-300 hover:bg-emerald-500/35'
+                                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
+                                }`}
+                              >
+                                {isDone ? '✓ ' : ''}{isEn ? `Step ${idx + 1}` : `步骤 ${idx + 1}`}
+                              </button>
+                            );
+                          })}
+                          <button
+                            type="button"
+                            onClick={handleResetInquiry}
+                            title={isEn ? 'Restart Inquiry' : '重新开始探究'}
+                            className="ml-auto inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700/60 transition-all active:scale-95"
+                          >
+                            <RotateCcw size={11} className="text-slate-400" />
+                            <span>{isEn ? 'Reset' : '重新开始'}</span>
+                          </button>
+                        </div>
+                        {/* 当前步骤信息卡 */}
+                        <div className="flex flex-col gap-1.5 p-3 rounded-xl bg-slate-800/80 border border-sky-500/30 shrink-0">
+                          <div className="flex items-center justify-between text-xs font-bold text-sky-400">
+                            <span>{`步骤 ${activeStepIndex + 1} / ${inquirySteps.length}`}</span>
+                            <span className="text-[11px] text-slate-300 font-medium truncate max-w-[130px]">
+                              {(isEn ? inquirySteps[activeStepIndex]?.titleEn : inquirySteps[activeStepIndex]?.titleZh) || inquirySteps[activeStepIndex]?.titleZh || `Step ${activeStepIndex + 1}`}
+                            </span>
+                          </div>
+
+                          {/* 名师思想精解 */}
+                          <div className="text-xs text-slate-200 leading-relaxed font-normal">
+                            <MathRenderer
+                              content={
+                                (isEn ? inquirySteps[activeStepIndex]?.guideTextEn : inquirySteps[activeStepIndex]?.guideTextZh) ||
+                                inquirySteps[activeStepIndex]?.guide_text ||
+                                inquirySteps[activeStepIndex]?.guideTextZh ||
+                                ''
+                              }
+                            />
+                          </div>
+
+                          {/* 达成状态与名师秘籍查看入口 */}
+                          <div className="flex items-center justify-between gap-1 pt-1.5 border-t border-slate-700/60 text-[11px]">
+                            {completedStepIndices.has(activeStepIndex) ? (
+                              <span className="text-emerald-400 font-semibold flex items-center gap-1">
+                                <span>✓</span>
+                                <span>{isEn ? 'Target Achieved' : '目标已达成'}</span>
+                              </span>
+                            ) : (
+                              <span className="text-slate-400">
+                                {isEn ? 'Observing...' : '调节参数或动点探究'}
+                              </span>
+                            )}
+
+                            {(inquirySteps[activeStepIndex].aha_insight || inquirySteps[activeStepIndex].ahaInsightZh || inquirySteps[activeStepIndex].ahaInsightEn) && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setCurrentAhaStep(inquirySteps[activeStepIndex]);
+                                  setShowAhaModal(true);
+                                }}
+                                className="inline-flex items-center gap-1 text-[11px] text-amber-300 hover:text-amber-200 underline underline-offset-2"
+                              >
+                                <Sparkles className="w-3 h-3 text-amber-400" />
+                                <span>{isEn ? 'Insight' : '名师秘籍'}</span>
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* 核心测度实时 HUD */}
+                        <div className="flex flex-col gap-1.5 p-2.5 rounded-xl bg-slate-800/80 border border-slate-700/50">
+                          <div className="flex items-center justify-between text-[11px] font-semibold text-slate-300">
+                            <span className="flex items-center gap-1.5">
+                              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                              <span className="text-emerald-300">{isEn ? 'Live HUD Metrics' : '核心测度实时 HUD'}</span>
+                            </span>
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-700 text-slate-300">
+                              {isEn ? 'Active' : '动态监测'}
+                            </span>
+                          </div>
+
+                          <div className="telemetry-readings flex flex-col gap-1 text-xs font-mono">
+                            {invariants.length > 0 ? (
+                              invariants.slice(0, 3).map((inv, idx) => (
+                                <div key={inv.id || idx} className="flex items-center justify-between p-1.5 rounded bg-slate-900/60 border border-slate-800">
+                                  <span className="telemetry-tag-invariant text-sky-300 font-semibold truncate max-w-[170px]"><MathRenderer content={inv.text} /></span>
+                                  <span className="text-[10px] text-emerald-400">{inv.isConstant ? (isEn ? '[Constant]' : '[绝对恒定]') : (isEn ? '[Dynamic]' : '[动态观测中]')}</span>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="flex items-center justify-between p-1.5 rounded bg-slate-900/60 border border-slate-800">
+                                <span className="telemetry-tag-invariant text-sky-300">
+                                  {isEn ? 'Geometric Invariant Conserved' : '几何不变量守恒'}
+                                </span>
+                                <span className="text-[10px] text-emerald-400">[守恒 ✓]</span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="telemetry-tag-conclusion text-[11px] text-emerald-400 p-1 rounded bg-emerald-950/40 border border-emerald-500/20 text-center mt-0.5">
+                            {isEn ? 'Conclusion: Intuitive geometric verification passed' : '结论：几何直观验证通过'}
+                          </div>
+                        </div>
+
+                        {/* 底部推进操作栏 */}
+                        <div className="mt-auto pt-2 flex items-center justify-between gap-2 border-t border-slate-700/60 shrink-0">
+                          <button
+                            type="button"
+                            disabled={activeStepIndex === 0}
+                            onClick={() => {
+                              const prevIdx = Math.max(0, activeStepIndex - 1);
+                              setActiveStepIndex(prevIdx);
+                              applyStepPreset(inquirySteps[prevIdx]);
+                            }}
+                            className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:pointer-events-none transition-all flex items-center gap-1"
+                          >
+                            <ChevronLeft size={13} />
+                            <span>{isEn ? 'Previous' : '上一步'}</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={handleAdvanceToNextStep}
+                            className={`flex-1 inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-white transition-all shadow-md active:scale-95 ${
+                              completedStepIndices.has(activeStepIndex) ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-blue-600 hover:bg-blue-500'
+                            }`}
+                          >
+                            <span>
+                              {activeStepIndex + 1 < inquirySteps.length
+                                ? completedStepIndices.has(activeStepIndex)
+                                  ? (isEn ? 'Achieved · Next ➔' : '已达成 · 下一步 ➔')
+                                  : (isEn ? 'Next Step ➔' : '进入下一步 ➔')
+                                : (isEn ? 'Finish · Free Play ➔' : '完成探究 · 自由把玩 ➔')}
+                            </span>
+                            <ChevronRight size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 态 2：自由探索模式 (全量自由遥测) */}
+                    {conceptLabMode === 'free_explore' && (
+                      <div className="flex flex-col gap-2.5 flex-1 min-h-0">
+                        <div className="p-2.5 rounded-xl bg-emerald-950/30 border border-emerald-500/30 text-xs text-emerald-200 leading-normal shrink-0">
+                          <div className="font-bold flex items-center gap-1 text-emerald-300 mb-0.5">
+                            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                            <span>{isEn ? 'Free Play Active' : '自由把玩已开启'}</span>
+                          </div>
+                          <span>{isEn ? 'Freely adjust parameters and drag dynamic points below.' : '已解除推演步骤限制，可随意拖拽动点与滑动下方参数，深入观测几何守恒。'}</span>
+                        </div>
+
+                        {/* 全量守恒遥测清单 */}
+                        <div className="telemetry-readings flex flex-col gap-1 p-2.5 rounded-xl bg-slate-800/80 border border-slate-700/50">
+                          <span className="text-[11px] font-semibold text-slate-300">{isEn ? 'Invariants Telemetry:' : '全量守恒遥测：'}</span>
+                          {invariants.length > 0 ? (
+                            invariants.map((inv) => (
+                              <span key={inv.id} className="telemetry-tag-invariant text-xs font-mono text-sky-300">
+                                <MathRenderer content={inv.text} />
+                              </span>
+                            ))
+                          ) : (
+                            <span className="telemetry-tag-invariant text-xs font-mono text-emerald-400">
+                              {isEn ? 'Geometric Invariant: Area & Segment Ratio Conserved' : '几何不变量：面积与线段比例守恒'}
+                            </span>
+                          )}
+                          <div className="telemetry-tag-conclusion text-[11px] text-emerald-400 p-1 rounded bg-emerald-950/40 border border-emerald-500/20 text-center mt-1">
+                            {isEn ? 'Conclusion: Intuitive geometric verification passed' : '结论：几何直观验证通过'}
+                          </div>
+                        </div>
+
+                        <div className="mt-auto pt-2 border-t border-slate-700/60">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setConceptLabMode('step_deduction');
+                              setActiveStepIndex(0);
+                              applyStepPreset(inquirySteps[0]);
+                            }}
+                            className="w-full inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 bg-slate-800 hover:bg-slate-700 hover:text-white transition-all"
+                          >
+                            <RotateCcw size={13} />
+                            <span>{isEn ? 'Start from Step 1' : '从第一步重新推演'}</span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* 下半区：通栏常驻参数调控滑块区 (对标标杆截图，确保推演与探索全生命周期均可实时交互) */}
+                {conceptSliders.length > 0 && (
+                  <div
+                    className="free-explore-container sandbox-controls-bar w-full p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/50 flex items-center gap-4 flex-wrap transition-all"
+                    data-testid="concept-free-explore-view"
+                  >
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 shrink-0">
+                      <Icon name="sliders" size={14} />
+                      <span>{isEn ? 'Sliders' : '参数调控'}</span>
+                    </div>
+
+                    <div className="flex items-center gap-4 flex-wrap flex-1 min-w-0">
+                      {conceptSliders.map((s) => {
+                        const val = conceptParamValues[s.id] ?? s.default;
+                        const sliderName = isEn ? (s.name || s.id) : s.name;
+                        return (
+                          <div key={s.id} className="slider-group flex items-center gap-2 min-w-[200px]">
+                            <label htmlFor={`desktop-concept-slider-${s.id}`} className="text-xs font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                              {sliderName}: <strong className="text-blue-600 dark:text-sky-400 font-mono">{val}{s.unit || ''}</strong>
+                            </label>
+                            <input
+                              id={`desktop-concept-slider-${s.id}`}
+                              type="range"
+                              className="apple-slider flex-1"
+                              min={s.min}
+                              max={s.max}
+                              step={s.step}
+                              value={val}
+                              onChange={(e) => {
+                                const newVal = parseFloat(e.target.value);
+                                handleConceptParamChange({ [s.id]: newVal });
+                              }}
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
             {/* 名师题眼 · 核心顿悟 (Aha! Insight) 弹窗 (严格对齐模块一链接沙盒) */}
             {showAhaModal && currentAhaStep && (
               <div

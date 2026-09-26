@@ -629,6 +629,8 @@ export const LeapLab: React.FC<LeapLabProps> = ({
       )}
 
       {/* 85% Canvas + 15% Telemetry */}
+      {isMobile ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 0, width: '100%', position: 'relative' }}>
       <div className="sandbox-split-box">
         <div className="sandbox-viewport-85" style={{ touchAction: 'none' }}>
           {isHandInHand ? (
@@ -1533,6 +1535,681 @@ export const LeapLab: React.FC<LeapLabProps> = ({
             />
           </div>
         </div>
+
+        </div>
+      ) : (
+        /* 电脑端统一大剧场卡片 (方案 B：左侧大视口 + 右侧文字/HUD一体化仪表盘 + 下方推演轨道与自由解锁滑块) */
+        <div className="w-full overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl flex flex-col gap-3.5 p-4 box-border relative">
+          {/* 上半区：左侧大视口 + 右侧一体化仪表盘 (两边自动等高对齐) */}
+          <div className="sandbox-split-box desktop-unified flex-1 min-h-0 flex flex-col lg:flex-row gap-3.5 items-stretch">
+            {/* 左侧大视口 (JSXGraph / SVG 画布) */}
+            <div className="sandbox-viewport-85 flex-[1_1_75%] h-full min-h-0 relative rounded-2xl overflow-hidden bg-slate-950 border border-slate-800/80 shadow-inner block" style={{ touchAction: 'none', width: '100%', height: '100%' }}>
+              {isHandInHand ? (
+                <svg
+                  id="sandbox-svg"
+                  width="100%"
+                  height="100%"
+                  viewBox="-160 -115 320 230"
+                  style={{ display: 'block', margin: 'auto', userSelect: 'none' }}
+                >
+                  {/* 坐标系模式辅助轴线 */}
+                  {isCoord && (
+                    <g stroke="#475569" strokeWidth="1">
+                      <line x1="-150" y1="0" x2="150" y2="0" />
+                      <line x1="0" y1="-100" x2="0" y2="100" />
+                      <text x="140" y="-6" fill="#94a3b8" fontSize="10">X</text>
+                      <text x="6" y="-90" fill="#94a3b8" fontSize="10">Y</text>
+                    </g>
+                  )}
+
+                  {/* 旋转轨道虚线圆 */}
+                  <circle cx="0" cy="0" r="86" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="1.2" strokeDasharray="4 4" />
+
+                  {/* 干扰加壳图层 */}
+                  {morphState.activeCamouflageIds.length > 0 && (
+                    <g
+                      stroke="#94a3b8"
+                      strokeWidth="1.2"
+                      strokeDasharray="4 3"
+                      opacity={morphState.xrayActive ? 0.08 : 0.65}
+                      style={{ transition: 'opacity 0.3s ease' }}
+                    >
+                      <line x1="-150" y1="-100" x2="150" y2="100" />
+                      <line x1="-150" y1="100" x2="150" y2="-100" />
+                      <circle cx="0" cy="0" r="125" fill="none" />
+                      <line x1="-80" y1="-110" x2="-80" y2="110" />
+                      <line x1="80" y1="-110" x2="80" y2="110" />
+                    </g>
+                  )}
+
+                  {/* 中心旋转顶点 O */}
+                  <circle cx="0" cy="0" r="5" fill="#34c759" stroke="#ffffff" strokeWidth="1.5" />
+                  <text x="-8" y="-12" fill="#ffffff" fontSize="11" fontWeight="bold">
+                    {isEn ? 'O (Pivot Center)' : 'O (共顶旋转轴)'}
+                  </text>
+
+                  {/* 定构型 */}
+                  <polygon
+                    points={
+                      isSquare
+                        ? `0,0 ${baseAx},${baseAy} ${baseAx},${baseAy + baseBy} ${baseBx},${baseBy}`
+                        : `0,0 ${baseAx},${baseAy} ${baseBx},${baseBy}`
+                    }
+                    fill="rgba(0,113,227,0.25)"
+                    stroke="#38bdf8"
+                    strokeWidth={morphState.xrayActive ? 2.8 : 2.2}
+                    style={{
+                      filter: morphState.xrayActive ? 'drop-shadow(0 0 10px rgba(56,189,248,0.8))' : 'none',
+                      transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
+                    }}
+                  />
+                  <circle cx={baseAx} cy={baseAy} r="4" fill="#38bdf8" stroke="#ffffff" strokeWidth="1.5" />
+                  <text x={baseAx - 14} y={baseAy + 5} fill="#38bdf8" fontSize="11" fontWeight="bold">A</text>
+                  <circle cx={baseBx} cy={baseBy} r="4" fill="#38bdf8" stroke="#ffffff" strokeWidth="1.5" />
+                  <text x={baseBx + 6} y={baseBy + 5} fill="#38bdf8" fontSize="11" fontWeight="bold">B</text>
+
+                  {/* 动态旋转构型 */}
+                  <g id="rotating-triangle-group" transform={`rotate(${rotationAngle} 0 0)`} style={{ transformOrigin: '0px 0px' }}>
+                    <polygon
+                      points={
+                        isSquare
+                          ? `0,0 ${baseAx},${baseAy} ${baseAx},${baseAy + baseBy} ${baseBx},${baseBy}`
+                          : `0,0 ${baseAx},${baseAy} ${baseBx},${baseBy}`
+                      }
+                      fill="rgba(129,140,248,0.28)"
+                      stroke="#a5b4fc"
+                      strokeWidth={morphState.xrayActive ? 2.8 : 2.2}
+                      style={{
+                        filter: morphState.xrayActive ? 'drop-shadow(0 0 10px rgba(165,180,252,0.8))' : 'none',
+                        transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
+                      }}
+                    />
+                    <circle cx={baseAx} cy={baseAy} r="4" fill="#a5b4fc" stroke="#ffffff" strokeWidth="1.5" />
+                    <text x={baseAx - 14} y={baseAy + 5} fill="#a5b4fc" fontSize="11" fontWeight="bold">C</text>
+                    <circle cx={baseBx} cy={baseBy} r="4" fill="#a5b4fc" stroke="#ffffff" strokeWidth="1.5" />
+                    <text x={baseBx + 6} y={baseBy + 5} fill="#a5b4fc" fontSize="11" fontWeight="bold">D</text>
+                  </g>
+
+                  {/* 手拉手连线 AC 与 BD */}
+                  <line
+                    id="line-ac"
+                    x1={baseAx}
+                    y1={baseAy}
+                    x2={Cx}
+                    y2={Cy}
+                    stroke="#fbbf24"
+                    strokeWidth="2.2"
+                    strokeDasharray="4 3"
+                    opacity={morphState.xrayActive ? 0.3 : 1}
+                    style={{ transition: 'all 0.35s ease' }}
+                  />
+                  <line
+                    id="line-bd"
+                    x1={baseBx}
+                    y1={baseBy}
+                    x2={Dx}
+                    y2={Dy}
+                    stroke="#fbbf24"
+                    strokeWidth="2.2"
+                    strokeDasharray="4 3"
+                    opacity={morphState.xrayActive ? 0.3 : 1}
+                    style={{ transition: 'all 0.35s ease' }}
+                  />
+                </svg>
+              ) : (
+                <SandboxRenderer
+                  key={compiledSandboxConfig.sandbox_id}
+                  config={compiledSandboxConfig}
+                  paramValues={morphState.parameterValues}
+                  xrayActive={morphState.xrayActive}
+                  onInvariantsChange={setInvariants}
+                  onParamChange={handleParamChange}
+                  locale={locale}
+                  style={{ width: '100%', height: '100%' }}
+                />
+              )}
+              {/* 悬浮毛玻璃宝石按钮：中考题眼透视 */}
+              <button
+                type="button"
+                className={`xray-gem-floating-btn ${morphState.xrayActive ? 'active' : ''}`}
+                onClick={handleToggleXRay}
+                title={isEn ? 'Exam Focus X-Ray' : '中考题眼透视'}
+                aria-label={isEn ? 'Exam Focus X-Ray' : '中考题眼透视'}
+              >
+                <Icon name="search" size={13} />
+                <span>
+                  {isEn
+                    ? (morphState.xrayActive ? 'Exam Focus X-Ray (ON)' : 'Exam Focus X-Ray')
+                    : (morphState.xrayActive ? '题眼透视 (开)' : '题眼透视')}
+                </span>
+              </button>
+            </div>
+
+            {/* 右侧一体化仪表盘 (专职任务引导、名师解析、HUD 测度与模式推进) */}
+            <div className="sandbox-guide-15 w-full lg:w-80 shrink-0 h-full flex flex-col gap-2.5 rounded-2xl bg-slate-900/95 border border-slate-700/60 p-3.5 text-slate-100 shadow-inner overflow-y-auto">
+              {/* 顶部标题行与自由探索切换 */}
+              <div className="flex items-center justify-between gap-1.5 pb-2 border-b border-slate-700/60 shrink-0">
+                <div className="flex items-center gap-1.5">
+                  <Icon name={labMode === 'step_deduction' ? 'bulb' : 'gamepad'} size={15} className="text-sky-400" />
+                  <span className="text-xs font-bold tracking-wide text-sky-300">
+                    {labMode === 'step_deduction'
+                      ? (isEn ? 'Deduction Mission' : '核心推演任务')
+                      : (isEn ? 'Free Play Active' : '自由把玩模式')}
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (labMode === 'step_deduction') {
+                      setLabMode('free_explore');
+                      setSessionLeapSubTab('free');
+                    } else {
+                      setLabMode('step_deduction');
+                      setSessionLeapSubTab('deduction');
+                    }
+                  }}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-sky-500/20 text-sky-300 hover:bg-sky-500/30 transition-all active:scale-[0.98]"
+                >
+                  <Icon name={labMode === 'step_deduction' ? 'gamepad' : 'bulb'} size={12} className="text-amber-400" />
+                  <span>
+                    {labMode === 'step_deduction'
+                      ? (isEn ? 'Free Play' : '直接自由把玩')
+                      : (isEn ? 'Back to Deduction' : '返回分步推演')}
+                  </span>
+                </button>
+              </div>
+
+              {/* 态 1：分步推演受控态 (认知与数据洞察严格只显示当前按钮选中的过程) */}
+              {labMode === 'step_deduction' && (
+                <div className="step-deduction-container flex flex-col gap-2.5 flex-1 min-h-0" data-testid="step-deduction-view">
+                  {/* 步骤快速选择胶囊 (对齐标杆截图) */}
+                  <div className="flex items-center gap-1.5 flex-wrap pb-1">
+                    {stages.map((s, idx) => {
+                      const isCur = idx === currentStepIndex;
+                      const isPassed = idx < currentStepIndex;
+                      return (
+                        <button
+                          key={s.stage || idx}
+                          type="button"
+                          onClick={() => setCurrentStepIndex(idx)}
+                          className={`px-2 py-0.5 rounded-full text-[11px] font-semibold transition-all ${
+                            isCur
+                              ? 'bg-blue-600 text-white shadow-sm ring-1 ring-blue-400'
+                              : isPassed
+                              ? 'bg-emerald-500/25 text-emerald-300 hover:bg-emerald-500/35'
+                              : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
+                          }`}
+                        >
+                          {isPassed ? '✓ ' : ''}{isEn ? `Step ${idx + 1}` : `步骤 ${idx + 1}`}
+                        </button>
+                      );
+                    })}
+                    <button
+                      type="button"
+                      onClick={() => setCurrentStepIndex(0)}
+                      title={isEn ? 'Restart Deduction' : '重新开始推演'}
+                      className="ml-auto inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700/60 transition-all active:scale-95"
+                    >
+                      <Icon name="rotate-ccw" size={11} className="text-slate-400" />
+                      <span>{isEn ? 'Reset' : '重新开始'}</span>
+                    </button>
+                  </div>
+                  {/* 当前步骤信息卡 */}
+                  <div className="flex flex-col gap-1.5 p-3 rounded-xl bg-slate-800/80 border border-sky-500/30 shrink-0">
+                    <div className="flex items-center justify-between text-xs font-bold text-sky-400">
+                      <span>{`步骤 ${currentStepIndex + 1} / ${stages.length}`}</span>
+                      <span className="text-[11px] text-slate-300 font-medium truncate max-w-[130px]">
+                        {(isEn ? stages[currentStepIndex]?.titleEn : stages[currentStepIndex]?.titleZh) || stages[currentStepIndex]?.titleZh || `Step ${currentStepIndex + 1}`}
+                      </span>
+                    </div>
+
+                    {/* 名师思想精解 */}
+                    <div className="text-xs text-slate-200 leading-relaxed font-normal">
+                      <MathRenderer
+                        content={
+                          (isEn ? stages[currentStepIndex]?.guideTextEn : stages[currentStepIndex]?.guideTextZh) ||
+                          stages[currentStepIndex]?.guide_text ||
+                          stages[currentStepIndex]?.guideTextZh ||
+                          ''
+                        }
+                      />
+                    </div>
+
+                    {/* 中考题眼精讲秘籍 */}
+                    {Boolean(
+                      (isEn ? stages[currentStepIndex]?.teacherSecretEn : stages[currentStepIndex]?.teacherSecretZh) ||
+                      stages[currentStepIndex]?.teacher_secret ||
+                      stages[currentStepIndex]?.teacherSecretZh
+                    ) && (
+                      <div className="p-2 rounded-lg bg-amber-950/40 border border-amber-500/30 text-[11px] text-amber-200 leading-normal flex flex-col gap-0.5 mt-1">
+                        <div className="font-bold flex items-center gap-1 text-amber-300">
+                          <Icon name="search" size={11} />
+                          <span>{isEn ? 'Teacher Focus:' : '中考题眼：'}</span>
+                        </div>
+                        <MathRenderer
+                          content={
+                            (isEn ? stages[currentStepIndex]?.teacherSecretEn : stages[currentStepIndex]?.teacherSecretZh) ||
+                            stages[currentStepIndex]?.teacher_secret ||
+                            stages[currentStepIndex]?.teacherSecretZh ||
+                            ''
+                          }
+                        />
+                      </div>
+                    )}
+
+                    {/* 标靶提示 */}
+                    {isHandInHand && (
+                      <div className="flex items-center justify-between text-[11px] pt-1.5 border-t border-slate-700/60 text-slate-300 mt-1">
+                        <span className="text-slate-400">{isEn ? 'Stage Target:' : '阶段标靶：'}</span>
+                        <span className="font-mono text-sky-300 font-semibold">{`旋转角 θ = ${stageTargetRot}°`}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 核心测度实时 HUD */}
+                  <div className="flex flex-col gap-1.5 p-2.5 rounded-xl bg-slate-800/80 border border-slate-700/50">
+                    <div className="flex items-center justify-between text-[11px] font-semibold text-slate-300">
+                      <span className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                        <span className="text-emerald-300">{isEn ? 'Live HUD Metrics' : '核心测度实时 HUD'}</span>
+                      </span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-700 text-slate-300">
+                        {isEn ? 'Active' : '动态监测'}
+                      </span>
+                    </div>
+
+                    <div className="telemetry-readings flex flex-col gap-1 text-xs font-mono">
+                      {isHandInHand ? (
+                        <>
+                          <div className="flex items-center justify-between p-1.5 rounded bg-slate-900/60 border border-slate-800">
+                            <span className="telemetry-tag-invariant text-sky-300 font-semibold">
+                              <MathRenderer content={isEn ? `Invariant telemetry: $AC = BD = ${normalizedCm}\text{ cm}$ (Equal)` : `不变量实测：$AC = BD = ${normalizedCm}\text{ cm}$ (恒等)`} />
+                            </span>
+                            <span className="text-[10px] text-emerald-400">[恒等]</span>
+                          </div>
+                          <div className="flex items-center justify-between p-1.5 rounded bg-slate-900/60 border border-slate-800">
+                            <span className="telemetry-tag-secondary text-sky-300">
+                              <MathRenderer content={isEn ? `Angle telemetry: line AC & BD angle = $${rotationAngle}^\circ$ ($= \alpha$)` : `夹角实测：直线 AC 与 BD 夹角 = $${rotationAngle}^\circ$ (恒等于 $\alpha$)`} />
+                            </span>
+                            <span className="text-[10px] text-slate-400">[动态观测中]</span>
+                          </div>
+                        </>
+                      ) : invariants.length > 0 ? (
+                        invariants.slice(0, 3).map((inv, idx) => (
+                          <div key={inv.id || idx} className="flex items-center justify-between p-1.5 rounded bg-slate-900/60 border border-slate-800">
+                            <span className="telemetry-tag-invariant text-sky-300 font-semibold truncate max-w-[170px]"><MathRenderer content={inv.text} /></span>
+                            <span className="text-[10px] text-emerald-400">{inv.isConstant ? (isEn ? '[Constant]' : '[绝对恒定]') : (isEn ? '[Dynamic]' : '[动态观测中]')}</span>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="flex items-center justify-between p-1.5 rounded bg-slate-900/60 border border-slate-800">
+                          <span className="telemetry-tag-invariant text-sky-300">
+                            <MathRenderer content={isEn ? 'Geometric Invariant: Dynamic geometry isometric conservation' : '几何不变量：动态几何欧氏保距性守恒'} />
+                          </span>
+                          <span className="text-[10px] text-emerald-400">[守恒 ✓]</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="telemetry-tag-conclusion text-[11px] text-emerald-400 p-1 rounded bg-emerald-950/40 border border-emerald-500/20 text-center mt-0.5">
+                      <MathRenderer content={isHandInHand ? (isEn ? 'Conclusion: $\triangle OAB \cong \triangle OCD$ rotation congruent' : '结论：$\triangle OAB \cong \triangle OCD$ 旋转恒全等') : (isEn ? 'Conclusion: Rigid transformation isometry holds' : '结论：刚体变异保距性成立')} />
+                    </div>
+                  </div>
+
+                  {/* 底部推进操作栏 */}
+                  <div className="mt-auto pt-2 flex items-center justify-between gap-2 border-t border-slate-700/60 shrink-0">
+                    <button
+                      type="button"
+                      disabled={currentStepIndex === 0}
+                      onClick={() => setCurrentStepIndex((prev) => Math.max(0, prev - 1))}
+                      className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:pointer-events-none transition-all flex items-center gap-1"
+                    >
+                      <Icon name="chevron-left" size={13} />
+                      <span>{isEn ? 'Previous' : '上一步'}</span>
+                    </button>
+
+                    {currentStepIndex < stages.length - 1 ? (
+                      <button
+                        type="button"
+                        onClick={() => setCurrentStepIndex((prev) => Math.min(stages.length - 1, prev + 1))}
+                        className="flex-1 inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white transition-all shadow-md active:scale-95"
+                      >
+                        <span>{isEn ? 'Next Step ➔' : '进入下一步 ➔'}</span>
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setLabMode('free_explore');
+                          setSessionLeapSubTab('free');
+                        }}
+                        className="flex-1 inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-md active:scale-95"
+                      >
+                        <Icon name="gamepad" size={13} />
+                        <span>{isEn ? 'Finish · Free Play ➔' : '完成推演 · 进入自由探索 ➔'}</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* 态 2：自由探索模式 (包含 4D 变异选择器与全量遥测) */}
+              <div
+                className="flex flex-col gap-2.5 flex-1 min-h-0"
+                style={{ display: labMode === 'free_explore' ? 'flex' : 'none' }}
+              >
+                  <div className="p-2.5 rounded-xl bg-emerald-950/30 border border-emerald-500/30 text-xs text-emerald-200 leading-normal shrink-0">
+                    <div className="font-bold flex items-center gap-1 text-emerald-300 mb-0.5">
+                      <Icon name="gamepad" size={13} />
+                      <span>{isEn ? 'Free Play Active' : '自由把玩已开启'}</span>
+                    </div>
+                    <span>{isEn ? 'Freely switch carriers, postures and adjust sliders below.' : '已解除推演步骤限制，可在此自由切换 4D 载体与姿态，并在下方调节参数滑块。'}</span>
+                  </div>
+
+                  {/* 4D 变异微型选择器 (紧凑收纳在右侧面板) */}
+                  <div className="sandbox-4d-shelf flex flex-col gap-2 p-2.5 rounded-xl bg-slate-800/80 border border-slate-700/60 shrink-0">
+                    {/* ① 载体变异 */}
+                    <div className="dim-card flex flex-col gap-1">
+                      <span className="dim-card-title text-[11px] font-semibold text-slate-300">
+                        {isEn ? '① Carrier Variation' : '① 载体变异 (Carrier)'}
+                      </span>
+                      <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
+                        {isHandInHand ? (
+                          handInHandCarrierOptions.map((opt) => (
+                            <button
+                              key={opt.id}
+                              type="button"
+                              className={`preset-btn text-[11px] px-2 py-0.5 rounded transition-all ${
+                                morphState.carrierId === opt.id
+                                  ? 'active bg-sky-500 text-white font-semibold shadow'
+                                  : 'bg-slate-700/70 text-slate-300 hover:bg-slate-700'
+                              }`}
+                              onClick={() => handleSelectCarrier(opt.id)}
+                            >
+                              {(isEn ? opt.nameEn : opt.nameZh) || opt.nameZh}
+                            </button>
+                          ))
+                        ) : carrierSpec.options.length > 0 ? (
+                          carrierSpec.options.map((opt) => (
+                            <button
+                              key={opt.id}
+                              type="button"
+                              className={`preset-btn text-[11px] px-2 py-0.5 rounded transition-all ${
+                                morphState.carrierId === opt.id
+                                  ? 'active bg-sky-500 text-white font-semibold shadow'
+                                  : 'bg-slate-700/70 text-slate-300 hover:bg-slate-700'
+                              }`}
+                              onClick={() => handleSelectCarrier(opt.id)}
+                            >
+                              {(isEn ? opt.nameEn : opt.nameZh) || opt.nameZh}
+                            </button>
+                          ))
+                        ) : (
+                          <>
+                            <button
+                              type="button"
+                              className={`preset-btn text-[11px] px-2 py-0.5 rounded ${morphState.carrierId === 'free_triangle' ? 'active bg-sky-500 text-white' : 'bg-slate-700/70 text-slate-300'}`}
+                              onClick={() => handleSelectCarrier('free_triangle')}
+                            >
+                              {isEn ? 'Free Triangle' : '自由三角形'}
+                            </button>
+                            <button
+                              type="button"
+                              className={`preset-btn text-[11px] px-2 py-0.5 rounded ${morphState.carrierId === 'quadrilateral' ? 'active bg-sky-500 text-white' : 'bg-slate-700/70 text-slate-300'}`}
+                              onClick={() => handleSelectCarrier('quadrilateral')}
+                            >
+                              {isEn ? 'Square' : '正方形'}
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* ③ 姿态变异 */}
+                    <div className="dim-card flex flex-col gap-1 pt-1.5 border-t border-slate-700/50">
+                      <span className="dim-card-title text-[11px] font-semibold text-slate-300">
+                        {isEn ? '③ Posture Variation' : '③ 姿态变异 (Posture)'}
+                      </span>
+                      <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
+                        {postureSpec.modes.length > 0 ? (
+                          postureSpec.modes.map((mode) => (
+                            <button
+                              key={mode.id}
+                              type="button"
+                              className={`preset-btn text-[11px] px-2 py-0.5 rounded transition-all ${
+                                morphState.postureId === mode.id
+                                  ? 'active bg-indigo-500 text-white font-semibold shadow'
+                                  : 'bg-slate-700/70 text-slate-300 hover:bg-slate-700'
+                              }`}
+                              onClick={() => handleSelectPosture(mode.id, mode.rotationDeg)}
+                            >
+                              {(isEn ? mode.nameEn : mode.nameZh) || mode.nameZh}
+                            </button>
+                          ))
+                        ) : (
+                          <>
+                            <button
+                              type="button"
+                              className={`preset-btn text-[11px] px-2 py-0.5 rounded ${morphState.postureId === 'standard' ? 'active bg-indigo-500 text-white' : 'bg-slate-700/70 text-slate-300'}`}
+                              onClick={() => handleSelectPosture('standard', 60)}
+                            >
+                              {isEn ? 'Standard' : '标准正向'}
+                            </button>
+                            <button
+                              type="button"
+                              className={`preset-btn text-[11px] px-2 py-0.5 rounded ${morphState.postureId === 'rotated_90' ? 'active bg-indigo-500 text-white' : 'bg-slate-700/70 text-slate-300'}`}
+                              onClick={() => handleSelectPosture('rotated_90', 90)}
+                            >
+                              {isEn ? 'Rotated 90°' : '正交旋转'}
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 核心测度与全量守恒指标 */}
+                  <div className="telemetry-readings flex flex-col gap-1 p-2.5 rounded-xl bg-slate-800/80 border border-slate-700/50">
+                    <span className="text-[11px] font-semibold text-slate-300">{isEn ? 'Invariants Telemetry:' : '全量守恒遥测：'}</span>
+                    {isHandInHand ? (
+                      <div className="flex flex-col gap-1 text-xs font-mono">
+                        <span className="telemetry-tag-invariant text-sky-300">
+                          <MathRenderer content={isEn ? `Invariant telemetry: $AC = BD = ${normalizedCm}\text{ cm}$ (Equal)` : `不变量实测：$AC = BD = ${normalizedCm}\text{ cm}$ (恒等)`} />
+                        </span>
+                        <span className="telemetry-tag-secondary text-slate-400">
+                          <MathRenderer content={isEn ? `Angle telemetry: line AC & BD angle = $${rotationAngle}^\circ$ ($= \alpha$)` : `夹角实测：直线 AC 与 BD 夹角 = $${rotationAngle}^\circ$ (恒等于 $\alpha$)`} />
+                        </span>
+                      </div>
+                    ) : invariants.length > 0 ? (
+                      invariants.map((inv) => (
+                        <span key={inv.id} className="telemetry-tag-invariant text-xs font-mono text-sky-300">
+                          <MathRenderer content={inv.text} />
+                        </span>
+                      ))
+                    ) : (
+                      <span className="telemetry-tag-invariant text-xs font-mono text-emerald-400">
+                        <MathRenderer content={isEn ? 'Geometric Invariant: Dynamic geometry isometric conservation' : '几何不变量：动态几何欧氏保距性守恒'} />
+                      </span>
+                    )}
+                    <div className="telemetry-tag-conclusion text-[11px] text-emerald-400 p-1 rounded bg-emerald-950/40 border border-emerald-500/20 text-center mt-1">
+                      <MathRenderer content={isHandInHand ? (isEn ? 'Conclusion: $\triangle OAB \cong \triangle OCD$ rotation congruent' : '结论：$\triangle OAB \cong \triangle OCD$ 旋转恒全等') : (isEn ? 'Conclusion: Rigid transformation isometry holds' : '结论：刚体变异保距性成立')} />
+                    </div>
+                  </div>
+
+                  {/* 2D 参数变异 */}
+                  <div className="dim-card flex flex-col gap-1 pt-1.5 border-t border-slate-700/50">
+                    <span className="dim-card-title text-[11px] font-semibold text-slate-300">
+                      {isEn ? '② Parameter Variation' : '② 参数变异 (Parameter)'}
+                    </span>
+                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+                      {isHandInHand
+                        ? (isEn
+                            ? `Ratio k = 1.0, Rotation α = ${rotationAngle}°, Param t = ${morphState.parameterValues['param_t'] ?? 5}`
+                            : `相似比 k = 1.0，旋转角 α = ${rotationAngle}°，动点参数 t = ${morphState.parameterValues['param_t'] ?? 5}`)
+                        : parameterSpec.sliders.map((s) => `${(isEn ? s.nameEn : s.nameZh) || s.nameZh || (isEn ? 'Param' : '参数')}: ${morphState.parameterValues[s.id] ?? s.default ?? 5}`).join(' · ')}
+                    </div>
+                  </div>
+
+                  {/* ④ 干扰加壳与 X-Ray 透视 */}
+                  <div className="dim-card flex flex-col gap-1 pt-1.5 border-t border-slate-700/50">
+                    <span className="dim-card-title text-[11px] font-semibold text-slate-300">
+                      {isEn ? '④ Camouflage & X-Ray' : '④ 干扰加壳 (Camouflage) & X-Ray'}
+                    </span>
+                    <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', alignItems: 'center' }}>
+                      {camouflageSpec.distractorLayers.length > 0 ? (
+                        camouflageSpec.distractorLayers.map((layer) => {
+                          const active = morphState.activeCamouflageIds.includes(layer.id);
+                          return (
+                            <button
+                              key={layer.id}
+                              type="button"
+                              disabled={morphState.xrayActive}
+                              className={`preset-btn text-[11px] px-2 py-0.5 rounded transition-all ${
+                                active && !morphState.xrayActive ? 'active bg-sky-500 text-white shadow' : 'bg-slate-700/70 text-slate-300'
+                              }`}
+                              onClick={() => handleToggleCamouflage(layer.id)}
+                            >
+                              {(isEn ? layer.nameEn : layer.nameZh) || layer.nameZh}
+                            </button>
+                          );
+                        })
+                      ) : null}
+                    </div>
+                  </div>
+
+                  {/* 思维跃迁探究指南 */}
+                  <div className="p-2.5 rounded-xl bg-slate-800/80 border border-slate-700/50 text-xs text-slate-300">
+                    <div className="font-bold text-sky-400 mb-1 flex items-center gap-1">
+                      <Icon name="bulb" size={13} />
+                      <span>{isEn ? 'Thinking Leap Exploration Guide:' : '思维跃迁探究指南：'}</span>
+                    </div>
+                    <MathRenderer
+                      content={
+                        isEn
+                          ? currentModel.model_brief_en || 'Hand-in-hand rotational congruence invariant exploration.'
+                          : currentModel.model_brief_zh || '共顶等线成旋转，全等导引勾股现。开启题眼透视可一键隐去干扰线，聚焦共顶旋转骨架。'
+                      }
+                    />
+                  </div>
+
+                  <div className="mt-auto pt-2 border-t border-slate-700/60">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setLabMode('step_deduction');
+                        setSessionLeapSubTab('deduction');
+                        setCurrentStepIndex(0);
+                      }}
+                      className="w-full inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 bg-slate-800 hover:bg-slate-700 hover:text-white transition-all"
+                    >
+                      <Icon name="bulb" size={13} />
+                      <span>{isEn ? 'Return to Step 1' : '从第一步重新推演'}</span>
+                    </button>
+                  </div>
+                </div>
+            </div>
+          </div>
+
+          {/* 下半区：仅在自由探索模式下解锁展示的参数调控滑块区 (删除下端冗余推演轨道) */}
+          <div
+            className="free-explore-container w-full p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/50 flex flex-col gap-2"
+            data-testid="free-explore-view"
+            style={{ display: labMode === 'free_explore' ? 'flex' : 'none' }}
+          >
+              <div className="sandbox-controls-bar w-full flex items-center gap-4 flex-wrap">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 shrink-0">
+                  <Icon name="sliders" size={14} />
+                  <span>{isEn ? 'Sliders' : '参数调控'}</span>
+                </div>
+
+                {isHandInHand ? (
+                  <div className="flex items-center gap-4 flex-wrap flex-1 min-w-0">
+                    {/* 旋转角 α */}
+                    <div className="slider-group flex items-center gap-2 min-w-[240px]">
+                      <label htmlFor="sandbox-slider" className="text-xs font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                        {isEn ? 'Rotation α: ' : '旋转角 α: '}<strong className="text-blue-600 dark:text-sky-400 font-mono">{rotationAngle}°</strong>
+                      </label>
+                      <input
+                        id="sandbox-slider"
+                        type="range"
+                        className="apple-slider flex-1"
+                        min="0"
+                        max="360"
+                        value={rotationAngle}
+                        onChange={(e) => {
+                          const angle = parseInt(e.target.value, 10);
+                          setRotationAngle(angle);
+                          setMorphState((prev) => ({
+                            ...prev,
+                            parameterValues: { ...prev.parameterValues, param_t: Math.round((angle / 360) * 10) },
+                          }));
+                        }}
+                      />
+                    </div>
+
+                    {/* 动点参数 t */}
+                    <div className="slider-group flex items-center gap-2 min-w-[200px]">
+                      <label htmlFor="param-t-slider" className="text-xs font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                        {isEn ? 'Point t: ' : '动点 t: '}<strong className="text-blue-600 dark:text-sky-400 font-mono">{morphState.parameterValues['param_t'] ?? 5}</strong>
+                      </label>
+                      <input
+                        id="param-t-slider"
+                        type="range"
+                        className="apple-slider flex-1"
+                        min="0"
+                        max="10"
+                        step="0.5"
+                        value={morphState.parameterValues['param_t'] ?? 5}
+                        onChange={(e) => handleSliderChange('param_t', parseFloat(e.target.value))}
+                      />
+                    </div>
+
+                    {/* 快捷角度预设 */}
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {[0, 60, 90, 120, 180].map((deg) => (
+                        <button
+                          key={deg}
+                          type="button"
+                          className={`px-2 py-0.5 rounded text-[11px] font-medium transition-all ${
+                            rotationAngle === deg
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-blue-400'
+                          }`}
+                          onClick={() => setRotationAngle(deg)}
+                        >
+                          {deg}°
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-4 flex-wrap flex-1 min-w-0">
+                    {parameterSpec.sliders.map((s) => {
+                      const val = morphState.parameterValues[s.id] ?? s.default ?? 5;
+                      return (
+                        <div key={s.id} className="slider-group flex items-center gap-2 min-w-[200px]">
+                          <label htmlFor={`slider-${s.id}`} className="text-xs font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                            {(isEn ? s.nameEn : s.nameZh) || s.nameZh || '参数'}: <strong className="text-blue-600 dark:text-sky-400 font-mono">{val}{s.unit || ''}</strong>
+                          </label>
+                          <input
+                            id={`slider-${s.id}`}
+                            type="range"
+                            className="apple-slider flex-1"
+                            min={s.min}
+                            max={s.max}
+                            step={s.step || 0.1}
+                            value={val}
+                            onChange={(e) => handleSliderChange(s.id, parseFloat(e.target.value))}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+      )}
     </div>
   );
 };
