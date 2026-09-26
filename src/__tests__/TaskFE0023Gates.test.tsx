@@ -88,7 +88,7 @@ describe('TASK-FE-0023 架构师量化验收门禁全量测试套件 (Mobile UX 
       expect(html).toContain('④ 综合快练');
     });
 
-    it('4. 动力学沙盒模块在手机端渲染双模书签：分步推演与自由探索', () => {
+    it('4. 动力学沙盒模块在手机端渲染双模书签：概念沙盒与跃迁模型', () => {
       setDeviceOverride('MOBILE');
       const html = renderToString(
         <MemoryRouter initialEntries={['/math-junior/lab']}>
@@ -100,8 +100,8 @@ describe('TASK-FE-0023 架构师量化验收门禁全量测试套件 (Mobile UX 
 
       expect(html).toContain('data-testid="interactive-title-capsule"');
       expect(html).toContain('data-testid="math-junior-mobile-subnav"');
-      expect(html).toContain('① 分步推演');
-      expect(html).toContain('② 自由探索');
+      expect(html).toContain('① 概念沙盒');
+      expect(html).toContain('② 跃迁模型');
     });
   });
 

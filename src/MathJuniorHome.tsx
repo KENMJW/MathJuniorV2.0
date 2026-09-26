@@ -93,24 +93,14 @@ export const MathJuniorHome: React.FC = () => {
   const setConceptSubTab = useSessionStore((state) => state.setConceptSubTab);
   const graphSubTab = useSessionStore((state) => state.graphSubTab);
   const setGraphSubTab = useSessionStore((state) => state.setGraphSubTab);
-  const leapSubTab = useSessionStore((state) => state.leapSubTab);
-  const setLeapSubTab = useSessionStore((state) => state.setLeapSubTab);
   const setIsConceptDrawerOpen = useSessionStore((state) => state.setIsConceptDrawerOpen);
   const setIsGraphDrawerOpen = useSessionStore((state) => state.setIsGraphDrawerOpen);
   const setIsLeapDrawerOpen = useSessionStore((state) => state.setIsLeapDrawerOpen);
 
   // 模块内部状态
-  const [labSubView, setLabSubView] = useState<"concept_sandbox" | "leap_4d">(
-    deviceProfile === "MOBILE" ? "leap_4d" : "concept_sandbox"
-  );
+  const [labSubView, setLabSubView] = useState<"concept_sandbox" | "leap_4d">("concept_sandbox");
+  const [selectedSandboxId, setSelectedSandboxId] = useState<string>("SB-KP001");
   const [selectedLeapModelId, setSelectedLeapModelId] = useState<string>(storeLeapModelId || "LM-7A-01");
-
-  // 移动端默认进场聚焦 4D 跃迁沙盒
-  useEffect(() => {
-    if (deviceProfile === "MOBILE" && labSubView !== "leap_4d") {
-      setLabSubView("leap_4d");
-    }
-  }, [deviceProfile]);
 
   useEffect(() => {
     if (storeLeapModelId && storeLeapModelId !== selectedLeapModelId) {
@@ -430,10 +420,17 @@ export const MathJuniorHome: React.FC = () => {
       onCapsuleClick = () => setIsGraphDrawerOpen((prev) => !prev);
     } else if (currentSubModule === "lab" || currentSubModule === "sandbox") {
       moduleIcon = FlaskConical;
-      const model = effectiveLeapModels.find((m) => m.model_id === selectedLeapModelId);
-      const name = model ? (locale === "en" ? (model.model_name_en || model.model_name_zh) : model.model_name_zh) : "4D跃迁沙盒";
-      entityTitle = `${selectedLeapModelId} · ${name}`;
-      onCapsuleClick = () => setIsLeapDrawerOpen((prev) => !prev);
+      if (labSubView === "concept_sandbox") {
+        const sb = effectiveSandboxes.find((s) => s.id === selectedSandboxId);
+        const name = sb ? (locale === "en" ? sb.nameEn : sb.nameZh) : "概念沙盒";
+        entityTitle = `${selectedSandboxId} · ${name}`;
+        onCapsuleClick = () => setIsConceptDrawerOpen((prev) => !prev);
+      } else {
+        const model = effectiveLeapModels.find((m) => m.model_id === selectedLeapModelId);
+        const name = model ? (locale === "en" ? (model.model_name_en || model.model_name_zh) : model.model_name_zh) : "4D跃迁沙盒";
+        entityTitle = `${selectedLeapModelId} · ${name}`;
+        onCapsuleClick = () => setIsLeapDrawerOpen((prev) => !prev);
+      }
     } else {
       moduleIcon = ClipboardCheck;
       entityTitle = locale === "en" ? "Assessment Arena" : "实战测评 · 极速组卷";
@@ -550,16 +547,16 @@ export const MathJuniorHome: React.FC = () => {
     } else if (currentSubModule === "lab" || currentSubModule === "sandbox") {
       tabs = [
         {
-          key: "deduction",
-          label: locale === "en" ? "① Deduction" : "① 分步推演",
-          active: leapSubTab === "deduction",
-          onClick: () => setLeapSubTab("deduction"),
+          key: "concept_sandbox",
+          label: locale === "en" ? "① Concept (46)" : "① 概念沙盒 (46)",
+          active: labSubView === "concept_sandbox",
+          onClick: () => setLabSubView("concept_sandbox"),
         },
         {
-          key: "free",
-          label: locale === "en" ? "② Free Exploration" : "② 自由探索",
-          active: leapSubTab === "free",
-          onClick: () => setLeapSubTab("free"),
+          key: "leap_4d",
+          label: locale === "en" ? "② Leap 4D (36)" : "② 跃迁模型 (36)",
+          active: labSubView === "leap_4d",
+          onClick: () => setLabSubView("leap_4d"),
         },
       ];
     } else if (currentSubModule === "exam") {
@@ -586,13 +583,13 @@ export const MathJuniorHome: React.FC = () => {
               data-testid={`mobile-subnav-${tab.key}`}
               onClick={tab.onClick}
               className={cn(
-                "flex-1 h-[28px] px-2 rounded-full text-[11px] font-bold transition-all inline-flex items-center justify-center whitespace-nowrap cursor-pointer",
+                "flex-1 min-w-0 h-[28px] px-1.5 rounded-full text-[11px] font-bold transition-all inline-flex items-center justify-center whitespace-nowrap cursor-pointer truncate",
                 tab.active
                   ? "bg-ios-blue text-white shadow-xs"
                   : "bg-black/[0.03] text-text-secondary hover:text-text-primary"
               )}
             >
-              {tab.label}
+              <span className="truncate">{tab.label}</span>
             </button>
           ))}
         </div>
@@ -691,6 +688,8 @@ export const MathJuniorHome: React.FC = () => {
             locale={locale}
             labSubView={labSubView}
             onLabSubViewChange={setLabSubView}
+            selectedSandboxId={selectedSandboxId}
+            onSelectSandboxId={setSelectedSandboxId}
             selectedLeapModelId={selectedLeapModelId}
             onSelectLeapModelId={(id: string) => {
               setSelectedLeapModelId(id);

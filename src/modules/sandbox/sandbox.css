@@ -16,11 +16,11 @@
   background: var(--bg-card, #ffffff);
   border: 1px solid var(--border-subtle, rgba(0, 0, 0, 0.07));
   border-radius: var(--radius-lg, 22px);
-  padding: 24px 28px;
+  padding: 14px 18px;
   box-shadow: 0 2px 16px rgba(0, 0, 0, 0.03);
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 12px;
   box-sizing: border-box;
 }
 
@@ -795,5 +795,64 @@ input[type=range].apple-slider::-webkit-slider-thumb:hover {
   flex-shrink: 0;
   pointer-events: none;
 }
+
+/* 桌面端统一沙盒大剧场分栏 (Desktop Unified Stage) */
+@media (min-width: 1024px) {
+  /* 父容器高度随右侧内容自然撑开，min-height 兜底，绝不写死 height */
+  .sandbox-split-box.desktop-unified {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: stretch !important;
+    height: auto !important;
+    min-height: 380px !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+  /* 左侧视口：通过 align-self: stretch 自动拉伸到和右侧完全一致的高度 */
+  .sandbox-split-box.desktop-unified .sandbox-viewport-85 {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 75% !important;
+    min-height: 380px !important;
+    height: auto !important;
+    align-self: stretch !important;
+    position: relative !important;
+    border-radius: 1rem !important;
+    overflow: hidden !important;
+  }
+  /* 右侧仪表盘：由内容自然撑开 */
+  .sandbox-split-box.desktop-unified .sandbox-guide-15 {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 340px !important;
+    max-width: 340px !important;
+    flex-shrink: 0 !important;
+    align-self: stretch !important;
+    height: auto !important;
+    min-height: 380px !important;
+    border-radius: 1rem !important;
+    overflow-y: auto !important;
+  }
+  /* 内部渲染器自动填满左侧视口 */
+  .sandbox-split-box.desktop-unified .sandbox-renderer {
+    flex: 1 1 100% !important;
+    height: 100% !important;
+    min-height: 380px !important;
+    width: 100% !important;
+    display: block !important;
+    position: relative !important;
+  }
+  .sandbox-split-box.desktop-unified .sandbox-renderer > div {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    height: 100% !important;
+    width: 100% !important;
+  }
+}
+
 
 
