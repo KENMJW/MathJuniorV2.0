@@ -125,7 +125,8 @@
 }
 
 .nav-pill-btn {
-  height: 28px;
+  height: 32px;
+  min-height: 32px;
   padding: 0 12px;
   border-radius: var(--radius-pill, 9999px);
   background: #ffffff;
@@ -135,8 +136,13 @@
   font-weight: 500;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: 1;
+  box-sizing: border-box;
   transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 

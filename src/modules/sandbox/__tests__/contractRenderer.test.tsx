@@ -84,4 +84,45 @@ describe('TASK-FE-0014: 10 Contract Classes and Engine Capabilities', () => {
     const len = evaluateSafeExpression('sqrt(d^2 - r^2)', { d, r });
     expect(len).toBe(4);
   });
+
+  it('Coordinate Axis: 1D number axis vs 2D Cartesian unified ticks step', () => {
+    // 验证数轴模板识别
+    const isNumAxis = (tpl: string, sid?: string) =>
+      tpl.startsWith('number_axis') ||
+      tpl.includes('number_line') ||
+      tpl === 'number_axis_dynamic' ||
+      Boolean(sid?.includes('LM-7A-01')) ||
+      sid === 'SB-KP001' ||
+      sid === 'SB-KP002' ||
+      sid === 'SB-KP003' ||
+      sid === 'SB-KP008';
+
+    expect(isNumAxis('number_axis_rational_template')).toBe(true);
+    expect(isNumAxis('number_axis_dynamic', 'LM-7A-01')).toBe(true);
+    expect(isNumAxis('number_line_carrier', 'SB-KP001')).toBe(true);
+    expect(isNumAxis('function_linear_solve_template')).toBe(false);
+
+    // 验证二维直角坐标系 X/Y 轴刻度步长严格统一算法
+    const computeUnifiedStep = (boundingbox: [number, number, number, number]) => {
+      const spanX = Math.abs(boundingbox[2] - boundingbox[0]);
+      const spanY = Math.abs(boundingbox[1] - boundingbox[3]);
+      const maxSpan = Math.max(spanX, spanY);
+      return maxSpan > 30 ? 5 : maxSpan > 16 ? 2 : 1;
+    };
+
+    // 无论屏幕长宽比如何，X 轴与 Y 轴均使用相同的 unifiedStep
+    const bboxWide: [number, number, number, number] = [-15, 10, 15, -10];
+    const stepWide = computeUnifiedStep(bboxWide);
+    // spanX = 30, spanY = 20, maxSpan = 30 -> step = 2 (X 与 Y 均为 2，绝不会 X=5 而 Y=2)
+    expect(stepWide).toBe(2);
+
+    const bboxSmall: [number, number, number, number] = [-5, 5, 5, -5];
+    const stepSmall = computeUnifiedStep(bboxSmall);
+    expect(stepSmall).toBe(1);
+
+    const bboxLarge: [number, number, number, number] = [-25, 20, 25, -20];
+    const stepLarge = computeUnifiedStep(bboxLarge);
+    expect(stepLarge).toBe(5);
+  });
 });
+

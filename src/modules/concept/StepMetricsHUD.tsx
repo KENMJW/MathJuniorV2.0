@@ -247,7 +247,7 @@ export const StepMetricsHUD: React.FC<StepMetricsHUDProps> = ({
               key={inv.id || idx}
               className="flex items-center justify-between gap-1.5 border-b border-slate-800/80 pb-1 last:border-b-0 last:pb-0"
             >
-              <span className="text-sky-300 font-mono text-[11px] font-semibold truncate max-w-[180px]">
+              <span className="text-sky-300 font-mono text-[11px] font-semibold flex-1 min-w-0 break-words leading-tight">
                 <MathRenderer content={inv.text} />
               </span>
               <span className="text-[10px] text-emerald-400 shrink-0 font-medium">

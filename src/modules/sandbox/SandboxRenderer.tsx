@@ -972,6 +972,62 @@ export function applyGeometricKinematics(
     return { x, y, constraints, isFixed };
   }
 
+  // 32. SB-KP032: 正比例函数动点与象限投影
+  if (sid === 'SB-KP032' || tpl.includes('direct')) {
+    const k = Number(paramValues['k_prop'] ?? paramValues['slope_k'] ?? 1);
+    const xPos = Number(paramValues['x_pos'] ?? 2);
+    if (ptDef.id === 'p1' || ptDef.name === 'P') {
+      x = xPos;
+      y = k * xPos;
+      constraints = 'fixed';
+      isFixed = false;
+    } else if (ptDef.id === 'px' || ptDef.name === 'Px') {
+      x = xPos;
+      y = 0;
+      constraints = 'fixed';
+      isFixed = true;
+    } else if (ptDef.id === 'o' || ptDef.id === 'O' || ptDef.name === 'O') {
+      x = 0;
+      y = 0;
+      constraints = 'fixed';
+      isFixed = true;
+    }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 33. SB-KP036/037: 反比例函数动点与对称点
+  if (tpl.includes('inverse')) {
+    const k = Number(paramValues['inv_k'] ?? paramValues['rect_k'] ?? 6);
+    const xPos = Number(paramValues['x_pos'] ?? paramValues['x_pt'] ?? 2);
+    if (ptDef.id === 'p1' || ptDef.id === 'p' || ptDef.name?.includes('P(x')) {
+      x = xPos;
+      y = xPos !== 0 ? k / xPos : 0;
+      constraints = 'fixed';
+      isFixed = false;
+    } else if (ptDef.id === 'p2' || ptDef.name?.includes("P'")) {
+      x = -xPos;
+      y = xPos !== 0 ? -k / xPos : 0;
+      constraints = 'fixed';
+      isFixed = true;
+    } else if (ptDef.id === 'px') {
+      x = xPos;
+      y = 0;
+      constraints = 'fixed';
+      isFixed = true;
+    } else if (ptDef.id === 'py') {
+      x = 0;
+      y = xPos !== 0 ? k / xPos : 0;
+      constraints = 'fixed';
+      isFixed = true;
+    } else if (ptDef.id === 'o' || ptDef.id === 'O') {
+      x = 0;
+      y = 0;
+      constraints = 'fixed';
+      isFixed = true;
+    }
+    return { x, y, constraints, isFixed };
+  }
+
   return { x, y, constraints, isFixed };
 }
 
@@ -1275,9 +1331,13 @@ export function computeSandboxBoundingBox(
     addPoint(ptX, 0);
     addPoint(0, ptY);
     addPoint(0, 0);
-  } else if (tpl.includes('linear')) {
+  } else if (tpl.includes('linear') || tpl.includes('direct')) {
     const k1 = Number(paramValues['slope_k'] ?? paramValues['k1'] ?? paramValues['k_prop'] ?? 1);
     const b1 = Number(paramValues['intercept_b'] ?? paramValues['b1'] ?? 0);
+    const xPos = Number(paramValues['x_pos'] ?? 2);
+    addPoint(xPos, k1 * xPos + b1);
+    addPoint(-xPos, -(k1 * xPos + b1));
+    addPoint(0, 0);
     if (paramValues['slope_k2'] !== undefined || paramValues['k2'] !== undefined) {
       const k2 = Number(paramValues['slope_k2'] ?? paramValues['k2'] ?? -1);
       const b2 = Number(paramValues['intercept_b2'] ?? paramValues['b2'] ?? 3);
@@ -1290,6 +1350,138 @@ export function computeSandboxBoundingBox(
   }
 
   return computeBoundingBoxFromPoints(points);
+}
+
+export interface BoardBoundingBoxResult {
+  boundingbox: [number, number, number, number];
+  keepaspectratio: boolean;
+  isCartesianAxis: boolean;
+  isNumberAxis: boolean;
+}
+
+/**
+ * 精确计算画布视口与坐标系对称居中包围盒
+ * - 二维直角坐标系 (isCartesianAxis)：强制原点 (0, 0) 绝对居中、四象限对称，严防原点漂移至角落或负半轴被截断
+ * - 一维数轴 (isNumberAxis)：Y 轴严格以 0 对称居中，X 轴全屏展开
+ * - 纯几何图形：自适应紧凑包围盒放大充满
+ */
+export function computeBoardBoundingBox(
+  config: SandboxConfig,
+  paramValues: Record<string, number> = {}
+): BoardBoundingBoxResult {
+  const tpl = config.canvas_template || '';
+
+  // 1. 区分一维数轴 (number_axis) 与二维直角坐标系 (cartesian_axis)
+  const isNumberAxis =
+    tpl.startsWith('number_axis') ||
+    tpl.includes('number_line') ||
+    tpl === 'number_axis_dynamic' ||
+    config?.sandbox_id?.includes('LM-7A-01') ||
+    config?.sandbox_id === 'SB-KP001' ||
+    config?.sandbox_id === 'SB-KP002' ||
+    config?.sandbox_id === 'SB-KP003' ||
+    config?.sandbox_id === 'SB-KP008';
+
+  const isCartesianAxis =
+    !isNumberAxis && (
+      config.canvas_template === 'axis' ||
+      tpl === 'axis' ||
+      tpl.startsWith('function_') ||
+      tpl.includes('vieta') ||
+      tpl.includes('linear') ||
+      tpl.includes('quadratic') ||
+      tpl.includes('parabola') ||
+      tpl.includes('inverse') ||
+      tpl.includes('cartesian') ||
+      tpl.includes('coordinate') ||
+      config?.sandbox_id?.includes('LM-7B-05') ||
+      config?.sandbox_id?.includes('LM-8A-07') ||
+      config?.sandbox_id?.includes('LM-8B-15') ||
+      config?.sandbox_id?.includes('LM-9A-17')
+    );
+
+  const viewboxSpec = parseViewboxSpec(config.viewbox_spec_json);
+  const contentBox = computeSandboxBoundingBox(config, paramValues);
+
+  let boundingbox: [number, number, number, number];
+  let keepaspectratio = true;
+
+  if (isCartesianAxis) {
+    // 二维直角坐标系：原点 (0, 0) 必须居中，四象限对称展现，彻底解决“重要模型没有居中、漂移截断”问题
+    const baseSpanX = Math.max(
+      Math.abs(viewboxSpec.baseBox.minX),
+      Math.abs(viewboxSpec.baseBox.maxX),
+      6
+    );
+    const baseSpanY = Math.max(
+      Math.abs(viewboxSpec.baseBox.minY),
+      Math.abs(viewboxSpec.baseBox.maxY),
+      6
+    );
+    let maxSpan = Math.max(baseSpanX, baseSpanY);
+
+    let contentMaxY = 0;
+    if (contentBox && isValidBoundingBox(contentBox)) {
+      const contentMax = Math.max(
+        Math.abs(contentBox.minX),
+        Math.abs(contentBox.maxX),
+        Math.abs(contentBox.minY),
+        Math.abs(contentBox.maxY)
+      );
+      contentMaxY = Math.max(Math.abs(contentBox.minY), Math.abs(contentBox.maxY));
+      if (contentMax > maxSpan) {
+        maxSpan = Math.ceil(contentMax + 1);
+      }
+    }
+
+    const margin = 0.18;
+    let spanWithMargin = maxSpan * (1 + margin);
+    // 保证顶部和四周有至少 2.5 单位的舒适天花板缓冲，避免渐近线顶等图元标签贴紧或截断上边界
+    if (contentMaxY > 0 && spanWithMargin < contentMaxY + 2.5) {
+      spanWithMargin = Math.ceil(contentMaxY + 2.5);
+    }
+    // JSXGraph boundingbox: [minX, maxY, maxX, minY]
+    boundingbox = [-spanWithMargin, spanWithMargin, spanWithMargin, -spanWithMargin];
+    keepaspectratio = true;
+  } else if (isNumberAxis) {
+    const baseSpanX = Math.max(
+      Math.abs(viewboxSpec.baseBox.minX),
+      Math.abs(viewboxSpec.baseBox.maxX),
+      6
+    );
+    let spanX = baseSpanX;
+    if (contentBox && isValidBoundingBox(contentBox)) {
+      const contentMaxX = Math.max(Math.abs(contentBox.minX), Math.abs(contentBox.maxX));
+      if (contentMaxX > spanX) {
+        spanX = Math.ceil(contentMaxX + 1);
+      }
+    }
+    const margin = 0.12;
+    const spanXWithMargin = spanX * (1 + margin);
+    if (viewboxSpec.baseBox.minX >= 0) {
+      boundingbox = [
+        viewboxSpec.baseBox.minX - 0.5,
+        3,
+        Math.max(viewboxSpec.baseBox.maxX, spanX) + 1,
+        -3,
+      ];
+    } else {
+      boundingbox = [-spanXWithMargin, 3, spanXWithMargin, -3];
+    }
+    keepaspectratio = false;
+  } else {
+    boundingbox = calculateAdaptiveViewport(viewboxSpec, contentBox, {
+      minSpan: 0.5,
+      marginPercent:
+        typeof viewboxSpec.marginPercent === 'number' && Number.isFinite(viewboxSpec.marginPercent)
+          ? Math.max(0.12, Math.min(0.15, viewboxSpec.marginPercent))
+          : 0.15,
+    });
+    const isAdaptive = isValidBoundingBox(contentBox, 0.5);
+    keepaspectratio = isAdaptive ? true : (viewboxSpec.preserveAspectRatio !== false);
+  }
+
+  return { boundingbox, keepaspectratio, isCartesianAxis, isNumberAxis };
 }
 
 function safeFreeBoardInstance(b: any) {
@@ -1347,32 +1539,10 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
       return;
     }
 
-    // 1. 解析视口包围盒并执行紧凑内容自适应 (TASK-FE-0015 块 A)
-    const viewboxSpec = parseViewboxSpec(config.viewbox_spec_json);
-    const contentBox = computeSandboxBoundingBox(config, paramValues);
-    const boundingbox = calculateAdaptiveViewport(viewboxSpec, contentBox, {
-      minSpan: 0.5,
-      marginPercent:
-        typeof viewboxSpec.marginPercent === 'number' && Number.isFinite(viewboxSpec.marginPercent)
-          ? Math.max(0.12, Math.min(0.15, viewboxSpec.marginPercent))
-          : 0.15,
-    });
-    const isAdaptive = isValidBoundingBox(contentBox, 0.5);
-    const keepaspectratio = isAdaptive ? true : viewboxSpec.preserveAspectRatio;
-
-    // 2. 判断是否显示直角坐标轴 (axis)
-    const isAxis =
-      config.canvas_template === 'axis' ||
-      tpl.startsWith('number_axis') ||
-      tpl.includes('number_line') ||
-      tpl === 'axis' ||
-      tpl === 'number_axis_dynamic' ||
-      tpl.startsWith('function_') ||
-      tpl.includes('vieta') ||
-      tpl.includes('linear') ||
-      tpl.includes('quadratic') ||
-      tpl.includes('parabola') ||
-      tpl.includes('inverse');
+    // 1. 视口包围盒与坐标系自适应计算
+    const { boundingbox, keepaspectratio, isCartesianAxis, isNumberAxis } =
+      computeBoardBoundingBox(config, paramValues);
+    const isAxis = isNumberAxis || isCartesianAxis;
 
     // 清理旧实例
     if (boardRef.current) {
@@ -1380,21 +1550,10 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
       boardRef.current = null;
     }
 
-    // 初始化深色 Slate 视口
+    // 初始化深色 Slate 视口（axis 设为 false，由下方统一手动精细化创建，杜绝 JSXGraph 默认算法导致的 X/Y 刻度步长不一致及数轴冗余 Y 轴）
     const board = JXG.JSXGraph.initBoard(containerRef.current.id, {
       boundingbox,
-      axis: isAxis
-        ? {
-            strokeColor: '#64748b',
-            highlightStrokeColor: '#94a3b8',
-            ticks: {
-              strokeColor: '#64748b',
-              majorHeight: 6,
-              label: { color: '#e2e8f0', fontSize: 11, strokeColor: 'none' },
-              drawZero: true,
-            },
-          }
-        : false,
+      axis: false,
       grid: {
         strokeColor: 'rgba(255, 255, 255, 0.05)',
         dash: 2,
@@ -1407,6 +1566,67 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
     });
 
     boardRef.current = board;
+
+    // 精细化渲染坐标轴与数轴 (统一刻度步长与单位长度，杜绝 X/Y 步长冲突)
+    if (isNumberAxis) {
+      // 一维数轴：严格遵循初中课标（人教版七上），仅创建水平数轴，绝不创建竖向 Y 轴
+      const spanX = Math.abs(boundingbox[2] - boundingbox[0]);
+      const numStep = spanX > 30 ? 5 : spanX > 16 ? 2 : 1;
+      board.create('axis', [[0, 0], [1, 0]], {
+        name: 'x',
+        withLabel: false,
+        strokeColor: '#64748b',
+        strokeWidth: 2,
+        highlight: false,
+        ticks: {
+          ticksDistance: numStep,
+          strokeColor: '#64748b',
+          majorHeight: 8,
+          drawZero: true,
+          label: { color: '#e2e8f0', fontSize: 11, strokeColor: 'none', offset: [-4, -14] },
+        },
+      });
+    } else if (isCartesianAxis) {
+      // 二维直角坐标系：强制 X 轴与 Y 轴使用严格相同的统一刻度步长 (unifiedStep)，保证单位严格一致
+      const spanX = Math.abs(boundingbox[2] - boundingbox[0]);
+      const spanY = Math.abs(boundingbox[1] - boundingbox[3]);
+      const maxSpan = Math.max(spanX, spanY);
+      const unifiedStep = maxSpan > 25 ? 5 : maxSpan > 18 ? 2 : 1;
+
+      // X 轴
+      board.create('axis', [[0, 0], [1, 0]], {
+        name: 'x',
+        withLabel: true,
+        label: { position: 'rt', offset: [-15, 15], color: '#94a3b8', fontSize: 12 },
+        strokeColor: '#64748b',
+        strokeWidth: 1.5,
+        highlight: false,
+        ticks: {
+          ticksDistance: unifiedStep,
+          strokeColor: '#64748b',
+          majorHeight: 6,
+          drawZero: true,
+          label: { color: '#e2e8f0', fontSize: 11, strokeColor: 'none', offset: [-4, -14] },
+        },
+      });
+
+      // Y 轴 (刻度步长与 X 轴 100% 严格相同；drawZero 为 false 防原点 0 重叠)
+      board.create('axis', [[0, 0], [0, 1]], {
+        name: 'y',
+        withLabel: true,
+        label: { position: 'rt', offset: [15, -10], color: '#94a3b8', fontSize: 12 },
+        strokeColor: '#64748b',
+        strokeWidth: 1.5,
+        highlight: false,
+        ticks: {
+          ticksDistance: unifiedStep,
+          strokeColor: '#64748b',
+          majorHeight: 6,
+          drawZero: false,
+          label: { color: '#e2e8f0', fontSize: 11, strokeColor: 'none', offset: [-16, -2] },
+        },
+      });
+    }
     const elements: Record<string, any> = {};
 
     // 构建上下文计算 scope
@@ -2429,8 +2649,8 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
           dash: 3,
         });
       }
-      // (五) 一次函数与双线求交
-      else if (tpl.includes('linear')) {
+      // (五) 一次函数与正比例函数
+      else if (tpl.includes('linear') || tpl.includes('direct')) {
         const k1 = Number(paramValues['slope_k'] ?? paramValues['k1'] ?? paramValues['k_prop'] ?? 1);
         const b1 = Number(paramValues['intercept_b'] ?? paramValues['b1'] ?? 0);
         board.create('functiongraph', [(x: number) => k1 * x + b1, -20, 20], {

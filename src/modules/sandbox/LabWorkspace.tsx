@@ -121,12 +121,6 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
     }
   }, [sessionIsLeapDrawerOpen]);
 
-  // 手机端模式下同步强制使用 leap_4d
-  useEffect(() => {
-    if (isMobile && labSubView !== 'leap_4d') {
-      setLabSubView('leap_4d');
-    }
-  }, [isMobile, labSubView]);
 
   const [invariants, setInvariants] = useState<Array<{ id: string; text: string; isConstant: boolean }>>([]);
 
@@ -498,9 +492,19 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
     setIsLeapDrawerOpen(false);
     setSessionIsLeapDrawerOpen(false);
     setLeapSearchQuery('');
-    const stage = document.querySelector('.workspace-stage-card') || document.querySelector('.sandbox-stage-wrapper');
-    if (stage) {
-      stage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (isMobile) {
+      const deckBody = document.querySelector('[data-testid="card-deck-body"]');
+      if (deckBody) {
+        deckBody.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      if (typeof window !== 'undefined' && window.scrollY !== 0) {
+        window.scrollTo({ top: 0 });
+      }
+    } else {
+      const stage = document.querySelector('.workspace-stage-card') || document.querySelector('.sandbox-stage-wrapper');
+      if (stage) {
+        stage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
   };
 
@@ -511,9 +515,19 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
     setConceptSearchQuery('');
     setConceptParamValues({});
     setInvariants([]);
-    const stage = document.querySelector('.workspace-stage-card') || document.querySelector('.sandbox-stage-wrapper');
-    if (stage) {
-      stage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (isMobile) {
+      const deckBody = document.querySelector('[data-testid="card-deck-body"]');
+      if (deckBody) {
+        deckBody.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      if (typeof window !== 'undefined' && window.scrollY !== 0) {
+        window.scrollTo({ top: 0 });
+      }
+    } else {
+      const stage = document.querySelector('.workspace-stage-card') || document.querySelector('.sandbox-stage-wrapper');
+      if (stage) {
+        stage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
   };
 
@@ -957,7 +971,13 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
                     const sym = stepSymbols[idx] || `${idx + 1}`;
                     const isCur = idx === activeStepIndex;
                     const isDone = completedStepIndices.has(idx);
-                    const title = (isEn ? s.titleEn : s.titleZh) || s.titleZh || s.title || (isEn ? `Step ${idx + 1}` : `步骤 ${idx + 1}`);
+                    const rawTitle = (isEn ? s.titleEn : s.titleZh) || s.titleZh || s.title || (isEn ? `Step ${idx + 1}` : `步骤 ${idx + 1}`);
+                    const cleanTitle = rawTitle.replace(/^\[[^\]]+\]\s*/, '');
+                    const shortTitle = cleanTitle.includes('：')
+                      ? cleanTitle.split('：')[0].trim()
+                      : cleanTitle.includes(':')
+                      ? cleanTitle.split(':')[0].trim()
+                      : (cleanTitle.length > 8 ? cleanTitle.slice(0, 8) + '...' : cleanTitle);
                     return (
                       <button
                         key={s.step || idx}
@@ -967,15 +987,17 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
                           setActiveStepIndex(idx);
                           applyStepPreset(s);
                         }}
-                        title={title}
+                        title={rawTitle}
                         style={{
                           background: isCur ? 'var(--ios-blue)' : isDone ? 'rgba(52, 199, 89, 0.12)' : undefined,
                           color: isCur ? '#ffffff' : isDone ? '#2e7d32' : undefined,
                           borderColor: isCur ? 'var(--ios-blue)' : isDone ? 'rgba(52, 199, 89, 0.3)' : undefined,
+                          flexShrink: 0,
+                          whiteSpace: 'nowrap',
                         }}
                       >
                         <span style={{ fontWeight: 700 }}>{isDone ? '✓ ' : sym + ' '}</span>
-                        <span>{title}</span>
+                        <span>{shortTitle}</span>
                       </button>
                     );
                   })}
@@ -1352,8 +1374,8 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
                             {invariants.length > 0 ? (
                               invariants.slice(0, 3).map((inv, idx) => (
                                 <div key={inv.id || idx} className="flex items-center justify-between p-1.5 rounded bg-slate-900/60 border border-slate-800">
-                                  <span className="telemetry-tag-invariant text-sky-300 font-semibold truncate max-w-[170px]"><MathRenderer content={inv.text} /></span>
-                                  <span className="text-[10px] text-emerald-400">{inv.isConstant ? (isEn ? '[Constant]' : '[绝对恒定]') : (isEn ? '[Dynamic]' : '[动态观测中]')}</span>
+                                  <span className="telemetry-tag-invariant text-sky-300 font-semibold flex-1 min-w-0 break-words leading-tight"><MathRenderer content={inv.text} /></span>
+                                  <span className="text-[10px] text-emerald-400 shrink-0 ml-1.5">{inv.isConstant ? (isEn ? '[Constant]' : '[绝对恒定]') : (isEn ? '[Dynamic]' : '[动态观测中]')}</span>
                                 </div>
                               ))
                             ) : (

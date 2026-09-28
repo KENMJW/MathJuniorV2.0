@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   computeSandboxBoundingBox,
+  computeBoardBoundingBox,
   SandboxConfig,
 } from '../SandboxRenderer';
 import {
@@ -195,6 +196,65 @@ describe('沙盒视口内容自适应与模型放大填满测试 (TASK-FE-0015 �
       const vp = calculateAdaptiveViewport(spec, box);
       const defaultVp = calculateViewport(spec);
       expect(vp).toEqual(defaultVp);
+    });
+  });
+
+  describe('4. 坐标系视口绝对居中杜绝漂移测试 (原点居中与四象限对称)', () => {
+    it('SB-KP032 正比例函数：原点 (0, 0) 绝对居中，四象限对称，严防原点被挤至边缘或负半轴被截断', () => {
+      const config: SandboxConfig = {
+        sandbox_id: 'SB-KP032',
+        canvas_template: 'function_direct_template',
+        viewbox_spec_json: '{"xMin": -8, "xMax": 8, "yMin": -8, "yMax": 8, "marginPercent": 10, "preserveAspectRatio": true}',
+        drag_points_json: JSON.stringify([
+          { id: 'o', name: 'O', x: 0, y: 0, isFixed: true },
+          { id: 'p1', name: 'P', x: 2, y: 4 },
+          { id: 'px', name: 'Px', x: 2, y: 0 },
+        ]),
+      };
+
+      // 1. 用户将 k 调至 -1, x 调至 2 时 (P 处于第四象限 (2, -2))
+      const res = computeBoardBoundingBox(config, { k_prop: -1, x_pos: 2 });
+      expect(res.isCartesianAxis).toBe(true);
+      expect(res.keepaspectratio).toBe(true);
+
+      const [minX, maxY, maxX, minY] = res.boundingbox;
+      // 验证严格以原点 (0, 0) 为中心完全对称
+      expect(minX + maxX).toBeCloseTo(0, 5);
+      expect(minY + maxY).toBeCloseTo(0, 5);
+      expect(maxX).toBeCloseTo(maxY, 5);
+
+      // 原点位于正中心，负半轴 Y (-8.8) 充分可见，第四象限动点 P(2, -2) 绝不截断
+      expect(minY).toBeLessThan(-8);
+      expect(maxY).toBeGreaterThan(8);
+      expect(minX).toBeLessThan(-8);
+      expect(maxX).toBeGreaterThan(8);
+    });
+
+    it('SB-KP001 一维数轴：Y 轴严格以 0 对称居中，水平充满视口', () => {
+      const config: SandboxConfig = {
+        sandbox_id: 'SB-KP001',
+        canvas_template: 'number_axis_rational_template',
+        viewbox_spec_json: '{"xMin": -8, "xMax": 8, "yMin": -3, "yMax": 3, "marginPercent": 10, "preserveAspectRatio": true}',
+        drag_points_json: JSON.stringify([
+          { id: 'O', x: 0, y: 0, isFixed: true },
+          { id: 'A', x: -3, y: 0 },
+          { id: 'B', x: 4, y: 0 },
+        ]),
+      };
+
+      const res = computeBoardBoundingBox(config, {});
+      expect(res.isNumberAxis).toBe(true);
+      expect(res.isCartesianAxis).toBe(false);
+      expect(res.keepaspectratio).toBe(false);
+
+      const [minX, maxY, maxX, minY] = res.boundingbox;
+      // Y 轴严格上下对称 [-3, 3]
+      expect(minY + maxY).toBeCloseTo(0, 5);
+      expect(maxY).toBe(3);
+      expect(minY).toBe(-3);
+      // X 轴以 0 对称且覆盖 [-8, 8]
+      expect(minX).toBeLessThan(-8);
+      expect(maxX).toBeGreaterThan(8);
     });
   });
 });

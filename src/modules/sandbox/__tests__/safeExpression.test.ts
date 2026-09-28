@@ -54,4 +54,14 @@ describe('evaluateSafeExpression (Zero eval security)', () => {
     expect(evaluateSafeExpression('1 / 0')).toBe(0);
     expect(evaluateSafeExpression('-b / a', { a: 0, b: 5 })).toBe(0);
   });
+
+  it('evaluates hypot and degree-based trig functions correctly', () => {
+    expect(evaluateSafeExpression('hypot(3, 4)')).toBe(5);
+    expect(evaluateSafeExpression('hypot(6, 8)')).toBe(10);
+    expect(Math.round(evaluateSafeExpression('sind(30)') * 100) / 100).toBe(0.5);
+    expect(Math.round(evaluateSafeExpression('cosd(60)') * 100) / 100).toBe(0.5);
+    expect(Math.round(evaluateSafeExpression('tand(45)') * 100) / 100).toBe(1);
+    expect(evaluateSafeExpression('deg2rad(180)')).toBeCloseTo(Math.PI);
+  });
 });
+

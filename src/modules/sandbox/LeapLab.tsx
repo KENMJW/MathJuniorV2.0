@@ -840,22 +840,29 @@ export const LeapLab: React.FC<LeapLabProps> = ({
         style={{ display: labMode === 'step_deduction' ? 'flex' : 'none' }}
       >
           {/* 顶部步骤胶囊导航 [ ① | ② | ③ | ④ ] */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflowX: 'auto', padding: '4px 0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflowX: 'auto', padding: '4px 0', WebkitOverflowScrolling: 'touch' }}>
             {stages.map((s, idx) => {
               const stepSymbols = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧'];
               const sym = stepSymbols[idx] || `${idx + 1}`;
               const isCur = idx === currentStepIndex;
-              const title = (isEn ? s.titleEn : s.titleZh) || s.titleZh || s.title || `Step ${idx + 1}`;
+              const rawTitle = (isEn ? s.titleEn : s.titleZh) || s.titleZh || s.title || `Step ${idx + 1}`;
+              const cleanTitle = rawTitle.replace(/^\[[^\]]+\]\s*/, '');
+              const shortTitle = cleanTitle.includes('：')
+                ? cleanTitle.split('：')[0].trim()
+                : cleanTitle.includes(':')
+                ? cleanTitle.split(':')[0].trim()
+                : (cleanTitle.length > 8 ? cleanTitle.slice(0, 8) + '...' : cleanTitle);
               return (
                 <button
                   key={s.stage || idx}
                   type="button"
                   className={`nav-pill-btn ${isCur ? 'active' : ''}`}
                   onClick={() => setCurrentStepIndex(idx)}
-                  title={title}
+                  title={rawTitle}
+                  style={{ flexShrink: 0, whiteSpace: 'nowrap' }}
                 >
                   <span style={{ fontWeight: 700 }}>{sym}</span>
-                  <span>{title}</span>
+                  <span>{shortTitle}</span>
                 </button>
               );
             })}
@@ -1141,16 +1148,21 @@ export const LeapLab: React.FC<LeapLabProps> = ({
                         >
                           {invariants.length > 0 ? (
                             invariants.slice(0, 2).map((inv, idx) => (
-                              <span key={inv.id || idx} style={{ color: '#38bdf8', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '200px' }}>
-                                <MathRenderer content={inv.text} />
-                              </span>
+                              <div key={inv.id || idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '8px' }}>
+                                <span style={{ color: '#38bdf8', fontWeight: 600, flex: 1, minWidth: 0, wordBreak: 'break-word', lineHeight: 1.35 }}>
+                                  <MathRenderer content={inv.text} />
+                                </span>
+                                <span style={{ color: '#34d399', fontWeight: 700, flexShrink: 0 }}>[守恒 ✓]</span>
+                              </div>
                             ))
                           ) : (
-                            <span style={{ color: '#38bdf8', fontWeight: 600 }}>
-                              {isEn ? 'Rigid Transform Isometry Holds' : '刚体变异保距性成立'}
-                            </span>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                              <span style={{ color: '#38bdf8', fontWeight: 600 }}>
+                                {isEn ? 'Rigid Transform Isometry Holds' : '刚体变异保距性成立'}
+                              </span>
+                              <span style={{ color: '#34d399', fontWeight: 700 }}>[守恒 ✓]</span>
+                            </div>
                           )}
-                          <span style={{ color: '#34d399', fontWeight: 700, marginLeft: 'auto' }}>[守恒 ✓]</span>
                         </div>
                       </>
                     )}
@@ -1838,8 +1850,8 @@ export const LeapLab: React.FC<LeapLabProps> = ({
                       ) : invariants.length > 0 ? (
                         invariants.slice(0, 3).map((inv, idx) => (
                           <div key={inv.id || idx} className="flex items-center justify-between p-1.5 rounded bg-slate-900/60 border border-slate-800">
-                            <span className="telemetry-tag-invariant text-sky-300 font-semibold truncate max-w-[170px]"><MathRenderer content={inv.text} /></span>
-                            <span className="text-[10px] text-emerald-400">{inv.isConstant ? (isEn ? '[Constant]' : '[绝对恒定]') : (isEn ? '[Dynamic]' : '[动态观测中]')}</span>
+                            <span className="telemetry-tag-invariant text-sky-300 font-semibold flex-1 min-w-0 break-words leading-tight"><MathRenderer content={inv.text} /></span>
+                            <span className="text-[10px] text-emerald-400 shrink-0 ml-1.5">{inv.isConstant ? (isEn ? '[Constant]' : '[绝对恒定]') : (isEn ? '[Dynamic]' : '[动态观测中]')}</span>
                           </div>
                         ))
                       ) : (

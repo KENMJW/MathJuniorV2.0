@@ -11,7 +11,7 @@ describe('SystemFooter Component', () => {
     expect(html).toContain('system-footer');
     expect(html).toContain('app-release-version');
     expect(html).toContain(APP_VERSION);
-    expect(html).toContain('v2.0.3-beta');
+    expect(html).toContain('v2.0.4-beta');
     expect(html).toContain('全科核心素养提分系统');
     expect(html).toContain('发布版本');
     expect(html).toContain('force-purge-cache-btn');

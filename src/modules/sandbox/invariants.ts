@@ -263,10 +263,32 @@ export function wrapFormulaLatex(expr: string): string {
   return expr;
 }
 
+const EMOJI_SANITIZE_REGEX = /[\uD800-\uDBFF][\uDC00-\uDFFF]|[\u2600-\u27BF]/g;
+
+function sanitizeTelemetryText(text: string | null): string | null {
+  if (!text) return text;
+  return text
+    .replace(/\uD83D\uDEA8/g, '[警报]')
+    .replace(/\uD83E\uDE7B/g, '[透视]')
+    .replace(/\uD83C\uDFAF/g, '[题眼]')
+    .replace(/\u27A4/g, '->')
+    .replace(EMOJI_SANITIZE_REGEX, '')
+    .trim();
+}
+
 /**
  * 格式化不变量展示文本
  */
 export function formatInvariantText(
+  spec: InvariantSpec,
+  pointMap: Record<string, Point2D>,
+  locale: string = 'zh-CN',
+  scopeVars: Record<string, any> = {}
+): string | null {
+  return sanitizeTelemetryText(formatInvariantTextRaw(spec, pointMap, locale, scopeVars));
+}
+
+function formatInvariantTextRaw(
   spec: InvariantSpec,
   pointMap: Record<string, Point2D>,
   locale: string = 'zh-CN',

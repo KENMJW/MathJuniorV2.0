@@ -65,7 +65,10 @@
 
 /* 手机端专用深度增强 (<768px) */
 @media (max-width: 767px) {
+  html,
   body {
+    height: 100% !important;
+    overflow: hidden !important;
     overscroll-behavior-y: none;
   }
 

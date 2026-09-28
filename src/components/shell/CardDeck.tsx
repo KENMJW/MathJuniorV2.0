@@ -36,7 +36,7 @@ export const CardDeck: React.FC<CardDeckProps> = ({
       {header && (
         <header
           data-testid="card-deck-header"
-          className="shrink-0 h-[44px] min-h-[44px] flex items-center px-3 bg-white/90 backdrop-blur-xl border-b border-border-subtle z-20 box-border"
+          className="card-deck-header shrink-0 h-[44px] min-h-[44px] flex items-center px-3 bg-white/90 backdrop-blur-xl border-b border-border-subtle z-20 box-border"
         >
           {header}
         </header>

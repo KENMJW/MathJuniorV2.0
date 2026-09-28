@@ -429,6 +429,20 @@ class Parser {
         return Math.max(...args.map(Number));
       case 'pow':
         return Math.pow(a0, a1);
+      case 'hypot':
+        return Math.hypot(...args.map(Number));
+      case 'sind':
+        return Math.sin((a0 * Math.PI) / 180);
+      case 'cosd':
+        return Math.cos((a0 * Math.PI) / 180);
+      case 'tand':
+        return Math.tan((a0 * Math.PI) / 180);
+      case 'rad':
+      case 'deg2rad':
+        return (a0 * Math.PI) / 180;
+      case 'deg':
+      case 'rad2deg':
+        return (a0 * 180) / Math.PI;
       default:
         return 0;
     }
