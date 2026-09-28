@@ -342,8 +342,8 @@ export const ConceptFourStages: React.FC<ConceptFourStagesProps> = ({
       titleEn: '1. Origin Story · Historical Context',
       subtitleZh: '原点溯源 · 历史题眼',
       subtitleEn: 'Origin Story · Historical Context',
-      colorClass: 'text-blue-600 dark:text-sky-400',
-      badgeBgClass: 'bg-blue-500/10 border-blue-500/20 text-blue-600 dark:text-sky-400',
+      colorClass: 'text-blue-600',
+      badgeBgClass: 'bg-blue-500/10 border-blue-500/20 text-blue-600',
       activeBtnClass: 'bg-blue-600 text-white shadow-md shadow-blue-500/30',
     },
     2: {
@@ -351,8 +351,8 @@ export const ConceptFourStages: React.FC<ConceptFourStagesProps> = ({
       titleEn: '2. Intuitive Essence · Geometric Model',
       subtitleZh: '本真透视 · 几何割补',
       subtitleEn: 'Intuitive Essence · Geometric Model',
-      colorClass: 'text-teal-600 dark:text-teal-400',
-      badgeBgClass: 'bg-teal-500/10 border-teal-500/20 text-teal-600 dark:text-teal-400',
+      colorClass: 'text-teal-600',
+      badgeBgClass: 'bg-teal-500/10 border-teal-500/20 text-teal-600',
       activeBtnClass: 'bg-teal-600 text-white shadow-md shadow-teal-500/30',
     },
     3: {
@@ -360,8 +360,8 @@ export const ConceptFourStages: React.FC<ConceptFourStagesProps> = ({
       titleEn: '3. Formal Definition · Standard Axioms',
       subtitleZh: '法典严定 · 标准算法',
       subtitleEn: 'Formal Definition · Standard Axioms',
-      colorClass: 'text-purple-600 dark:text-purple-400',
-      badgeBgClass: 'bg-purple-500/10 border-purple-500/20 text-purple-600 dark:text-purple-400',
+      colorClass: 'text-purple-600',
+      badgeBgClass: 'bg-purple-500/10 border-purple-500/20 text-purple-600',
       activeBtnClass: 'bg-purple-600 text-white shadow-md shadow-purple-500/30',
     },
     4: {
@@ -369,8 +369,8 @@ export const ConceptFourStages: React.FC<ConceptFourStagesProps> = ({
       titleEn: '4. Intrinsic Variation · Boundary Traps',
       subtitleZh: '本体辨正 · 临界反例',
       subtitleEn: 'Intrinsic Variation · Boundary Traps',
-      colorClass: 'text-amber-600 dark:text-amber-400',
-      badgeBgClass: 'bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400',
+      colorClass: 'text-amber-600',
+      badgeBgClass: 'bg-amber-500/10 border-amber-500/20 text-amber-600',
       activeBtnClass: 'bg-amber-600 text-white shadow-md shadow-amber-500/30',
     },
   };
@@ -397,7 +397,7 @@ export const ConceptFourStages: React.FC<ConceptFourStagesProps> = ({
 
   return (
     <div
-      className={`concept-four-stages w-full max-w-[1240px] mx-auto flex flex-col gap-4 p-0 bg-transparent text-slate-900 dark:text-slate-100 box-border ${className}`}
+      className={`concept-four-stages w-full max-w-[1240px] mx-auto flex flex-col gap-4 p-0 bg-transparent text-slate-900 box-border ${className}`}
       data-testid="concept-four-stages"
       data-point-id={knowledgePoint.point_id}
       data-active-stage={activeStage}
@@ -405,8 +405,8 @@ export const ConceptFourStages: React.FC<ConceptFourStagesProps> = ({
       {/* 隐藏辅助标签以确保向后兼容与测试断言一致通过 */}
       <span className="hidden">
         {`${knowledgePoint.point_id} · ${kpName} · ${
-          locale === 'en' ? 'Stage' : '阶段'
-        } ${activeStage} / 4 · ${activeTheme.titleEn}`}
+ locale === 'en' ? 'Stage' : '阶段'
+ } ${activeStage} / 4 · ${activeTheme.titleEn}`}
       </span>
 
       {/* 顶栏分段导航与专注大画布切换 */}
@@ -414,7 +414,7 @@ export const ConceptFourStages: React.FC<ConceptFourStagesProps> = ({
         <nav
           aria-label="Four Stages Navigation"
           data-testid="concept-four-stages-nav"
-          className="concept-stage-tabs-mobile stage-segmented-control flex-1 min-w-[280px] flex gap-1 p-1 bg-slate-100 dark:bg-slate-800/60 rounded-full border border-slate-200/60 dark:border-slate-700/50 box-border"
+          className="concept-stage-tabs-mobile stage-segmented-control flex-1 min-w-[280px] flex gap-1 p-1 bg-slate-100 rounded-full border border-slate-200/60 box-border"
         >
           {([1, 2, 3, 4] as StageNumber[]).map((stageNum) => {
             const cfg = STAGE_THEME_CONFIG[stageNum];
@@ -428,10 +428,10 @@ export const ConceptFourStages: React.FC<ConceptFourStagesProps> = ({
                 onClick={() => handleStageSelect(stageNum)}
                 data-stage-btn={stageNum}
                 className={`flex-1 py-1.5 px-3 rounded-full text-xs font-bold transition-all text-center whitespace-nowrap active:scale-[0.98] ${
-                  isSelected
-                    ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-sky-400 shadow-sm'
-                    : 'bg-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-                }`}
+ isSelected
+ ? 'bg-white text-blue-600 shadow-sm'
+ : 'bg-transparent text-slate-500 hover:text-slate-700'
+ }`}
               >
                 <span>{title}</span>
               </button>
@@ -443,7 +443,7 @@ export const ConceptFourStages: React.FC<ConceptFourStagesProps> = ({
         <button
           type="button"
           onClick={() => setIsFocusCanvas(!isFocusCanvas)}
-          className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700/60 transition-all active:scale-[0.98]"
+          className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/80 transition-all active:scale-[0.98]"
         >
           {isFocusCanvas ? (
             <>
@@ -460,7 +460,7 @@ export const ConceptFourStages: React.FC<ConceptFourStagesProps> = ({
       </div>
 
       {/* 手机端专用：上方 280px 吸顶图解容器严格声明 touch-action: none */}
-      <div className="lg:hidden w-full h-[280px] shrink-0 rounded-2xl overflow-hidden border border-slate-200/80 dark:border-slate-800 bg-slate-900 p-2 flex flex-col items-center justify-center relative touch-none">
+      <div className="lg:hidden w-full h-[280px] shrink-0 rounded-2xl overflow-hidden border border-slate-200/80 bg-slate-900 p-2 flex flex-col items-center justify-center relative touch-none">
         <SvgLayerReveal
           activeStage={activeStage}
           pointId={knowledgePoint.point_id}
@@ -477,15 +477,15 @@ export const ConceptFourStages: React.FC<ConceptFourStagesProps> = ({
       {/* 主体区：左侧 55% 溯源文案与高亮引用框，右侧 45% 高清几何矢量图 (宽屏下) */}
       <div
         className={`concept-two-column-layout w-full min-h-[460px] flex flex-col lg:flex-row gap-5 items-stretch ${
-          isFocusCanvas ? 'lg:flex-col-reverse' : ''
-        }`}
+ isFocusCanvas ? 'lg:flex-col-reverse' : ''
+ }`}
       >
         {/* 左侧 55%：溯源文案与《周髀算经》等高亮引用框 */}
         <div
           data-testid={`stage-content-${activeStage}`}
-          className={`min-w-0 flex flex-col gap-4 justify-between bg-white/80 dark:bg-slate-900/80 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-md box-border ${
-            isFocusCanvas ? 'w-full' : 'flex-1 lg:flex-[55_1_0%]'
-          }`}
+          className={`min-w-0 flex flex-col gap-4 justify-between bg-white/80 rounded-2xl p-6 border border-slate-200/80 shadow-md box-border ${
+ isFocusCanvas ? 'w-full' : 'flex-1 lg:flex-[55_1_0%]'
+ }`}
         >
           {/* 阶段副标题与标题 */}
           <div className="flex flex-col gap-1">
@@ -495,24 +495,24 @@ export const ConceptFourStages: React.FC<ConceptFourStagesProps> = ({
               <Sparkles className="w-3.5 h-3.5" />
               <span>{locale === 'en' ? activeTheme.subtitleEn : activeTheme.subtitleZh}</span>
             </div>
-            <h3 className="m-0 text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white">
+            <h3 className="m-0 text-lg sm:text-xl font-extrabold text-slate-900">
               {locale === 'en' ? activeTheme.titleEn : activeTheme.titleZh}
             </h3>
           </div>
 
           {/* 《周髀算经》/《九章算术》等古代数学典籍高亮引用框 */}
-          <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-850 border-l-4 border-l-blue-600 border border-slate-200/60 dark:border-slate-700/60 flex flex-col gap-1.5">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-blue-600 dark:text-sky-400">
+          <div className="p-3.5 rounded-xl bg-slate-50 border-l-4 border-l-blue-600 border border-slate-200/60 flex flex-col gap-1.5">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-blue-600">
               <BookOpen className="w-4 h-4" />
               <span>{ancientQuote.book}</span>
             </div>
-            <div className="text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+            <div className="text-xs sm:text-sm leading-relaxed text-slate-600">
               <MathRenderer content={ancientQuote.quote} />
             </div>
           </div>
 
           {/* 铁律 3：正文内容经 MathRenderer 安全解析上屏 */}
-          <div className="stage-text-body db-content-body flex-1 text-sm sm:text-base leading-relaxed text-slate-900 dark:text-slate-100 overflow-hidden break-words">
+          <div className="stage-text-body db-content-body flex-1 text-sm sm:text-base leading-relaxed text-slate-900 overflow-hidden break-words">
             <MathRenderer
               content={stageContents[activeStage] || ''}
               block
@@ -521,13 +521,13 @@ export const ConceptFourStages: React.FC<ConceptFourStagesProps> = ({
           </div>
 
           {/* 底部前后步进器 */}
-          <footer className="flex items-center justify-between pt-3 border-t border-slate-200/60 dark:border-slate-800">
+          <footer className="flex items-center justify-between pt-3 border-t border-slate-200/60">
             <button
               type="button"
               onClick={handlePrev}
               disabled={activeStage === 1}
               data-testid="stage-prev-btn"
-              className="inline-flex items-center gap-1 border-none bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 py-1.5 px-3.5 rounded-full cursor-pointer font-bold text-xs text-slate-700 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition-all"
+              className="inline-flex items-center gap-1 border-none bg-slate-100 hover:bg-slate-200 py-1.5 px-3.5 rounded-full cursor-pointer font-bold text-xs text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition-all"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
               <span>{locale === 'en' ? 'Previous' : '上一段'}</span>
@@ -538,10 +538,10 @@ export const ConceptFourStages: React.FC<ConceptFourStagesProps> = ({
                 <span
                   key={s}
                   className={`h-1.5 rounded-full transition-all duration-300 ${
-                    s === activeStage
-                      ? 'w-5 bg-blue-600 dark:bg-sky-400'
-                      : 'w-1.5 bg-slate-300 dark:bg-slate-700'
-                  }`}
+ s === activeStage
+ ? 'w-5 bg-blue-600'
+ : 'w-1.5 bg-slate-300'
+ }`}
                 />
               ))}
             </div>
@@ -552,10 +552,10 @@ export const ConceptFourStages: React.FC<ConceptFourStagesProps> = ({
               disabled={activeStage === 4}
               data-testid="stage-next-btn"
               className={`inline-flex items-center gap-1 border-none py-1.5 px-4 rounded-full font-bold text-xs transition-all ${
-                activeStage === 4
-                  ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-60'
-                  : 'bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/25 cursor-pointer active:scale-[0.98]'
-              }`}
+ activeStage === 4
+ ? 'bg-slate-100 text-slate-400 cursor-not-allowed opacity-60'
+ : 'bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/25 cursor-pointer active:scale-[0.98]'
+ }`}
             >
               <span>
                 {activeStage === 4
@@ -583,10 +583,10 @@ export const ConceptFourStages: React.FC<ConceptFourStagesProps> = ({
                 }
               }}
               className={`w-full py-3 px-4 rounded-full font-bold text-xs sm:text-sm active:scale-[0.98] transition-all flex items-center justify-center gap-2 ${
-                activeStage === 4
-                  ? 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 shadow-sm'
-                  : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/30'
-              }`}
+ activeStage === 4
+ ? 'bg-slate-100 text-slate-700 border border-slate-300 shadow-sm'
+ : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/30'
+ }`}
             >
               <span>{activeStage === 4 ? (isEn ? '↺ Review from Stage ①' : '↺ 四段已学完 · 重新温习') : mobileCtaText}</span>
               {activeStage < 4 ? <ArrowRight className="w-4 h-4" /> : null}
@@ -596,9 +596,9 @@ export const ConceptFourStages: React.FC<ConceptFourStagesProps> = ({
 
         {/* 右侧 45%：概念高清几何矢量图 (宽屏下显示，手机端已吸顶) */}
         <div
-          className={`hidden lg:flex flex-col gap-3.5 items-center justify-center bg-white/80 dark:bg-slate-900/80 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-md box-border min-w-0 ${
-            isFocusCanvas ? 'w-full h-[520px]' : 'flex-[45_1_0%]'
-          }`}
+          className={`hidden lg:flex flex-col gap-3.5 items-center justify-center bg-white/80 rounded-2xl p-6 border border-slate-200/80 shadow-md box-border min-w-0 ${
+ isFocusCanvas ? 'w-full h-[520px]' : 'flex-[45_1_0%]'
+ }`}
         >
           <div className="w-full max-w-md">
             <SvgLayerReveal
@@ -611,20 +611,20 @@ export const ConceptFourStages: React.FC<ConceptFourStagesProps> = ({
 
           {/* 高清矢量图注 */}
           <div className="flex flex-col items-center gap-1 text-center">
-            <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+            <span className="text-xs font-semibold text-slate-600">
               {vectorCaption}
             </span>
-            <span className="text-[11px] text-slate-400 dark:text-slate-500">
+            <span className="text-[11px] text-slate-400">
               {locale === 'en'
                 ? `Layer ${activeStage}/4: ${
-                    activeStage === 1
-                      ? 'Origin Base Model'
-                      : activeStage === 2
-                      ? 'Geometric Dissection'
-                      : activeStage === 3
-                      ? 'Formal Labels & Formulas'
-                      : 'Critical Invariants & Traps'
-                  }`
+ activeStage === 1
+ ? 'Origin Base Model'
+ : activeStage === 2
+ ? 'Geometric Dissection'
+ : activeStage === 3
+ ? 'Formal Labels & Formulas'
+ : 'Critical Invariants & Traps'
+ }`
                 : activeStage === 1
                 ? '第 1 层 · 原点历史基底模型点亮（其余图层隐藏）'
                 : activeStage === 2

@@ -1551,7 +1551,7 @@ export const LeapLab: React.FC<LeapLabProps> = ({
         </div>
       ) : (
         /* 电脑端统一大剧场卡片 (方案 B：左侧大视口 + 右侧文字/HUD一体化仪表盘 + 下方推演轨道与自由解锁滑块) */
-        <div className="w-full overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl flex flex-col gap-3.5 p-4 box-border relative">
+        <div className="w-full overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-xl flex flex-col gap-3.5 p-4 box-border relative">
           {/* 上半区：左侧大视口 + 右侧一体化仪表盘 (两边自动等高对齐) */}
           <div className="sandbox-split-box desktop-unified flex-1 min-h-0 flex flex-col lg:flex-row gap-3.5 items-stretch">
             {/* 左侧大视口 (JSXGraph / SVG 画布) */}
@@ -1746,12 +1746,12 @@ export const LeapLab: React.FC<LeapLabProps> = ({
                           type="button"
                           onClick={() => setCurrentStepIndex(idx)}
                           className={`px-2 py-0.5 rounded-full text-[11px] font-semibold transition-all ${
-                            isCur
-                              ? 'bg-blue-600 text-white shadow-sm ring-1 ring-blue-400'
-                              : isPassed
-                              ? 'bg-emerald-500/25 text-emerald-300 hover:bg-emerald-500/35'
-                              : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
-                          }`}
+ isCur
+ ? 'bg-blue-600 text-white shadow-sm ring-1 ring-blue-400'
+ : isPassed
+ ? 'bg-emerald-500/25 text-emerald-300 hover:bg-emerald-500/35'
+ : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
+ }`}
                         >
                           {isPassed ? '✓ ' : ''}{isEn ? `Step ${idx + 1}` : `步骤 ${idx + 1}`}
                         </button>
@@ -1932,10 +1932,10 @@ export const LeapLab: React.FC<LeapLabProps> = ({
                               key={opt.id}
                               type="button"
                               className={`preset-btn text-[11px] px-2 py-0.5 rounded transition-all ${
-                                morphState.carrierId === opt.id
-                                  ? 'active bg-sky-500 text-white font-semibold shadow'
-                                  : 'bg-slate-700/70 text-slate-300 hover:bg-slate-700'
-                              }`}
+ morphState.carrierId === opt.id
+ ? 'active bg-sky-500 text-white font-semibold shadow'
+ : 'bg-slate-700/70 text-slate-300 hover:bg-slate-700'
+ }`}
                               onClick={() => handleSelectCarrier(opt.id)}
                             >
                               {(isEn ? opt.nameEn : opt.nameZh) || opt.nameZh}
@@ -1947,10 +1947,10 @@ export const LeapLab: React.FC<LeapLabProps> = ({
                               key={opt.id}
                               type="button"
                               className={`preset-btn text-[11px] px-2 py-0.5 rounded transition-all ${
-                                morphState.carrierId === opt.id
-                                  ? 'active bg-sky-500 text-white font-semibold shadow'
-                                  : 'bg-slate-700/70 text-slate-300 hover:bg-slate-700'
-                              }`}
+ morphState.carrierId === opt.id
+ ? 'active bg-sky-500 text-white font-semibold shadow'
+ : 'bg-slate-700/70 text-slate-300 hover:bg-slate-700'
+ }`}
                               onClick={() => handleSelectCarrier(opt.id)}
                             >
                               {(isEn ? opt.nameEn : opt.nameZh) || opt.nameZh}
@@ -1989,10 +1989,10 @@ export const LeapLab: React.FC<LeapLabProps> = ({
                               key={mode.id}
                               type="button"
                               className={`preset-btn text-[11px] px-2 py-0.5 rounded transition-all ${
-                                morphState.postureId === mode.id
-                                  ? 'active bg-indigo-500 text-white font-semibold shadow'
-                                  : 'bg-slate-700/70 text-slate-300 hover:bg-slate-700'
-                              }`}
+ morphState.postureId === mode.id
+ ? 'active bg-indigo-500 text-white font-semibold shadow'
+ : 'bg-slate-700/70 text-slate-300 hover:bg-slate-700'
+ }`}
                               onClick={() => handleSelectPosture(mode.id, mode.rotationDeg)}
                             >
                               {(isEn ? mode.nameEn : mode.nameZh) || mode.nameZh}
@@ -2077,8 +2077,8 @@ export const LeapLab: React.FC<LeapLabProps> = ({
                               type="button"
                               disabled={morphState.xrayActive}
                               className={`preset-btn text-[11px] px-2 py-0.5 rounded transition-all ${
-                                active && !morphState.xrayActive ? 'active bg-sky-500 text-white shadow' : 'bg-slate-700/70 text-slate-300'
-                              }`}
+ active && !morphState.xrayActive ? 'active bg-sky-500 text-white shadow' : 'bg-slate-700/70 text-slate-300'
+ }`}
                               onClick={() => handleToggleCamouflage(layer.id)}
                             >
                               {(isEn ? layer.nameEn : layer.nameZh) || layer.nameZh}
@@ -2124,12 +2124,12 @@ export const LeapLab: React.FC<LeapLabProps> = ({
 
           {/* 下半区：仅在自由探索模式下解锁展示的参数调控滑块区 (删除下端冗余推演轨道) */}
           <div
-            className="free-explore-container w-full p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/50 flex flex-col gap-2"
+            className="free-explore-container w-full p-3 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col gap-2"
             data-testid="free-explore-view"
             style={{ display: labMode === 'free_explore' ? 'flex' : 'none' }}
           >
               <div className="sandbox-controls-bar w-full flex items-center gap-4 flex-wrap">
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 shrink-0">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 shrink-0">
                   <Icon name="sliders" size={14} />
                   <span>{isEn ? 'Sliders' : '参数调控'}</span>
                 </div>
@@ -2138,8 +2138,8 @@ export const LeapLab: React.FC<LeapLabProps> = ({
                   <div className="flex items-center gap-4 flex-wrap flex-1 min-w-0">
                     {/* 旋转角 α */}
                     <div className="slider-group flex items-center gap-2 min-w-[240px]">
-                      <label htmlFor="sandbox-slider" className="text-xs font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">
-                        {isEn ? 'Rotation α: ' : '旋转角 α: '}<strong className="text-blue-600 dark:text-sky-400 font-mono">{rotationAngle}°</strong>
+                      <label htmlFor="sandbox-slider" className="text-xs font-medium text-slate-700 whitespace-nowrap">
+                        {isEn ? 'Rotation α: ' : '旋转角 α: '}<strong className="text-blue-600 font-mono">{rotationAngle}°</strong>
                       </label>
                       <input
                         id="sandbox-slider"
@@ -2161,8 +2161,8 @@ export const LeapLab: React.FC<LeapLabProps> = ({
 
                     {/* 动点参数 t */}
                     <div className="slider-group flex items-center gap-2 min-w-[200px]">
-                      <label htmlFor="param-t-slider" className="text-xs font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">
-                        {isEn ? 'Point t: ' : '动点 t: '}<strong className="text-blue-600 dark:text-sky-400 font-mono">{morphState.parameterValues['param_t'] ?? 5}</strong>
+                      <label htmlFor="param-t-slider" className="text-xs font-medium text-slate-700 whitespace-nowrap">
+                        {isEn ? 'Point t: ' : '动点 t: '}<strong className="text-blue-600 font-mono">{morphState.parameterValues['param_t'] ?? 5}</strong>
                       </label>
                       <input
                         id="param-t-slider"
@@ -2183,10 +2183,10 @@ export const LeapLab: React.FC<LeapLabProps> = ({
                           key={deg}
                           type="button"
                           className={`px-2 py-0.5 rounded text-[11px] font-medium transition-all ${
-                            rotationAngle === deg
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-blue-400'
-                          }`}
+ rotationAngle === deg
+ ? 'bg-blue-600 text-white'
+ : 'bg-white text-slate-600 border border-slate-200 hover:border-blue-400'
+ }`}
                           onClick={() => setRotationAngle(deg)}
                         >
                           {deg}°
@@ -2200,8 +2200,8 @@ export const LeapLab: React.FC<LeapLabProps> = ({
                       const val = morphState.parameterValues[s.id] ?? s.default ?? 5;
                       return (
                         <div key={s.id} className="slider-group flex items-center gap-2 min-w-[200px]">
-                          <label htmlFor={`slider-${s.id}`} className="text-xs font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">
-                            {(isEn ? s.nameEn : s.nameZh) || s.nameZh || '参数'}: <strong className="text-blue-600 dark:text-sky-400 font-mono">{val}{s.unit || ''}</strong>
+                          <label htmlFor={`slider-${s.id}`} className="text-xs font-medium text-slate-700 whitespace-nowrap">
+                            {(isEn ? s.nameEn : s.nameZh) || s.nameZh || '参数'}: <strong className="text-blue-600 font-mono">{val}{s.unit || ''}</strong>
                           </label>
                           <input
                             id={`slider-${s.id}`}

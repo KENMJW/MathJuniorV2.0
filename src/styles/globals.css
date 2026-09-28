@@ -4,6 +4,7 @@
 
 @layer base {
   :root {
+    color-scheme: light;
     /* Apple Signature Light Studio Background */
     --bg-page: #fbfbfd;
     --bg-card: #ffffff;

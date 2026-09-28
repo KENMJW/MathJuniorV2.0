@@ -1219,7 +1219,7 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
               </div>
             ) : (
               /* 电脑端统一大剧场卡片 (方案 B：左侧大视口 + 右侧任务/HUD一体化仪表盘 + 下方推演轨道与自由解锁滑块) */
-              <div className="w-full overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl flex flex-col gap-3.5 p-4 box-border relative">
+              <div className="w-full overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-xl flex flex-col gap-3.5 p-4 box-border relative">
                 {/* 上半区：左侧大视口 + 右侧一体化仪表盘 (两边自动等高对齐) */}
                 <div className="sandbox-split-box desktop-unified flex-1 min-h-0 flex flex-col lg:flex-row gap-3.5 items-stretch">
                   {/* 左侧大视口 (JSXGraph 画布) */}
@@ -1287,12 +1287,12 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
                                   applyStepPreset(s);
                                 }}
                                 className={`px-2 py-0.5 rounded-full text-[11px] font-semibold transition-all ${
-                                  isCur
-                                    ? 'bg-blue-600 text-white shadow-sm ring-1 ring-blue-400'
-                                    : isDone
-                                    ? 'bg-emerald-500/25 text-emerald-300 hover:bg-emerald-500/35'
-                                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
-                                }`}
+ isCur
+ ? 'bg-blue-600 text-white shadow-sm ring-1 ring-blue-400'
+ : isDone
+ ? 'bg-emerald-500/25 text-emerald-300 hover:bg-emerald-500/35'
+ : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
+ }`}
                               >
                                 {isDone ? '✓ ' : ''}{isEn ? `Step ${idx + 1}` : `步骤 ${idx + 1}`}
                               </button>
@@ -1412,8 +1412,8 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
                             type="button"
                             onClick={handleAdvanceToNextStep}
                             className={`flex-1 inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-white transition-all shadow-md active:scale-95 ${
-                              completedStepIndices.has(activeStepIndex) ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-blue-600 hover:bg-blue-500'
-                            }`}
+ completedStepIndices.has(activeStepIndex) ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-blue-600 hover:bg-blue-500'
+ }`}
                           >
                             <span>
                               {activeStepIndex + 1 < inquirySteps.length
@@ -1480,10 +1480,10 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
                 {/* 下半区：通栏常驻参数调控滑块区 (对标标杆截图，确保推演与探索全生命周期均可实时交互) */}
                 {conceptSliders.length > 0 && (
                   <div
-                    className="free-explore-container sandbox-controls-bar w-full p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/50 flex items-center gap-4 flex-wrap transition-all"
+                    className="free-explore-container sandbox-controls-bar w-full p-3 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center gap-4 flex-wrap transition-all"
                     data-testid="concept-free-explore-view"
                   >
-                    <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 shrink-0">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 shrink-0">
                       <Icon name="sliders" size={14} />
                       <span>{isEn ? 'Sliders' : '参数调控'}</span>
                     </div>
@@ -1494,8 +1494,8 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
                         const sliderName = isEn ? (s.name || s.id) : s.name;
                         return (
                           <div key={s.id} className="slider-group flex items-center gap-2 min-w-[200px]">
-                            <label htmlFor={`desktop-concept-slider-${s.id}`} className="text-xs font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">
-                              {sliderName}: <strong className="text-blue-600 dark:text-sky-400 font-mono">{val}{s.unit || ''}</strong>
+                            <label htmlFor={`desktop-concept-slider-${s.id}`} className="text-xs font-medium text-slate-700 whitespace-nowrap">
+                              {sliderName}: <strong className="text-blue-600 font-mono">{val}{s.unit || ''}</strong>
                             </label>
                             <input
                               id={`desktop-concept-slider-${s.id}`}
