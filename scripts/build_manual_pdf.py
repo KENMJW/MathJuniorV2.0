@@ -18,22 +18,24 @@ def build_manual():
     print("[1/3] Encoding real UI screenshots to Base64...")
     imgs = {
         "pc_pillars": get_base64_img("public/screenshots/fe0021_e2e_pc_1440x900_three_pillars.png"),
-        "pc_graph_drawer": get_base64_img("public/screenshots/fe0015_02_line_selector_drawer.png"),
-        "pc_swimlane": get_base64_img("public/screenshots/fe0015_03_line_g4_concept.png"),
+        "pc_concept_drawer": get_base64_img("public/screenshots/fe0021_e2e_pad_820x1180_drawer_open.png"),
         "pc_concept_master": get_base64_img("public/screenshots/fe0021_e2e_pc_1440x900_master_accordion.png"),
+        "pc_concept_practice": get_base64_img("public/screenshots/fe0021_e2e_pc_1440x900_quick_practice_feedback.png"),
         "kp057_zhaoshuang": get_base64_img("public/screenshots/verify_kp057_zhaoshuang_step2.png"),
         "kp057_hud": get_base64_img("public/screenshots/verify_kp057_hud_step3.png"),
+        "pc_graph_drawer": get_base64_img("public/screenshots/fe0015_02_line_selector_drawer.png"),
+        "pc_graph_swimlane": get_base64_img("public/screenshots/fe0015_03_line_g4_concept.png"),
+        "pc_graph_practice": get_base64_img("public/screenshots/fe0015_06_quick_practice_eval.png"),
         "pc_leap_free": get_base64_img("public/screenshots/fe0022_e2e_pc_1440x900_leaplab_free.png"),
         "phone_leap_deduction": get_base64_img("public/screenshots/fe0022_e2e_phone_390x844_leaplab_deduction.png"),
         "phone_leap_xray": get_base64_img("public/screenshots/fe0022_e2e_phone_390x844_leaplab_step2_xray.png"),
-        "pc_exam_workbench": get_base64_img("public/screenshots/fe0022_e2e_pc_1440x900_exam_workbench.png"),
-        "phone_score_panel": get_base64_img("public/screenshots/fe0022_e2e_phone_390x844_score_panel.png"),
-        "pad_stage1": get_base64_img("public/screenshots/fe0021_e2e_pad_820x1180_stage1.png"),
-        "pad_drawer": get_base64_img("public/screenshots/fe0021_e2e_pad_820x1180_drawer_open.png"),
-        "phone_concept_drawer": get_base64_img("public/screenshots/fe0023_e2e_phone_390x844_concept_drawer.png"),
-        "phone_four_stages": get_base64_img("public/screenshots/fe0021_e2e_phone_390x844_four_stages.png"),
         "lm9a19_stage1": get_base64_img("public/screenshots/verify_lm9a19_stage1.png"),
         "lm9a19_stage2": get_base64_img("public/screenshots/verify_lm9a19_stage2.png"),
+        "exam_workbench": get_base64_img("public/screenshots/fe0022_e2e_pc_1440x900_exam_workbench.png"),
+        "online_exam": get_base64_img("public/screenshots/fe0022_e2e_phone_390x844_online_exam.png"),
+        "score_panel": get_base64_img("public/screenshots/fe0022_e2e_phone_390x844_score_panel.png"),
+        "pad_stage1": get_base64_img("public/screenshots/fe0021_e2e_pad_820x1180_stage1.png"),
+        "phone_concept_drawer": get_base64_img("public/screenshots/fe0023_e2e_phone_390x844_concept_drawer.png"),
     }
 
     print("[2/3] Assembling high-fidelity HTML document with CSS print styles...")
@@ -83,7 +85,7 @@ def build_manual():
       flex-direction: column;
       justify-content: space-between;
       height: 258mm;
-      padding: 20mm 10mm 15mm 10mm;
+      padding: 18mm 10mm 15mm 10mm;
       text-align: center;
       background: radial-gradient(circle at top right, #f0f9ff 0%, #ffffff 60%);
       border: 1px solid #e2e8f0;
@@ -108,7 +110,7 @@ def build_manual():
       font-weight: 800;
       color: #0f172a;
       line-height: 1.25;
-      margin: 20px 0 10px 0;
+      margin: 18px 0 10px 0;
       letter-spacing: -0.5px;
     }}
 
@@ -116,7 +118,7 @@ def build_manual():
       font-size: 13pt;
       font-weight: 500;
       color: #475569;
-      margin-bottom: 25px;
+      margin-bottom: 20px;
       line-height: 1.4;
     }}
 
@@ -124,7 +126,7 @@ def build_manual():
       display: flex;
       justify-content: center;
       gap: 12px;
-      margin-bottom: 25px;
+      margin-bottom: 20px;
     }}
 
     .cover-tag {{
@@ -139,7 +141,7 @@ def build_manual():
 
     .cover-hero-img {{
       width: 100%;
-      max-height: 110mm;
+      max-height: 105mm;
       object-fit: cover;
       border-radius: 10px;
       box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
@@ -152,17 +154,29 @@ def build_manual():
       color: #64748b;
       line-height: 1.6;
       border-top: 1px solid #e2e8f0;
-      padding-top: 15px;
+      padding-top: 14px;
     }}
 
     /* 章节与标题控制 */
+    .part-banner {{
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      color: #ffffff;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 11pt;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin: 20px 0 12px 0;
+      page-break-after: avoid;
+    }}
+
     h1 {{
-      font-size: 16pt;
+      font-size: 15pt;
       font-weight: 800;
       color: #0369a1;
       border-left: 5px solid #0284c7;
       padding-left: 10px;
-      margin: 24px 0 12px 0;
+      margin: 20px 0 10px 0;
       page-break-after: avoid;
       letter-spacing: -0.2px;
     }}
@@ -172,10 +186,10 @@ def build_manual():
     }}
 
     h2 {{
-      font-size: 12.5pt;
+      font-size: 11.5pt;
       font-weight: 700;
       color: #0f172a;
-      margin: 16px 0 8px 0;
+      margin: 14px 0 6px 0;
       page-break-after: avoid;
       display: flex;
       align-items: center;
@@ -183,29 +197,39 @@ def build_manual():
     }}
 
     h3 {{
-      font-size: 10.5pt;
+      font-size: 10pt;
       font-weight: 600;
       color: #334155;
-      margin: 12px 0 6px 0;
+      margin: 10px 0 4px 0;
       page-break-after: avoid;
     }}
 
     p {{
-      margin: 0 0 8px 0;
+      margin: 0 0 7px 0;
       color: #334155;
       text-align: justify;
     }}
 
-    /* 优雅卡片与重点提示 */
+    ul, ol {{
+      margin: 0 0 8px 0;
+      padding-left: 20px;
+      color: #334155;
+    }}
+
+    li {{
+      margin-bottom: 4px;
+    }}
+
+    /* 提示卡片 */
     .callout {{
       border-radius: 8px;
-      padding: 10px 14px;
-      margin: 10px 0;
-      font-size: 9.5pt;
+      padding: 9px 12px;
+      margin: 8px 0;
+      font-size: 9pt;
       break-inside: avoid;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 3px;
     }}
 
     .callout-parent {{
@@ -226,6 +250,12 @@ def build_manual():
       color: #1e3a8a;
     }}
 
+    .callout-warning {{
+      background: #fff1f2;
+      border-left: 4px solid #f43f5e;
+      color: #9f1239;
+    }}
+
     .callout-title {{
       font-weight: 700;
       display: flex;
@@ -233,13 +263,26 @@ def build_manual():
       gap: 5px;
     }}
 
+    /* 模块用途导言卡片 */
+    .module-purpose-card {{
+      background: #f0fdfa;
+      border: 1px solid #99f6e4;
+      border-left: 4px solid #0d9488;
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin: 8px 0 12px 0;
+      font-size: 9pt;
+      color: #115e59;
+      break-inside: avoid;
+    }}
+
     /* 示例卡片 */
     .example-box {{
       background: #f8fafc;
       border: 1px solid #e2e8f0;
       border-radius: 8px;
-      padding: 12px 14px;
-      margin: 12px 0;
+      padding: 10px 12px;
+      margin: 10px 0;
       break-inside: avoid;
     }}
 
@@ -248,12 +291,12 @@ def build_manual():
       align-items: center;
       justify-content: space-between;
       border-bottom: 1px dashed #cbd5e1;
-      padding-bottom: 6px;
-      margin-bottom: 8px;
+      padding-bottom: 5px;
+      margin-bottom: 6px;
     }}
 
     .example-title {{
-      font-size: 10pt;
+      font-size: 9.5pt;
       font-weight: 700;
       color: #0284c7;
     }}
@@ -261,17 +304,17 @@ def build_manual():
     .example-step {{
       display: flex;
       align-items: flex-start;
-      gap: 8px;
-      margin-bottom: 6px;
-      font-size: 9.5pt;
+      gap: 7px;
+      margin-bottom: 5px;
+      font-size: 9pt;
     }}
 
     .step-pill {{
       background: #0284c7;
       color: #ffffff;
-      font-size: 8pt;
+      font-size: 7.5pt;
       font-weight: 700;
-      padding: 1px 6px;
+      padding: 1px 5px;
       border-radius: 9999px;
       flex-shrink: 0;
       margin-top: 1px;
@@ -279,40 +322,40 @@ def build_manual():
 
     /* 截图排版容器 */
     .screenshot-figure {{
-      margin: 10px 0;
+      margin: 8px 0;
       text-align: center;
       break-inside: avoid;
     }}
 
     .screenshot-img {{
       width: 100%;
-      border-radius: 8px;
+      border-radius: 7px;
       border: 1px solid #cbd5e1;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
       display: block;
       margin: 0 auto;
     }}
 
     .screenshot-caption {{
-      font-size: 8.5pt;
+      font-size: 8pt;
       color: #64748b;
-      margin-top: 6px;
+      margin-top: 4px;
       font-weight: 500;
     }}
 
     .grid-2 {{
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin: 10px 0;
+      gap: 10px;
+      margin: 8px 0;
       break-inside: avoid;
     }}
 
     .grid-3 {{
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
-      gap: 10px;
-      margin: 10px 0;
+      gap: 8px;
+      margin: 8px 0;
       break-inside: avoid;
     }}
 
@@ -320,13 +363,13 @@ def build_manual():
     table {{
       width: 100%;
       border-collapse: collapse;
-      margin: 10px 0;
-      font-size: 9pt;
+      margin: 8px 0;
+      font-size: 8.5pt;
       break-inside: avoid;
     }}
 
     th, td {{
-      padding: 6px 10px;
+      padding: 5px 8px;
       border: 1px solid #e2e8f0;
       text-align: left;
     }}
@@ -343,12 +386,12 @@ def build_manual():
 
     .hud-badge {{
       display: inline-block;
-      padding: 2px 6px;
+      padding: 1px 5px;
       background: #020617;
       color: #38bdf8;
       font-family: monospace;
       border-radius: 4px;
-      font-size: 8.5pt;
+      font-size: 8pt;
       border: 1px solid #1e293b;
     }}
 
@@ -369,9 +412,8 @@ def build_manual():
       
       <div class="cover-tag-row">
         <span class="cover-tag">电脑端 (PC / Mac)</span>
-        <span class="cover-tag">平板端 (iPad / 平板横竖屏)</span>
-        <span class="cover-tag">手机端 (iPhone / 安卓)</span>
-        <span class="cover-tag">离线离网可用</span>
+        <span class="cover-tag">平板端 (iPad / 平板)</span>
+        <span class="cover-tag">手机端 (仅支持竖屏)</span>
       </div>
     </div>
 
@@ -381,350 +423,390 @@ def build_manual():
 
     <div class="cover-meta">
       <div><strong>适用年级</strong>：初一至初三全学段（7上 · 7下 · 8上 · 8下 · 9上 · 9下）</div>
-      <div><strong>核心能力</strong>：107 个考点四段论精讲 · 46 个概念动力沙盒 · 37 个中考 4D 压轴变异模型 · 智能自适应测评</div>
-      <div style="margin-top: 6px; font-size: 8pt; color: #94a3b8;">版本号：v2.0.4-beta · 系统标准：Slate 950 暗色几何交互 · 零持久化隐私保护</div>
+      <div><strong>核心能力</strong>：107 个考点四段论精讲 · 12 知识谱系生长树 · 46 概念具象动力沙盒 · 37 中考 4D 压轴变异模型 · 智能组卷与测评</div>
+      <div style="margin-top: 5px; font-size: 8pt; color: #94a3b8;">版本号：v2.0.4-LTS · 标准 Slate 950 暗色几何交互 · 零持久化隐私保护</div>
     </div>
   </div>
 
-  <!-- ==================== 第一章：系统简介与三端体验 ==================== -->
+  <!-- ==================== 第一篇：认识系统 ==================== -->
   <div class="chapter-break">
-    <h1>第一章：系统设计初衷与三端体验指南</h1>
+    <div class="part-banner">第一篇 · 认识系统</div>
+    <h1>第 1 章 · 系统全景与进入方式</h1>
     
-    <p>传统的初中理科刷题常陷入“公式背得熟，题目一变就不会”的死胡同。<strong>全科核心素养提分系统 V2.0</strong> 专为打破死记硬背而设计，将抽象的初中数学知识转化为**“看得见、摸得着、能变形”**的动态数学沙盒。</p>
+    <h2>1.1 系统是什么</h2>
+    <p>传统的初中理科刷题常陷入“公式背得熟，题目一变就不会”的死胡同。<strong>全科核心素养提分系统 V2.0</strong> 专为打破死记硬背而设计，将抽象的初中数学知识转化为<strong>“看得见、摸得着、能变异、可验证”</strong>的动态数字化模型，涵盖了概念精讲、知识图谱、动态实验探究与智能全真测评四大维度。</p>
 
-    <h2>1.1 手机、平板、电脑三端使用差异速查</h2>
-    <p>本系统支持在任意手机浏览器、iPad/平板电脑或桌面电脑无缝使用，系统会自动感知您的屏幕形态并切换最佳界面：</p>
+    <h2>1.2 电脑端进入</h2>
+    <p>打开电脑上的现代浏览器（推荐 Google Chrome、Microsoft Edge 或 Safari 最新版），输入系统网址访问进入「全科核心素养提分系统」门户导航页，点击 <strong>“初中数学”</strong> 卡片，即可秒级进入数学学科主界面。</p>
 
-    <table>
-      <thead>
-        <tr>
-          <th style="width: 18%;">设备形态</th>
-          <th style="width: 28%;">最佳使用姿势</th>
-          <th style="width: 27%;">界面交互特色</th>
-          <th style="width: 27%;">学生/家长操作建议</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><strong>电脑端<br>(PC / Mac)</strong></td>
-          <td>横屏宽屏浏览，鼠标+键盘精准微调</td>
-          <td>左侧名师卡片 + 右侧深色几何视口并排展示，支持键盘上下微调参数滑块</td>
-          <td>适合深度自学推演、完整模拟考试与真题大卷作答</td>
-        </tr>
-        <tr>
-          <td><strong>平板端<br>(iPad / 平板)</strong></td>
-          <td>横屏（推荐）或竖屏放置于支架上</td>
-          <td>支持手势双击视口复位、指尖拖拽几何动点，浮动抽屉按需滑出</td>
-          <td>极其推荐学生进行日常课后巩固与错题探究，兼具便携与大视野</td>
-        </tr>
-        <tr>
-          <td><strong>手机端<br>(iPhone / 安卓)</strong></td>
-          <td>竖屏单手握持或双手横屏</td>
-          <td>顶部胶囊快速切换、底部名师抽屉上滑展开、实时测度条智能贴底</td>
-          <td>适合碎片时间（通勤、课间）进行“概念四段论”速读与极速自测闯关</td>
-        </tr>
-      </tbody>
-    </table>
+    <h2>1.3 iPad / 平板进入</h2>
+    <p>使用 iPad 或安卓平板上的浏览器访问同一系统网址，系统会自动识别平板设备，采用触控友好的液态玻璃排版，推荐横屏放置在支架上使用，获得最佳视野与指尖操作手感。</p>
+
+    <h2>1.4 手机端进入（仅支持竖屏）</h2>
+    <p>使用智能手机浏览器访问系统网址，系统自动匹配移动端竖屏布局，采用底部交互抽屉与吸底测度条。</p>
+
+    <div class="callout callout-warning">
+      <div class="callout-title">重要注意：手机端请严格保持竖屏使用</div>
+      <div>本系统专门针对手机端进行了<strong>竖屏自适应优化</strong>（底部抽屉展开、触控吸底控制条），<strong>未针对手机横屏做专门适配</strong>。请务必保持手机竖屏握持使用，以防界面元素被压缩或遮挡。</div>
+    </div>
+
+    <h2>1.5 顶栏工具条使用说明</h2>
+    <p>进入初中数学系统后，屏幕顶部常驻全局顶栏控制条，其结构自左向右依次为：</p>
+    <ul>
+      <li><strong><code>[← 返回全科门户]</code></strong>：点击随时返回全科总目录；</li>
+      <li><strong>品牌标识</strong>：<code>全科核心素养提分系统 - 初中数学</code>；</li>
+      <li><strong>四大模块导航分段切换栏</strong>：<code>探本溯源 · 概念精讲</code> / <code>经纬纵横 · 思维图谱</code> / <code>见微知著 · 实验探究</code> / <code>百炼成钢 · 实战测评</code>；</li>
+      <li><strong>公告铃铛</strong>：查看系统升级与考点模型更新通知；</li>
+      <li><strong>语言切换</strong>：<code>[简体中文 / English]</code>，一键实现所有考点名称、名师题眼、沙盒滑块、几何定理的中英对照。</li>
+    </ul>
 
     <div class="callout callout-device">
-      <div class="callout-title">三端操作小窍门：视口防迷失</div>
-      <div>在拖动几何图形或极值放大时，如果动点跑出视口：电脑端<strong>双击画布空白处</strong>即可瞬间居中复位；手机/平板端轻触画布右上角的<strong>“标尺/复位”</strong>小图标即可恢复最优视野。</div>
+      <div class="callout-title">操作要点：年级与学期在哪里选择？</div>
+      <div>系统顶栏<strong>没有</strong>全局年级/学期下拉框。学生与家长若需选择特定年级或学期的考点，均在各个模块内部的<strong>专属抽屉选择器</strong>中直观进行点选，避免全局切换导致的页面重载。</div>
     </div>
 
-    <h2>1.2 顶栏全局控制台：学期与双语随心切换</h2>
-    <p>无论处于哪个模块，屏幕顶栏都常驻着核心控制条：</p>
-    <ul>
-      <li><strong>学期定位（7上 ~ 9下）</strong>：点击顶部学期胶囊（如 [8下]），系统自动过滤出初二下学期的一元二次方程、勾股定理、平行四边形等专属考点。</li>
-      <li><strong>中英双语切换（中/EN）</strong>：一键实现所有考点名称、名师题眼、沙盒滑块、几何定理的中英对照，满足双语学校与国际素养拓展需求。</li>
-      <li><strong>零持久化隐私保护</strong>：本系统不在云端残留您的草稿与作答，页面刷新后立即安全恢复标准初始状态，孩子每次都能从清晰初态开始探究。</li>
-    </ul>
-
+    <h2>1.6 四大模块总览</h2>
     <div class="screenshot-figure">
       <img src="{imgs['pc_pillars']}" class="screenshot-img" alt="顶栏控制台与四大模块全景" />
-      <div class="screenshot-caption">图 1-1：电脑端顶栏控制台（包含初一到初三学期选择、中英切换、四大模块分段控制器）</div>
+      <div class="screenshot-caption">图 1-1：电脑端顶栏控制台与四大模块全景（展示顶栏导航、抽屉选择器与学习主舞台）</div>
     </div>
   </div>
 
-  <!-- ==================== 第二章：知识谱系导航 ==================== -->
+  <!-- ==================== 第二篇：四大模块实操 ==================== -->
+  <!-- 第 2 章：探本溯源 · 概念精讲 -->
   <div class="chapter-break">
-    <h1>第二章：经纬纵横 · 知识谱系图导航</h1>
-    
-    <p>很多学生初三复习时“只见树木，不见森林”。知识谱系图将初中 107 个核心考点串联为 12 条如地铁般交织的“逻辑谱系生长树”，清晰揭示每个知识点的前因后果。</p>
+    <div class="part-banner">第二篇 · 四大模块实操（按顶栏导航从左到右）</div>
+    <h1>第 2 章 · 探本溯源 · 概念精讲（模块一）</h1>
 
-    <h2>2.1 地铁图与六学期竖向泳道怎么看？</h2>
-    <p>系统提供<strong>“12 谱系选择抽屉”</strong>与<strong>“六学期竖向泳道图（LineSwimlane）”</strong>，直观呈现一条知识链条如何在初一、初二、初三跨学期进阶：</p>
+    <div class="module-purpose-card">
+      <strong>【模块用途说明】</strong>：模块一专为<strong>“透彻搞懂每一个基础考点”</strong>而设计。针对初中阶段全部 107 个核心中考考点，帮助学生从数学原理的本源故事出发，经历“直觉本质 → 形式定义 → 内在变异”四个认知阶段，配合动态几何沙盒、经典母题剖析和即时练习，让学生真正理解每一个概念的来龙去脉。
+    </div>
 
-    <div class="screenshot-figure">
-      <img src="{imgs['pc_swimlane']}" class="screenshot-img" alt="G4 谱系六学期竖向泳道图" />
-      <div class="screenshot-caption">图 2-1：圆的几何度量谱系（从 7年级线段角 $\to$ 8年级勾股相似 $\to$ 9年级切线垂径阿氏圆）竖向演变</div>
+    <h2>2.1 考点抽屉选择器</h2>
+    <p>点击顶栏左下方的蓝色胶囊按钮（如 <code>[ 勾股定理 · 8年级 下学期 ▾ ]</code>），展开 4 级抽屉：</p>
+    <ul>
+      <li><strong>① 年级</strong>：7年级 / 8年级 / 9年级；</li>
+      <li><strong>② 学期</strong>：全部 / 上学期 / 下学期；</li>
+      <li><strong>③ 领域板块</strong>：数与代数 / 图形与几何 / 函数与分析 / 统计与概率；</li>
+      <li><strong>④ 具体考点</strong>：从 107 个考点库中点选目标。支持顶部实时中英拼音搜索框。</li>
+    </ul>
+
+    <h2>2.2 四段论精讲</h2>
+    <p>点击右侧分段胶囊的 <strong><code>四段论精讲</code></strong> Tab，卡片呈现四个认知递进阶梯：</p>
+    <ul>
+      <li><strong>① 原初故事</strong>：古代数学家在什么生活难题中发现了该定理？</li>
+      <li><strong>② 直觉本质</strong>：用通俗大白话讲透几何与代数原理；</li>
+      <li><strong>③ 形式定义</strong>：教科书标准法典表达与证明；</li>
+      <li><strong>④ 内在变异</strong>：中考命题人常考的反例陷阱与易错边界。上方 SVG 模型同步分步点亮演化。</li>
+    </ul>
+
+    <div class="grid-2">
+      <div class="screenshot-figure">
+        <img src="{imgs['pc_concept_drawer']}" class="screenshot-img" alt="考点抽屉选择器" />
+        <div class="screenshot-caption">图 2-1：考点抽屉选择器（年级/学期/单元四级下钻与搜索）</div>
+      </div>
+      <div class="screenshot-figure">
+        <img src="{imgs['pc_concept_master']}" class="screenshot-img" alt="考点母题四维剖析" />
+        <div class="screenshot-caption">图 2-2：考点母题精讲（题干、审题突破口与规范解答）</div>
+      </div>
+    </div>
+
+    <h2>2.3 链接沙盒：动点拖拽、探究三步曲与实时 HUD</h2>
+    <p>点击分段胶囊的 <strong><code>链接沙盒</code></strong> Tab，进入暗色深底交互视口：</p>
+    <ul>
+      <li><strong>动点拖拽</strong>：黄色/橙色/天蓝圆点均为动点，手指或鼠标按住即可拉动；</li>
+      <li><strong>探究三步曲</strong>：右侧仪表盘列出步骤 1/2/3 任务引导，按指引调节参数；</li>
+      <li><strong>实时 HUD 守恒验证</strong>：满足定理守恒时打上绿色对勾 <span class="hud-badge"><span class="hud-success">恒等守恒成立 ✓</span></span>，达成探究目标。</li>
+    </ul>
+
+    <div class="grid-2">
+      <div class="screenshot-figure">
+        <img src="{imgs['kp057_zhaoshuang']}" class="screenshot-img" alt="勾股定理赵爽弦图" />
+        <div class="screenshot-caption">图 2-3：勾股定理赵爽弦图动态面积割补探究</div>
+      </div>
+      <div class="screenshot-figure">
+        <img src="{imgs['kp057_hud']}" class="screenshot-img" alt="勾股定理实时HUD" />
+        <div class="screenshot-caption">图 2-4：实时 HUD 恒等式验证 a²+b²≡c²</div>
+      </div>
+    </div>
+
+    <h2>2.4 考点母题：中考母题四维深度剖析</h2>
+    <p>点击分段胶囊的 <strong><code>考点母题</code></strong> Tab，展示与当前考点直接绑定的经典中考真题，包含：<strong>题干（KaTeX 渲染）</strong>、<strong>审题突破口分析</strong>、<strong>规范解答推导步骤</strong>、<strong>名师避坑点拨</strong>。</p>
+
+    <h2>2.5 单点快练：即时反馈与解析展开</h2>
+    <p>点击分段胶囊的 <strong><code>单点快练</code></strong> Tab，系统抽取 3 道单选题，点击选项即刻获得绿/红正误反馈并展开详细解析。</p>
+
+    <div class="example-box">
+      <div class="example-header">
+        <span class="example-title">实操范例：攻坚“勾股定理 (KP-057)”</span>
+        <span style="font-size: 8.5pt; color: #64748b;">八年级下学期核心考点</span>
+      </div>
+      <div class="example-step">
+        <span class="step-pill">步骤 1</span>
+        <div>在考点抽屉中搜索 <code>KP-057</code>，点击“勾股定理”；在 <strong><code>四段论精讲</code></strong> 读完商高答周公故事。</div>
+      </div>
+      <div class="example-step">
+        <span class="step-pill">步骤 2</span>
+        <div>切换至 <strong><code>链接沙盒</code></strong>，拖动直角边滑块 $a=3, b=4$；切换 <code>view_mode = 2</code> 展开赵爽弦图。</div>
+      </div>
+      <div class="example-step">
+        <span class="step-pill">步骤 3</span>
+        <div>实时 HUD 瞬间验证 $a^2+b^2 = 9+16 = 25 \equiv c^2 = 25$，弹窗提示“发现成功！”；切换至 <strong><code>考点母题</code></strong> 学习规范答题，再在 <strong><code>单点快练</code></strong> 完成 3 题自测。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 第 3 章：经纬纵横 · 思维图谱 -->
+  <div class="chapter-break">
+    <h1>第 3 章 · 经纬纵横 · 思维图谱（模块二）</h1>
+
+    <div class="module-purpose-card">
+      <strong>【模块用途说明】</strong>：模块二专为<strong>“建立跨学期的完整知识体系”</strong>而设计。初中数学 107 个考点按 <strong>12 条核心知识谱系</strong>（4 条代数、4 条几何、2 条函数、2 条统计）重新编织，呈现从七年级到九年级共 6 个学期的知识演进脉络，帮助学生梳理知识前驱与后继，彻底解决“学了后面忘了前面”的痛点。
+    </div>
+
+    <h2>3.1 谱系选择抽屉（12 条知识主线）</h2>
+    <p>点击顶栏左侧的谱系胶囊按钮（如 <code>[ G4 · 圆的度量与位置关系 ▾ ]</code>），展开 12 谱系选择面板：</p>
+    <ul>
+      <li><strong>代数脉络 (A1~A4)</strong>：实数与数轴、整式分式与方程、一次不等式与不等式组、因式分解；</li>
+      <li><strong>几何脉络 (G1~G4)</strong>：相交线平行线与角、三角形与全等、四边形与特殊平行四边形、圆的度量与位置关系；</li>
+      <li><strong>函数脉络 (F1~F2)</strong>：一次函数与反比例函数、二次函数与最值综合；</li>
+      <li><strong>统计与概率 (S1~S2)</strong>：数据的收集与离散分析、概率计算与随机事件。</li>
+    </ul>
+
+    <h2>3.2 概念精讲：竖向六学期知识泳道图</h2>
+    <p>选择谱系后默认激活 <strong><code>概念精讲</code></strong> Tab，界面中央呈现竖向单谱系泳道（LineSwimlane），纵向划分为 6 段（7上 $\to$ 7下 $\to$ 8上 $\to$ 8下 $\to$ 9上 $\to$ 9下），清晰标注该谱系在各学期涵盖的知识点。</p>
+
+    <div class="grid-2">
+      <div class="screenshot-figure">
+        <img src="{imgs['pc_graph_drawer']}" class="screenshot-img" alt="12 谱系选择抽屉" />
+        <div class="screenshot-caption">图 3-1：12 谱系选择抽屉（按代数、几何、函数、统计分组）</div>
+      </div>
+      <div class="screenshot-figure">
+        <img src="{imgs['pc_graph_swimlane']}" class="screenshot-img" alt="竖向六学期泳道图" />
+        <div class="screenshot-caption">图 3-2：概念精讲 · 竖向六学期知识泳道图（G4 圆的脉络树）</div>
+      </div>
+    </div>
+
+    <h2>3.3 链接沙盒：谱系旗舰模型探究</h2>
+    <p>点击分段胶囊的 <strong><code>链接沙盒</code></strong> Tab，系统自动载入与当前谱系强绑定的旗舰跃迁沙盒，进行动态几何探索。</p>
+
+    <h2>3.4 谱系母题：跨学期压轴母题剖析</h2>
+    <p>点击 <strong><code>谱系母题</code></strong> Tab，呈现该谱系跨学期综合中考压轴母题的四维深度解析。</p>
+
+    <h2>3.5 专项测评：谱系全域能力过关</h2>
+    <p>点击 <strong><code>专项测评</code></strong> Tab，跨学期抽调多道辨析题检验整条知识脉络的掌握深度。</p>
+
+    <div class="example-box">
+      <div class="example-header">
+        <span class="example-title">实操范例：查漏补缺“G4 圆的度量与位置关系”脉络</span>
+        <span style="font-size: 8.5pt; color: #64748b;">几何压轴大脉络</span>
+      </div>
+      <div class="example-step">
+        <span class="step-pill">步骤 1</span>
+        <div>点击 <strong>“经纬纵横 · 思维图谱”</strong>，在谱系抽屉中点选 <strong>“G4：圆的度量与位置关系”</strong>。</div>
+      </div>
+      <div class="example-step">
+        <span class="step-pill">步骤 2</span>
+        <div>在 <strong><code>概念精讲</code></strong> 泳道图中回溯发现：九年级圆切线题常卡壳，根因是八年级上册“等腰三角形与轴对称”未打牢。</div>
+      </div>
+      <div class="example-step">
+        <span class="step-pill">步骤 3</span>
+        <div>切换至 <strong><code>链接沙盒</code></strong> 验证切线长动态等长，在 <strong><code>专项测评</code></strong> 完成 3 题巩固。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 第 4 章：见微知著 · 实验探究 -->
+  <div class="chapter-break">
+    <h1>第 4 章 · 见微知著 · 实验探究（模块三）</h1>
+
+    <div class="module-purpose-card">
+      <strong>【模块用途说明及与模块一、二关系】</strong>：模块三是全系统的<strong>深层动力学实验室</strong>，专为攻坚几何与函数动态题打造。它由两个实验室组成：<br>
+      • <strong>实验室一：概念具象沙盒</strong>：<strong>直接对应模块一的基础考点模型</strong>，收录全库 46 个基础概念沙盒，支持全库集中切换与参数探究；<br>
+      • <strong>实验室二：4D 跃迁模型</strong>：<strong>直接对应模块二的知识谱系综合压轴变异</strong>，精选 37 个中考旗舰几何压轴模型，通过载体、参数、姿态、干扰四个维度演化，彻底破解“几何题多加两条线就认不出来”的难题。
+    </div>
+
+    <h2>4.1 实验室一：概念具象沙盒（对应模块一基础考点模型）</h2>
+    <p>点击顶部分段控件的 <strong><code>概念具象沙盒 (实验室一 · 46)</code></strong>，再点击右侧 <strong><code>[选择沙盒: SB-xxx ▾]</code></strong>，即可呼出 4 级抽屉（年级 $\to$ 学期 $\to$ 46 个考点沙盒列表 + 实时搜索条），实现全库基础几何/函数沙盒的无缝切换。</p>
+
+    <h2>4.2 实验室二：4D 跃迁模型（对应模块二知识谱系综合变异）</h2>
+    <p>点击顶部分段控件的 <strong><code>4D 跃迁模型 (实验室二 · 37)</code></strong>，点击右侧 <strong><code>[选择模型: LM-xxx ▾]</code></strong> 展开 2 级抽屉，在 37 个中考旗舰模型（手拉手、胡不归、阿氏圆、瓜豆原理等）中检索切换。</p>
+
+    <div class="grid-2">
+      <div class="screenshot-figure">
+        <img src="{imgs['phone_leap_deduction']}" class="screenshot-img" alt="核心推演任务分步推演" />
+        <div class="screenshot-caption">图 4-1：实验室二 · 核心推演任务（四阶段推演与引导）</div>
+      </div>
+      <div class="screenshot-figure">
+        <img src="{imgs['pc_leap_free']}" class="screenshot-img" alt="4D 自由把玩模式" />
+        <div class="screenshot-caption">图 4-2：实验室二 · 4D 自由把玩（载体、参数、姿态、X-Ray）</div>
+      </div>
+    </div>
+
+    <h2>4.3 核心推演任务：名师分步推演四阶段</h2>
+    <p>进入实验室二后，右侧仪表盘呈现 <strong><code>核心推演任务</code></strong>，下方设 4 个步骤胶囊：</p>
+    <ul>
+      <li><strong>① 原型初生：锚定公理骨架</strong> — 画布展示最纯粹的原型三角形或函数线段；</li>
+      <li><strong>② 变式演进：载体拓展与姿态旋转</strong> — 模型自动发生旋转或改变载体构型；</li>
+      <li><strong>③ 测度不变量：动态观测数值守恒</strong> — 实时刷新线段等长、角度守恒遥测数据；</li>
+      <li><strong>④ 中考破局：穿透干扰直击题眼</strong> — 模拟中考命题加壳，一键剥离外层伪装线。</li>
+    </ul>
+
+    <h2>4.4 自由把玩模式：4D 维度自由探索与 X-Ray 穿透</h2>
+    <p>点击仪表盘右上角 <strong><code>直接自由把玩</code></strong> 按钮切换，画布下方展开 4D 控制面板：</p>
+    <ul>
+      <li><strong>① 载体变异 (Carrier)</strong>：切换等边三角形、等腰直角、正方形或坐标系网格；</li>
+      <li><strong>② 参数变异 (Parameter)</strong>：滑块调节动点比例 $t$、边长；</li>
+      <li><strong>③ 姿态变异 (Posture)</strong>：旋转角滑块实现 $0^\circ \sim 360^\circ$ 刚体旋转；</li>
+      <li><strong>④ 干扰加壳 (Camouflage & X-Ray)</strong>：点亮干扰线，点击 <strong><code>X-Ray 题眼透视</code></strong> 瞬间虚化干扰线，高亮核心主线！</li>
+    </ul>
+
+    <div class="grid-2">
+      <div class="screenshot-figure">
+        <img src="{imgs['lm9a19_stage1']}" class="screenshot-img" alt="手拉手模型阶段 1" />
+        <div class="screenshot-caption">图 4-3：LM-9A-19 手拉手原型骨架（等边三角形初态）</div>
+      </div>
+      <div class="screenshot-figure">
+        <img src="{imgs['phone_leap_xray']}" class="screenshot-img" alt="X-Ray 题眼透视" />
+        <div class="screenshot-caption">图 4-4：X-Ray 题眼透视激活（虚化干扰线，直击全等）</div>
+      </div>
     </div>
 
     <div class="example-box">
       <div class="example-header">
-        <span class="example-title">功能实操范例：初二学生查漏补缺“几何全等与相似”链条</span>
+        <span class="example-title">实操范例：探索中考王牌“手拉手旋转全等模型 (LM-9A-19)”</span>
+        <span style="font-size: 8.5pt; color: #64748b;">中考压轴王牌</span>
       </div>
       <div class="example-step">
-        <span class="step-pill">1</span>
-        <div>点击顶栏导航第二项 <strong>“经纬纵横 · 思维图谱”</strong>。</div>
+        <span class="step-pill">步骤 1</span>
+        <div>在实验室二选择 <strong><code>LM-9A-19 手拉手旋转全等</code></strong>，在“核心推演任务”按步骤 1 $\to$ 2 $\to$ 3 观察旋转全等对应。</div>
       </div>
       <div class="example-step">
-        <span class="step-pill">2</span>
-        <div>点击 <strong>“选择谱系脉络”</strong> 抽屉按钮，在弹出的 12 条谱系中选择 <strong>“G2：三角形与几何全等”</strong> 或 <strong>“G4：圆与位置关系”</strong>。</div>
+        <span class="step-pill">步骤 2</span>
+        <div>点击 <strong><code>直接自由把玩</code></strong>，载体切换为“正方形”，旋转角滑块调至 $90^\circ$。</div>
       </div>
       <div class="example-step">
-        <span class="step-pill">3</span>
-        <div>右侧立即呈现 6 段式学期泳道卡片。孩子一眼就能看出：要学好 9年级中考压轴的“圆切线与隐圆轨迹”，底子其实是 8上学期的“等腰三角形与垂直平分线”。</div>
-      </div>
-    </div>
-
-    <div class="callout callout-parent">
-      <div class="callout-title">家长陪读引导法：帮孩子找回“断链的螺丝钉”</div>
-      <div>当孩子抱怨几何压轴题不会做时，请不要责怪孩子粗心，打开此泳道图，引导孩子回溯：“这道题用到了切线，但它前一步证明其实是角平分线全等，我们看看初二上的这个前驱考点你掌握了吗？”</div>
-    </div>
-  </div>
-
-  <!-- ==================== 第三章：考点精讲与概念动力沙盒 ==================== -->
-  <div class="chapter-break">
-    <h1>第三章：探本溯源 · 考点精讲与具象沙盒</h1>
-    
-    <p>这是系统的第一核心攻坚武器。每个考点均配备**“四段论精讲卡片”**与**“实时交互的深色动力沙盒”**，让学生把抽象定理亲手做出来。</p>
-
-    <h2>3.1 考点四段论学习法</h2>
-    <p>每个知识点不再是干瘪的一句话，而是分为层次清晰的四步：</p>
-    <ul>
-      <li><strong>① 原初故事</strong>：古人为什么发现这个定理？生活场景起源是什么？</li>
-      <li><strong>② 直觉本质</strong>：不用数学符号，用大白话和生活直觉讲透内核；</li>
-      <li><strong>③ 形式定义</strong>：中考教科书规范数学符号与公式推导；</li>
-      <li><strong>④ 内在变异</strong>：中考出题人最喜欢从什么角度进行图形变形。</li>
-    </ul>
-
-    <div class="screenshot-figure">
-      <img src="{imgs['pc_concept_master']}" class="screenshot-img" alt="电脑端概念精讲与动力沙盒折叠卡片" />
-      <div class="screenshot-caption">图 3-1：电脑端左侧四段论折叠卡片与右侧动态几何沙盒一体化联动</div>
-    </div>
-
-    <h2>3.2 具象沙盒实操：动点拖拽、探究三步曲与实时 HUD</h2>
-    <p>沙盒右侧配有<strong>探究三步指引</strong>与<strong>核心测度实时 HUD 指示牌</strong>：</p>
-    <ul>
-      <li><strong>动点拖拽</strong>：黄色/橙色圆点均为动点，学生可用手指或鼠标直接在黑底画布上拖动；</li>
-      <li><strong>滑块微调</strong>：可自由调节边长、斜率、角度等参数；</li>
-      <li><strong>实时 HUD 守恒验证</strong>：数值毫秒级实时计算，等式成立时高亮呈现 <span class="hud-badge"><span class="hud-success">[恒等守恒成立 ✓]</span></span>。</li>
-    </ul>
-
-    <div class="example-box">
-      <div class="example-header">
-        <span class="example-title">功能实操范例：初二学生探究“勾股定理赵爽弦图与三方外挂 (SB-KP057)”</span>
-      </div>
-      <div class="example-step">
-        <span class="step-pill">1</span>
-        <div>在考点列表中选择 <strong>“KP-057：勾股定理”</strong>，右侧自动加载 Slate 950 深色深邃画布。</div>
-      </div>
-      <div class="example-step">
-        <span class="step-pill">2</span>
-        <div><strong>步骤 1：两直角边独立变形</strong>。拖拽直角边滑块 $a=3, b=4$，右侧实时 HUD 瞬间显示：<br>
-        <span class="hud-badge">两直角边平方和 a² + b² = 25.00</span> ≡ <span class="hud-badge">斜边平方 c² = 25.00</span>。</div>
-      </div>
-      <div class="example-step">
-        <span class="step-pill">3</span>
-        <div><strong>步骤 2：切换赵爽弦图模式</strong>。将展示模式滑块切至 <code>view_mode = 2</code>，画布立即呈现 4 个全等半透明天蓝直角三角形围绕中心琥珀色小正方形的中国古代赵爽弦图，学生直观看到：大正方形面积 $c^2$ 恰好等于 4 个三角形面积之和加上小正方形面积 $(b-a)^2$！</div>
-      </div>
-      <div class="example-step">
-        <span class="step-pill">4</span>
-        <div><strong>达成目标</strong>：当满足条件时，步骤卡片瞬间由灰转绿，打上对勾并提示达成！</div>
-      </div>
-    </div>
-
-    <div class="grid-2">
-      <div class="screenshot-figure">
-        <img src="{imgs['kp057_zhaoshuang']}" class="screenshot-img" alt="赵爽弦图模式实操" />
-        <div class="screenshot-caption">图 3-2：赵爽弦图模式实操截图（四直角三角形围成弦图）</div>
-      </div>
-      <div class="screenshot-figure">
-        <img src="{imgs['kp057_hud']}" class="screenshot-img" alt="实时 HUD 勾股守恒" />
-        <div class="screenshot-caption">图 3-3：实时 Live HUD 显示两直角边平方和严格等于斜边平方</div>
+        <span class="step-pill">步骤 3</span>
+        <div>点亮“干扰加壳”，点击 <strong><code>X-Ray 题眼透视</code></strong>，亲眼见证干扰线虚化淡出，$AC \equiv BD$ 守恒不变！</div>
       </div>
     </div>
   </div>
 
-  <!-- ==================== 第四章：4D 跃迁变异实验室 ==================== -->
+  <!-- 第 5 章：百炼成钢 · 实战测评 -->
   <div class="chapter-break">
-    <h1>第四章：见微知著 · 4D 跃迁变异实验室</h1>
-    
-    <p>中考最后两道几何压轴题，往往由出题人对基本模型进行<strong>“旋转、倾斜、加壳伪装”</strong>组合而成。<strong>4D 跃迁实验室</strong>收录了中考全部 37 个王牌思维跃迁模型，提供**“名师分步推演”**与**“4D 变异自由探索”**双模式。</p>
+    <h1>第 5 章 · 百炼成钢 · 实战测评（模块四）</h1>
 
-    <h2>4.1 模式一：名师分步推演（Step Deduction）</h2>
-    <p>点击推演卡片顶部的 [ ① | ② | ③ | ④ ] 胶囊，名师将带您经历一道中考压轴题的诞生过程：</p>
+    <div class="module-purpose-card">
+      <strong>【模块用途说明】</strong>：模块四是<strong>中考全真智能出题与限时评卷中心</strong>。学生或家长可自定义满分制、学期考点范围、题型题量与难度梯度，一键生成符合中考大纲的真题试卷。提供“A4 双栏打印”与“在线全真测评”双轨输出，交卷后支持官方评分细则 Checklist 自核打钩与四维素养雷达图。
+    </div>
+
+    <h2>5.1 试卷工作台四层架构配置</h2>
+    <p>进入模块四后，工作台由上至下呈现四层配置：</p>
     <ul>
-      <li><strong>① 原初骨架</strong>：剥离所有干扰线，呈现最干净、最简单的纯净模型；</li>
-      <li><strong>② 动态变异</strong>：图形旋转、点开始运动，角度或长度发生临界变化；</li>
-      <li><strong>③ 出题人伪装</strong>：加壳干扰线、阴影迷彩上线，还原出考卷上令人生畏的压轴题原貌；</li>
-      <li><strong>④ [透视] 照妖镜开启</strong>：开启 X-Ray 透视照妖镜，所有干扰虚线瞬间变淡，核心全等/相似骨架高亮投射，并附带<strong>【中考题眼名师秘笈】</strong>！</li>
+      <li><strong>第一层：满分制基准选择</strong> — <code>100分标准制</code>（60分钟）/ <code>120分中考制</code>（90分钟）/ <code>150分大考制</code>（120分钟）；</li>
+      <li><strong>第二层：学期向后覆盖与考点勾选</strong> — 点选学期药丸胶囊（如 8下），系统<strong>自动向后覆盖</strong>该学期及之前全部考点，下方考点网格可精确勾选/取消；</li>
+      <li><strong>第三层：题型、题量与分值配置</strong> — 设定选择题、填空题数量与分值，解答题按中考标准阶梯自动倒推，保证总分守恒；</li>
+      <li><strong>第四层：试卷难度波浪联动权重</strong> — L1 基础 $\sim$ L5 压轴五级难度联动滑块，权重之和恒等于 100%。</li>
+    </ul>
+
+    <div class="screenshot-figure">
+      <img src="{imgs['exam_workbench']}" class="screenshot-img" alt="试卷工作台四层架构" />
+      <div class="screenshot-caption">图 5-1：试卷工作台四层架构（满分制、学期覆盖、题型题量、难度波浪联动）</div>
+    </div>
+
+    <h2>5.2 生成中考全真模拟试卷 (A4双栏排版)</h2>
+    <p>点击底部 <strong><code>生成中考全真模拟试卷 (A4双栏排版)</code></strong>，瞬间转换至标准 A4 双栏试卷排版，可直接调用浏览器打印输出纸质试卷。</p>
+
+    <h2>5.3 开启在线全真测评 (限时答题)</h2>
+    <p>点击底部 <strong><code>开启在线全真测评 (限时答题)</code></strong> 进入考场：</p>
+    <ul>
+      <li><strong>左侧作答舞台</strong>：独立垂直滚动作答，支持点击唤起伴随式数学键盘 (MathKeyboard)；</li>
+      <li><strong>右侧控制舱</strong>：倒计时跳动、动态答题卡（已答/未答/待复查计数，点击题号快速跳转）。</li>
+    </ul>
+
+    <h2>5.4 交卷复盘：评分细则 Checklist 自核与认知素养雷达图</h2>
+    <p>交卷后自动激活判分与复盘面板：</p>
+    <ul>
+      <li><strong>客观题自动判分</strong>：选择/填空题实时展示正确答案与解析；</li>
+      <li><strong>解答题中考评分细则核对表 (Rubric Checklist)</strong>：展开官方阅卷采分点（如辅助线 +1分、全等证明 +2分），学生逐项自核打钩；</li>
+      <li><strong>四维认知素养雷达图</strong>：数学抽象、逻辑推理、直观想象、运算能力四维评估。</li>
     </ul>
 
     <div class="grid-2">
       <div class="screenshot-figure">
-        <img src="{imgs['phone_leap_deduction']}" class="screenshot-img" alt="手机端名师分步推演卡片与题眼" />
-        <div class="screenshot-caption">图 4-1：名师推演步骤卡片（阶段标靶、微调滑块与中考题眼）</div>
+        <img src="{imgs['online_exam']}" class="screenshot-img" alt="在线全真测评考场" />
+        <div class="screenshot-caption">图 5-2：在线全真测评考场（试卷作答与右侧控制舱）</div>
       </div>
       <div class="screenshot-figure">
-        <img src="{imgs['phone_leap_xray']}" class="screenshot-img" alt="照妖镜 X-Ray 透视开启" />
-        <div class="screenshot-caption">图 4-2：开启 [透视] 破案模式，干扰线隐形，骨架发光呈现</div>
+        <img src="{imgs['score_panel']}" class="screenshot-img" alt="交卷复盘与评分细则核对表" />
+        <div class="screenshot-caption">图 5-3：交卷复盘（中考评分细则自核与素养雷达图）</div>
       </div>
-    </div>
-
-    <h2>4.2 模式二：4D 变异自由探索（Free Explore）</h2>
-    <p>完成分步推演后，点击绿色胶囊 <strong>[完成推演 · 进入自由探索]</strong>，解锁四大变异维度微调面板：</p>
-    <ul>
-      <li><strong>① 载体变异 (Carrier)</strong>：在等边三角形、等腰直角三角形、正方形或坐标系间一键变异；</li>
-      <li><strong>② 参数变异 (Parameter)</strong>：通过下方滑块自由调节旋转角 $\alpha$、动点比例 $t$、线段长宽等；</li>
-      <li><strong>③ 姿态变异 (Posture)</strong>：一键实现图形的 $90^\circ$ 正交旋转、轴对称翻折或倾斜投影；</li>
-      <li><strong>④ 干扰加壳与透视 (Camouflage & X-Ray)</strong>：点击“照妖镜透视”，亲身体验出题人添加的多条辅助干扰线如何被一眼看穿。</li>
-    </ul>
-
-    <div class="screenshot-figure">
-      <img src="{imgs['pc_leap_free']}" class="screenshot-img" alt="电脑端 4D 变异自由探索全景" />
-      <div class="screenshot-caption">图 4-3：电脑端 4D 变异自由探索（右上角载体/姿态切换，右下角全量不变量与角度实测遥测）</div>
     </div>
 
     <div class="example-box">
       <div class="example-header">
-        <span class="example-title">功能实操范例：初三攻坚中考几何王牌“手拉手旋转全等模型 (LM-9A-19)”</span>
+        <span class="example-title">实操范例：组一套“初二下学期 120 分制”中考模拟试卷</span>
+        <span style="font-size: 8.5pt; color: #64748b;">期末与中考复习必备</span>
       </div>
       <div class="example-step">
-        <span class="step-pill">1</span>
-        <div>在 4D 实验室模型抽屉中选取 <strong>“LM-9A-19：手拉手模型”</strong>。</div>
+        <span class="step-pill">步骤 1</span>
+        <div>进入 <strong>“百炼成钢 · 实战测评”</strong>，第一层选择 <strong>“120分中考制”</strong>。</div>
       </div>
       <div class="example-step">
-        <span class="step-pill">2</span>
-        <div><strong>步骤 1：观察等边三角形共顶旋转</strong>。旋转角 $\theta=60^\circ$，遥测实时提示 $\triangle OAC \cong \triangle OBD$，线段 $AC = BD = 6.93\text{{ cm}}$ 严格相等。</div>
+        <span class="step-pill">步骤 2</span>
+        <div>第二层点击 <strong>“8年级 下学期”</strong> 胶囊（系统自动覆盖 7上~8下全部知识点）；第三层选 10 选择 + 6 填空。</div>
       </div>
       <div class="example-step">
-        <span class="step-pill">3</span>
-        <div><strong>步骤 2：姿态变异至 $90^\circ$ 正交</strong>。点击步骤 2，载体变异为等腰直角三角形，旋转角切至 $90^\circ$，两条旋转线段夹角恒等于旋转角 $90^\circ$，形成垂直关系！</div>
-      </div>
-      <div class="example-step">
-        <span class="step-pill">4</span>
-        <div><strong>步骤 4：照妖镜开启</strong>。原本纵横交错的外围加壳线变成浅灰半透明，核心共顶三角形高亮发光，底部结论明确指出：“结论：$\triangle OAC \cong \triangle OBD$ 旋转恒全等且两线夹角恒等于旋转角 $\alpha$”。考场大题轻松秒破！</div>
+        <span class="step-pill">步骤 3</span>
+        <div>点击 <strong><code>开启在线全真测评 (限时答题)</code></strong> 模拟实战，交卷后对照评分细则 Checklist 自核打钩。</div>
       </div>
     </div>
   </div>
 
-  <!-- ==================== 第五章：自适应测评与真题演练 ==================== -->
+  <!-- ==================== 第三篇：多端操作速查 ==================== -->
   <div class="chapter-break">
-    <h1>第五章：百炼成钢 · 自适应测评与评卷</h1>
-    
-    <p>学完概念和模型后，系统提供真题检验闭环。题库内置近 3000 道全国中考真题与名校模拟题，支持智能难度波纹推荐。</p>
+    <div class="part-banner">第三篇 · 多端操作速查</div>
+    <h1>第 6 章 · 电脑 / 平板 / 手机操作差异速查</h1>
 
-    <h2>5.1 试卷工作台作答规范</h2>
-    <p>点击第四项导航 <strong>“百炼成钢 · 实战测评”</strong>，系统根据当前选择的学期自动生成针对性试卷：</p>
+    <h2>6.1 电脑端 (PC / Mac) 实操指南</h2>
     <ul>
-      <li>选择题点击对应选项胶囊即时选中；填空题与解答题支持直接输入或手写步骤；</li>
-      <li>右上角配有时钟计时器，培养孩子的考场时间分配意识；</li>
-      <li>作答完毕后点击绿色 <strong>[提交试卷]</strong> 按钮，系统毫秒级完成判分并生成深度分析报告。</li>
+      <li><strong>鼠标拖拽</strong>：按住左键拖动任意亮色动点，模型连续形变；</li>
+      <li><strong>键盘微调</strong>：点击滑块后，支持利用键盘方向键 $\leftarrow / \to$ 实现步长 0.1 高精度微调；</li>
+      <li><strong>双列排版</strong>：左侧名师精讲卡片与右侧深色几何视口并排展示，互不遮挡。</li>
+    </ul>
+
+    <h2>6.2 iPad / 平板端实操指南</h2>
+    <ul>
+      <li><strong>横屏推荐</strong>：建议将平板横向放置于桌面支架上，享受开阔视野；</li>
+      <li><strong>触控手势</strong>：手指轻触动点直接滑动，顺滑触控调节所有滑块；</li>
+      <li><strong>抽屉面板</strong>：轻触顶部胶囊按钮，侧边抽屉平滑滑出，点选考点后自动收起。</li>
     </ul>
 
     <div class="grid-2">
       <div class="screenshot-figure">
-        <img src="{imgs['pc_exam_workbench']}" class="screenshot-img" alt="电脑端试卷工作台" />
-        <div class="screenshot-caption">图 5-1：电脑端试卷工作台（题目清晰排版，选项卡片高亮响应）</div>
+        <img src="{imgs['pad_stage1']}" class="screenshot-img" alt="iPad 平板端横屏" />
+        <div class="screenshot-caption">图 6-1：iPad 平板端横屏布局（开阔视野与双指触控）</div>
       </div>
       <div class="screenshot-figure">
-        <img src="{imgs['phone_score_panel']}" class="screenshot-img" alt="手机端测评报告" />
-        <div class="screenshot-caption">图 5-2：手机端提交后即时判分报告（得分率、中考丢分点规避）</div>
+        <img src="{imgs['phone_concept_drawer']}" class="screenshot-img" alt="手机端竖屏抽屉" />
+        <div class="screenshot-caption">图 6-2：手机端竖屏底部抽屉式交互（仅支持竖屏）</div>
       </div>
     </div>
 
-    <h2>5.2 独家特色：评分细则核对表（Rubric Checklist）与多解法对比</h2>
-    <p>这不仅仅是一个对错判定器，更是中考阅卷标准的“微缩考场”：</p>
+    <h2>6.3 手机端 (iPhone / 安卓) 实操指南（严格竖屏）</h2>
     <ul>
-      <li><strong>中考评分细则 Checklist</strong>：针对大题，系统逐步骤列出“写出此结论得 2 分”、“未写辅助线作法扣 1 分”的得分点，纠正孩子“会做却拿不到满分”的书写漏洞；</li>
-      <li><strong>一题多解对比</strong>：常规几何法、代数坐标解析法、辅助圆构造法多轨并列呈现，拓展思维广度。</li>
+      <li><strong>严格保持竖屏</strong>：系统界面针对手机竖向流式排版优化，严禁使用横屏；</li>
+      <li><strong>底部交互抽屉</strong>：考点与模型选择面板均以底部弹窗（Bottom Sheet）自下而上滑出，单手大拇指即可轻松点选；</li>
+      <li><strong>吸底数据条</strong>：几何模型的遥测数据条自动贴在手机屏幕底部，滑动时始终常驻可见。</li>
     </ul>
 
-    <div class="callout callout-student">
-      <div class="callout-title">学生提分金句：像中考阅卷老师一样审视自己的步骤</div>
-      <div>做完压轴大题后，对照系统提供的 <code>Rubric Checklist</code>，逐行核对自己的答题纸。少写了“连接 OD”还是漏了“两直线平行同位角相等”的依据？平时扣死细节，考场才能稳拿满分。</div>
+    <h2>6.4 画布复位与防迷失技巧</h2>
+    <div class="callout callout-device">
+      <div class="callout-title">视口防迷失技巧</div>
+      <div>在拖动几何图形或极值缩放时，若动点跑出视口：<br>
+      • <strong>电脑端</strong>：在画布任意空白区域<strong>快速双击鼠标左键</strong>，画布毫秒级重新计算包围盒并自动居中填满；<br>
+      • <strong>平板 / 手机端</strong>：轻触画布右上角的<strong>“复位”小图标</strong>，即可瞬间恢复黄金视野。</div>
     </div>
-  </div>
-
-  <!-- ==================== 第六章：移动端（iPad / 手机）专项操作指南 ==================== -->
-  <div class="chapter-break">
-    <h1>第六章：移动端（iPad 平板 / 手机）专项操作指引</h1>
-    
-    <p>针对移动触控屏幕的物理特性，系统深度适配了 iOS/Android 液态玻璃与抽屉交互规范。</p>
-
-    <h2>6.1 iPad / 平板端：横屏学习的黄金配置</h2>
-    <p>平板是使用本系统体验极佳的形态（兼具大视野与触控交互）：</p>
-    <ul>
-      <li><strong>推荐使用方向：横屏（Landscape）</strong>。系统会自动呈现类电脑端的分栏布局，左侧为可滑动收折的考点抽屉列表，右侧为大尺寸黑底几何画布；</li>
-      <li><strong>触控手势操作</strong>：
-        <ul>
-          <li><strong>单指平滑拖拽</strong>：直接按住黄色动点自由拉伸，比鼠标拖拽更直观；</li>
-          <li><strong>双指捏合（Pinch）</strong>：在画布空白区域双指捏合可局部放大几何图形观察细节；</li>
-          <li><strong>轻触视口复位</strong>：点击画布角落的圆形小标尺，瞬间回到预设黄金视口。</li>
-        </ul>
-      </li>
-    </ul>
-
-    <div class="grid-2">
-      <div class="screenshot-figure">
-        <img src="{imgs['pad_stage1']}" class="screenshot-img" alt="iPad 平板端横屏实操" />
-        <div class="screenshot-caption">图 6-1：iPad 横屏大视野实操（左侧分步引导卡片，右侧触控几何画布）</div>
-      </div>
-      <div class="screenshot-figure">
-        <img src="{imgs['pad_drawer']}" class="screenshot-img" alt="iPad 考点抽屉面板" />
-        <div class="screenshot-caption">图 6-2：轻触顶部胶囊滑出考点抽屉，无缝跨学期点选</div>
-      </div>
-    </div>
-
-    <h2>6.2 手机端：碎片时间的高效单手交互</h2>
-    <p>手机屏幕较小，系统采用了<strong>“纵向空间高效折叠技术”</strong>：</p>
-    <ul>
-      <li><strong>浮动抽屉一键呼出</strong>：轻触顶部的考点名称胶囊，从屏幕下方滑出半屏分类抽屉；</li>
-      <li><strong>吸底测度条</strong>：核心测度 Live HUD 会自动以极简胶囊形式贴附在屏幕下方，不遮挡中央几何图形；</li>
-      <li><strong>横竖屏自适应</strong>：遇到复杂的大型 4D 跃迁模型（如胡不归、阿氏圆），手机横屏后画布将自动展开为全屏影院模式！</li>
-    </ul>
-
-    <div class="grid-2">
-      <div class="screenshot-figure">
-        <img src="{imgs['phone_four_stages']}" class="screenshot-img" alt="手机端四段论卡片" />
-        <div class="screenshot-caption">图 6-3：手机竖屏四段论精讲卡片纵向流畅滑动</div>
-      </div>
-      <div class="screenshot-figure">
-        <img src="{imgs['phone_concept_drawer']}" class="screenshot-img" alt="手机端抽屉面板" />
-        <div class="screenshot-caption">图 6-4：底部抽屉式考点选择器，支持实时关键字检索</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ==================== 第七章：家长辅导指南与常见答疑 ==================== -->
-  <div class="chapter-break">
-    <h1>第七章：家长辅导指南与常见操作答疑 (FAQ)</h1>
-
-    <h2>7.1 家长陪伴锦囊：如何用系统启发孩子而不是代替思考</h2>
-    <div class="callout callout-parent">
-      <div class="callout-title">家长四步提问法（无需深懂初中数理也能高效辅导）</div>
-      <div>
-        <strong>第一步（找规律）</strong>：“宝贝，你拖动一下屏幕上这个黄色圆点，看看下面那组数字里，哪两个数字是一直没变的？”（引导发现不变量）<br>
-        <strong>第二步（猜本质）</strong>：“为什么图形转了角度，这两个三角形的面积还是完全一样呢？你看它们底边和高有什么联系？”（引导数学证明）<br>
-        <strong>第三步（识破伪装）</strong>：“打开那个 [透视] 照妖镜看看，出题人加的那三条虚线，是不是故意把简单的手拉手模型藏起来了？”（引导考场破案意识）<br>
-        <strong>第四步（独立过关）</strong>：“把那个探究小关卡做出来，等它变成绿色的 [守恒成立 ✓]，今晚的几何难关就算彻底攻克啦！”（即时正向激励）
-      </div>
-    </div>
-
-    <h2>7.2 常见操作答疑 (FAQ)</h2>
-
-    <p><strong>Q1：为什么每次刷新网页后，做过的题目或者调节的滑块会恢复默认值？</strong><br>
-    <strong>A</strong>：这是系统严密遵循的<strong>“零持久化数据安全与会话重置标准”</strong>。为了保护孩子的作答隐私，且避免学生在已经变形混乱的几何图形上越陷越深，系统设计为“刷新即回归标准黄金初态”。想要重新探究只需刷新即可恢复全新模型。</p>
-
-    <p><strong>Q2：图形拖动得太大或者缩得太小找不到了怎么办？</strong><br>
-    <strong>A</strong>：电脑端在画布任意空白区域<strong>快速双击鼠标左键</strong>；平板或手机端轻触画布角落的<strong>复位标尺图标</strong>，画布会毫秒级重新计算包围盒并自动居中填满屏幕。</p>
-
-    <p><strong>Q3：家里网络不好或者外出旅行没网时能用吗？</strong><br>
-    <strong>A</strong>：<strong>完全可以！</strong> 本系统基于离线 PWA 与浏览器本地 SQLite WASM 技术构建。首次加载完成后，系统已将全部 107 个考点、46 个概念沙盒、37 个 4D 模型及题库数据安全缓存在浏览器本地，即使断开 Wi-Fi 拔掉网线，依然可以流畅拉拽滑块与演练习题。</p>
-
-    <p><strong>Q4：英文模式有什么用？孩子需要看英文吗？</strong><br>
-    <strong>A</strong>：顶部的 [EN] 按钮专为培养孩子双语学术思维打造。初中几何与函数许多术语（如 Invariant 不变量、Orthogonal 正交、Discriminant 判别式）在高中竞赛或国际理科课程中均通用。学有余力的孩子建议切换英文对照阅览，拓展学术视野。</p>
 
     <div style="margin-top: 30px; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 15px; font-size: 8.5pt; color: #94a3b8;">
       —— 全科核心素养提分系统 V2.0 研发组 编制 · 谨祝广大学子在中考中披荆斩棘，素养跃迁！ ——
