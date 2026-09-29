@@ -77,6 +77,7 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
   const setSessionIsLeapDrawerOpen = useSessionStore((state) => state.setIsLeapDrawerOpen);
   const sessionSelectedLeapModelId = useSessionStore((state) => state.selectedLeapModelId);
   const setSessionSelectedLeapModelId = useSessionStore((state) => state.setSelectedLeapModelId);
+  const setSessionLeapSubTab = useSessionStore((state) => state.setLeapSubTab);
 
   // 抽屉盒状态
   const [isConceptDrawerOpen, setIsConceptDrawerOpen] = useState<boolean>(false);
@@ -313,13 +314,14 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
     }
   }, []);
 
-  // 切换沙盒时重置推演状态与初始参数
+  // 切换沙盒时重置推演状态与初始参数 (默认回归分步推演)
   useEffect(() => {
     const initial: Record<string, number> = {};
     conceptSliders.forEach((s) => {
       initial[s.id] = s.default;
     });
     setConceptParamValues(initial);
+    setConceptLabMode('step_deduction');
     setActiveStepIndex(0);
     setCompletedStepIndices(new Set());
     setInteractedStepIndices(new Set());
@@ -455,6 +457,7 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
   const handleSelectLeapModel = (modelId: string) => {
     setSelectedLeapModelId(modelId);
     setSessionSelectedLeapModelId(modelId);
+    setSessionLeapSubTab('deduction');
     setIsLeapDrawerOpen(false);
     setSessionIsLeapDrawerOpen(false);
     setLeapSearchQuery('');
@@ -476,6 +479,8 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
 
   const handleSelectSandbox = (id: string) => {
     setSelectedSandboxId(id);
+    setConceptLabMode('step_deduction');
+    setActiveStepIndex(0);
     setIsConceptDrawerOpen(false);
     setSessionIsConceptDrawerOpen(false);
     setConceptSearchQuery('');
@@ -533,6 +538,7 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
                   type="button"
                   onClick={() => {
                     setLabSubView("concept_sandbox");
+                    setConceptLabMode("step_deduction");
                     setIsLeapDrawerOpen(false);
                     setSessionIsLeapDrawerOpen(false);
                   }}
@@ -549,6 +555,7 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
                   type="button"
                   onClick={() => {
                     setLabSubView("leap_4d");
+                    setSessionLeapSubTab("deduction");
                     setIsConceptDrawerOpen(false);
                     setSessionIsConceptDrawerOpen(false);
                   }}
@@ -853,34 +860,6 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
                     ({currentSandbox.id} · {isEn ? 'Concept Sandbox' : '考点具象沙盒'})
                   </span>
                 </h3>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                  {/* 双模切换入口：分步推演 vs 自由探索 (像素级对齐实验室二 LeapLab) */}
-                  <div className="stage-segmented-control lab-mode-segmented-control" role="tablist">
-                    <button
-                      type="button"
-                      className={`seg-item ${conceptLabMode === 'step_deduction' ? 'active' : ''}`}
-                      onClick={() => setConceptLabMode('step_deduction')}
-                      role="tab"
-                      aria-selected={conceptLabMode === 'step_deduction'}
-                      title={isEn ? 'Step-by-step guided deduction' : '分步推演：跟随名师思路进阶'}
-                    >
-                      <Icon name="bulb" size={13} className="seg-icon" />
-                      <span>{isEn ? 'Step Deduction' : '分步推演'}</span>
-                    </button>
-                    <button
-                      type="button"
-                      className={`seg-item ${conceptLabMode === 'free_explore' ? 'active' : ''}`}
-                      onClick={() => setConceptLabMode('free_explore')}
-                      role="tab"
-                      aria-selected={conceptLabMode === 'free_explore'}
-                      title={isEn ? 'Free dynamic exploration' : '自由探索：动点滑块自主体验'}
-                    >
-                      <Icon name="gamepad" size={13} className="seg-icon" />
-                      <span>{isEn ? 'Free Play' : '自由探索'}</span>
-                    </button>
-                  </div>
-                </div>
               </div>
             )}
 

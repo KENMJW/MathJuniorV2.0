@@ -156,9 +156,9 @@ describe('TASK-FE-0022 架构师量化验收门禁全量测试套件 (7 Hard Acc
         const testModel = allLeapSandboxModels[0];
         const enHtml = renderToString(<LeapLab model={testModel} locale="en" />);
 
-        // 模式与透视胶囊按钮
+        // 模式与透视胶囊按钮 (卡片内推演任务与自由探索)
         expect(enHtml).toContain('Exam Focus X-Ray');
-        expect(enHtml).toContain('Step Deduction');
+        expect(enHtml).toContain('Deduction Mission');
         expect(enHtml).toContain('Free Play');
 
         // 遥测结论 (手拉手模型与普通沙盒)

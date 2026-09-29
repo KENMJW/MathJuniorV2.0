@@ -244,10 +244,12 @@ export const LeapLab: React.FC<LeapLabProps> = ({
 
   const [currentStepIndex, setCurrentStepIndex] = useState<number>(0);
 
-  // 模型改变时重置步骤为 0
+  // 模型改变时重置步骤为 0 并默认回到分步推演
   useEffect(() => {
     setCurrentStepIndex(0);
-  }, [currentModel.model_id]);
+    setLabMode('step_deduction');
+    setSessionLeapSubTab('deduction');
+  }, [currentModel.model_id, setSessionLeapSubTab]);
 
   // 步骤推进与画布状态帧同步
   useEffect(() => {
@@ -322,11 +324,14 @@ export const LeapLab: React.FC<LeapLabProps> = ({
     return compileMorphingSandboxConfig(currentModel, morphState);
   }, [currentModel, morphState]);
 
-  // 模型切换动作处理
+  // 模型切换动作处理 (默认回归分步推演)
   const handleSelectModel = (id: string) => {
     setIsDrawerOpen(false);
     setSearchQuery('');
     setActiveModelId(id);
+    setLabMode('step_deduction');
+    setSessionLeapSubTab('deduction');
+    setCurrentStepIndex(0);
     if (onSelectModelId) {
       onSelectModelId(id);
     }
@@ -493,40 +498,6 @@ export const LeapLab: React.FC<LeapLabProps> = ({
                 ({isEn ? 'Line' : '主线'} {currentModel.primary_line} · {formatSemester(currentModel.unlocked_semester, locale)})
               </span>
             )}
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-            {/* 双模切换入口：分步推演 vs 自由探索 */}
-            <div className="stage-segmented-control lab-mode-segmented-control" role="tablist">
-              <button
-                type="button"
-                className={`seg-item ${labMode === 'step_deduction' ? 'active' : ''}`}
-                onClick={() => {
-                  setLabMode('step_deduction');
-                  setSessionLeapSubTab('deduction');
-                }}
-                role="tab"
-                aria-selected={labMode === 'step_deduction'}
-                title={isEn ? 'Step-by-step master deduction' : '分步推演：跟随名师思路进阶'}
-              >
-                <Icon name="bulb" size={13} className="seg-icon" />
-                <span>{isEn ? 'Step Deduction' : '分步推演'}</span>
-              </button>
-              <button
-                type="button"
-                className={`seg-item ${labMode === 'free_explore' ? 'active' : ''}`}
-                onClick={() => {
-                  setLabMode('free_explore');
-                  setSessionLeapSubTab('free');
-                }}
-                role="tab"
-                aria-selected={labMode === 'free_explore'}
-                title={isEn ? 'Free dynamic exploration' : '自由探索：动点滑块自主体验'}
-              >
-                <Icon name="gamepad" size={13} className="seg-icon" />
-                <span>{isEn ? 'Free Play' : '自由探索'}</span>
-              </button>
-            </div>
           </div>
         </div>
       )}

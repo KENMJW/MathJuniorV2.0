@@ -76,4 +76,30 @@ describe('LabWorkspace (Module 3) Unified Drawer & Sticky Scroll Tests', () => {
     expect(html).toContain('LM-7A-01');
     expect(html).toContain('数轴动点与绝对值几何距离模型');
   });
+
+  it('4. 概念沙盒与 4D 模型视图：顶部无冗余分段胶囊，暗色卡片默认处于分步推演态 (核心探究/推演任务 + 直接自由把玩)', () => {
+    const htmlConcept = renderToString(
+      <LabWorkspace
+        effectiveSandboxes={mockSandboxes}
+        effectiveLeapModels={mockLeapSandboxModels}
+        labSubView="concept_sandbox"
+        selectedSandboxId="SB-KP001"
+      />
+    );
+    expect(htmlConcept).not.toContain('lab-mode-segmented-control');
+    expect(htmlConcept).toContain('核心探究任务');
+    expect(htmlConcept).toContain('直接自由把玩');
+
+    const htmlLeap = renderToString(
+      <LabWorkspace
+        effectiveSandboxes={mockSandboxes}
+        effectiveLeapModels={mockLeapSandboxModels}
+        labSubView="leap_4d"
+        selectedLeapModelId="LM-8A-01"
+      />
+    );
+    expect(htmlLeap).not.toContain('lab-mode-segmented-control');
+    expect(htmlLeap).toContain('核心推演任务');
+    expect(htmlLeap).toContain('直接自由把玩');
+  });
 });

@@ -9,7 +9,7 @@ describe('Tier Buttons & Header Badges Tests', () => {
   const g3Models = allLeapSandboxModels.filter((m) => m.primary_line === 'G3');
   // LM-8B-14 (Tier 1) and LM-9A-20 (Tier 2)
 
-  it('1. LeapLab: 统一渲染分步推演与自由探索模式切换，彻底删除原型/变式/综合冗余按钮', () => {
+  it('1. LeapLab: 统一由暗色卡片承载分步推演与直接自由把玩切换，顶部纯化无冗余分段胶囊，彻底删除原型/变式/综合冗余按钮', () => {
     const currentModel = g3Models.find((m) => m.model_id === 'LM-9A-20') || g3Models[1];
 
     const html = renderToString(
@@ -20,10 +20,10 @@ describe('Tier Buttons & Header Badges Tests', () => {
       />
     );
 
-    // 必须包含分步推演与自由探索
-    expect(html).toContain('分步推演');
-    expect(html).toContain('自由探索');
-    expect(html).toContain('lab-mode-segmented-control');
+    // 必须包含核心推演任务与直接自由把玩，且顶部严禁冗余的分段胶囊
+    expect(html).toContain('核心推演任务');
+    expect(html).toContain('直接自由把玩');
+    expect(html).not.toContain('lab-mode-segmented-control');
 
     // 严格禁止再出现原型/变式/综合冗余按钮
     expect(html).not.toMatch(/class="[^"]*nav-pill-btn[^"]*"[^>]*>\s*原型/);
@@ -43,11 +43,13 @@ describe('Tier Buttons & Header Badges Tests', () => {
       />
     );
 
-    expect(html).toMatch(/class="[^"]*seg-item active[^"]*"[^>]*>[\s\S]*?分步推演/);
+    expect(html).toContain('核心推演任务');
+    expect(html).toContain('直接自由把玩');
+    expect(html).not.toContain('lab-mode-segmented-control');
     expect(html).toContain('LM-8B-14');
   });
 
-  it('3. LabWorkspace: 顶部副标题栏彻底纯化，只保留 [分步推演] 与 [自由探索] 双模切换，严禁概念具象化或视口阻尼锁定等冗余按钮', () => {
+  it('3. LabWorkspace: 顶部副标题栏彻底纯化，严禁概念具象化、视口阻尼锁定或冗余分段胶囊', () => {
     const mockSandboxes = [
       {
         id: 'SB-KP001',
@@ -77,13 +79,13 @@ describe('Tier Buttons & Header Badges Tests', () => {
     expect(html).not.toContain('概念具象化');
     expect(html).not.toContain('视口阻尼锁定');
 
-    // 严禁存在 tier-pill-group
+    // 严禁存在 tier-pill-group 或冗余分段胶囊
     expect(html).not.toContain('tier-pill-group');
+    expect(html).not.toContain('lab-mode-segmented-control');
 
-    // 保持纯净的双模切换
-    expect(html).toContain('lab-mode-segmented-control');
-    expect(html).toContain('分步推演');
-    expect(html).toContain('自由探索');
+    // 保持卡片内部纯净的分步推演任务与直接自由把玩切换
+    expect(html).toContain('核心探究任务');
+    expect(html).toContain('直接自由把玩');
   });
 
   it('4. SB-KP001 number_axis_rational_template Point P is dynamic and can invert p_num', () => {
@@ -96,7 +98,7 @@ describe('Tier Buttons & Header Badges Tests', () => {
     expect(canInvertParam('number_axis_rational_template', ptU, false)).toBe(false);
   });
 
-  it('5. LabWorkspace: 概念沙盒严格对齐实验室二，渲染分步推演与自由探索双模切换，且严禁原型/变式/综合按钮', () => {
+  it('5. LabWorkspace: 概念沙盒严格对齐实验室二，渲染分步推演任务与直接自由把玩切换，且严禁原型/变式/综合按钮', () => {
     const mockSandboxes = [
       {
         id: 'SB-KP001',
@@ -124,13 +126,12 @@ describe('Tier Buttons & Header Badges Tests', () => {
       />
     );
 
-    // 实验室一概念沙盒必须包含双模切换
-    expect(html).toContain('lab-mode-segmented-control');
-    expect(html).toContain('分步推演');
-    expect(html).toContain('自由探索');
+    // 实验室一概念沙盒顶部无冗余分段胶囊
+    expect(html).not.toContain('lab-mode-segmented-control');
 
-    // 默认高亮分步推演并渲染步骤阶梯
-    expect(html).toMatch(/class="[^"]*seg-item active[^"]*"[^>]*>[\s\S]*?分步推演/);
+    // 默认处于分步推演状态，渲染核心探究任务与步骤阶梯
+    expect(html).toContain('核心探究任务');
+    expect(html).toContain('直接自由把玩');
     expect(html).toContain('concept-step-deduction-view');
     expect(html).toContain('步骤一：基准平行线观察');
 
