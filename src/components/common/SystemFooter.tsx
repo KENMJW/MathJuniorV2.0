@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { RotateCcw } from 'lucide-react';
+import { RotateCcw, BookOpen } from 'lucide-react';
 import { useSessionStore, Locale } from '../../store/sessionStore';
 import { APP_VERSION } from '../../config/version';
 
@@ -63,6 +63,15 @@ export const SystemFooter: React.FC<SystemFooterProps> = ({ className = '', loca
         >
           {APP_VERSION}
         </span>
+        <a
+          href="#help-manual-section"
+          data-testid="footer-manual-link"
+          title={isEn ? 'View user manual and operation guide' : '查阅操作使用说明书'}
+          className="inline-flex items-center gap-1 text-[11px] text-text-tertiary hover:text-ios-blue px-2 py-0.5 rounded-full hover:bg-black/[0.04] transition-colors cursor-pointer border border-transparent hover:border-black/[0.06] active:scale-95"
+        >
+          <BookOpen className="w-3 h-3 text-ios-blue" />
+          <span>{isEn ? 'User Manual' : '操作说明书'}</span>
+        </a>
         <button
           type="button"
           data-testid="force-purge-cache-btn"

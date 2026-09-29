@@ -37,6 +37,7 @@ import {
 } from "lucide-react";
 import { cn } from "./lib/utils";
 import { SystemFooter } from "./components/common/SystemFooter";
+import { HelpManualSection } from "./components/common/HelpManualSection";
 
 const ALL_SANDBOXES = [
   {
@@ -716,6 +717,7 @@ export const MathJuniorHome: React.FC = () => {
       >
         <div className="w-full box-border flex flex-col min-h-full">
           <div className="flex-1">{renderModuleContent()}</div>
+          <HelpManualSection />
           <SystemFooter className="pb-16" />
         </div>
       </CardDeck>
@@ -732,6 +734,7 @@ export const MathJuniorHome: React.FC = () => {
       >
         <div className="p-5 w-full min-h-full box-border flex flex-col">
           <div className="flex-1">{renderModuleContent()}</div>
+          <HelpManualSection />
           <SystemFooter />
         </div>
       </SplitBoard>
@@ -752,6 +755,7 @@ export const MathJuniorHome: React.FC = () => {
         className="w-full max-w-[1240px] mx-auto px-4 pt-6 pb-12 box-border flex flex-col flex-1"
       >
         <div className="flex-1">{renderModuleContent()}</div>
+        <HelpManualSection />
         <SystemFooter />
       </div>
     </Cockpit>

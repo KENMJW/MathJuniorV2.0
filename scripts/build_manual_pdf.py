@@ -834,7 +834,16 @@ def build_manual():
         f'--print-to-pdf={pdf_path}',
         html_path
     ]
-    res = subprocess.run(cmd, capture_output=True, text=True)
+    import shutil
+    public_dir = os.path.join(os.path.dirname(__file__), '..', 'public')
+    shutil.copy(html_path, os.path.join(public_dir, 'manual.html'))
+    shutil.copy(pdf_path, os.path.join(public_dir, 'manual.pdf'))
+    public_docs_dir = os.path.join(public_dir, 'docs')
+    os.makedirs(public_docs_dir, exist_ok=True)
+    shutil.copy(html_path, os.path.join(public_docs_dir, '全科核心素养提分系统V2.0_操作使用说明书.html'))
+    shutil.copy(pdf_path, os.path.join(public_docs_dir, '全科核心素养提分系统V2.0_操作使用说明书.pdf'))
+    print(f"[SYNC] Synchronized manual HTML/PDF to {public_dir}/manual.*")
+
     if res.returncode == 0 and os.path.exists(pdf_path):
         print(f"[PDF SUCCESS] Generated successfully -> {pdf_path} ({os.path.getsize(pdf_path) / 1024:.1f} KB)")
         return pdf_path, html_path
