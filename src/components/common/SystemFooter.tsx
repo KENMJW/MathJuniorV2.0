@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { RotateCcw, BookOpen } from 'lucide-react';
+import { RotateCcw, BookOpen, ExternalLink, Download } from 'lucide-react';
 import { useSessionStore, Locale } from '../../store/sessionStore';
 import { APP_VERSION } from '../../config/version';
 
@@ -64,13 +64,26 @@ export const SystemFooter: React.FC<SystemFooterProps> = ({ className = '', loca
           {APP_VERSION}
         </span>
         <a
-          href="#help-manual-section"
+          href="/manual.html"
+          target="_blank"
+          rel="noopener noreferrer"
           data-testid="footer-manual-link"
-          title={isEn ? 'View user manual and operation guide' : '查阅操作使用说明书'}
-          className="inline-flex items-center gap-1 text-[11px] text-text-tertiary hover:text-ios-blue px-2 py-0.5 rounded-full hover:bg-black/[0.04] transition-colors cursor-pointer border border-transparent hover:border-black/[0.06] active:scale-95"
+          title={isEn ? 'Open user operation manual in new tab' : '在新标签页打开操作使用说明书'}
+          className="inline-flex items-center gap-1 text-[11px] text-text-secondary hover:text-ios-blue px-2.5 py-0.5 rounded-full bg-black/[0.04] hover:bg-blue-50 transition-colors cursor-pointer border border-black/[0.06] hover:border-blue-200 active:scale-95 font-medium"
         >
           <BookOpen className="w-3 h-3 text-ios-blue" />
-          <span>{isEn ? 'User Manual' : '操作说明书'}</span>
+          <span>{isEn ? 'User Manual' : '使用说明书'}</span>
+          <ExternalLink className="w-2.5 h-2.5 text-text-tertiary" />
+        </a>
+        <a
+          href="/manual.pdf"
+          download="全科核心素养提分系统V2.0_操作使用说明书.pdf"
+          data-testid="footer-pdf-link"
+          title={isEn ? 'Download 16-page printable PDF manual' : '下载 16 页高清双面排版说明书 PDF'}
+          className="inline-flex items-center gap-1 text-[11px] text-text-tertiary hover:text-ios-blue px-2 py-0.5 rounded-full hover:bg-black/[0.04] transition-colors cursor-pointer border border-transparent hover:border-black/[0.06] active:scale-95"
+        >
+          <Download className="w-3 h-3" />
+          <span>{isEn ? 'PDF' : '下载 PDF'}</span>
         </a>
         <button
           type="button"

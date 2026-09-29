@@ -16,6 +16,10 @@ describe('SystemFooter Component', () => {
     expect(html).toContain('发布版本');
     expect(html).toContain('force-purge-cache-btn');
     expect(html).toContain('刷新缓存');
+    expect(html).toContain('footer-manual-link');
+    expect(html).toContain('使用说明书');
+    expect(html).toContain('footer-pdf-link');
+    expect(html).toContain('下载 PDF');
   });
 
   it('支持英文模式下的文本切换', () => {
@@ -24,5 +28,6 @@ describe('SystemFooter Component', () => {
     expect(html).toContain('Release');
     expect(html).toContain('Junior Math Workshop');
     expect(html).toContain(APP_VERSION);
+    expect(html).toContain('User Manual');
   });
 });
