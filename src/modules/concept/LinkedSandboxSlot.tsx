@@ -374,7 +374,7 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
     return (
       <div
         data-testid="linked-sandbox-active"
-        className={`w-full overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-xl flex flex-col gap-3 p-4 box-border relative ${className}`}
+        className={`linked-sandbox-active w-full overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-xl flex flex-col gap-3 p-4 box-border relative ${className}`}
         style={{ minHeight: containerHeight, height: containerHeight, ...style }}
       >
         {/* 画布主视口 + 侧边不变量遥测栏与步骤指示 (两边自动等高对齐) */}
@@ -395,7 +395,7 @@ export const LinkedSandboxSlot: React.FC<LinkedSandboxSlotProps> = ({
           </div>
 
           {/* 右侧仪表盘 (.sandbox-guide-15, Slate 900 暗室配色) */}
-          <div className="sandbox-guide-15 w-full lg:w-72 shrink-0 h-full self-stretch flex flex-col gap-2 rounded-2xl bg-slate-800/90 border border-slate-700/60 p-3 text-slate-100 shadow-inner overflow-y-auto">
+          <div className="sandbox-guide-15 w-full lg:w-72 shrink-0 h-auto lg:h-full self-stretch flex flex-col gap-2 rounded-2xl bg-slate-800/90 border border-slate-700/60 p-3 text-slate-100 shadow-inner overflow-y-auto">
             {/* 1~3 步自适应探究引导胶囊 */}
             <div className="flex flex-col gap-2">
               <div className="flex flex-col gap-2 pb-2 border-b border-slate-700/60">

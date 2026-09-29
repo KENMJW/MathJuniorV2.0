@@ -61,6 +61,34 @@
   button, .pill-btn, .tab-btn {
     word-break: keep-all;
   }
+
+  /* 纵向堆叠时（<1024px），沙盒容器与探究指引自适应自然高度展开，杜绝引导截断 */
+  [data-testid="linked-sandbox-active"],
+  .linked-sandbox-active {
+    height: auto !important;
+    min-height: auto !important;
+  }
+
+  .sandbox-split-box.desktop-unified {
+    height: auto !important;
+    min-height: auto !important;
+    flex: none !important;
+    overflow: visible !important;
+  }
+
+  .sandbox-split-box.desktop-unified .sandbox-viewport-85 {
+    height: 320px !important;
+    min-height: 320px !important;
+    flex: none !important;
+  }
+
+  .sandbox-split-box.desktop-unified .sandbox-guide-15 {
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    flex: none !important;
+    overflow-y: visible !important;
+  }
 }
 
 /* 手机端专用深度增强 (<768px) */
@@ -433,6 +461,24 @@
   .sandbox-guide-15 {
     padding: 10px 14px !important;
     font-size: 11px !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    flex: none !important;
+    overflow-y: visible !important;
+  }
+
+  [data-testid="linked-sandbox-active"],
+  .linked-sandbox-active {
+    height: auto !important;
+    min-height: auto !important;
+  }
+
+  .sandbox-split-box.desktop-unified {
+    height: auto !important;
+    min-height: auto !important;
+    flex: none !important;
+    overflow: visible !important;
   }
 
   /* 模块四：实战测评在手机端上下流式排版 (TASK-FE-0018 判据 6) */

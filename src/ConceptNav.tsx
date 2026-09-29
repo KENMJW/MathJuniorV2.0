@@ -528,7 +528,7 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
               sandboxId={currentPoint.sandbox_id}
               config={sandboxConfig}
               pointNameZh={currentPoint.name_zh}
-              height={600}
+              height={isMobile ? 'auto' : 600}
               locale={locale}
             />
           )}
