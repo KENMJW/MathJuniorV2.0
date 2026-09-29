@@ -43,18 +43,16 @@ describe('ConceptNav 顶层大卡片与 4 级抽屉集成测试 (Demo 图 4 对�
     expect(html).toContain('图 1-1 阿尔·花拉子米几何配方法模型');
   });
 
-  it('3. 4级抽屉盒选择器结构完备且挂载 107 大纲考点全谱系', () => {
+  it('3. 3级抽屉盒选择器结构完备且挂载 107 大纲考点全谱系', () => {
     const html = renderToString(<ConceptNav initialPointId="KP-023" />);
 
     expect(html).toContain('concept-tree-sidebar');
     expect(html).toContain('第一级 · 年级');
     expect(html).toContain('第二级 · 学期');
-    expect(html).toContain('第三级 · 领域');
-    expect(html).toContain('第四级 · 大纲考点');
-    expect(html).toContain('八年级');
+    expect(html).toContain('第三级 · 大纲考点');
+    expect(html).toContain('九年级');
     expect(html).toContain('上学期 (1)');
-    expect(html).toContain('图形与几何');
-    expect(html).toContain('三角形');
+    expect(html).toContain('全部');
   });
 
   it('4. 【源码门禁】ConceptNav 及 ConceptDrawerSelector 严禁 eval/Function/dangerouslySetInnerHTML', () => {

@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { SandboxRenderer } from './SandboxRenderer';
-import { LeapLab, SEMESTER_CONFIG as LEAP_SEMESTER_CONFIG, formatSemester } from './LeapLab';
+import { LeapLab, formatSemester } from './LeapLab';
 import { MathRenderer } from '../../components/math/MathRenderer';
 import { Icon } from '../../components/common/Icon';
 import { useSessionStore } from '../../store/sessionStore';
@@ -24,21 +24,6 @@ export interface LabWorkspaceProps {
 }
 
 const GRADES = [7, 8, 9] as const;
-const SEMESTERS = [
-  { val: 1, label: '上学期', labelEn: 'Sem 1' },
-  { val: 2, label: '下学期', labelEn: 'Sem 2' },
-] as const;
-
-const CATEGORY_NAME_EN: Record<string, string> = {
-  '实数与数轴': 'Real Numbers & Number Line',
-  '实数与运算': 'Real Numbers & Operations',
-  '整式与全等三角形': 'Polynomials & Congruence',
-  '一次函数与二次根式': 'Linear Functions & Radicals',
-  '勾股定理与四边形': 'Pythagorean & Quadrilaterals',
-  '二次函数与圆': 'Quadratic Functions & Circles',
-  '相似与锐角三角函数': 'Similarity & Trigonometry',
-  '概念具象': 'Concept Models',
-};
 
 /**
  * 模块三：沙盒探究实验室统一视窗 (100% 严格对标 ios27_demo.html Image 2)
@@ -98,8 +83,7 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
   const [isLeapDrawerOpen, setIsLeapDrawerOpen] = useState<boolean>(false);
   const [conceptSearchQuery, setConceptSearchQuery] = useState<string>('');
   const [filterGrade, setFilterGrade] = useState<number>(7);
-  const [filterSemester, setFilterSemester] = useState<number>(1);
-  const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [filterSemester, setFilterSemester] = useState<number | 'all'>('all');
 
   // 同步外部 sessionStore 选中的跃迁模型 ID
   useEffect(() => {
@@ -191,16 +175,7 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
     });
   }, [effectiveSandboxes]);
 
-  // 提取当前年级+学期下涵盖的所有课程子分类
-  const availableCategories = useMemo(() => {
-    const list = enrichedSandboxes.filter(
-      (s) => s.grade === filterGrade && s.semester === filterSemester
-    );
-    const cats = Array.from(new Set(list.map((s) => s.subcategory)));
-    return cats;
-  }, [enrichedSandboxes, filterGrade, filterSemester]);
-
-  // 概念沙盒 4 级筛选结果
+  // 概念沙盒 3 级筛选结果 (年级 -> 学期(含全部) -> 知识点沙盒)
   const filteredSandboxes = useMemo(() => {
     const q = conceptSearchQuery.trim().toLowerCase();
     if (q) {
@@ -215,11 +190,10 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
 
     return enrichedSandboxes.filter((s) => {
       const matchGrade = s.grade === filterGrade;
-      const matchSem = s.semester === filterSemester;
-      const matchCat = filterCategory === 'all' || s.subcategory === filterCategory;
-      return matchGrade && matchSem && matchCat;
+      const matchSem = filterSemester === 'all' || s.semester === filterSemester;
+      return matchGrade && matchSem;
     });
-  }, [enrichedSandboxes, filterGrade, filterSemester, filterCategory, conceptSearchQuery]);
+  }, [enrichedSandboxes, filterGrade, filterSemester, conceptSearchQuery]);
 
   // 解析当前沙盒的参数滑块规格
   const conceptSliders: Array<{
@@ -443,48 +417,40 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
   }, [markUserInteracted]);
 
   const [leapSearchQuery, setLeapSearchQuery] = useState<string>('');
-  const [leapSelectedSem, setLeapSelectedSem] = useState<string>(
-    currentLeapModel?.unlocked_semester || '8A'
-  );
+  const [leapGrade, setLeapGrade] = useState<number>(() => {
+    const sem = currentLeapModel?.unlocked_semester || '7A';
+    return parseInt(sem[0], 10) || 7;
+  });
+  const [leapSemester, setLeapSemester] = useState<number | 'all'>('all');
 
   useEffect(() => {
     if (currentLeapModel?.unlocked_semester) {
-      setLeapSelectedSem(currentLeapModel.unlocked_semester);
+      const g = parseInt(currentLeapModel.unlocked_semester[0], 10);
+      if (g) setLeapGrade(g);
     }
   }, [currentLeapModel?.model_id, currentLeapModel?.unlocked_semester]);
 
-  const leapModelsBySemester = useMemo(() => {
-    const map: Record<string, any[]> = {
-      '7A': [],
-      '7B': [],
-      '8A': [],
-      '8B': [],
-      '9A': [],
-      '9B': [],
-    };
-    effectiveLeapModels.forEach((m) => {
-      const sem = m.unlocked_semester || '8A';
-      if (!map[sem]) map[sem] = [];
-      if (!map[sem].some((existing) => existing.model_id === m.model_id)) {
-        map[sem].push(m);
-      }
-    });
-    return map;
-  }, [effectiveLeapModels]);
-
   const filteredLeapModels = useMemo(() => {
     const q = leapSearchQuery.trim().toLowerCase();
-    if (!q) {
-      return leapModelsBySemester[leapSelectedSem] || [];
+    if (q) {
+      return effectiveLeapModels.filter((m) => {
+        const idMatch = m.model_id.toLowerCase().includes(q);
+        const nameZhMatch = (m.model_name_zh || '').toLowerCase().includes(q);
+        const nameEnMatch = (m.model_name_en || '').toLowerCase().includes(q);
+        const briefZhMatch = (m.model_brief_zh || '').toLowerCase().includes(q);
+        const kpMatch = JSON.stringify(m.kp_dependencies || []).toLowerCase().includes(q);
+        return idMatch || nameZhMatch || nameEnMatch || briefZhMatch || kpMatch;
+      });
     }
+
     return effectiveLeapModels.filter((m) => {
-      const idMatch = m.model_id.toLowerCase().includes(q);
-      const nameZhMatch = (m.model_name_zh || '').toLowerCase().includes(q);
-      const nameEnMatch = (m.model_name_en || '').toLowerCase().includes(q);
-      const briefZhMatch = (m.model_brief_zh || '').toLowerCase().includes(q);
-      return idMatch || nameZhMatch || nameEnMatch || briefZhMatch;
+      const mGrade = parseInt(m.unlocked_semester?.[0] || '7', 10);
+      const mSem = m.unlocked_semester?.[1] === 'A' ? 1 : 2;
+      const matchGrade = mGrade === leapGrade;
+      const matchSem = leapSemester === 'all' || mSem === leapSemester;
+      return matchGrade && matchSem;
     });
-  }, [effectiveLeapModels, leapModelsBySemester, leapSelectedSem, leapSearchQuery]);
+  }, [effectiveLeapModels, leapGrade, leapSemester, leapSearchQuery]);
 
   const handleSelectLeapModel = (modelId: string) => {
     setSelectedLeapModelId(modelId);
@@ -680,10 +646,7 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
                           key={g}
                           type="button"
                           className={`drawer-sem-chip ${filterGrade === g ? 'active' : ''}`}
-                          onClick={() => {
-                            setFilterGrade(g);
-                            setFilterCategory('all');
-                          }}
+                          onClick={() => setFilterGrade(g)}
                         >
                           {isEn ? `Grade ${g}` : `${g}年级`}
                         </button>
@@ -691,49 +654,24 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
                     </div>
                   </div>
 
-                  {/* 2 级：学期选择 */}
+                  {/* 2 级：学期选择 (含「全部」) */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                     <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-secondary)' }}>
                       {isEn ? '② Semester:' : '② 学期:'}
                     </span>
                     <div style={{ display: 'flex', gap: '6px' }}>
-                      {SEMESTERS.map((s) => (
+                      {[
+                        { val: 'all' as const, label: '全部', labelEn: 'All' },
+                        { val: 1 as const, label: '上学期', labelEn: 'Sem 1' },
+                        { val: 2 as const, label: '下学期', labelEn: 'Sem 2' },
+                      ].map((s) => (
                         <button
                           key={s.val}
                           type="button"
                           className={`drawer-sem-chip ${filterSemester === s.val ? 'active' : ''}`}
-                          onClick={() => {
-                            setFilterSemester(s.val);
-                            setFilterCategory('all');
-                          }}
+                          onClick={() => setFilterSemester(s.val)}
                         >
                           {isEn ? s.labelEn : s.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* 3 级：课程 / 知识模块 */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-secondary)' }}>
-                      {isEn ? '③ Category:' : '③ 课程模块:'}
-                    </span>
-                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                      <button
-                        type="button"
-                        className={`drawer-sem-chip ${filterCategory === 'all' ? 'active' : ''}`}
-                        onClick={() => setFilterCategory('all')}
-                      >
-                        {isEn ? 'All Categories' : '全部模块'}
-                      </button>
-                      {availableCategories.map((cat) => (
-                        <button
-                          key={cat}
-                          type="button"
-                          className={`drawer-sem-chip ${filterCategory === cat ? 'active' : ''}`}
-                          onClick={() => setFilterCategory(cat)}
-                        >
-                          {isEn ? (CATEGORY_NAME_EN[cat] || cat) : cat}
                         </button>
                       ))}
                     </div>
@@ -813,24 +751,50 @@ export const LabWorkspace: React.FC<LabWorkspaceProps> = ({
                 </button>
               </div>
 
-              {/* 1 级：年级学期选择标签 */}
+              {/* 1 级：年级 + 2 级：学期 (含「全部」) */}
               {!leapSearchQuery && (
-                <div className="drawer-sem-tabs">
-                  {LEAP_SEMESTER_CONFIG.map((cfg) => {
-                    const count = leapModelsBySemester[cfg.key]?.length || 0;
-                    const active = leapSelectedSem === cfg.key;
-                    return (
-                      <button
-                        key={cfg.key}
-                        type="button"
-                        className={`drawer-sem-chip ${active ? 'active' : ''}`}
-                        onClick={() => setLeapSelectedSem(cfg.key)}
-                      >
-                        <span>{isEn ? cfg.labelEn : cfg.label}</span>
-                        <span className="drawer-sem-count">({count})</span>
-                      </button>
-                    );
-                  })}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '8px' }}>
+                  {/* 1 级：年级选择 */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-secondary)' }}>
+                      {isEn ? '① Grade:' : '① 年级:'}
+                    </span>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      {GRADES.map((g) => (
+                        <button
+                          key={g}
+                          type="button"
+                          className={`drawer-sem-chip ${leapGrade === g ? 'active' : ''}`}
+                          onClick={() => setLeapGrade(g)}
+                        >
+                          {isEn ? `Grade ${g}` : `${g}年级`}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 2 级：学期选择 (含「全部」) */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-secondary)' }}>
+                      {isEn ? '② Semester:' : '② 学期:'}
+                    </span>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      {[
+                        { val: 'all' as const, label: '全部', labelEn: 'All' },
+                        { val: 1 as const, label: '上学期', labelEn: 'Sem 1' },
+                        { val: 2 as const, label: '下学期', labelEn: 'Sem 2' },
+                      ].map((s) => (
+                        <button
+                          key={s.val}
+                          type="button"
+                          className={`drawer-sem-chip ${leapSemester === s.val ? 'active' : ''}`}
+                          onClick={() => setLeapSemester(s.val)}
+                        >
+                          {isEn ? s.labelEn : s.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
 

@@ -85,7 +85,7 @@ describe("Task 20: 产品化外壳与信息架构集成测试", () => {
   });
 
   describe("20.3 模块一四级导航谱系 (ConceptNav)", () => {
-    it("按年级->学期->领域->考点完成四级导航下钻，并挂载考点四位一体", () => {
+    it("按年级->学期->知识点完成三级导航下钻，并挂载考点四位一体", () => {
       const html = ReactDOMServer.renderToString(
         <ConceptNav initialPointId="KP-023" />
       );
@@ -95,13 +95,11 @@ describe("Task 20: 产品化外壳与信息架构集成测试", () => {
       expect(html).toContain("concept-tree-sidebar");
       expect(html).toContain("第一级 · 年级");
       expect(html).toContain("第二级 · 学期");
-      expect(html).toContain("第三级 · 领域");
-      expect(html).toContain("第四级 · 大纲考点");
+      expect(html).toContain("第三级 · 大纲考点");
 
-      // 2. 年级/学期/领域/考点
+      // 2. 年级/学期/考点
       expect(html).toContain("九年级");
       expect(html).toContain("上学期 (1)");
-      expect(html).toContain("数与代数");
       expect(html).toContain("KP-023");
       expect(html).toContain("配方法");
 

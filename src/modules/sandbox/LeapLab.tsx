@@ -108,51 +108,41 @@ export const LeapLab: React.FC<LeapLabProps> = ({
   };
 
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [selectedSem, setSelectedSem] = useState<string>(
-    currentModel.unlocked_semester || '7A'
-  );
+  const [selectedGrade, setSelectedGrade] = useState<number>(() => {
+    const sem = currentModel.unlocked_semester || '7A';
+    return parseInt(sem[0], 10) || 7;
+  });
+  const [selectedSemester, setSelectedSemester] = useState<number | 'all'>('all');
 
   useEffect(() => {
     if (currentModel?.unlocked_semester) {
-      setSelectedSem(currentModel.unlocked_semester);
+      const g = parseInt(currentModel.unlocked_semester[0], 10);
+      if (g) setSelectedGrade(g);
     }
-  }, [currentModel.model_id]);
+  }, [currentModel.model_id, currentModel.unlocked_semester]);
 
-  // 模型按学期分组
-  const modelsBySemester = useMemo(() => {
-    const map: Record<string, LeapSandboxModel[]> = {
-      '7A': [],
-      '7B': [],
-      '8A': [],
-      '8B': [],
-      '9A': [],
-      '9B': [],
-    };
-    allModels.forEach((m) => {
-      const sem = m.unlocked_semester || '8A';
-      if (!map[sem]) map[sem] = [];
-      // 避免重复项
-      if (!map[sem].some((existing) => existing.model_id === m.model_id)) {
-        map[sem].push(m);
-      }
-    });
-    return map;
-  }, [allModels]);
-
-  // 搜索过滤模型列表
+  // 搜索或三级 (年级 + 学期含全部) 过滤模型列表
   const filteredModels = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    if (!q) {
-      return modelsBySemester[selectedSem] || [];
+    if (q) {
+      return allModels.filter((m) => {
+        const idMatch = m.model_id.toLowerCase().includes(q);
+        const nameZhMatch = (m.model_name_zh || '').toLowerCase().includes(q);
+        const nameEnMatch = (m.model_name_en || '').toLowerCase().includes(q);
+        const briefZhMatch = (m.model_brief_zh || '').toLowerCase().includes(q);
+        const kpMatch = JSON.stringify(m.kp_dependencies || []).toLowerCase().includes(q);
+        return idMatch || nameZhMatch || nameEnMatch || briefZhMatch || kpMatch;
+      });
     }
+
     return allModels.filter((m) => {
-      const idMatch = m.model_id.toLowerCase().includes(q);
-      const nameZhMatch = (m.model_name_zh || '').toLowerCase().includes(q);
-      const nameEnMatch = (m.model_name_en || '').toLowerCase().includes(q);
-      const briefZhMatch = (m.model_brief_zh || '').toLowerCase().includes(q);
-      return idMatch || nameZhMatch || nameEnMatch || briefZhMatch;
+      const mGrade = parseInt(m.unlocked_semester?.[0] || '7', 10);
+      const mSem = m.unlocked_semester?.[1] === 'A' ? 1 : 2;
+      const matchGrade = mGrade === selectedGrade;
+      const matchSem = selectedSemester === 'all' || mSem === selectedSemester;
+      return matchGrade && matchSem;
     });
-  }, [allModels, modelsBySemester, selectedSem, searchQuery]);
+  }, [allModels, selectedGrade, selectedSemester, searchQuery]);
 
   // 3. 解析 4D 规格
   const { carrierSpec, parameterSpec, postureSpec, camouflageSpec } = useMemo(
@@ -574,24 +564,50 @@ export const LeapLab: React.FC<LeapLabProps> = ({
             </button>
           </div>
 
-          {/* 1 级：年级学期选择标签 */}
+          {/* 1 级：年级 + 2 级：学期 (含「全部」) */}
           {!searchQuery && (
-            <div className="drawer-sem-tabs">
-              {SEMESTER_CONFIG.map((cfg) => {
-                const count = modelsBySemester[cfg.key]?.length || 0;
-                const active = selectedSem === cfg.key;
-                return (
-                  <button
-                    key={cfg.key}
-                    type="button"
-                    className={`drawer-sem-chip ${active ? 'active' : ''}`}
-                    onClick={() => setSelectedSem(cfg.key)}
-                  >
-                    <span>{isEn ? cfg.labelEn : cfg.label}</span>
-                    <span className="drawer-sem-count">({count})</span>
-                  </button>
-                );
-              })}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '8px' }}>
+              {/* 1 级：年级选择 */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-secondary)' }}>
+                  {isEn ? '① Grade:' : '① 年级:'}
+                </span>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  {[7, 8, 9].map((g) => (
+                    <button
+                      key={g}
+                      type="button"
+                      className={`drawer-sem-chip ${selectedGrade === g ? 'active' : ''}`}
+                      onClick={() => setSelectedGrade(g)}
+                    >
+                      {isEn ? `Grade ${g}` : `${g}年级`}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 2 级：学期选择 (含「全部」) */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-secondary)' }}>
+                  {isEn ? '② Semester:' : '② 学期:'}
+                </span>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  {[
+                    { val: 'all' as const, label: '全部', labelEn: 'All' },
+                    { val: 1 as const, label: '上学期', labelEn: 'Sem 1' },
+                    { val: 2 as const, label: '下学期', labelEn: 'Sem 2' },
+                  ].map((s) => (
+                    <button
+                      key={s.val}
+                      type="button"
+                      className={`drawer-sem-chip ${selectedSemester === s.val ? 'active' : ''}`}
+                      onClick={() => setSelectedSemester(s.val)}
+                    >
+                      {isEn ? s.labelEn : s.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 

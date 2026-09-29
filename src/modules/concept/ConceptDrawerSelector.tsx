@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { KnowledgePointRecord } from './types';
 import { EnrichedKnowledgePoint } from './allPointsData';
@@ -35,14 +35,14 @@ export interface ConceptDrawerSelectorProps {
   onClose: () => void;
   knowledgePoints: (KnowledgePointRecord | EnrichedKnowledgePoint)[];
   currentPoint: KnowledgePointRecord;
-  selectedGrade: number;
-  selectedSemester: number;
-  selectedDomain: string;
-  selectedSubcategory?: string;
-  onSelectGrade: (grade: number) => void;
-  onSelectSemester: (semester: number) => void;
-  onSelectDomain: (domain: string) => void;
-  onSelectSubcategory?: (subcategory: string) => void;
+  selectedGrade?: number;
+  selectedSemester?: number | 'all';
+  selectedDomain?: string; // 保留向后兼容
+  selectedSubcategory?: string; // 保留向后兼容
+  onSelectGrade?: (grade: number) => void;
+  onSelectSemester?: (semester: number | 'all') => void;
+  onSelectDomain?: (domain: string) => void; // 保留向后兼容
+  onSelectSubcategory?: (subcategory: string) => void; // 保留向后兼容
   onSelectPoint: (point: KnowledgePointRecord) => void;
   locale?: Locale | string;
 }
@@ -54,12 +54,8 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
   currentPoint,
   selectedGrade,
   selectedSemester,
-  selectedDomain,
-  selectedSubcategory,
   onSelectGrade,
   onSelectSemester,
-  onSelectDomain,
-  onSelectSubcategory,
   onSelectPoint,
   locale = 'zh-CN',
 }) => {
@@ -70,57 +66,49 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
   const isMobile = responsive.isMobile;
   const isTablet = responsive.isTablet;
 
-  // 1. 所有可用年级
+  // 1. 本地三级状态管理 (保持最后一次选择，默认同步当前考点所在的年级与学期/全部)
+  const [grade, setGrade] = useState<number>(() => selectedGrade ?? currentPoint.grade ?? 7);
+  const [semester, setSemester] = useState<number | 'all'>(() => selectedSemester ?? 'all');
+  const activeItemRef = useRef<HTMLDivElement>(null);
+
+  // 当外部传入的 selectedGrade / currentPoint 变化时同步
+  useEffect(() => {
+    if (selectedGrade !== undefined) {
+      setGrade(selectedGrade);
+    } else if (currentPoint?.grade) {
+      setGrade(currentPoint.grade);
+    }
+  }, [selectedGrade, currentPoint?.grade]);
+
+  useEffect(() => {
+    if (selectedSemester !== undefined) {
+      setSemester(selectedSemester);
+    }
+  }, [selectedSemester]);
+
+  // 当抽屉打开且列表就绪时，平滑滚入当前考点
+  useEffect(() => {
+    if (isOpen && activeItemRef.current) {
+      activeItemRef.current.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+  }, [isOpen, grade, semester]);
+
+  // 2. 所有可用年级 (7, 8, 9)
   const availableGrades = useMemo(() => {
     const grades = Array.from(new Set(knowledgePoints.map((p) => p.grade))).sort();
     return grades.length ? grades : [7, 8, 9];
   }, [knowledgePoints]);
 
-  // 2. 当前年级下的可用学期
-  const availableSemesters = useMemo(() => {
-    const semesters = Array.from(
-      new Set(knowledgePoints.filter((p) => p.grade === selectedGrade).map((p) => p.semester))
-    ).sort();
-    return semesters.length ? semesters : [1, 2];
-  }, [knowledgePoints, selectedGrade]);
-
-  // 3. 当前年级+学期下的可用领域
-  const availableDomains = useMemo(() => {
-    const domains = Array.from(
-      new Set(
-        knowledgePoints
-          .filter((p) => p.grade === selectedGrade && p.semester === selectedSemester)
-          .map((p) => p.domain)
-      )
-    );
-    return domains.length ? domains : ['数与代数', '图形与几何'];
-  }, [knowledgePoints, selectedGrade, selectedSemester]);
-
-  // 4. 当前年级+学期下的可用课程单元 (15 个 subcategory)
-  const availableSubcategories = useMemo(() => {
-    const subcats = Array.from(
-      new Set(
-        knowledgePoints
-          .filter((p) => p.grade === selectedGrade && p.semester === selectedSemester)
-          .map((p) => p.subcategory)
-      )
-    );
-    return subcats;
-  }, [knowledgePoints, selectedGrade, selectedSemester]);
-
-  // 5. 筛选考点列表
+  // 3. 筛选第三级知识点列表 (直接支持 [全部]、[上学期]、[下学期])
   const filteredPoints = useMemo(() => {
     return knowledgePoints.filter((p) => {
-      const matchGrade = p.grade === selectedGrade;
-      const matchSemester = p.semester === selectedSemester;
-      if (selectedSubcategory) {
-        return matchGrade && matchSemester && p.subcategory === selectedSubcategory;
-      }
-      return matchGrade && matchSemester && p.domain === selectedDomain;
+      const matchGrade = p.grade === grade;
+      const matchSemester = semester === 'all' || p.semester === semester;
+      return matchGrade && matchSemester;
     });
-  }, [knowledgePoints, selectedGrade, selectedSemester, selectedDomain, selectedSubcategory]);
+  }, [knowledgePoints, grade, semester]);
 
-  // 6. 全局搜索结果 (支持中英、编号、全拼、拼音首字母、单元名过滤)
+  // 4. 全局搜索结果 (支持中英、编号、全拼、拼音首字母、单元名过滤)
   const searchResults = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     if (!q) return [];
@@ -151,9 +139,19 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
     onClose();
   };
 
+  const handleGradeChange = (g: number) => {
+    setGrade(g);
+    onSelectGrade?.(g);
+  };
+
+  const handleSemesterChange = (s: number | 'all') => {
+    setSemester(s);
+    onSelectSemester?.(s);
+  };
+
   const drawerContent = (
     <>
-      {/* 遮罩层 (桌面端点击外部自然关闭) */}
+      {/* 遮罩层 */}
       {isOpen && (
         <div
           data-testid="concept-drawer-backdrop"
@@ -162,24 +160,25 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
         />
       )}
 
-      {/* 4级抽屉选择器浮动面板 (手机端原生 iOS Bottom Sheet / 平板端居中模态 / 桌面端 Popover) */}
+      {/* 三级抽屉选择器浮动面板 (手机端 Bottom Sheet / 平板端居中 / 桌面端 Popover) */}
       <aside
         data-testid="concept-tree-sidebar"
         className={`concept-drawer-panel ${isOpen ? 'is-open flex flex-col' : 'is-closed hidden'} ${
- isMobile
- ? 'fixed bottom-0 left-0 right-0 z-[100] w-full max-w-[100vw] h-[82vh] max-h-[82vh] rounded-t-[20px] shadow-2xl bg-white/95 backdrop-blur-2xl border border-slate-200 border-b-0 overflow-hidden'
- : isTablet
- ? 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] w-[640px] max-w-[90vw] h-[560px] max-h-[80vh] rounded-[20px] shadow-2xl bg-white/95 backdrop-blur-2xl border border-slate-200 overflow-hidden'
- : 'absolute top-[calc(100%+10px)] left-0 z-[100] w-[680px] max-w-[92vw] max-h-[78vh] rounded-[20px] shadow-2xl bg-white/95 backdrop-blur-2xl border border-slate-200 overflow-hidden'
- }`}
+          isMobile
+            ? 'fixed bottom-0 left-0 right-0 z-[100] w-full max-w-[100vw] h-[82vh] max-h-[82vh] rounded-t-[20px] shadow-2xl bg-white/95 backdrop-blur-2xl border border-slate-200 border-b-0 overflow-hidden'
+            : isTablet
+            ? 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] w-[680px] max-w-[92vw] h-[600px] max-h-[82vh] rounded-[20px] shadow-2xl bg-white/95 backdrop-blur-2xl border border-slate-200 overflow-hidden'
+            : 'absolute top-[calc(100%+10px)] left-0 z-[100] w-[700px] max-w-[94vw] max-h-[80vh] rounded-[20px] shadow-2xl bg-white/95 backdrop-blur-2xl border border-slate-200 overflow-hidden'
+        }`}
       >
-        {/* 顶部居中药丸拖动手柄 (手机端原生 iOS 视觉规范) */}
+        {/* 顶部居中药丸拖动手柄 (手机端) */}
         <div
           data-testid="drawer-drag-handle"
           className={`drawer-drag-handle w-9 h-1 rounded-full bg-black/20 mt-2 mx-auto shrink-0 ${isMobile ? 'block' : 'hidden'}`}
         />
-        {/* 顶部搜索栏与抽屉标题 */}
-        <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-200/80 bg-slate-500/5">
+
+        {/* 顶部搜索栏与关闭按钮 */}
+        <div className="flex items-center gap-3 px-5 py-3.5 border-b border-slate-200/80 bg-slate-500/5">
           <div className="flex-1 flex items-center gap-2 px-3.5 py-1.5 bg-white rounded-full border border-slate-200 shadow-sm">
             <Icon name="search" size={15} className="text-slate-400" />
             <input
@@ -211,8 +210,8 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
           </button>
         </div>
 
-        {/* 主体区：搜索结果 OR 4级级联筛选 */}
-        <div className="concept-drawer-body flex flex-1 min-h-0 overflow-hidden">
+        {/* 主体区：搜索模式 OR 标准三级联动模式 */}
+        <div className="concept-drawer-body flex flex-1 min-h-0 overflow-hidden flex-col">
           {searchQuery ? (
             /* 搜索模式：直接展示全局匹配考点 */
             <div
@@ -235,10 +234,10 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
                       data-testid={`search-item-${pt.point_id}`}
                       onClick={() => handlePointClick(pt)}
                       className={`p-2.5 px-3.5 rounded-xl cursor-pointer flex items-center justify-between transition-all duration-150 ${
- active
- ? 'border-[1.5px] border-[#0071e3] bg-[#0071e3]/10 shadow-sm'
- : 'border border-slate-200/80 bg-white hover:bg-slate-50'
- }`}
+                        active
+                          ? 'border-[1.5px] border-[#0071e3] bg-[#0071e3]/10 shadow-sm'
+                          : 'border border-slate-200/80 bg-white hover:bg-slate-50'
+                      }`}
                     >
                       <div className="flex items-center gap-2.5">
                         <span className="text-[0.75rem] font-bold text-[#0071e3]">
@@ -266,158 +265,63 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
               )}
             </div>
           ) : (
-            /* 正常 4 级下钻盒模式 */
-            <div className="concept-drawer-columns flex w-full min-h-[380px]">
-              {/* 左侧控制栏：1级年级 + 2级学期 + 3级领域/单元 */}
-              <div className="concept-drawer-left-col w-[280px] min-w-[280px] border-r border-slate-200/80 p-4 flex flex-col gap-3.5 overflow-y-auto bg-slate-500/5">
-                {/* 1级与2级: 年级与学期选择 (移动端单行并排紧凑, 桌面端分块) */}
-                <div className={`concept-drawer-level1-2-wrap flex ${isMobile ? 'flex-row gap-2' : 'flex-col gap-3.5'} w-full`}>
-                  {/* 1级: 年级选择 */}
-                  <div className={isMobile ? 'flex-[3]' : undefined}>
-                    <label className={`concept-drawer-level-label ${isMobile ? 'hidden' : 'block'} text-[0.76rem] font-bold text-slate-500 mb-1.5`}>
-                      {locale === 'en' ? 'Level 1 · Grade' : `第一级 · ${t('nav.grade', effectiveLocale, '年级')}`}
-                    </label>
-                    <div className="flex gap-1.5">
-                      {availableGrades.map((g) => {
-                        const active = selectedGrade === g;
-                        const label = locale === 'en' ? `Grade ${g}` : g === 7 ? '七年级' : g === 8 ? '八年级' : '九年级';
-                        return (
-                          <button
-                            key={g}
-                            type="button"
-                            data-testid={`grade-btn-${g}`}
-                            onClick={() => {
-                              onSelectGrade(g);
-                              const subPoints = knowledgePoints.filter((p) => p.grade === g);
-                              if (subPoints.length > 0) {
-                                onSelectSemester(subPoints[0].semester);
-                                onSelectDomain(subPoints[0].domain);
-                                onSelectSubcategory?.(subPoints[0].subcategory);
-                              }
-                            }}
-                            className={`flex-1 ${isMobile ? 'min-h-[30px] text-[0.75rem] px-1' : 'min-h-[34px] text-[0.8rem]'} rounded-lg font-medium cursor-pointer transition-all duration-150 border ${
- active
- ? 'border-[#0071e3] bg-[#0071e3] text-white font-bold shadow-sm'
- : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
- }`}
-                          >
-                            {label}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* 2级: 学期选择 */}
-                  <div className={isMobile ? 'flex-[2]' : undefined}>
-                    <label className={`concept-drawer-level-label ${isMobile ? 'hidden' : 'block'} text-[0.76rem] font-bold text-slate-500 mb-1.5`}>
-                      {locale === 'en' ? 'Level 2 · Semester' : `第二级 · ${t('nav.semester', effectiveLocale, '学期')}`}
-                    </label>
-                    <div className="flex gap-1.5">
-                      {availableSemesters.map((s) => {
-                        const active = selectedSemester === s;
-                        const label = locale === 'en' ? (s === 1 ? 'Sem 1 (Fall)' : 'Sem 2 (Spring)') : s === 1 ? '上学期 (1)' : '下学期 (2)';
-                        return (
-                          <button
-                            key={s}
-                            type="button"
-                            data-testid={`semester-btn-${s}`}
-                            onClick={() => {
-                              onSelectSemester(s);
-                              const subPoints = knowledgePoints.filter((p) => p.grade === selectedGrade && p.semester === s);
-                              if (subPoints.length > 0) {
-                                onSelectDomain(subPoints[0].domain);
-                                onSelectSubcategory?.(subPoints[0].subcategory);
-                              }
-                            }}
-                            className={`flex-1 ${isMobile ? 'min-h-[30px] text-[0.75rem] px-1' : 'min-h-[34px] text-[0.8rem]'} rounded-lg font-medium cursor-pointer transition-all duration-150 border ${
- active
- ? 'border-[#0071e3] bg-[#0071e3] text-white font-bold shadow-sm'
- : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
- }`}
-                          >
-                            {label}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-
-                {/* 3级: 领域与课程单元 (15 个 subcategory 核心分类) */}
-                <div>
-                  <label className="block text-[0.76rem] font-bold text-slate-500 mb-1.5">
-                    {locale === 'en' ? 'Level 3 · Domain / Unit' : `第三级 · ${t('nav.domain', effectiveLocale, '领域')} / 课程单元`}
-                  </label>
-
-                  {/* 领域快速过滤 pills (保证 productShell 测试通过) */}
-                  <div className={`flex gap-1.5 mb-1.5 ${isMobile ? 'flex-nowrap overflow-x-auto no-scrollbar' : 'flex-wrap'}`}>
-                    {availableDomains.map((dom) => {
-                      const active = selectedDomain === dom && !selectedSubcategory;
-                      const domLabel =
-                        locale === 'en'
-                          ? dom.includes('代数') || dom.includes('数与代数')
-                            ? 'Number & Algebra'
-                            : dom.includes('几何') || dom.includes('图形与几何')
-                            ? 'Geometry'
-                            : dom.includes('统计') || dom.includes('统计与概率')
-                            ? 'Statistics & Probability'
-                            : dom.includes('综合') || dom.includes('综合与实践')
-                            ? 'Synthesis & Practice'
-                            : dom
-                          : dom;
+            /* 标准三级模式：年级 -> 学期(含全部) -> 知识点 */
+            <div className="concept-drawer-columns flex flex-col flex-1 min-h-0 overflow-hidden">
+              {/* 顶部控制栏：第一级 · 年级 + 第二级 · 学期 */}
+              <div className="concept-drawer-left-col p-4 pb-3 border-b border-slate-200/80 bg-slate-50/70 flex flex-col gap-2.5 shrink-0">
+                {/* 第一级 · 年级 */}
+                <div className="flex items-center gap-3">
+                  <span className="text-[0.76rem] font-bold text-slate-500 shrink-0 w-24">
+                    {locale === 'en' ? 'Level 1 · Grade:' : `第一级 · ${t('nav.grade', effectiveLocale, '年级')}:`}
+                  </span>
+                  <div className="flex gap-2 flex-1 max-w-xs">
+                    {availableGrades.map((g) => {
+                      const active = grade === g;
+                      const label = locale === 'en' ? `Grade ${g}` : g === 7 ? '七年级' : g === 8 ? '八年级' : '九年级';
                       return (
                         <button
-                          key={dom}
+                          key={g}
                           type="button"
-                          data-testid={`domain-btn-${dom}`}
-                          onClick={() => {
-                            onSelectDomain(dom);
-                            onSelectSubcategory?.('');
-                          }}
-                          className={`px-2.5 py-1 rounded-md text-[0.74rem] font-medium cursor-pointer transition-all border ${
- active
- ? 'border-[#5856d6] bg-[#5856d6] text-white font-bold shadow-sm'
- : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
- }`}
+                          data-testid={`grade-btn-${g}`}
+                          onClick={() => handleGradeChange(g)}
+                          className={`flex-1 py-1.5 px-3 rounded-lg text-[0.8rem] font-bold cursor-pointer transition-all duration-150 border ${
+                            active
+                              ? 'border-[#0071e3] bg-[#0071e3] text-white shadow-sm'
+                              : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+                          }`}
                         >
-                          {domLabel}
+                          {label}
                         </button>
                       );
                     })}
                   </div>
+                </div>
 
-                  {/* 课程单元列表 (15 个 subcategory) */}
-                  <div className="concept-drawer-subcat-list flex flex-col gap-1.5">
-                    {availableSubcategories.map((subcat) => {
-                      const active = selectedSubcategory === subcat;
-                      const count = knowledgePoints.filter(
-                        (p) => p.grade === selectedGrade && p.semester === selectedSemester && p.subcategory === subcat
-                      ).length;
+                {/* 第二级 · 学期 (含「全部」) */}
+                <div className="flex items-center gap-3">
+                  <span className="text-[0.76rem] font-bold text-slate-500 shrink-0 w-24">
+                    {locale === 'en' ? 'Level 2 · Semester:' : `第二级 · ${t('nav.semester', effectiveLocale, '学期')}:`}
+                  </span>
+                  <div className="flex gap-2 flex-1 max-w-sm">
+                    {[
+                      { val: 'all' as const, labelZh: '全部', labelEn: 'All' },
+                      { val: 1 as const, labelZh: '上学期 (1)', labelEn: 'Sem 1 (Fall)' },
+                      { val: 2 as const, labelZh: '下学期 (2)', labelEn: 'Sem 2 (Spring)' },
+                    ].map((s) => {
+                      const active = semester === s.val;
                       return (
                         <button
-                          key={subcat}
+                          key={s.val}
                           type="button"
-                          data-testid={`subcategory-btn-${subcat}`}
-                          onClick={() => {
-                            onSelectSubcategory?.(subcat);
-                            const found = knowledgePoints.find(
-                              (p) => p.grade === selectedGrade && p.semester === selectedSemester && p.subcategory === subcat
-                            );
-                            if (found) {
-                              onSelectDomain(found.domain);
-                            }
-                          }}
-                          className={`flex items-center justify-between px-3 py-1.5 rounded-md text-[0.8rem] text-left cursor-pointer transition-all border ${
- active
- ? 'border-[#0071e3] bg-[#0071e3]/10 text-[#0071e3] font-bold'
- : 'border-slate-200/80 bg-white text-slate-700 hover:bg-slate-50'
- }`}
+                          data-testid={`semester-btn-${s.val}`}
+                          onClick={() => handleSemesterChange(s.val)}
+                          className={`flex-1 py-1.5 px-3 rounded-lg text-[0.8rem] font-bold cursor-pointer transition-all duration-150 border ${
+                            active
+                              ? 'border-[#0071e3] bg-[#0071e3] text-white shadow-sm'
+                              : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+                          }`}
                         >
-                          <span>{isEn ? getSubcategoryName(subcat, true) : subcat}</span>
-                          <span className="text-[0.7rem] opacity-65">
-                            {count} {isEn ? 'Points' : '考点'}
-                          </span>
+                          {locale === 'en' ? s.labelEn : s.labelZh}
                         </button>
                       );
                     })}
@@ -425,44 +329,59 @@ export const ConceptDrawerSelector: React.FC<ConceptDrawerSelectorProps> = ({
                 </div>
               </div>
 
-              {/* 右侧大纲考点列表 (4级大纲考点) */}
-              <div className="concept-drawer-right-col flex-1 p-4 flex flex-col min-h-0 overflow-y-auto">
-                <div className="flex justify-between items-center mb-2">
+              {/* 第三级 · 知识点网格列表 */}
+              <div className="concept-drawer-right-col flex-1 p-4 overflow-y-auto flex flex-col min-h-0 bg-white">
+                <div className="flex justify-between items-center mb-2.5">
                   <label className="text-[0.78rem] font-bold text-slate-500">
-                    {locale === 'en' ? 'Level 4 · Curriculum Points' : `第四级 · ${t('nav.points', effectiveLocale, '大纲考点')}`}
+                    {locale === 'en' ? 'Level 3 · Knowledge Points' : `第三级 · ${t('nav.points', effectiveLocale, '大纲考点')}`}
                   </label>
                   <span className="text-[0.72rem] text-slate-400">
                     {locale === 'en'
                       ? `${filteredPoints.length} Points · Click to switch`
-                      : `${filteredPoints.length} 个考点 · 点击立即切换`}
+                      : `共 ${filteredPoints.length} 个知识点 · 点击立即切换`}
                   </span>
                 </div>
 
                 <div
                   data-testid="concept-points-list"
-                  className="flex flex-col gap-2 pr-1"
+                  className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-2.5 pr-1`}
                 >
                   {filteredPoints.map((pt) => {
                     const active = pt.point_id === currentPoint.point_id;
                     return (
                       <div
                         key={pt.point_id}
+                        ref={active ? activeItemRef : undefined}
                         data-testid={`point-item-${pt.point_id}`}
                         onClick={() => handlePointClick(pt)}
-                        className={`p-2.5 px-3.5 rounded-xl cursor-pointer transition-all duration-150 flex flex-col gap-1 border ${
- active
- ? 'border-[#0071e3] bg-[#0071e3]/12 shadow-sm'
- : 'border-slate-200/80 bg-white hover:bg-slate-50'
- }`}
+                        className={`p-3 rounded-xl cursor-pointer transition-all duration-150 flex flex-col gap-1 border ${
+                          active
+                            ? 'border-[#0071e3] bg-[#0071e3]/10 shadow-sm ring-1 ring-[#0071e3]/40'
+                            : 'border-slate-200/90 bg-white hover:bg-slate-50 hover:border-slate-300'
+                        }`}
                       >
                         <div className="flex items-center justify-between">
-                          <span className={`text-[0.72rem] font-bold ${active ? 'text-[#0071e3]' : 'text-slate-500'}`}>
-                            {pt.point_id}
-                          </span>
                           <div className="flex items-center gap-1.5">
-                            <span className="text-[0.68rem] text-slate-400">
-                              {pt.subcategory}
+                            <span className={`text-[0.75rem] font-bold ${active ? 'text-[#0071e3]' : 'text-slate-600'}`}>
+                              {pt.point_id}
                             </span>
+                            {active && (
+                              <span className="text-[0.62rem] px-1.5 py-0.5 rounded bg-[#0071e3] text-white font-bold">
+                                {locale === 'en' ? 'Current' : '当前'}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            {semester === 'all' && (
+                              <span className="text-[0.68rem] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 font-medium">
+                                {pt.grade}年级{pt.semester === 1 ? '上' : '下'}
+                              </span>
+                            )}
+                            {pt.subcategory && (
+                              <span className="text-[0.68rem] px-1.5 py-0.5 rounded bg-black/5 text-slate-500">
+                                {isEn ? getSubcategoryName(pt.subcategory, true) : pt.subcategory}
+                              </span>
+                            )}
                             {pt.is_mandatory ? (
                               <span className="text-[0.65rem] px-1.5 py-0.5 rounded bg-[#ff3b30] text-white font-semibold">
                                 {locale === 'en' ? 'Core' : '必考'}

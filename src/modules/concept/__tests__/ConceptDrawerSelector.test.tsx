@@ -3,10 +3,10 @@ import { renderToString } from 'react-dom/server';
 import { ConceptDrawerSelector } from '../ConceptDrawerSelector';
 import { ALL_107_KNOWLEDGE_POINTS } from '../allPointsData';
 
-describe('ConceptDrawerSelector (4级抽屉盒选择器)', () => {
+describe('ConceptDrawerSelector (3级抽屉盒选择器)', () => {
   const mockCurrentPoint = ALL_107_KNOWLEDGE_POINTS.find((p) => p.point_id === 'KP-023')!;
 
-  it('1. 正确渲染 4 级下钻导航层级标签', () => {
+  it('1. 正确渲染 3 级下钻导航层级标签 (年级、学期、考点)', () => {
     const html = renderToString(
       <ConceptDrawerSelector
         isOpen={true}
@@ -26,17 +26,16 @@ describe('ConceptDrawerSelector (4级抽屉盒选择器)', () => {
       />
     );
 
-    // 结构与4级标识
+    // 结构与3级标识
     expect(html).toContain('concept-tree-sidebar');
     expect(html).toContain('第一级 · 年级');
     expect(html).toContain('第二级 · 学期');
-    expect(html).toContain('第三级 · 领域');
-    expect(html).toContain('第四级 · 大纲考点');
+    expect(html).toContain('第三级 · 大纲考点');
 
     // 默认选中项
     expect(html).toContain('九年级');
     expect(html).toContain('上学期 (1)');
-    expect(html).toContain('数与代数');
+    expect(html).toContain('全部');
     expect(html).toContain('KP-023');
     expect(html).toContain('配方法');
   });
@@ -113,7 +112,6 @@ describe('ConceptDrawerSelector (4级抽屉盒选择器)', () => {
     expect(html).toContain('concept-drawer-body');
     expect(html).toContain('concept-drawer-columns');
     expect(html).toContain('concept-drawer-left-col');
-    expect(html).toContain('concept-drawer-subcat-list');
     expect(html).toContain('concept-drawer-right-col');
     expect(html).toContain('data-testid="concept-drawer-backdrop"');
   });

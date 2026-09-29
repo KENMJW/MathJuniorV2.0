@@ -182,11 +182,11 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
   const [activeSubTab, setActiveSubTab] = useState<"stages" | "sandbox" | "master" | "practice">(conceptSubTab || "stages");
   const mainStageRef = useRef<HTMLElement>(null);
 
-  // 四级导航下钻状态
-  const [selectedGrade, setSelectedGrade] = useState<number>(8);
-  const [selectedSemester, setSelectedSemester] = useState<number>(1);
-  const [selectedDomain, setSelectedDomain] = useState<string>("图形与几何");
-  const [selectedSubcategory, setSelectedSubcategory] = useState<string>("三角形");
+  // 三级导航下钻状态
+  const [selectedGrade, setSelectedGrade] = useState<number>(7);
+  const [selectedSemester, setSelectedSemester] = useState<number | 'all'>('all');
+  const [selectedDomain, setSelectedDomain] = useState<string>("数与代数");
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string>("实数");
 
   // 同步外部 sessionStore 选中的考点
   useEffect(() => {
@@ -217,7 +217,6 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
       const found = knowledgePoints.find((p) => p.point_id === selectedPointId);
       if (found) {
         setSelectedGrade(found.grade);
-        setSelectedSemester(found.semester);
         setSelectedDomain(found.domain);
         if (found.subcategory) {
           setSelectedSubcategory(found.subcategory);
@@ -225,7 +224,6 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
       } else {
         const first = knowledgePoints[0];
         setSelectedGrade(first.grade);
-        setSelectedSemester(first.semester);
         setSelectedDomain(first.domain);
         if (first.subcategory) {
           setSelectedSubcategory(first.subcategory);
