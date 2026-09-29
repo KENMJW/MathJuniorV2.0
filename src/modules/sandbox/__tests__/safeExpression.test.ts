@@ -48,6 +48,12 @@ describe('evaluateSafeExpression (Zero eval security)', () => {
     expect(
       evaluateSafeExpression("Delta > 0 ? '两个不相等实根' : (Delta == 0 ? '两个相等实根' : '无实数根')", scope3)
     ).toBe('无实数根');
+
+    // 测试带转义单引号的字符串
+    const scope4 = { val: 1 };
+    expect(
+      evaluateSafeExpression("val == 1 ? '对应边恒平行 (AB ∥ A\\'B\\')' : '不平行'", scope4)
+    ).toBe("对应边恒平行 (AB ∥ A'B')");
   });
 
   it('handles division by zero safely without throwing', () => {

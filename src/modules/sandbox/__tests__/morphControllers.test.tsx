@@ -499,7 +499,11 @@ describe('4D Morphing Controllers & X-Ray (Task 11.4 & 铁律 1/3 校验)', () =
     const ptC9B29 = solved9B29.find((p) => p.id === 'C');
     const ptE9B29 = solved9B29.find((p) => p.id === 'E');
     expect(ptC9B29?.x).toBe(1);
-    expect(ptE9B29?.y).toBe(2.4);
+    // 严格母子相似: BE = (AC * CB) / AD = (5 * 4) / 3 = 20/3 ≈ 6.667
+    expect(ptE9B29?.y).toBeCloseTo(6.667, 2);
+    // 验证向量点积 CD · CE ≡ 0
+    const dotProduct = (-4 - 1) * (5 - 1) + 3 * (ptE9B29?.y ?? 0);
+    expect(dotProduct).toBeCloseTo(0, 2);
   });
 
   it('15. 严格红线检查：源码零 emoji、零 eval、零 innerHTML、零 foreignObject', () => {

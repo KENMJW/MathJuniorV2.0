@@ -350,6 +350,70 @@ function formatInvariantTextRaw(
     }
   }
 
+  // 增强 LM-9B-34 反比例函数变量反解与遥测求值：确保 inv_k 与 k 齐备互通
+  if (currentScope.inv_k !== undefined && currentScope.k === undefined) {
+    currentScope.k = currentScope.inv_k;
+  } else if (currentScope.k !== undefined && currentScope.inv_k === undefined) {
+    currentScope.inv_k = currentScope.k;
+  }
+  if (currentScope.k === undefined || currentScope.inv_k === undefined) {
+    const ptP = pointMap['P'] || pointMap['p'] || pointMap['p_P'];
+    if (ptP && Number.isFinite(ptP.x) && Number.isFinite(ptP.y)) {
+      const derivedK = Math.round(ptP.x * ptP.y * 1000) / 1000;
+      if (currentScope.k === undefined) currentScope.k = derivedK;
+      if (currentScope.inv_k === undefined) currentScope.inv_k = derivedK;
+    }
+  }
+
+  // 增强 LM-9A-25 二次函数铅垂高水平宽求值变量同步
+  const tVal = currentScope.slider_t ?? currentScope.param_t ?? currentScope.t ?? (pointMap['P']?.x ?? pointMap['p']?.x);
+  if (tVal !== undefined && Number.isFinite(Number(tVal))) {
+    const tNum = Number(tVal);
+    if (currentScope.slider_t === undefined) currentScope.slider_t = tNum;
+    if (currentScope.param_t === undefined) currentScope.param_t = tNum;
+    if (currentScope.t === undefined) currentScope.t = tNum;
+  }
+
+  // 增强内切圆 (SB-KP076) 变量导出
+  if (currentScope.vertex_A_y !== undefined && currentScope.vertex_C_x !== undefined) {
+    const ay = Number(currentScope.vertex_A_y);
+    const ax = Number(currentScope.vertex_A_x ?? 0);
+    const cx = Number(currentScope.vertex_C_x);
+    const aSide = cx + 4;
+    const bSide = Math.hypot(cx - ax, ay);
+    const cSide = Math.hypot(ax + 4, ay);
+    const pPerim = (aSide + bSide + cSide) / 2;
+    const sArea = 0.5 * aSide * ay;
+    const inr = pPerim > 0 ? sArea / pPerim : 0;
+    if (currentScope.p === undefined) currentScope.p = pPerim;
+    if (currentScope.S === undefined) currentScope.S = sArea;
+    if (currentScope.r === undefined) currentScope.r = inr;
+    if (currentScope.inradius === undefined) currentScope.inradius = inr;
+  }
+
+  // 增强菱形 (SB-KP065) 变量导出
+  if (currentScope.diag_h !== undefined && currentScope.diag_v !== undefined) {
+    const dh = Number(currentScope.diag_h);
+    const dv = Number(currentScope.diag_v);
+    if (currentScope.rhombus_side === undefined) currentScope.rhombus_side = Math.hypot(dh / 2, dv / 2);
+    if (currentScope.rhombus_area === undefined) currentScope.rhombus_area = 0.5 * dh * dv;
+  }
+
+  // 增强切线长 (SB-KP072) 变量导出
+  if (currentScope.circle_r !== undefined && currentScope.dist_OP !== undefined) {
+    const cr = Number(currentScope.circle_r);
+    const d = Number(currentScope.dist_OP);
+    if (currentScope.tangent_len === undefined) currentScope.tangent_len = Math.sqrt(Math.max(0, d * d - cr * cr));
+  }
+
+  // 增强扇形 (SB-KP077) 变量导出
+  if (currentScope.radius_r !== undefined && currentScope.angle_n !== undefined) {
+    const r = Number(currentScope.radius_r);
+    const n = Number(currentScope.angle_n);
+    if (currentScope.arc_len === undefined) currentScope.arc_len = (n * Math.PI * r) / 180;
+    if (currentScope.sector_area === undefined) currentScope.sector_area = (n * Math.PI * r * r) / 360;
+  }
+
   // 1. condition 条件显隐
   if (spec.condition) {
     const condResult = evaluateSafeExpression(spec.condition, currentScope);

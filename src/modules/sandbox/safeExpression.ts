@@ -42,16 +42,26 @@ export function tokenize(expr: string): Token[] {
       continue;
     }
 
-    // 字符串字面量 '...' 或 "..."
+    // 字符串字面量 '...' 或 "..." (严格支持转义字符 \' \" \\)
     if (ch === "'" || ch === '"') {
       const quote = ch;
       let str = '';
       i++;
-      while (i < n && expr[i] !== quote) {
+      while (i < n) {
+        if (expr[i] === '\\' && i + 1 < n) {
+          if (expr[i + 1] === quote || expr[i + 1] === '\\') {
+            str += expr[i + 1];
+            i += 2;
+            continue;
+          }
+        }
+        if (expr[i] === quote) {
+          break;
+        }
         str += expr[i];
         i++;
       }
-      if (i < n) i++; // 跳过结束引号
+      if (i < n && expr[i] === quote) i++; // 跳过结束引号
       tokens.push({ type: 'STRING', value: str });
       continue;
     }

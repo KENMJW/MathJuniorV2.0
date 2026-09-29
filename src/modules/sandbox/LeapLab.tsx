@@ -56,6 +56,176 @@ export function formatSemester(sem?: string, locale: string = 'zh-CN'): string {
 }
 
 /**
+ * 依据模型 ID、阶段题眼与学科领域解耦输出真实准确的教学结论
+ * 彻底消除非手拉手模型机械兜底“刚体变异保矩性成立”的严重错配
+ */
+export function getModelConclusion(
+  model: LeapSandboxModel,
+  stage?: StoryStage | null,
+  locale: string = 'zh-CN'
+): string {
+  const isEn = String(locale).toLowerCase().startsWith('en');
+  if (stage?.conclusion_zh || stage?.conclusion_en) {
+    return isEn ? (stage.conclusion_en || stage.conclusion_zh!) : stage.conclusion_zh!;
+  }
+  if ((model as any).conclusion_zh || (model as any).conclusion_en) {
+    return isEn ? ((model as any).conclusion_en || (model as any).conclusion_zh) : (model as any).conclusion_zh;
+  }
+
+  const id = (model.model_id || '').toUpperCase();
+  switch (id) {
+    case 'LM-7A-01':
+      return isEn
+        ? 'Conclusion: Absolute distance $|x_P - x_0|$ accurately reflects geometric interval metric'
+        : '结论：绝对值几何距离 $|x_P - x_0|$ 刻画数轴动点区间度量';
+    case 'LM-7B-03':
+      return isEn
+        ? 'Conclusion: Sum of non-negatives $|x-x_0|+(y-y_0)^2=0 \\implies$ Unique simultaneous solution $(x_0, y_0)$'
+        : '结论：非负数之和 $|x-x_0|+(y-y_0)^2=0 \\implies$ 联立方程唯一实数解 $(x_0, y_0)$';
+    case 'LM-7B-04':
+      return isEn
+        ? "Conclusion: Vector translation $AP_1P_2A' \\implies$ Linearized shortest bridge path $A'P_2+P_2B+d$"
+        : "结论：向量平移平行四边形 $AP_1P_2A' \\implies$ 化折为直最短建桥路径 $A'P_2+P_2B+d$";
+    case 'LM-7B-05':
+      return isEn
+        ? 'Conclusion: Linear system solution $\\equiv$ Intersection point $P(x_0, y_0)$ of lines $L_1 \\cap L_2$'
+        : '结论：二元一次方程组的公共代数解 $\\equiv$ 两直线几何交点 $P(x_0, y_0)$';
+    case 'LM-8A-01':
+      return isEn
+        ? 'Conclusion: $\\triangle OAC \\cong \\triangle OBD$ rotation congruent with invariant length $AC=BD$'
+        : '结论：$\\triangle OAC \\cong \\triangle OBD$ 旋转恒全等且对应线段等长 $AC=BD$';
+    case 'LM-8A-06':
+      return isEn
+        ? 'Conclusion: Area dissection $(a+b)^2 \\equiv a^2 + 2ab + b^2$ geometric proof holds'
+        : '结论：面积割补大正方形 $(a+b)^2 \\equiv a^2 + 2ab + b^2$ 几何恒等成立';
+    case 'LM-8A-07':
+      return isEn
+        ? 'Conclusion: Cross-multiplication factorization $x^2+(p+q)x+pq \\equiv (x+p)(x+q)$ holds'
+        : '结论：十字相乘因式分解 $x^2+(p+q)x+pq \\equiv (x+p)(x+q)$ 恒等成立';
+    case 'LM-8A-08':
+      return isEn
+        ? 'Conclusion: Fractional equation extraneous roots occur when denominator equals zero'
+        : '结论：分式方程增根检验，当最简公分母为零时产生增根警报';
+    case 'LM-8A-09':
+      return isEn
+        ? 'Conclusion: Median doubling construction $\\implies \\triangle ABD \\cong \\triangle ECD$ central symmetry'
+        : '结论：倍长中线构造全等 $\\implies \\triangle ABD \\cong \\triangle ECD$ 中心对称成立';
+    case 'LM-8A-10':
+      return isEn
+        ? 'Conclusion: Square half-angle rotation $90^\\circ \\implies EF = BE + DF$ segment sum invariant'
+        : '结论：正方形半角旋转 $90^\\circ$ 拼合 $\\implies EF = BE + DF$ 线段和恒成立';
+    case 'LM-8A-11':
+      return isEn
+        ? 'Conclusion: Angle bisector property $\\implies$ Equal perpendicular distances $PD = PE$'
+        : '结论：角平分线性质 $\\implies$ 点到两边垂线段恒等 $PD = PE$';
+    case 'LM-8A-12':
+      return isEn
+        ? "Conclusion: Axial symmetry reflection $A \\to A' \\implies$ Shortest path $PA + PB \\ge A'B$"
+        : "结论：轴对称翻折 $A \\to A' \\implies$ 化折为直最短路径 $PA + PB \\ge A'B$ 恒成立";
+    case 'LM-8B-13':
+      return isEn
+        ? "Conclusion: Folding symmetry $\\implies$ Pythagorean equation in $\\text{Rt}\\triangle A'BE$ holds"
+        : "结论：轴对称折叠 $\\implies \\text{Rt}\\triangle A'BE$ 勾股定理方程精确解成立";
+    case 'LM-8B-14':
+      return isEn
+        ? 'Conclusion: Orthogonal diagonals $AC \\perp BD \\implies AB^2 + CD^2 = AD^2 + BC^2$'
+        : '结论：对角线互相垂直 $AC \\perp BD \\implies AB^2 + CD^2 = AD^2 + BC^2$ 对边平方和守恒';
+    case 'LM-8B-15':
+      return isEn
+        ? 'Conclusion: Graph height relation correctly determines linear inequality solution set'
+        : '结论：图象上下高低位置关系严格对应一元一次不等式解集';
+    case 'LM-8B-16':
+      return isEn
+        ? 'Conclusion: Piecewise cost function balance point determines optimal economical choice'
+        : '结论：分段函数计费交点平衡里程决定经济最优出行决策';
+    case 'LM-8B-17':
+      return isEn
+        ? 'Conclusion: Equal mean with smaller variance $s^2$ indicates higher stability'
+        : '结论：均值相等时方差 $s^2$ 越小代表数据稳定性越高、风险越可控';
+    case 'LM-9A-18':
+      return isEn
+        ? 'Conclusion: Discriminant $\\Delta = b^2 - 4ac$ accurately determines real roots nature'
+        : '结论：一元二次方程判别式 $\\Delta = b^2 - 4ac$ 决定实根存在性与个数';
+    case 'LM-9A-19':
+      return isEn
+        ? 'Conclusion: $\\triangle OAC \\cong \\triangle OBD$ rotation congruent with angle $\\angle(AC, BD) = \\alpha$'
+        : '结论：$\\triangle OAC \\cong \\triangle OBD$ 旋转恒全等且两线夹角恒等于旋转角 $\\alpha$';
+    case 'LM-9A-20':
+      return isEn
+        ? 'Conclusion: Half-angle rotation $90^\\circ \\implies \\triangle AEF \\cong \\triangle AGF$ with $EF = BE + DF$'
+        : '结论：正方形半角旋转 $90^\\circ$ 拼合 $\\implies \\triangle AEF \\cong \\triangle AGF$ 且 $EF = BE + DF$';
+    case 'LM-9A-21':
+      return isEn
+        ? 'Conclusion: Fermat point $120^\\circ$ rotation minimizes sum of distances $PA + PB + PC$'
+        : '结论：费马点 $120^\\circ$ 等角张角使三顶点距离之和 $PA + PB + PC$ 取得最小值';
+    case 'LM-9A-22':
+      return isEn
+        ? 'Conclusion: Fixed chord with constant angle $\\angle APB = \\alpha \\implies$ Trajectory is circular arc'
+        : '结论：定弦对定角 $\\angle APB = \\alpha \\implies$ 动点 $P$ 轨迹落在外接隐形圆弧上';
+    case 'LM-9A-23':
+      return isEn
+        ? 'Conclusion: Cyclic quadrilateral opposite angles supplementary $\\angle B + \\angle D = 180^\\circ$'
+        : '结论：圆内接四边形对角互补 $\\angle B + \\angle D = 180^\\circ$ 且同弧圆周角相等';
+    case 'LM-9A-24':
+      return isEn
+        ? 'Conclusion: Tangent segments from external point $P$ are equal $PA = PB$'
+        : '结论：过圆外一点 $P$ 引圆的两条切线长相等 $PA = PB$ 且垂直于切点半径';
+    case 'LM-9A-25':
+      return isEn
+        ? 'Conclusion: Plumb-height horizontal-width area $S = \\frac{1}{2} w \\cdot h(t)$ quadratic maximum holds'
+        : '结论：铅垂高水平宽动点面积 $S = \\frac{1}{2} w \\cdot h(t)$ 二次函数最值成立';
+    case 'LM-9A-26':
+      return isEn
+        ? 'Conclusion: Parallelogram existence classified by midpoint coordinates equality'
+        : '结论：二次函数特殊四边形存在性由对角线中点重合分类判定';
+    case 'LM-9A-27':
+      return isEn
+        ? 'Conclusion: Special triangle existence determined by circle and perpendicular bisector intersections'
+        : '结论：特殊三角形存在性由两圆一线与直径隐圆交截唯一确定';
+    case 'LM-9A-28':
+      return isEn
+        ? 'Conclusion: Moving axis and closed interval relative position determines quadratic extrema'
+        : '结论：动轴定区间对称轴与端点相对位置严格决定二次函数最值';
+    case 'LM-9B-29':
+      return isEn
+        ? 'Conclusion: Three equal angles on a line $\\implies \\triangle ACD \\sim \\triangle CBE$ with $AD \\cdot BE = AC \\cdot CB$'
+        : '结论：一线三等角K字型 $\\implies \\triangle ACD \\sim \\triangle CBE$ 且乘积守恒 $AD \\cdot BE = AC \\cdot CB$';
+    case 'LM-9B-30':
+      return isEn
+        ? 'Conclusion: Geometric mean projection theorem $CD^2 = AD \\cdot BD$ and $AC^2 = AD \\cdot AB$ hold'
+        : '结论：直角三角形射影定理 $CD^2 = AD \\cdot BD$ 与 $AC^2 = AD \\cdot AB$ 恒等成立';
+    case 'LM-9B-31':
+      return isEn
+        ? 'Conclusion: Hu Bugui weighted sum $PA + k \\cdot PB = PA + PH \\ge AH$ perpendicular minimum holds'
+        : '结论：胡不归加权线段和 $PA + k \\cdot PB = PA + PH \\ge AH$ 垂线段最短恒成立';
+    case 'LM-9B-32':
+      return isEn
+        ? "Conclusion: Apollonius circle $PA/PB=k \\implies k \\cdot PB = PB'$ linearized minimum $CB'$ holds"
+        : "结论：阿氏圆定比轨迹 $\\implies$ 母子相似反演 $k \\cdot PB = PB'$ 最短线段 $CB'$ 恒成立";
+    case 'LM-9B-33':
+      return isEn
+        ? 'Conclusion: Guandou principle $\\implies$ Similar triangle trajectory rotation and homothety hold'
+        : '结论：瓜豆原理主从动点 $\\implies$ 轨迹圆同胚位似旋转 $\\triangle O O_1 O_2 \\sim \\triangle OPQ$ 恒成立';
+    case 'LM-9B-34':
+      return isEn
+        ? 'Conclusion: Inverse proportional function rectangle area $|xy| = |k|$ invariant holds'
+        : '结论：反比例函数动点矩形面积 $|xy| = |k|$ 面积不变性恒等成立';
+    case 'LM-9B-35':
+      return isEn
+        ? 'Conclusion: Orthographic 3-view projection principle lengths align, heights level, widths match'
+        : '结论：三视图正交投影公理：长对正、高平齐、宽相等严格成立';
+    case 'LM-9B-36':
+      return isEn
+        ? 'Conclusion: Double-right-triangle tangent elevation equations accurately determine height $h$'
+        : '结论：双直角同侧仰角测高模型方程组准确反解大楼真实高度 $h$';
+    default:
+      return isEn
+        ? 'Conclusion: Dynamic mathematical invariant conservation holds'
+        : '结论：动态数学模型核心不变量守恒成立';
+  }
+}
+
+/**
  * 实验室二：4D 变异跃迁沙盒 (支持全库 36 个跃迁模型，100% 严格对标 ios27_demo.html)
  * 
  * 核心设计标准：
@@ -810,11 +980,7 @@ export const LeapLab: React.FC<LeapLabProps> = ({
           </div>
           <div className="telemetry-tag-conclusion">
             <MathRenderer
-              content={
-                isHandInHand
-                  ? (isEn ? 'Conclusion: $\\triangle OAB \\cong \\triangle OCD$ rotation congruent' : '结论：$\\triangle OAB \\cong \\triangle OCD$ 旋转恒全等')
-                  : (isEn ? 'Conclusion: Rigid transformation isometry holds' : '结论：刚体变异保距性成立')
-              }
+              content={getModelConclusion(currentModel, stages[currentStepIndex], locale)}
             />
           </div>
         </div>
@@ -1144,8 +1310,8 @@ export const LeapLab: React.FC<LeapLabProps> = ({
                             ))
                           ) : (
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                              <span style={{ color: '#38bdf8', fontWeight: 600 }}>
-                                {isEn ? 'Rigid Transform Isometry Holds' : '刚体变异保距性成立'}
+                              <span style={{ color: '#38bdf8', fontWeight: 600, fontSize: '11px', flex: 1, minWidth: 0, wordBreak: 'break-word', lineHeight: 1.35 }}>
+                                <MathRenderer content={getModelConclusion(currentModel, stages[currentStepIndex], locale)} />
                               </span>
                               <span style={{ color: '#34d399', fontWeight: 700 }}>[守恒 ✓]</span>
                             </div>
@@ -1804,6 +1970,35 @@ export const LeapLab: React.FC<LeapLabProps> = ({
                         <span className="font-mono text-sky-300 font-semibold">{`旋转角 θ = ${stageTargetRot}°`}</span>
                       </div>
                     )}
+
+                    {/* 阶段参数调节滑块 (全量 37 模型推演调参) */}
+                    {parameterSpec.sliders.length > 0 && (
+                      <div className="flex flex-col gap-1.5 pt-1.5 border-t border-slate-700/60 mt-1">
+                        <span className="text-[11px] font-semibold text-slate-300">
+                          {isEn ? 'Step Parameter Tuning:' : '阶段微调参数：'}
+                        </span>
+                        {parameterSpec.sliders.slice(0, 3).map((s) => {
+                          const currentVal = morphState.parameterValues[s.id] ?? s.default ?? 0;
+                          return (
+                            <div key={s.id} className="flex flex-col gap-0.5">
+                              <div className="flex items-center justify-between text-[10px] text-slate-400">
+                                <span>{(isEn ? s.nameEn : s.nameZh) || s.nameZh || s.id}</span>
+                                <span className="font-mono text-sky-300 font-bold">{currentVal}{s.unit || ''}</span>
+                              </div>
+                              <input
+                                type="range"
+                                className="apple-slider w-full"
+                                min={s.min}
+                                max={s.max}
+                                step={s.step || 0.1}
+                                value={currentVal}
+                                onChange={(e) => handleSliderChange(s.id, Number(e.target.value))}
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
 
                   {/* 核心测度实时 HUD */}
@@ -1851,7 +2046,7 @@ export const LeapLab: React.FC<LeapLabProps> = ({
                       )}
                     </div>
                     <div className="telemetry-tag-conclusion text-[11px] text-emerald-400 p-1 rounded bg-emerald-950/40 border border-emerald-500/20 text-center mt-0.5">
-                      <MathRenderer content={isHandInHand ? (isEn ? 'Conclusion: $\triangle OAB \cong \triangle OCD$ rotation congruent' : '结论：$\triangle OAB \cong \triangle OCD$ 旋转恒全等') : (isEn ? 'Conclusion: Rigid transformation isometry holds' : '结论：刚体变异保距性成立')} />
+                      <MathRenderer content={getModelConclusion(currentModel, stages[currentStepIndex], locale)} />
                     </div>
                   </div>
 
@@ -2031,7 +2226,7 @@ export const LeapLab: React.FC<LeapLabProps> = ({
                       </span>
                     )}
                     <div className="telemetry-tag-conclusion text-[11px] text-emerald-400 p-1 rounded bg-emerald-950/40 border border-emerald-500/20 text-center mt-1">
-                      <MathRenderer content={isHandInHand ? (isEn ? 'Conclusion: $\triangle OAB \cong \triangle OCD$ rotation congruent' : '结论：$\triangle OAB \cong \triangle OCD$ 旋转恒全等') : (isEn ? 'Conclusion: Rigid transformation isometry holds' : '结论：刚体变异保距性成立')} />
+                      <MathRenderer content={getModelConclusion(currentModel, undefined, locale)} />
                     </div>
                   </div>
 

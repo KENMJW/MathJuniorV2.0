@@ -170,6 +170,7 @@ export function canInvertParam(
   if (!ptDef || ptDef.isFixed || ptDef.isDistractor) return false;
   const id = ptDef.id;
   const name = ptDef.name || '';
+  const sid = config?.sandbox_id || '';
   if (id === 'O' || id === 'Origin') return false;
 
   // 保守原则 1：二次函数/抛物线/韦达模型，顶点与交点由 a/b/c 共同决定，严禁随意反解造成参数矛盾
@@ -192,8 +193,23 @@ export function canInvertParam(
     return false;
   }
 
-  // 场景 1：圆模型 (isCircleTemplate 或包含 circle/inscribed/chord/tangent 等)
-  // 圆周上的动点 A/B/C/P 可反解半径
+  // 切线长模型 (SB-KP072 / tangent_segment): 动点 P 是圆外点，反解 dist_OP 与 phi_P
+  if (tpl.includes('tangent') || sid === 'SB-KP072' || (config?.sandbox_id && config.sandbox_id.includes('KP072'))) {
+    if (id === 'P' || name === 'P' || name.includes('P')) {
+      return true;
+    }
+    return false;
+  }
+
+  // 三角形内切圆模型 (SB-KP076 / incircle): 内心 I 与切点 D 是几何从动点，不可直接反解
+  if (tpl.includes('incircle') || sid === 'SB-KP076' || (config?.sandbox_id && config.sandbox_id.includes('KP076'))) {
+    if (id === 'I' || id === 'D') return false;
+    if (id === 'A' || id === 'C') return true;
+    return false;
+  }
+
+  // 场景 1：圆模型 (isCircleTemplate 或包含 circle/inscribed/chord 等)
+  // 圆周上的动点 A/B/C 可反解半径
   if (isCircleTemplate || tpl.includes('circle')) {
     return true;
   }
@@ -272,6 +288,44 @@ export function handleParamInversion(
   const patch: Record<string, number> = {};
   const id = ptDef.id;
   const name = ptDef.name || '';
+  const sid = config?.sandbox_id || '';
+
+  // 0a. 切线长模型 (SB-KP072 / tangent_segment): 动点 P 反解切线端点距与偏转角，绝不反解半径
+  if (
+    tpl.includes('tangent') ||
+    sid === 'SB-KP072' ||
+    (config?.sandbox_id && config.sandbox_id.includes('KP072'))
+  ) {
+    if (id === 'P' || name === 'P' || name.includes('P')) {
+      const cr = Number(paramValues['circle_r'] ?? 3);
+      const curDist = Math.hypot(pt.X(), pt.Y());
+      const safeDist = Math.max(cr + 0.5, Math.round(curDist * 10) / 10);
+      let deg = Math.round((Math.atan2(pt.Y(), pt.X()) * 180) / Math.PI);
+      if (deg < 0) deg += 360;
+      patch['dist_OP'] = safeDist;
+      patch['phi_P'] = deg;
+      onParamChange(patch);
+      return;
+    }
+  }
+
+  // 0b. 三角形内切圆模型 (SB-KP076 / incircle): 顶点 A 反解 vertex_A_y，顶点 C 反解 vertex_C_x
+  if (
+    tpl.includes('incircle') ||
+    sid === 'SB-KP076' ||
+    (config?.sandbox_id && config.sandbox_id.includes('KP076'))
+  ) {
+    if (id === 'A' || name === 'A') {
+      patch['vertex_A_y'] = Math.max(2, Math.round(Math.abs(pt.Y()) * 10) / 10);
+      onParamChange(patch);
+      return;
+    }
+    if (id === 'C' || name === 'C') {
+      patch['vertex_C_x'] = Math.max(1, Math.round(pt.X() * 10) / 10);
+      onParamChange(patch);
+      return;
+    }
+  }
 
   // 1. 圆模型：计算 Math.hypot(pt.X() - centerX, pt.Y() - centerY) 反解 r / radius_r / circle_r
   if (isCircleTemplate || tpl.includes('circle')) {
@@ -646,17 +700,15 @@ export function applyGeometricKinematics(
     return { x, y, constraints, isFixed };
   }
 
-  // 7. SB-KP065: 菱形相变
+  // 7. SB-KP065: 菱形面积与四边闭合 (严格对角线互相垂直平分，四边恒等长)
   if (sid === 'SB-KP065' || tpl.includes('rhombus')) {
     const diagH = Number(paramValues['diag_h'] ?? 6);
     const diagV = Number(paramValues['diag_v'] ?? 4);
-    const morphRhombus = Number(paramValues['morph_rhombus'] ?? 1);
-    const skew = morphRhombus > 0.5 ? 0 : 0.3 * diagH;
-    if (ptDef.id === 'p_O') { x = 0; y = 0; constraints = 'fixed'; isFixed = true; }
-    else if (ptDef.id === 'p_A') { x = -diagH / 2; y = 0; constraints = 'fixed'; }
-    else if (ptDef.id === 'p_B') { x = (-skew) || 0; y = -diagV / 2; constraints = 'fixed'; }
-    else if (ptDef.id === 'p_C') { x = diagH / 2; y = 0; constraints = 'fixed'; }
-    else if (ptDef.id === 'p_D') { x = skew || 0; y = diagV / 2; constraints = 'fixed'; }
+    if (ptDef.id === 'p_O' || ptDef.id === 'O') { x = 0; y = 0; constraints = 'fixed'; isFixed = true; }
+    else if (ptDef.id === 'p_A' || ptDef.id === 'A') { x = -diagH / 2; y = 0; constraints = 'fixed'; }
+    else if (ptDef.id === 'p_B' || ptDef.id === 'B') { x = 0; y = -diagV / 2; constraints = 'fixed'; }
+    else if (ptDef.id === 'p_C' || ptDef.id === 'C') { x = diagH / 2; y = 0; constraints = 'fixed'; }
+    else if (ptDef.id === 'p_D' || ptDef.id === 'D') { x = 0; y = diagV / 2; constraints = 'fixed'; }
     return { x, y, constraints, isFixed };
   }
 
@@ -1028,6 +1080,57 @@ export function applyGeometricKinematics(
     return { x, y, constraints, isFixed };
   }
 
+  // 34. SB-KP039: 二次函数顶点式
+  if (
+    sid === 'SB-KP039' ||
+    tpl.includes('quadratic_vertex') ||
+    (tpl.includes('vertex') && paramValues['param_h'] !== undefined)
+  ) {
+    const a = Number(paramValues['param_a'] ?? paramValues['a'] ?? 1);
+    const h = Number(paramValues['param_h'] ?? paramValues['h'] ?? 2);
+    const k = Number(paramValues['param_k'] ?? paramValues['k'] ?? -3);
+    if (ptDef.id === 'p_vertex' || ptDef.id === 'p_V' || ptDef.id === 'V' || ptDef.name?.includes('V')) {
+      x = h;
+      y = k;
+      constraints = 'fixed';
+    } else if (ptDef.id === 'p_sym1' || ptDef.id === 'p_P1' || ptDef.id === 'P1' || ptDef.name?.includes('P1') || ptDef.name?.includes('P₁')) {
+      x = h - 2;
+      y = a * 4 + k;
+      constraints = 'fixed';
+    } else if (ptDef.id === 'p_sym2' || ptDef.id === 'p_P2' || ptDef.id === 'P2' || ptDef.name?.includes('P2') || ptDef.name?.includes('P₂')) {
+      x = h + 2;
+      y = a * 4 + k;
+      constraints = 'fixed';
+    }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 35. SB-KP033 / SB-KP034: 一次函数待定系数法与图象性质
+  if (
+    sid === 'SB-KP033' ||
+    sid === 'SB-KP034' ||
+    tpl.includes('linear_solve') ||
+    tpl.includes('linear_prop')
+  ) {
+    if (paramValues['pt_x1'] !== undefined || paramValues['pt_x2'] !== undefined) {
+      const x1 = Number(paramValues['pt_x1'] ?? -2);
+      const y1 = Number(paramValues['pt_y1'] ?? -1);
+      const x2 = Number(paramValues['pt_x2'] ?? 4);
+      const y2 = Number(paramValues['pt_y2'] ?? 5);
+      if (ptDef.id === 'pA' || ptDef.id === 'A') { x = x1; y = y1; constraints = 'fixed'; }
+      else if (ptDef.id === 'pB' || ptDef.id === 'B') { x = x2; y = y2; constraints = 'fixed'; }
+      else if (ptDef.id === 'O' || ptDef.id === 'o') { x = 0; y = 0; constraints = 'fixed'; isFixed = true; }
+      return { x, y, constraints, isFixed };
+    } else if (paramValues['slope_k'] !== undefined || paramValues['intercept_b'] !== undefined) {
+      const k = Number(paramValues['slope_k'] ?? 1);
+      const b = Number(paramValues['intercept_b'] ?? 0);
+      if (ptDef.id === 'p_int_x') { x = k !== 0 ? -b / k : 0; y = 0; constraints = 'fixed'; }
+      else if (ptDef.id === 'p_int_y') { x = 0; y = b; constraints = 'fixed'; }
+      else if (ptDef.id === 'o' || ptDef.id === 'O') { x = 0; y = 0; constraints = 'fixed'; isFixed = true; }
+      return { x, y, constraints, isFixed };
+    }
+  }
+
   return { x, y, constraints, isFixed };
 }
 
@@ -1186,12 +1289,10 @@ export function computeSandboxBoundingBox(
 
   const tpl = config.canvas_template || '';
   const isCircleTemplate =
-    tpl.includes('circle') ||
+    (tpl.includes('circle') && !tpl.includes('incircle')) ||
     tpl.includes('inscribed') ||
     tpl.includes('chord') ||
     tpl.includes('tangent') ||
-    tpl.includes('sector') ||
-    tpl.includes('incircle') ||
     config.sandbox_id === 'SB-KP073';
 
   // 具名滑块驱动动点坐标
@@ -1247,9 +1348,15 @@ export function computeSandboxBoundingBox(
       if (ptDef.id === 'C' || ptDef.name === 'C') x = half;
     }
 
-    if (isCircleTemplate) {
+    const isExternalOrCenter =
+      ptDef.id === 'O' || ptDef.id === 'Origin' || ptDef.id === 'o' || ptDef.id === 'I' ||
+      ptDef.id === 'P' || (ptDef.name && (ptDef.name.includes('P') || ptDef.name.includes('外') || ptDef.name.includes('圆外'))) ||
+      tpl.includes('tangent') || tpl.includes('incircle') ||
+      config.sandbox_id === 'SB-KP072' || config.sandbox_id === 'SB-KP076' || (config as any).model_id === 'LM-9A-24';
+
+    if (isCircleTemplate && !isExternalOrCenter) {
       const cr = paramValues['r'] ?? paramValues['radius_r'] ?? paramValues['circle_r'] ?? paramValues['circle_r1'];
-      if (cr !== undefined && ptDef.id !== 'O' && ptDef.id !== 'Origin') {
+      if (cr !== undefined) {
         const curDist = Math.hypot(x, y);
         if (curDist > 0.1) {
           const ratio = Number(cr) / curDist;
@@ -1633,10 +1740,24 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
     const buildCurrentScope = (): Record<string, any> => {
       const scope: Record<string, any> = { ...paramValues };
       // 提取常用系数及其简写别名
-      const a = paramValues['param_a'] ?? paramValues['a_coeff'] ?? paramValues['a'] ?? 1;
-      const b = paramValues['param_b'] ?? paramValues['intercept_b'] ?? paramValues['b'] ?? -2;
-      const c = paramValues['param_c'] ?? paramValues['c'] ?? -3;
-      const k = paramValues['slope_k'] ?? paramValues['inv_k'] ?? paramValues['rect_k'] ?? paramValues['k'] ?? 1;
+      const a = Number(paramValues['param_a'] ?? paramValues['a_coeff'] ?? paramValues['a'] ?? 1);
+      let b = Number(paramValues['param_b'] ?? paramValues['intercept_b'] ?? paramValues['b'] ?? -2);
+      let c = Number(paramValues['param_c'] ?? paramValues['c'] ?? -3);
+      const k = Number(paramValues['slope_k'] ?? paramValues['inv_k'] ?? paramValues['rect_k'] ?? paramValues['k'] ?? 1);
+
+      // 二次函数顶点式 h, k 衍生
+      const hasH = paramValues['param_h'] !== undefined || paramValues['h'] !== undefined;
+      const hasK = paramValues['param_k'] !== undefined || (tpl.includes('vertex') && paramValues['k'] !== undefined);
+      if (hasH || hasK || tpl.includes('vertex') || config.sandbox_id === 'SB-KP039') {
+        const hVal = Number(paramValues['param_h'] ?? paramValues['h'] ?? 2);
+        const kVal = Number(paramValues['param_k'] ?? paramValues['k'] ?? -3);
+        scope['param_h'] = hVal;
+        scope['h'] = hVal;
+        scope['param_k'] = kVal;
+        scope['k_vert'] = kVal;
+        b = -2 * a * hVal;
+        c = a * hVal * hVal + kVal;
+      }
 
       scope['param_a'] = a;
       scope['a'] = a;
@@ -1648,6 +1769,7 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
       scope['slope_k'] = k;
       scope['Delta'] = b * b - 4 * a * c;
       scope['delta_val'] = b * b - 4 * a * c;
+
       if (paramValues['leg_a'] !== undefined && paramValues['leg_b'] !== undefined) {
         const legA = Number(paramValues['leg_a']);
         const legB = Number(paramValues['leg_b']);
@@ -1655,8 +1777,57 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
           const h = Math.hypot(legA, legB);
           scope['hypot'] = h;
           scope['c_len'] = h;
+          scope['AB'] = h;
+          const ptT = Number(paramValues['point_t'] ?? 0.5);
+          scope['CM'] = Math.hypot(ptT * legA, (1 - ptT) * legB);
         }
       }
+
+      if (tpl.includes('incircle') || config.sandbox_id === 'SB-KP076') {
+        const ay = Number(paramValues['vertex_A_y'] ?? 5);
+        const ax = Number(paramValues['vertex_A_x'] ?? 0);
+        const cx = Number(paramValues['vertex_C_x'] ?? 4);
+        const aSide = cx + 4;
+        const bSide = Math.hypot(cx - ax, ay);
+        const cSide = Math.hypot(ax + 4, ay);
+        const pPerim = (aSide + bSide + cSide) / 2;
+        const sArea = 0.5 * aSide * ay;
+        const inradius = pPerim > 0 ? sArea / pPerim : 0;
+        scope['aSide'] = aSide;
+        scope['bSide'] = bSide;
+        scope['cSide'] = cSide;
+        scope['p'] = pPerim;
+        scope['S'] = sArea;
+        scope['r'] = inradius;
+        scope['inradius'] = inradius;
+      }
+
+      if (tpl.includes('rhombus') || config.sandbox_id === 'SB-KP065') {
+        const dh = Number(paramValues['diag_h'] ?? 6);
+        const dv = Number(paramValues['diag_v'] ?? 4);
+        scope['diag_h'] = dh;
+        scope['diag_v'] = dv;
+        scope['rhombus_side'] = Math.hypot(dh / 2, dv / 2);
+        scope['rhombus_area'] = 0.5 * dh * dv;
+      }
+
+      if (tpl.includes('tangent') || config.sandbox_id === 'SB-KP072') {
+        const cr = Number(paramValues['circle_r'] ?? 3);
+        const d = Number(paramValues['dist_OP'] ?? 6);
+        scope['circle_r'] = cr;
+        scope['dist_OP'] = d;
+        scope['tangent_len'] = Math.sqrt(Math.max(0, d * d - cr * cr));
+      }
+
+      if (tpl.includes('sector') || config.sandbox_id === 'SB-KP077') {
+        const r = Number(paramValues['radius_r'] ?? 4);
+        const n = Number(paramValues['angle_n'] ?? 60);
+        scope['radius_r'] = r;
+        scope['angle_n'] = n;
+        scope['arc_len'] = (n * Math.PI * r) / 180;
+        scope['sector_area'] = (n * Math.PI * r * r) / 360;
+      }
+
       return scope;
     };
 
@@ -1967,12 +2138,10 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
       } catch (e) {}
 
       const isCircleTemplate =
-        tpl.includes('circle') ||
+        (tpl.includes('circle') && !tpl.includes('incircle')) ||
         tpl.includes('inscribed') ||
         tpl.includes('chord') ||
         tpl.includes('tangent') ||
-        tpl.includes('sector') ||
-        tpl.includes('incircle') ||
         config.sandbox_id === 'SB-KP073';
 
       // 具名滑块驱动动点坐标
@@ -2082,9 +2251,15 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
         }
 
         // 圆模型半径变化
-        if (isCircleTemplate) {
+        const isExternalOrCenter =
+          ptDef.id === 'O' || ptDef.id === 'Origin' || ptDef.id === 'o' || ptDef.id === 'I' ||
+          ptDef.id === 'P' || (ptDef.name && (ptDef.name.includes('P') || ptDef.name.includes('外') || ptDef.name.includes('圆外'))) ||
+          tpl.includes('tangent') || tpl.includes('incircle') ||
+          config.sandbox_id === 'SB-KP072' || config.sandbox_id === 'SB-KP076' || (config as any).model_id === 'LM-9A-24';
+
+        if (isCircleTemplate && !isExternalOrCenter) {
           const cr = paramValues['r'] ?? paramValues['radius_r'] ?? paramValues['circle_r'] ?? paramValues['circle_r1'];
-          if (cr !== undefined && ptDef.id !== 'O' && ptDef.id !== 'Origin') {
+          if (cr !== undefined) {
             const curDist = Math.hypot(x, y);
             if (curDist > 0.1) {
               const ratio = Number(cr) / curDist;
@@ -2417,8 +2592,14 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
         .map((k) => elements[k]);
 
       // 5. 10 大类专属数学图元拓扑分发
-      // (一) 圆图元类
-      if (isCircleTemplate) {
+      // (一) 圆图元类 (标准圆、圆周角、垂径定理、切线长)
+      if (
+        isCircleTemplate &&
+        !tpl.includes('incircle') &&
+        !tpl.includes('sector') &&
+        sid !== 'SB-KP076' &&
+        sid !== 'SB-KP077'
+      ) {
         const centerPt = elements['O'] || elements['Origin'] || primaryPoints[0];
         const radiusVal = Number(
           paramValues['r'] ?? paramValues['radius_r'] ?? paramValues['circle_r'] ?? 4
@@ -2458,8 +2639,8 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
         }
         // 切线与切线长 (tangent / SB-KP072)
         else if (tpl.includes('tangent') || sid === 'SB-KP072') {
-          if (elements['P'] && elements['A']) board.create('segment', [elements['P'], elements['A']], { strokeColor: '#34c759', strokeWidth: 2.2 });
-          if (elements['P'] && elements['B']) board.create('segment', [elements['P'], elements['B']], { strokeColor: '#34c759', strokeWidth: 2.2 });
+          if (elements['P'] && elements['A']) board.create('segment', [elements['P'], elements['A']], { strokeColor: '#34c759', strokeWidth: 2.5 });
+          if (elements['P'] && elements['B']) board.create('segment', [elements['P'], elements['B']], { strokeColor: '#34c759', strokeWidth: 2.5 });
           if (elements['O'] && elements['A']) board.create('segment', [elements['O'], elements['A']], { strokeColor: '#64748b', strokeWidth: 1.5, dash: 2 });
           if (elements['O'] && elements['B']) board.create('segment', [elements['O'], elements['B']], { strokeColor: '#64748b', strokeWidth: 1.5, dash: 2 });
           if (elements['O'] && elements['P']) board.create('segment', [elements['O'], elements['P']], { strokeColor: '#94a3b8', strokeWidth: 1.5, dash: 3 });
@@ -2469,36 +2650,42 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
           if (elements['P1'] && elements['P2']) board.create('line', [elements['P1'], elements['P2']], { strokeColor: '#818cf8', strokeWidth: 2 });
           if (elements['O'] && elements['H']) board.create('segment', [elements['O'], elements['H']], { strokeColor: '#f59e0b', strokeWidth: 2, dash: 2 });
         }
-        // 三角形内切圆 (SB-KP076 / incircle)
-        else if (tpl.includes('incircle') || sid === 'SB-KP076') {
-          if (elements['A'] && elements['B'] && elements['C']) {
-            board.create('polygon', [elements['A'], elements['B'], elements['C']], {
-              borders: { strokeColor: '#38bdf8', strokeWidth: 2.5 },
-              fillColor: '#38bdf8',
-              fillOpacity: 0.18,
-            });
-          }
-          if (elements['I'] && elements['D']) {
-            board.create('segment', [elements['I'], elements['D']], { strokeColor: '#f59e0b', strokeWidth: 1.8, dash: 2 });
-            board.create('circle', [elements['I'], elements['D']], {
-              strokeColor: '#f59e0b',
-              strokeWidth: 2,
-              fillColor: 'rgba(245, 158, 11, 0.12)',
-            });
-          }
+      }
+      // 三角形内切圆 (SB-KP076 / incircle) - 独立专有分支
+      else if (tpl.includes('incircle') || sid === 'SB-KP076') {
+        const ptA = elements['A'];
+        const ptB = elements['B'];
+        const ptC = elements['C'];
+        const ptI = elements['I'];
+        const ptD = elements['D'];
+
+        if (ptA && ptB && ptC) {
+          board.create('polygon', [ptA, ptB, ptC], {
+            borders: { strokeColor: '#0071e3', strokeWidth: 2.5 },
+            fillColor: '#0071e3',
+            fillOpacity: 0.12,
+          });
         }
-        // 扇形度量 (SB-KP077 / sector_metric)
-        else if (tpl.includes('sector') || sid === 'SB-KP077') {
-          if (elements['O'] && elements['A']) board.create('segment', [elements['O'], elements['A']], { strokeColor: '#38bdf8', strokeWidth: 2 });
-          if (elements['O'] && elements['B']) board.create('segment', [elements['O'], elements['B']], { strokeColor: '#38bdf8', strokeWidth: 2 });
-          if (elements['O'] && elements['A'] && elements['B']) {
-            board.create('sector', [elements['O'], elements['A'], elements['B']], {
-              strokeColor: '#38bdf8',
-              strokeWidth: 2,
-              fillColor: '#38bdf8',
-              fillOpacity: 0.22,
-            });
-          }
+        if (ptI && ptD) {
+          board.create('segment', [ptI, ptD], { strokeColor: '#f59e0b', strokeWidth: 1.8, dash: 2 });
+          board.create('circle', [ptI, ptD], {
+            strokeColor: '#f59e0b',
+            strokeWidth: 2.2,
+            fillColor: 'rgba(245, 158, 11, 0.15)',
+          });
+        }
+      }
+      // 扇形度量 (SB-KP077 / sector_metric) - 独立专有分支
+      else if (tpl.includes('sector') || sid === 'SB-KP077') {
+        if (elements['O'] && elements['A']) board.create('segment', [elements['O'], elements['A']], { strokeColor: '#38bdf8', strokeWidth: 2 });
+        if (elements['O'] && elements['B']) board.create('segment', [elements['O'], elements['B']], { strokeColor: '#38bdf8', strokeWidth: 2 });
+        if (elements['O'] && elements['A'] && elements['B']) {
+          board.create('sector', [elements['O'], elements['A'], elements['B']], {
+            strokeColor: '#38bdf8',
+            strokeWidth: 2.2,
+            fillColor: '#38bdf8',
+            fillOpacity: 0.22,
+          });
         }
       }
       // (二) 数轴动力学与实数夹逼类
@@ -2529,27 +2716,48 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
       }
       // (三) 二次函数与韦达模型
       else if (tpl.includes('quadratic') || tpl.includes('parabola') || tpl.includes('vieta')) {
-        const a = currentScope['a'];
-        const b = currentScope['b'];
-        const c = currentScope['c'];
-        const delta = currentScope['Delta'];
+        const isVertexForm =
+          sid === 'SB-KP039' ||
+          tpl.includes('vertex') ||
+          paramValues['param_h'] !== undefined ||
+          paramValues['h'] !== undefined;
+
+        const a = Number(paramValues['param_a'] ?? paramValues['a'] ?? currentScope['a'] ?? 1);
+        let hVal = 0;
+        let kVal = 0;
+        let fn: (x: number) => number;
+        let symX: number;
+        let vertY: number;
+
+        if (isVertexForm) {
+          hVal = Number(paramValues['param_h'] ?? paramValues['h'] ?? 2);
+          kVal = Number(paramValues['param_k'] ?? paramValues['k'] ?? -3);
+          fn = (x: number) => a * (x - hVal) * (x - hVal) + kVal;
+          symX = hVal;
+          vertY = kVal;
+        } else {
+          const b = Number(currentScope['b'] ?? 0);
+          const c = Number(currentScope['c'] ?? 0);
+          fn = (x: number) => a * x * x + b * x + c;
+          symX = a !== 0 ? -b / (2 * a) : 0;
+          vertY = a !== 0 ? (4 * a * c - b * b) / (4 * a) : c;
+        }
 
         // 1. 抛物线连续函数解析式
-        board.create('functiongraph', [(x: number) => a * x * x + b * x + c, -20, 20], {
+        board.create('functiongraph', [fn, -20, 20], {
           strokeColor: '#38bdf8',
           strokeWidth: xrayActive ? 3.5 : 2.5,
         });
 
-        // 2. 对称轴虚线 x = -b/(2a)
-        if (a !== 0) {
-          const symX = -b / (2 * a);
-          board.create('line', [[symX, -20], [symX, 20]], {
-            strokeColor: '#94a3b8',
-            strokeWidth: 1.5,
-            dash: 2,
-          });
-          // 顶点 V
-          const vertY = (4 * a * c - b * b) / (4 * a);
+        // 2. 对称轴虚线 x = symX
+        board.create('line', [[symX, -20], [symX, 20]], {
+          strokeColor: '#94a3b8',
+          strokeWidth: 1.5,
+          dash: 2,
+        });
+
+        // 顶点 V(symX, vertY)
+        if (!elements['p_vertex'] && !elements['V'] && !elements['pt_v']) {
           board.create('point', [symX, vertY], {
             name: 'V',
             size: 5,
@@ -2560,8 +2768,21 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
           });
         }
 
+        // 水平对称跨度虚线
+        const symPt1 = elements['p_sym1'] || elements['P1'];
+        const symPt2 = elements['p_sym2'] || elements['P2'];
+        if (symPt1 && symPt2) {
+          board.create('segment', [symPt1, symPt2], {
+            strokeColor: '#f59e0b',
+            strokeWidth: 1.8,
+            dash: 2,
+          });
+        }
+
         // 3. 判别式条件显隐交点与弦长线段
-        if (delta > 0 && a !== 0) {
+        const delta = currentScope['Delta'];
+        if (!isVertexForm && delta > 0 && a !== 0) {
+          const b = Number(currentScope['b'] ?? 0);
           const x1 = (-b - Math.sqrt(delta)) / (2 * a);
           const x2 = (-b + Math.sqrt(delta)) / (2 * a);
           const p1 = board.create('point', [x1, 0], {
@@ -2584,7 +2805,8 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
             strokeColor: '#a855f7',
             strokeWidth: 3,
           });
-        } else if (delta === 0 && a !== 0) {
+        } else if (!isVertexForm && delta === 0 && a !== 0) {
+          const b = Number(currentScope['b'] ?? 0);
           const x0 = -b / (2 * a);
           board.create('point', [x0, 0], {
             name: 'x',
@@ -2651,33 +2873,61 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
       }
       // (五) 一次函数与正比例函数
       else if (tpl.includes('linear') || tpl.includes('direct')) {
-        const k1 = Number(paramValues['slope_k'] ?? paramValues['k1'] ?? paramValues['k_prop'] ?? 1);
-        const b1 = Number(paramValues['intercept_b'] ?? paramValues['b1'] ?? 0);
-        board.create('functiongraph', [(x: number) => k1 * x + b1, -20, 20], {
-          strokeColor: '#38bdf8',
-          strokeWidth: xrayActive ? 3.5 : 2.5,
-        });
+        const ptA = elements['pA'] || elements['A'];
+        const ptB = elements['pB'] || elements['B'];
 
-        if (paramValues['slope_k2'] !== undefined || paramValues['k2'] !== undefined) {
-          const k2 = Number(paramValues['slope_k2'] ?? paramValues['k2'] ?? -1);
-          const b2 = Number(paramValues['intercept_b2'] ?? paramValues['b2'] ?? 3);
-          board.create('functiongraph', [(x: number) => k2 * x + b2, -20, 20], {
-            strokeColor: '#818cf8',
+        if (ptA && ptB && (sid === 'SB-KP033' || sid === 'SB-KP034' || tpl.includes('linear_solve'))) {
+          // 待定系数法：由两动点 A(x₁, y₁) 与 B(x₂, y₂) 动态确定并绘制唯一直线
+          board.create('line', [ptA, ptB], {
+            strokeColor: '#38bdf8',
+            strokeWidth: xrayActive ? 3.5 : 2.5,
+          });
+          // 动点连线段与斜率直角三角形指示
+          board.create('segment', [ptA, ptB], {
+            strokeColor: '#f59e0b',
             strokeWidth: 2,
           });
+        } else {
+          const k1 = Number(paramValues['slope_k'] ?? paramValues['k1'] ?? paramValues['k_prop'] ?? 1);
+          const b1 = Number(paramValues['intercept_b'] ?? paramValues['b1'] ?? 0);
+          board.create('functiongraph', [(x: number) => k1 * x + b1, -20, 20], {
+            strokeColor: '#38bdf8',
+            strokeWidth: xrayActive ? 3.5 : 2.5,
+          });
 
-          // 联立求解交点
-          if (Math.abs(k1 - k2) > 1e-6) {
-            const interX = (b2 - b1) / (k1 - k2);
-            const interY = k1 * interX + b1;
-            board.create('point', [interX, interY], {
-              name: 'P',
-              size: 5,
-              fillColor: '#f59e0b',
-              strokeColor: '#ffffff',
-              strokeWidth: 2,
-              fixed: true,
+          // 截距三角形 △AOB
+          const pIntX = elements['p_int_x'];
+          const pIntY = elements['p_int_y'];
+          const pO = elements['o'] || elements['O'];
+          if (pIntX && pIntY && pO) {
+            board.create('polygon', [pO, pIntX, pIntY], {
+              borders: { strokeColor: '#38bdf8', strokeWidth: 1.5, dash: 2 },
+              fillColor: '#38bdf8',
+              fillOpacity: 0.18,
             });
+          }
+
+          if (paramValues['slope_k2'] !== undefined || paramValues['k2'] !== undefined) {
+            const k2 = Number(paramValues['slope_k2'] ?? paramValues['k2'] ?? -1);
+            const b2 = Number(paramValues['intercept_b2'] ?? paramValues['b2'] ?? 3);
+            board.create('functiongraph', [(x: number) => k2 * x + b2, -20, 20], {
+              strokeColor: '#818cf8',
+              strokeWidth: 2,
+            });
+
+            // 联立求解交点
+            if (Math.abs(k1 - k2) > 1e-6) {
+              const interX = (b2 - b1) / (k1 - k2);
+              const interY = k1 * interX + b1;
+              board.create('point', [interX, interY], {
+                name: 'P',
+                size: 5,
+                fillColor: '#f59e0b',
+                strokeColor: '#ffffff',
+                strokeWidth: 2,
+                fixed: true,
+              });
+            }
           }
         }
       }
@@ -3035,8 +3285,7 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
         tpl.includes('similarity') ||
         tpl.includes('homothety') ||
         tpl.includes('projection') ||
-        tpl.includes('k_shape') ||
-        primaryPoints.length === 6
+        tpl.includes('k_shape')
       ) {
         if (tpl.includes('homothety') || sid === 'SB-KP060') {
           const ptO = elements['p_O'] || elements['O'];
@@ -3045,23 +3294,34 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
           const ptAP = elements['p_A_prime'] || elements['A_prime'];
           const ptBP = elements['p_B_prime'] || elements['B_prime'];
 
+          if (ptA && ptB) {
+            board.create('segment', [ptA, ptB], { strokeColor: '#38bdf8', strokeWidth: 2.5 });
+          }
+          if (ptAP && ptBP) {
+            board.create('segment', [ptAP, ptBP], { strokeColor: '#818cf8', strokeWidth: 2.5 });
+          }
           if (ptO && ptA && ptB) {
             board.create('polygon', [ptO, ptA, ptB], {
-              borders: { strokeColor: '#38bdf8', strokeWidth: 2 },
+              borders: { strokeColor: '#38bdf8', strokeWidth: 1.5, dash: 2 },
               fillColor: '#38bdf8',
-              fillOpacity: 0.18,
+              fillOpacity: 0.15,
             });
           }
           if (ptO && ptAP && ptBP) {
             board.create('polygon', [ptO, ptAP, ptBP], {
-              borders: { strokeColor: '#818cf8', strokeWidth: 2 },
+              borders: { strokeColor: '#818cf8', strokeWidth: 1.5, dash: 2 },
               fillColor: '#818cf8',
-              fillOpacity: 0.18,
+              fillOpacity: 0.15,
             });
           }
-          if (ptO && ptAP) board.create('segment', [ptO, ptAP], { strokeColor: '#64748b', strokeWidth: 1.5, dash: 2 });
-          if (ptO && ptBP) board.create('segment', [ptO, ptBP], { strokeColor: '#64748b', strokeWidth: 1.5, dash: 2 });
-        } else if (primaryPoints.length >= 6) {
+          // 位似中心 O 到对应点的位似射线 (过位似中心 O 的共线辅助虚线)
+          if (ptO && ptA && ptAP) {
+            board.create('line', [ptO, ptA], { strokeColor: '#64748b', strokeWidth: 1.5, dash: 3 });
+          }
+          if (ptO && ptB && ptBP) {
+            board.create('line', [ptO, ptB], { strokeColor: '#64748b', strokeWidth: 1.5, dash: 3 });
+          }
+        } else if ((tpl.includes('congruence_dual') || tpl.includes('dual_triangle') || tpl.includes('congruence_rotation')) && primaryPoints.length >= 6) {
           // 双三角形拓扑分离：前 3 点独立一角 (天蓝)，后 3 点独立一角 (靛紫)
           board.create('polygon', [primaryPoints[0], primaryPoints[1], primaryPoints[2]], {
             borders: { strokeColor: '#38bdf8', strokeWidth: 2.5 },
@@ -3088,19 +3348,18 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
         tpl.includes('rhombus') ||
         tpl.includes('square')
       ) {
-        if (primaryPoints.length >= 4) {
-          const ptA = primaryPoints[0];
-          const ptB = primaryPoints[1];
-          const ptC = primaryPoints[2];
+        const ptA = elements['p_A'] || elements['A'] || primaryPoints[0];
+        const ptB = elements['p_B'] || elements['B'] || primaryPoints[1];
+        const ptC = elements['p_C'] || elements['C'] || primaryPoints[2];
+        const ptD = elements['p_D'] || elements['D'] || primaryPoints[3];
+
+        if (ptA && ptB && ptC && ptD) {
           // 严格向量从动计算 D = A + C - B (仅对一般平行四边形闭环，且非显式参数驱动时)
-          if (!sid.startsWith('SB-KP06') && typeof (elements['D'] || primaryPoints[3])?.setPosition === 'function') {
+          if (!sid.startsWith('SB-KP06') && elements['D'] && typeof elements['D'].setPosition === 'function' && !elements['p_D']) {
             const dX = ptA.X() + ptC.X() - ptB.X();
             const dY = ptA.Y() + ptC.Y() - ptB.Y();
-            const ptD = elements['D'] || primaryPoints[3];
-            ptD.setPosition(JXG.COORDS_BY_USER, [dX, dY]);
+            elements['D'].setPosition(JXG.COORDS_BY_USER, [dX, dY]);
           }
-
-          const ptD = elements['p_D'] || elements['D'] || primaryPoints[3];
 
           // 绘制四边形
           board.create('polygon', [ptA, ptB, ptC, ptD], {
