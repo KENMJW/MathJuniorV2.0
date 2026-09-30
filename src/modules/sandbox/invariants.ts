@@ -287,7 +287,38 @@ export function sanitizeFormulaForDisplay(formula: string): string {
     .replace(/\bradius_r\b/g, 'r')
     .replace(/\bangle_n\b/g, 'n^\\circ')
     .replace(/\bangle_alpha\b/g, '\\alpha')
-    .replace(/\brot_deg\b/g, '\\theta');
+    .replace(/\brot_deg\b/g, '\\theta')
+    // 动点坐标与运动方程
+    .replace(/\bparam_x0\b/g, 'x_0')
+    .replace(/\bparam_v\b/g, 'v')
+    .replace(/\bx_pos\b/g, 'x')
+    .replace(/\bx_sample\b/g, 'x')
+    .replace(/\bpt_x1\b/g, 'x_1')
+    .replace(/\bpt_y1\b/g, 'y_1')
+    .replace(/\bpt_x2\b/g, 'x_2')
+    .replace(/\bpt_y2\b/g, 'y_2')
+    // 函数交点与截距
+    .replace(/\bintercept_b1\b/g, 'b_1')
+    .replace(/\bintercept_b2\b/g, 'b_2')
+    .replace(/\bslope_k1\b/g, 'k_1')
+    .replace(/\bslope_k2\b/g, 'k_2')
+    .replace(/\bparam_k_level\b/g, 'k')
+    // 几何角度与线段
+    .replace(/\bparam_angle_deg\b/g, '\\theta')
+    .replace(/\bparam_len_ab\b/g, 'AB')
+    .replace(/\bparam_c_pos\b/g, 'x_C')
+    .replace(/\bparam_alpha\b/g, '\\alpha')
+    .replace(/\bparam_y_p\b/g, 'y_P')
+    .replace(/\bparam_x_c\b/g, 'x_C')
+    .replace(/\bparam_trans_angle\b/g, '\\alpha')
+    // 勾股直角边与对角线、位似比
+    .replace(/\bleg_a\b/g, 'a')
+    .replace(/\bleg_b\b/g, 'b')
+    .replace(/\bsim_k\b/g, 'k')
+    .replace(/\brot_alpha\b/g, '\\alpha')
+    .replace(/\bhomo_k\b/g, 'k')
+    .replace(/\bdiag_h\b/g, 'd_1')
+    .replace(/\bdiag_v\b/g, 'd_2');
 }
 
 /**

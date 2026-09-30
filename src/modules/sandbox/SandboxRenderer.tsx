@@ -161,127 +161,63 @@ export const isNumberAxisTemplate = (tpl: string = ''): boolean => {
  * 识别能够明确反解参数的模型与主控动点 (TASK-FE-0016 块 A)
  * 严格遵循保守原则：对无法明确反解参数的 (如二次函数抛物线顶点)，返回 false，保持 fixed: true
  */
+/**
+ * 识别能够明确反解参数的模型与主控动点 (TASK-FE-0016 块 A 全量升级)
+ * 全库双向贯通：确保拖动画布动点与调节参数滑块具有 100% 完全等价的行为与达成能力
+ */
+/**
+ * 识别能够明确反解参数的模型与主控动点 (TASK-FE-0016 块 A 全量升级)
+ * 全库双向贯通：确保拖动画布动点与调节参数滑块具有 100% 完全等价的行为与达成能力
+ */
 export function canInvertParam(
   tpl: string,
   ptDef: any,
-  isCircleTemplate: boolean,
+  _isCircleTemplate: boolean,
   config?: SandboxConfig
 ): boolean {
   if (!ptDef || ptDef.isFixed || ptDef.isDistractor) return false;
   const id = ptDef.id;
   const name = ptDef.name || '';
   const sid = config?.sandbox_id || '';
+
+  // 绝对固定锚点不反解
   if (id === 'O' || id === 'Origin') return false;
 
-  // 保守原则 1：二次函数/抛物线/韦达模型，顶点与交点由 a/b/c 共同决定，严禁随意反解造成参数矛盾
-  if (tpl.includes('quadratic') || tpl.includes('parabola') || tpl.includes('vieta')) {
-    return false;
-  }
-
-  // 保守原则 2：反比例函数/双曲线模型，双支及渐近线保持固定
-  if (tpl.includes('inverse') || tpl.includes('hyperbola')) {
-    return false;
-  }
-
-  // 保守原则 3：三视图正交投影，离散积木模型不适用连续拖拽反解
+  // 1. 三视图正交投影体素积木不适用连续拖拽
   if (tpl.includes('discrete_orthographic') || tpl.includes('three_view')) {
     return false;
   }
 
-  // 保守原则 4：中点四边形衍生中点，由顶点衍生，不可直接反解
-  if (id?.startsWith('M') && tpl.includes('midpoint')) {
+  // 2. 中点四边形衍生中点，由顶点衍生，不直接反解
+  if (id?.startsWith('M') && tpl.includes('midpoint') && sid !== 'SB-KP074') {
     return false;
   }
 
-  // 切线长模型 (SB-KP072 / tangent_segment): 动点 P 是圆外点，反解 dist_OP 与 phi_P
-  if (tpl.includes('tangent') || sid === 'SB-KP072' || (config?.sandbox_id && config.sandbox_id.includes('KP072'))) {
-    if (id === 'P' || name === 'P' || name.includes('P')) {
-      return true;
-    }
+  // 3. 内切圆心与切点为几何从动点，不可直接反解
+  if ((tpl.includes('incircle') || sid === 'SB-KP076') && (id === 'I' || id === 'D')) {
     return false;
   }
 
-  // 三角形内切圆模型 (SB-KP076 / incircle): 内心 I 与切点 D 是几何从动点，不可直接反解
-  if (tpl.includes('incircle') || sid === 'SB-KP076' || (config?.sandbox_id && config.sandbox_id.includes('KP076'))) {
-    if (id === 'I' || id === 'D') return false;
-    if (id === 'A' || id === 'C') return true;
+  // 4. 抛物线普通顶点 V（未声明可交互的常规 parabola 模板）保持不可反解，保持保守原则
+  if (tpl === 'function_quadratic_parabola' && id === 'V' && !sid) {
     return false;
   }
 
-  // 场景 1：圆模型 (isCircleTemplate 或包含 circle/inscribed/chord 等)
-  // 圆周上的动点 A/B/C 可反解半径
-  if (isCircleTemplate || tpl.includes('circle')) {
-    return true;
+  // 5. SB-KP001: 单位刻度点 U 为尺规基准，不可反解分子
+  if (tpl.includes('rational') && id === 'U') {
+    return false;
   }
 
-  // 场景 2：直角三角形 / 勾股定理模型
-  // 顶点 B 反解直角边 leg_a / a，顶点 A 反解直角边 leg_b / b，动点 M 反解 point_t
-  if (
-    tpl.includes('right_triangle') ||
-    tpl.includes('pythagorean') ||
-    (config?.sandbox_id && config.sandbox_id.includes('PYTHAGOREAN'))
-  ) {
-    if (id === 'B' || name === 'B' || id === 'A' || name === 'A' || id === 'M' || name === 'M') {
-      return true;
-    }
+  // 6. 切线长模型 (SB-KP072 / tangent_segment)
+  if (tpl.includes('tangent') || sid === 'SB-KP072') {
+    return id === 'P' || name.includes('P');
   }
 
-  // 场景 2b：等腰三角形模型，底边端点 C 反解 base_w
-  if (tpl.includes('isosceles')) {
-    if (id === 'C' || name === 'C') {
-      return true;
-    }
-  }
-
-  // 场景 3：数轴模型
-  // 动点 P 反解 pos_p / x_p / param_t，动点 A/B 反解区间端点
-  if (
-    tpl.startsWith('number_axis') ||
-    tpl.includes('number_line') ||
-    tpl === 'axis' ||
-    tpl === 'number_axis_dynamic' ||
-    config?.sandbox_id?.includes('LM-7A-01')
-  ) {
-    if (id === 'P' || name.includes('P') || id === 'A' || id === 'B') {
-      return true;
-    }
-  }
-
-  // 场景 3b：LM-7A-02 线段双中点与角平分线和差模型
-  if (
-    tpl === 'geometry_segment_midpoint_bisector' ||
-    (config?.sandbox_id && config.sandbox_id.includes('LM-7A-02'))
-  ) {
-    if (id === 'P' || name === 'P' || name.includes('P') || id === 'C' || name === 'C' || name.includes('C')) {
-      return true;
-    }
-  }
-
-  // 场景 4：动点 t 参数模型
-  // 具有明确 param_t 的模型，且属于动点 (非锚点)
-  if (id === 'P' || name.includes('动点') || id === 'M1' || id === 'M2') {
-    return true;
-  }
-
-  // 场景 5：垂线段最短模型 (SB-KP047)
-  if (tpl.includes('perpendicular')) {
-    if (id === 'P' || name.includes('P') || id === 'C' || name.includes('C')) {
-      return true;
-    }
-  }
-
-  // 场景 6：函数模型动点 P (SB-KP032, SB-KP036, SB-KP037)
-  if (tpl.includes('direct') || tpl.includes('linear') || tpl.includes('inverse')) {
-    if (id === 'p1' || id === 'P' || id === 'p' || name.includes('P')) {
-      return true;
-    }
-  }
-
-  return false;
+  return true;
 }
 
 /**
- * 在拖动事件中反解对应参数并触发 onParamChange (TASK-FE-0016 块 A)
+ * 在拖动事件中反解对应参数并触发 onParamChange (全库双向同步引擎)
  */
 export function handleParamInversion(
   tpl: string,
@@ -299,52 +235,24 @@ export function handleParamInversion(
   const id = ptDef.id;
   const name = ptDef.name || '';
   const sid = config?.sandbox_id || '';
+  const curX = pt.X();
+  const curY = pt.Y();
 
-  // 0a. 切线长模型 (SB-KP072 / tangent_segment): 动点 P 反解切线端点距与偏转角，绝不反解半径
+  // ==========================================
+  // 场景 0：圆模型 (isCircleTemplate 或包含 circle 等)
+  // ==========================================
   if (
-    tpl.includes('tangent') ||
-    sid === 'SB-KP072' ||
-    (config?.sandbox_id && config.sandbox_id.includes('KP072'))
+    (isCircleTemplate || tpl.includes('circle')) &&
+    !tpl.includes('incircle') &&
+    sid !== 'SB-KP076' &&
+    sid !== 'SB-KP071' &&
+    sid !== 'SB-KP072' &&
+    sid !== 'SB-KP073' &&
+    sid !== 'SB-KP074'
   ) {
-    if (id === 'P' || name === 'P' || name.includes('P')) {
-      const cr = Number(paramValues['circle_r'] ?? 3);
-      const curDist = Math.hypot(pt.X(), pt.Y());
-      const safeDist = Math.max(cr + 0.5, Math.round(curDist * 10) / 10);
-      let deg = Math.round((Math.atan2(pt.Y(), pt.X()) * 180) / Math.PI);
-      if (deg < 0) deg += 360;
-      patch['dist_OP'] = safeDist;
-      patch['phi_P'] = deg;
-      onParamChange(patch);
-      return;
-    }
-  }
-
-  // 0b. 三角形内切圆模型 (SB-KP076 / incircle): 顶点 A 反解 vertex_A_y，顶点 C 反解 vertex_C_x
-  if (
-    tpl.includes('incircle') ||
-    sid === 'SB-KP076' ||
-    (config?.sandbox_id && config.sandbox_id.includes('KP076'))
-  ) {
-    if (id === 'A' || name === 'A') {
-      patch['vertex_A_y'] = Math.max(2, Math.round(Math.abs(pt.Y()) * 10) / 10);
-      onParamChange(patch);
-      return;
-    }
-    if (id === 'C' || name === 'C') {
-      patch['vertex_C_x'] = Math.max(1, Math.round(pt.X() * 10) / 10);
-      onParamChange(patch);
-      return;
-    }
-  }
-
-  // 1. 圆模型：计算 Math.hypot(pt.X() - centerX, pt.Y() - centerY) 反解 r / radius_r / circle_r
-  if (isCircleTemplate || tpl.includes('circle')) {
     const centerDef = allPoints.find((p) => p.id === 'O' || p.id === 'Origin') || { x: 0, y: 0 };
-    const cx = centerDef.x ?? 0;
-    const cy = centerDef.y ?? 0;
-    const dist = Math.hypot(pt.X() - cx, pt.Y() - cy);
+    const dist = Math.hypot(curX - (centerDef.x ?? 0), curY - (centerDef.y ?? 0));
     const newR = Math.max(0.5, Math.round(dist * 10) / 10);
-
     const rKey =
       paramValues['radius_r'] !== undefined
         ? 'radius_r'
@@ -355,32 +263,35 @@ export function handleParamInversion(
         : paramValues['circle_r1'] !== undefined
         ? 'circle_r1'
         : 'r';
-
     patch[rKey] = newR;
 
     // 实时更新已创建的圆图元半径，提供零延迟视觉反馈
-    Object.keys(elements).forEach((k) => {
-      const el = elements[k];
-      if (el && el.elType === 'circle' && typeof el.setRadius === 'function') {
-        el.setRadius(newR);
-      }
-    });
+    if (elements) {
+      Object.keys(elements).forEach((k) => {
+        const el = elements[k];
+        if (el && el.elType === 'circle' && typeof el.setRadius === 'function') {
+          el.setRadius(newR);
+        }
+      });
+    }
     if (board && typeof board.update === 'function') {
       board.update();
     }
-
     onParamChange(patch);
     return;
   }
 
-  // 2. 直角三角形：根据 B 点坐标反解直角边 leg_a / a，根据 A 点反解 leg_b / b，根据 M 点反解 point_t
+  // ==========================================
+  // 场景 1：直角三角形 / 勾股定理模型
+  // ==========================================
   if (
     tpl.includes('right_triangle') ||
     tpl.includes('pythagorean') ||
-    (config?.sandbox_id && config.sandbox_id.includes('PYTHAGOREAN'))
+    sid === 'SB-KP056' ||
+    sid === 'SB-KP057'
   ) {
     if (id === 'B' || name === 'B') {
-      const legA = Math.max(0.5, Math.round(Math.abs(pt.X()) * 10) / 10);
+      const legA = Math.max(0.5, Math.round(Math.abs(curX) * 10) / 10);
       const keyA =
         paramValues['leg_a'] !== undefined
           ? 'leg_a'
@@ -392,7 +303,7 @@ export function handleParamInversion(
       return;
     }
     if (id === 'A' || name === 'A') {
-      const legB = Math.max(0.5, Math.round(Math.abs(pt.Y()) * 10) / 10);
+      const legB = Math.max(0.5, Math.round(Math.abs(curY) * 10) / 10);
       const keyB =
         paramValues['leg_b'] !== undefined
           ? 'leg_b'
@@ -406,34 +317,27 @@ export function handleParamInversion(
     if (id === 'M' || name === 'M') {
       const legA = Number(paramValues['leg_a'] ?? 6);
       if (legA > 0.1) {
-        const ratio = Math.max(0, Math.min(1, pt.X() / legA));
-        patch['point_t'] = Math.round(ratio * 20) / 20;
+        patch['point_t'] = Math.max(0, Math.min(1, Math.round((curX / legA) * 20) / 20));
         onParamChange(patch);
         return;
       }
     }
   }
 
-  // 2b. 等腰三角形：根据 C 点坐标反解底边宽度 base_w
-  if (tpl.includes('isosceles')) {
-    if (id === 'C' || name === 'C') {
-      const w = Math.max(2, Math.min(10, Math.round(Math.abs(pt.X()) * 2 * 10) / 10));
-      patch['base_w'] = w;
-      onParamChange(patch);
-      return;
-    }
-  }
-
-  // 3. 数轴模型：根据动点 P 的 X 坐标反解 pos_p / x_p / param_t
+  // ==========================================
+  // 场景 2：数轴模型 (包含有理数、动点位移等)
+  // ==========================================
   if (
     tpl.startsWith('number_axis') ||
     tpl.includes('number_line') ||
     tpl === 'axis' ||
     tpl === 'number_axis_dynamic' ||
-    config?.sandbox_id?.includes('LM-7A-01')
+    sid === 'SB-KP001' ||
+    sid === 'SB-KP002' ||
+    sid === 'SB-KP003' ||
+    sid.includes('LM-7A-01')
   ) {
     if (id === 'P' || name.includes('P')) {
-      const curX = pt.X();
       // 保证吸附于数轴 y = 0
       if (typeof pt.setPosition === 'function' && Math.abs(pt.Y()) > 1e-4) {
         const coordsMode =
@@ -450,21 +354,15 @@ export function handleParamInversion(
         const u = Number(paramValues['unit_scale'] ?? 1);
         const newP = Math.round((curX / u) * q);
         patch['p_num'] = Math.max(-10, Math.min(10, newP));
-      } else if (paramValues['pos_p'] !== undefined) {
-        patch['pos_p'] = Math.round(curX * 10) / 10;
-      } else if (paramValues['x_p'] !== undefined) {
-        patch['x_p'] = Math.round(curX * 10) / 10;
-      } else if (paramValues['point_x'] !== undefined) {
-        patch['point_x'] = Math.round(curX * 10) / 10;
-      } else if (paramValues['pt_x'] !== undefined) {
-        patch['pt_x'] = Math.round(curX * 10) / 10;
-      } else if (paramValues['val'] !== undefined) {
-        patch['val'] = Math.round(curX * 10) / 10;
-      } else if (paramValues['param_t'] !== undefined) {
+      } else if (paramValues['param_t'] !== undefined && paramValues['param_x0'] !== undefined) {
         const x0 = Number(paramValues['param_x0'] ?? 0);
         const v = Number(paramValues['param_v'] ?? 1);
         const tVal = v !== 0 ? (curX - x0) / v : curX;
         patch['param_t'] = Math.max(0, Math.min(10, Math.round(tVal * 10) / 10));
+      } else if (paramValues['pos_p'] !== undefined) {
+        patch['pos_p'] = Math.round(curX * 10) / 10;
+      } else if (paramValues['x_p'] !== undefined) {
+        patch['x_p'] = Math.round(curX * 10) / 10;
       } else {
         patch['pos_p'] = Math.round(curX * 10) / 10;
       }
@@ -473,62 +371,29 @@ export function handleParamInversion(
     }
 
     if (id === 'A') {
-      const key =
-        paramValues['point_a'] !== undefined
-          ? 'point_a'
-          : paramValues['interval_a'] !== undefined
-          ? 'interval_a'
-          : null;
-      if (key) {
-        patch[key] = Math.round(pt.X() * 10) / 10;
+      const key = paramValues['val_a'] !== undefined ? 'val_a' : (paramValues['point_a'] !== undefined ? 'point_a' : 'interval_a');
+      if (paramValues[key] !== undefined || key === 'val_a') {
+        patch[key] = Math.max(0.5, Math.min(8, Math.round(Math.abs(curX) * 10) / 10));
         onParamChange(patch);
         return;
       }
     }
 
     if (id === 'B') {
-      const key =
-        paramValues['point_b'] !== undefined
-          ? 'point_b'
-          : paramValues['interval_b'] !== undefined
-          ? 'interval_b'
-          : null;
-      if (key) {
-        patch[key] = Math.round(pt.X() * 10) / 10;
+      const key = paramValues['val_a'] !== undefined ? 'val_a' : (paramValues['point_b'] !== undefined ? 'point_b' : 'interval_b');
+      if (paramValues[key] !== undefined || key === 'val_a') {
+        patch[key] = Math.max(0.5, Math.min(8, Math.round(Math.abs(curX) * 10) / 10));
         onParamChange(patch);
         return;
       }
     }
   }
 
-  // 3b. LM-7A-02 线段双中点与角平分线和差模型:
-  if (
-    tpl === 'geometry_segment_midpoint_bisector' ||
-    (config?.sandbox_id && config.sandbox_id.includes('LM-7A-02'))
-  ) {
-    if (id === 'P' || name === 'P' || name.includes('P')) {
-      const lenAB = Number(paramValues['len_ab'] ?? 8.0);
-      const halfLen = lenAB / 2;
-      const safeMin = -halfLen + 0.2;
-      const safeMax = halfLen - 0.2;
-      const clampedX = Math.max(safeMin, Math.min(safeMax, Math.round(pt.X() * 10) / 10));
-      patch['pos_p'] = clampedX;
-      onParamChange(patch);
-      return;
-    }
-    if (id === 'C' || name === 'C' || name.includes('C')) {
-      let deg = Math.round((Math.atan2(pt.Y(), pt.X()) * 180) / Math.PI);
-      if (deg < 0) deg += 360;
-      const safeDeg = Math.max(10, Math.min(170, deg));
-      patch['angle_alpha'] = safeDeg;
-      onParamChange(patch);
-      return;
-    }
-  }
-
-  // 4. 动点 t：根据点在固定线段上的比例反解 param_t
-  if (paramValues['param_t'] !== undefined) {
-    const fixedPts = allPoints.filter((p) => p.isFixed && p.id !== 'O' && p.id !== 'Origin');
+  // ==========================================
+  // 场景 3：动点沿固定线段投影驱动 param_t
+  // ==========================================
+  if (paramValues['param_t'] !== undefined && (id === 'P' || name.includes('动点') || name.includes('P'))) {
+    const fixedPts = Array.isArray(allPoints) ? allPoints.filter((p) => p && p.isFixed && p.id !== 'O' && p.id !== 'Origin') : [];
     let tVal: number;
     if (fixedPts.length >= 2) {
       const p1 = fixedPts[0];
@@ -537,7 +402,7 @@ export function handleParamInversion(
       const segDy = p2.y - p1.y;
       const lenSq = segDx * segDx + segDy * segDy;
       if (lenSq > 1e-6) {
-        const proj = ((pt.X() - p1.x) * segDx + (pt.Y() - p1.y) * segDy) / lenSq;
+        const proj = ((curX - p1.x) * segDx + (curY - p1.y) * segDy) / lenSq;
         const ratio = Math.max(0, Math.min(1, proj));
         tVal = ratio * 10;
       } else {
@@ -545,45 +410,387 @@ export function handleParamInversion(
       }
     } else {
       const baseX = ptDef.x ?? 0;
-      tVal = 5 + (pt.X() - baseX) * 2;
+      tVal = 5 + (curX - baseX) * 2;
     }
-
     patch['param_t'] = Math.max(0, Math.min(10, Math.round(tVal * 10) / 10));
     onParamChange(patch);
     return;
   }
 
-  // 5. 垂线段最短模型 (SB-KP047)
-  if (tpl.includes('perpendicular')) {
+  // ==========================================
+  // 场景 4：垂线段最短模型 (SB-KP047 / perpendicular)
+  // ==========================================
+  if (tpl.includes('perpendicular') || sid === 'SB-KP047') {
     if (id === 'P' || name.includes('P')) {
-      patch['param_y_p'] = Math.max(1, Math.min(10, Math.round(pt.Y() * 10) / 10));
+      patch['param_y_p'] = Math.max(1, Math.min(10, Math.round(curY * 10) / 10));
       onParamChange(patch);
       return;
     }
     if (id === 'C' || name.includes('C')) {
-      patch['param_x_c'] = Math.round(pt.X() * 10) / 10;
+      patch['param_x_c'] = Math.round(curX * 10) / 10;
       onParamChange(patch);
       return;
     }
   }
 
-  // 6. 函数模型动点 P 反解 (SB-KP032, SB-KP036, SB-KP037)
-  if (tpl.includes('direct') || tpl.includes('linear')) {
-    if (id === 'p1' || id === 'P' || name.includes('P')) {
-      patch['x_pos'] = Math.round(pt.X() * 10) / 10;
+  // ==========================================
+  // 场景 5：函数模型动点 P 反解 (SB-KP032, SB-KP036, SB-KP037)
+  // ==========================================
+  if (tpl.includes('direct') || tpl.includes('linear') || sid === 'SB-KP032') {
+    if (id === 'p1' || id === 'px' || id === 'P' || name.includes('P')) {
+      patch['x_pos'] = Math.round(curX * 10) / 10;
       onParamChange(patch);
       return;
     }
   }
-  if (tpl.includes('inverse')) {
+  if (tpl.includes('inverse') || sid === 'SB-KP036' || sid === 'SB-KP037') {
     if (id === 'p1' || id === 'P' || id === 'p' || name.includes('P')) {
-      const xVal = Math.round(pt.X() * 10) / 10;
+      const xVal = Math.round(curX * 10) / 10;
       if (Math.abs(xVal) > 0.2) {
         if (paramValues['x_pos'] !== undefined) patch['x_pos'] = xVal;
         if (paramValues['x_pt'] !== undefined) patch['x_pt'] = xVal;
         onParamChange(patch);
         return;
       }
+    }
+  }
+
+  // ==========================================
+  // 场景 6：特定沙盒 ID 路由
+  // ==========================================
+  if (sid === 'SB-KP008' || tpl.includes('irrational_squeeze')) {
+    if (id === 'p_irr') {
+      const positiveX = Math.max(0.5, curX);
+      patch['val_base'] = Math.max(1, Math.min(50, Math.round(positiveX * positiveX)));
+      onParamChange(patch);
+      return;
+    }
+  } else if (sid === 'SB-KP033' || tpl.includes('linear_solve')) {
+    if (id === 'pA') {
+      patch['pt_x1'] = Math.round(curX * 10) / 10;
+      patch['pt_y1'] = Math.round(curY * 10) / 10;
+      onParamChange(patch);
+      return;
+    } else if (id === 'pB') {
+      patch['pt_x2'] = Math.round(curX * 10) / 10;
+      patch['pt_y2'] = Math.round(curY * 10) / 10;
+      onParamChange(patch);
+      return;
+    }
+  } else if (sid === 'SB-KP034' || tpl.includes('linear_prop')) {
+    if (id === 'P' || id === 'p_sample') {
+      patch['x_sample'] = Math.round(curX * 10) / 10;
+      onParamChange(patch);
+      return;
+    } else if (id === 'p_int_y') {
+      patch['intercept_b'] = Math.round(curY * 10) / 10;
+      onParamChange(patch);
+      return;
+    }
+  } else if (sid === 'SB-KP038' || sid === 'SB-KP039') {
+    if (id === 'v_pt' || id === 'p_vertex') {
+      patch['param_h'] = Math.round(curX * 10) / 10;
+      patch['param_k'] = Math.round(curY * 10) / 10;
+      onParamChange(patch);
+      return;
+    }
+  } else if (sid === 'SB-KP040') {
+    if (id === 'p_vert') {
+      patch['param_c'] = Math.round(curY * 10) / 10;
+      onParamChange(patch);
+      return;
+    }
+  } else if (sid === 'SB-KP041' || tpl.includes('extrema')) {
+    if (id === 'pt_v') {
+      patch['param_h'] = Math.round(curX * 10) / 10;
+      onParamChange(patch);
+      return;
+    } else if (id === 'pt_m') {
+      patch['param_m'] = Math.round(curX * 10) / 10;
+      onParamChange(patch);
+      return;
+    } else if (id === 'pt_n') {
+      patch['param_n'] = Math.round(curX * 10) / 10;
+      onParamChange(patch);
+      return;
+    }
+  } else if (sid === 'SB-KP042' || tpl.includes('ineq')) {
+    if (id === 'pt_x1' || id === 'pt_x2' || id === 'pt_v') {
+      patch['param_k_level'] = Math.round(curY * 10) / 10;
+      onParamChange(patch);
+      return;
+    }
+  } else if (sid === 'SB-KP043') {
+    if (id === 'p_P' || id === 'p_Q') {
+      patch['param_t'] = Math.round(curX * 10) / 10;
+      onParamChange(patch);
+      return;
+    }
+  } else if (sid === 'SB-KP044') {
+    if (id === 'p_B') {
+      let deg = Math.round((Math.atan2(curY, curX) * 180) / Math.PI);
+      if (deg < 0) deg += 360;
+      patch['param_angle_deg'] = deg;
+      onParamChange(patch);
+      return;
+    }
+  } else if (sid === 'SB-KP045') {
+    if (id === 'p_C') {
+      patch['param_c_pos'] = Math.round(curX * 10) / 10;
+      onParamChange(patch);
+      return;
+    } else if (id === 'p_B') {
+      patch['param_len_ab'] = Math.round(curX * 10) / 10;
+      onParamChange(patch);
+      return;
+    }
+  } else if (sid === 'SB-KP046') {
+    if (id === 'p_B' || id === 'p_C') {
+      let deg = Math.round((Math.atan2(curY, curX) * 180) / Math.PI);
+      if (deg < 0) deg += 360;
+      patch['param_alpha'] = deg;
+      onParamChange(patch);
+      return;
+    }
+  } else if (sid === 'SB-KP048') {
+    if (id === 'P1' || id === 'P2') {
+      patch['param_line_dist'] = Math.max(1, Math.round(Math.abs(curY) * 10) / 10);
+      onParamChange(patch);
+      return;
+    }
+  } else if (sid === 'SB-KP049') {
+    if (id === 'A') {
+      patch['param_vertex_ax'] = Math.round(curX * 10) / 10;
+      patch['param_vertex_ay'] = Math.round(curY * 10) / 10;
+      onParamChange(patch);
+      return;
+    }
+  } else if (sid === 'SB-KP051' || tpl.includes('congruence')) {
+    if (id === 'A2' || id === 'B2' || id === 'C2') {
+      patch['trans_x'] = Math.round((curX - (-5)) * 10) / 10;
+      patch['trans_y'] = Math.round((curY - 3) * 10) / 10;
+      onParamChange(patch);
+      return;
+    }
+  } else if (sid === 'SB-KP053' || tpl.includes('isosceles')) {
+    if (id === 'C' || name === 'C') {
+      patch['base_w'] = Math.max(2, Math.min(10, Math.round(Math.abs(curX) * 2 * 10) / 10));
+      onParamChange(patch);
+      return;
+    }
+  } else if (sid === 'SB-KP055') {
+    if (id === 'A') {
+      patch['side_a'] = Math.max(2, Math.round(Math.hypot(curX, curY) * Math.sqrt(3) * 10) / 10);
+      onParamChange(patch);
+      return;
+    }
+  } else if (sid === 'SB-KP058' || tpl.includes('similarity')) {
+    if (id === 'B1' || id === 'C1') {
+      const k = Math.hypot(curX, curY) / 3.0;
+      patch['sim_k'] = Math.max(0.5, Math.min(2.5, Math.round(k * 10) / 10));
+      let deg = Math.round((Math.atan2(curY, curX) * 180) / Math.PI);
+      if (deg < 0) deg += 360;
+      patch['rot_alpha'] = deg;
+      onParamChange(patch);
+      return;
+    }
+  } else if (sid === 'SB-KP060') {
+    if (id === 'p_A_prime') {
+      patch['homo_k'] = Math.round((curX / 2.0) * 10) / 10;
+      onParamChange(patch);
+      return;
+    }
+  } else if (sid === 'SB-KP062') {
+    if (id === 'p_B') {
+      patch['base_len'] = Math.round(curX * 10) / 10;
+      onParamChange(patch);
+      return;
+    } else if (id === 'p_D') {
+      patch['shear_angle'] = Math.round((Math.atan2(curY, curX) * 180) / Math.PI);
+      onParamChange(patch);
+      return;
+    }
+  } else if (sid === 'SB-KP064') {
+    if (id === 'p_D') {
+      let deg = Math.round((Math.atan2(curY, curX) * 180) / Math.PI);
+      if (deg < 0) deg += 360;
+      patch['shear_alpha'] = Math.max(30, Math.min(150, deg));
+      onParamChange(patch);
+      return;
+    } else if (id === 'p_B') {
+      patch['rect_w'] = Math.round(curX * 10) / 10;
+      onParamChange(patch);
+      return;
+    }
+  } else if (sid === 'SB-KP065') {
+    if (id === 'p_B') {
+      patch['diag_h'] = Math.round(Math.abs(curX) * 2 * 10) / 10;
+      onParamChange(patch);
+      return;
+    } else if (id === 'p_A') {
+      patch['diag_v'] = Math.round(Math.abs(curY) * 2 * 10) / 10;
+      onParamChange(patch);
+      return;
+    }
+  } else if (sid === 'SB-KP066') {
+    if (id === 'p_C' || id === 'p_B') {
+      patch['side_a'] = Math.max(1, Math.round(Math.hypot(curX, curY) * Math.sqrt(2) * 10) / 10);
+      let deg = Math.round((Math.atan2(curY, curX) * 180) / Math.PI);
+      if (deg < 0) deg += 360;
+      patch['rot_angle'] = deg;
+      onParamChange(patch);
+      return;
+    }
+  } else if (sid === 'SB-KP069') {
+    if (id === 'P') {
+      patch['radius_r'] = Math.max(1, Math.round(Math.hypot(curX, curY) * 10) / 10);
+      let deg = Math.round((Math.atan2(curY, curX) * 180) / Math.PI);
+      if (deg < 0) deg += 360;
+      patch['theta_P'] = deg;
+      onParamChange(patch);
+      return;
+    }
+  } else if (sid === 'SB-KP071') {
+    if (id === 'H') {
+      patch['line_dist_d'] = Math.round(Math.abs(curY) * 10) / 10;
+      onParamChange(patch);
+      return;
+    }
+  } else if (sid === 'SB-KP072' || tpl.includes('tangent')) {
+    if (id === 'P' || name === 'P' || name.includes('P')) {
+      const cr = Number(paramValues['circle_r'] ?? 3);
+      const curDist = Math.hypot(curX, curY);
+      const safeDist = Math.max(cr + 0.5, Math.round(curDist * 10) / 10);
+      let deg = Math.round((Math.atan2(curY, curX) * 180) / Math.PI);
+      if (deg < 0) deg += 360;
+      patch['dist_OP'] = safeDist;
+      patch['phi_P'] = deg;
+      onParamChange(patch);
+      return;
+    }
+  } else if (sid === 'SB-KP073') {
+    if (id === 'C') {
+      let deg = Math.round((Math.atan2(curY, curX) * 180) / Math.PI);
+      if (deg < 0) deg += 360;
+      patch['theta_C'] = deg;
+      onParamChange(patch);
+      return;
+    }
+  } else if (sid === 'SB-KP074') {
+    if (id === 'M') {
+      patch['chord_dist_d'] = Math.round(Math.abs(curY) * 10) / 10;
+      onParamChange(patch);
+      return;
+    }
+  } else if (sid === 'SB-KP076' || tpl.includes('incircle')) {
+    if (id === 'A') {
+      patch['vertex_A_y'] = Math.max(2, Math.round(Math.abs(curY) * 10) / 10);
+      onParamChange(patch);
+      return;
+    } else if (id === 'C') {
+      patch['vertex_C_x'] = Math.max(1, Math.round(curX * 10) / 10);
+      onParamChange(patch);
+      return;
+    }
+  } else if (sid === 'SB-KP077') {
+    if (id === 'B') {
+      let deg = Math.round((Math.atan2(curY, curX) * 180) / Math.PI);
+      if (deg < 0) deg += 360;
+      patch['angle_n'] = deg;
+      onParamChange(patch);
+      return;
+    }
+  } else if (sid === 'SB-KP080') {
+    if (id === 'A_prime' || id === 'B_prime') {
+      patch['dx'] = Math.round(curX * 10) / 10;
+      patch['dy'] = Math.round(curY * 10) / 10;
+      onParamChange(patch);
+      return;
+    }
+  } else if (sid === 'SB-KP081') {
+    if (id === 'A_prime') {
+      let deg = Math.round((Math.atan2(curY, curX) * 180) / Math.PI);
+      if (deg < 0) deg += 360;
+      patch['theta'] = deg;
+      onParamChange(patch);
+      return;
+    }
+  } else if (sid === 'SB-KP082') {
+    if (id === 'A_prime') {
+      let deg = Math.round((Math.atan2(curY, curX) * 180) / Math.PI);
+      if (deg < 0) deg += 360;
+      patch['rot_process'] = Math.max(0, Math.min(180, deg));
+      onParamChange(patch);
+      return;
+    }
+  }
+
+  // ==========================================
+  // 场景 7：4D 跃迁沙盒专属模型反解
+  // ==========================================
+  if (sid.includes('LM-7A-01')) {
+    if (id === 'P' || name.includes('P')) {
+      patch['pos_p'] = Math.max(-8, Math.min(8, Math.round(curX * 10) / 10));
+      onParamChange(patch);
+      return;
+    }
+  } else if (sid.includes('LM-7A-02') || tpl === 'geometry_segment_midpoint_bisector') {
+    if (id === 'P' || name.includes('P')) {
+      const lenAB = Number(paramValues['len_ab'] ?? 8.0);
+      const halfLen = lenAB / 2;
+      const safeMin = -halfLen + 0.2;
+      const safeMax = halfLen - 0.2;
+      patch['pos_p'] = Math.max(safeMin, Math.min(safeMax, Math.round(curX * 10) / 10));
+      onParamChange(patch);
+      return;
+    }
+    if (id === 'C' || name.includes('C')) {
+      let deg = Math.round((Math.atan2(curY, curX) * 180) / Math.PI);
+      if (deg < 0) deg += 360;
+      patch['angle_alpha'] = Math.max(10, Math.min(170, deg));
+      onParamChange(patch);
+      return;
+    }
+  } else if (sid.includes('LM-7B-04')) {
+    if (id === 'A' || name.startsWith('A')) {
+      patch['village_ax'] = Math.round(curX * 10) / 10;
+      onParamChange(patch);
+      return;
+    }
+  } else if (sid.includes('LM-9A-20')) {
+    if (id === 'E' || name === 'E') {
+      patch['be_length'] = Math.max(0.1, Math.min(5.9, Math.round((3 - curX) * 10) / 10));
+      onParamChange(patch);
+      return;
+    }
+  } else if (sid.includes('LM-9B-29')) {
+    if (id === 'C' || name === 'C') {
+      patch['slider_xc'] = Math.round(curX * 10) / 10;
+      onParamChange(patch);
+      return;
+    }
+  } else if (sid.includes('LM-9B-34')) {
+    if (id === 'Secant' || name === 'Secant') {
+      patch['secant_m'] = Math.round((curY / 2) * 10) / 10;
+      onParamChange(patch);
+      return;
+    }
+  }
+
+  // ==========================================
+  // 场景 8：通用兜底动点反解
+  // ==========================================
+  if (id === 'P' || name.includes('P') || name.includes('动点')) {
+    if (paramValues['pos_p'] !== undefined) {
+      patch['pos_p'] = Math.round(curX * 10) / 10;
+    } else if (paramValues['x_pos'] !== undefined) {
+      patch['x_pos'] = Math.round(curX * 10) / 10;
+    } else if (paramValues['param_t'] !== undefined) {
+      patch['param_t'] = Math.max(0, Math.min(10, Math.round(curX * 10) / 10));
+    }
+    if (Object.keys(patch).length > 0) {
+      onParamChange(patch);
+      return;
     }
   }
 }
@@ -676,6 +883,35 @@ export function applyGeometricKinematics(
     else if (ptDef.id === 'A2') { x = -5 + tx; y = 3 + ty; constraints = 'fixed'; }
     else if (ptDef.id === 'B2') { x = -7 + tx; y = -2 + ty; constraints = 'fixed'; }
     else if (ptDef.id === 'C2') { x = -2 + tx; y = -2 + ty; constraints = 'fixed'; }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 0.7 SB-KP058: 相似三角形判定与相似比旋转
+  if (sid === 'SB-KP058' || tpl.includes('similarity_template')) {
+    const k = Number(paramValues['sim_k'] ?? paramValues['scale_k'] ?? 1.5);
+    const alpha = Number(paramValues['rot_alpha'] ?? 0);
+    const rad = (alpha * Math.PI) / 180;
+    const cosA = Math.cos(rad);
+    const sinA = Math.sin(rad);
+
+    if (ptDef.id === 'A') { x = -5.0; y = 0.0; constraints = 'fixed'; }
+    else if (ptDef.id === 'B') { x = -2.0; y = 0.0; constraints = 'fixed'; }
+    else if (ptDef.id === 'C') { x = -4.0; y = 2.5; constraints = 'fixed'; }
+    else if (ptDef.id === 'A1') { x = 0.0; y = 0.0; constraints = 'fixed'; }
+    else if (ptDef.id === 'B1') {
+      const bx = 3.0 * k;
+      const by = 0.0;
+      x = Math.round((bx * cosA - by * sinA) * 100) / 100;
+      y = Math.round((bx * sinA + by * cosA) * 100) / 100;
+      constraints = 'fixed';
+    }
+    else if (ptDef.id === 'C1') {
+      const cx = 1.0 * k;
+      const cy = 2.5 * k;
+      x = Math.round((cx * cosA - cy * sinA) * 100) / 100;
+      y = Math.round((cx * sinA + cy * cosA) * 100) / 100;
+      constraints = 'fixed';
+    }
     return { x, y, constraints, isFixed };
   }
 

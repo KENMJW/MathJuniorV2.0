@@ -138,7 +138,7 @@ export const LineQuickPractice: React.FC<LineQuickPracticeProps> = ({
       );
       setCurrentQuestions(valid);
       setCurrentBatchIds(valid.map((q) => q.question_id));
-      valid.forEach((q) => addPresentedId(q.question_id));
+      addLinePresentedIds(lineId, valid.map((q) => q.question_id));
     } else if (linePool.length >= 3) {
       drawNewBatch(linePool);
     } else {

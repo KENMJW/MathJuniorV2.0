@@ -5,12 +5,9 @@ import { execSync } from 'child_process';
 import {
   calculateDifficultyQuotas,
   drawQuestions,
-  shuffleArray,
-  QuestionItem,
 } from '../modules/exam/drawQuestions';
 import { PaperConfig } from '../modules/exam/verifyPaperInventory';
 import { testExamQuestions } from '../modules/exam/__tests__/testExamQuestions';
-import { ALL_107_KNOWLEDGE_POINTS } from '../modules/concept/allPointsData';
 import { useSessionStore } from '../store/sessionStore';
 import { defaultPicker } from '../modules/concept/quickPractice.machine';
 

@@ -883,6 +883,15 @@ export function solveLM8A08(points: CarrierPoint[], params: Record<string, numbe
   if (ptSum) {
     ptSum.x = telescopeN;
     ptSum.y = Math.round((1 - 1 / (telescopeN + 1)) * 1000) / 1000;
+  } else {
+    result.push({
+      id: 'Sum_pt',
+      name: 'S_n',
+      x: telescopeN,
+      y: Math.round((1 - 1 / (telescopeN + 1)) * 1000) / 1000,
+      color: '#38bdf8',
+      size: 5,
+    });
   }
   return result;
 }
@@ -1847,6 +1856,15 @@ export function solveLM9B34(
     if (ptSecant) {
       ptSecant.x = 2;
       ptSecant.y = Math.round((2 * secantM) * 1000) / 1000;
+    } else {
+      result.push({
+        id: 'Secant',
+        name: 'Secant',
+        x: 2,
+        y: Math.round((2 * secantM) * 1000) / 1000,
+        color: '#f59e0b',
+        size: 4,
+      });
     }
   }
 
@@ -1927,9 +1945,18 @@ export function solveLM9B37(points: CarrierPoint[], params: Record<string, numbe
   if (ptB) { ptB.y = Math.round((-6 * (1 - pVal)) * 1000) / 1000; }
 
   const ptSample = result.find((p) => p.id === 'Sample1');
+  const error = 1.0 / Math.sqrt(Math.max(1, trials));
   if (ptSample) {
-    const error = 1.0 / Math.sqrt(Math.max(1, trials));
     ptSample.y = Math.round(error * 1000) / 1000;
+  } else {
+    result.push({
+      id: 'Sample1',
+      name: 'Sample1',
+      x: trials,
+      y: Math.round(error * 1000) / 1000,
+      color: '#a855f7',
+      size: 4,
+    });
   }
   return result;
 }
