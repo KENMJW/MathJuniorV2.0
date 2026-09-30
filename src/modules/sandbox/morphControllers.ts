@@ -449,31 +449,117 @@ export function solveLM7B04(
 
 /**
  * LM-7A-02: 线段双中点与角平分线和差解算器
- * - 根据 len_ab 驱动 B 点距离
- * - 根据 angle_alpha 驱动射线旋转角
+ * - 载体一 (single_segment):
+ *   - 根据 len_ab 驱动 A, B 对称锚定 (全长恒等于 len_ab)
+ *   - 根据 pos_p 驱动动分点 P 坐标并在 [A.x, B.x] 内安全限幅
+ *   - 根据动点 P 动态解算 M1 = (A+P)/2, M2 = (P+B)/2, 满足公理 M1M2 = 1/2 AB
+ * - 载体二 (angle_carrier):
+ *   - 根据 angle_alpha 驱动动射线 C(4 * cos(alpha), 4 * sin(alpha))
+ *   - 动态解算内角平分线点 M(极角 alpha/2) 与外角平分线点 N(极角 90° + alpha/2)
+ *   - 几何定理闭环: ∠MON 恒为 90° (垂直正交)
  */
 export function solveLM7A02(
   points: CarrierPoint[],
   params: Record<string, number>
 ): CarrierPoint[] {
   const result = points.map((p) => ({ ...p }));
-  const lenAB = params.len_ab;
-  const angleAlpha = params.angle_alpha;
+  const origA = points.find((p) => p.id === 'A' || p.name === 'A');
+  const origP = points.find((p) => p.id === 'P' || p.name?.includes('P'));
+  const ptC = result.find((p) => p.id === 'C' || p.name?.includes('C'));
 
-  if (lenAB !== undefined) {
-    const ptB = result.find((p) => p.id === 'B' || p.name === 'B');
-    if (ptB) ptB.x = lenAB;
-    const ptM2 = result.find((p) => p.id === 'M2' || p.name === 'M2');
-    if (ptM2) ptM2.x = Math.round((lenAB / 2) * 1000) / 1000;
+  // 1. 载体二：邻补角双平分线载体 (angle_carrier)
+  if (ptC || params.angle_alpha !== undefined) {
+    const angleAlpha = typeof params.angle_alpha === 'number' ? params.angle_alpha : 90.0;
+    const radAlpha = (angleAlpha * Math.PI) / 180;
+
+    if (ptC) {
+      ptC.x = Math.round(4.0 * Math.cos(radAlpha) * 1000) / 1000;
+      ptC.y = Math.round(4.0 * Math.sin(radAlpha) * 1000) / 1000;
+    }
+
+    const ptM = result.find((p) => p.id === 'M' || p.name?.includes('M'));
+    if (ptM) {
+      const radM = radAlpha / 2;
+      ptM.x = Math.round(3.8 * Math.cos(radM) * 1000) / 1000;
+      ptM.y = Math.round(3.8 * Math.sin(radM) * 1000) / 1000;
+    }
+
+    const ptN = result.find((p) => p.id === 'N' || p.name?.includes('N'));
+    if (ptN) {
+      const radN = Math.PI / 2 + radAlpha / 2;
+      ptN.x = Math.round(3.8 * Math.cos(radN) * 1000) / 1000;
+      ptN.y = Math.round(3.8 * Math.sin(radN) * 1000) / 1000;
+    }
+
+    // 兼容历史测试用例中将点 P 作为旋转射线端点的场景 (若 P 初始 y != 0)
+    const ptP = result.find((p) => p.id === 'P' || p.name?.includes('P'));
+    if (ptP && origP && origP.y !== 0) {
+      const radius = Math.hypot(origP.x, origP.y) || 4;
+      ptP.x = Math.round(radius * Math.cos(radAlpha) * 1000) / 1000;
+      ptP.y = Math.round(radius * Math.sin(radAlpha) * 1000) / 1000;
+    }
   }
 
-  if (angleAlpha !== undefined) {
-    const ptP = result.find((p) => p.id === 'P' || p.name === 'P');
-    if (ptP) {
-      const radius = Math.hypot(ptP.x, ptP.y) || 4;
-      const rad = (angleAlpha * Math.PI) / 180;
-      ptP.x = Math.round(radius * Math.cos(rad) * 1000) / 1000;
-      ptP.y = Math.round(radius * Math.sin(rad) * 1000) / 1000;
+  // 2. 载体一：线段双中点载体 (single_segment)
+  const ptA = result.find((p) => p.id === 'A' || p.name === 'A');
+  const ptB = result.find((p) => p.id === 'B' || p.name === 'B');
+  const ptP = result.find((p) => p.id === 'P' || p.name?.includes('P'));
+
+  if (ptP || (ptA && ptB && !ptC)) {
+    const lenAB = typeof params.len_ab === 'number' ? params.len_ab : 8.0;
+    const isOriginAnchored = origA && origA.x === 0;
+    const halfLen = Math.round((lenAB / 2) * 1000) / 1000;
+
+    if (isOriginAnchored) {
+      if (ptA) {
+        ptA.x = 0;
+        ptA.y = 0;
+      }
+      if (ptB) {
+        ptB.x = lenAB;
+        ptB.y = 0;
+      }
+    } else {
+      if (ptA) {
+        ptA.x = -halfLen;
+        ptA.y = 0;
+      }
+      if (ptB) {
+        ptB.x = halfLen;
+        ptB.y = 0;
+      }
+    }
+
+    // 读取动分点 P 坐标并做安全限幅
+    const rawPosP = typeof params.pos_p === 'number' ? params.pos_p : 0.0;
+    const minBound = isOriginAnchored ? 0.2 : -halfLen + 0.2;
+    const maxBound = isOriginAnchored ? lenAB - 0.2 : halfLen - 0.2;
+    const posX = Math.max(minBound, Math.min(maxBound, rawPosP));
+
+    // 仅在 P 作为分段动点 (初始 y === 0) 时更新其在 x 轴上的坐标
+    if (ptP && (!origP || origP.y === 0)) {
+      ptP.x = Math.round(posX * 1000) / 1000;
+      ptP.y = 0;
+    }
+
+    const ptM1 = result.find((p) => p.id === 'M1' || p.name?.includes('M1'));
+    if (ptM1) {
+      const aX = isOriginAnchored ? 0 : -halfLen;
+      ptM1.x = Math.round(((aX + posX) / 2) * 1000) / 1000;
+      ptM1.y = 0;
+    }
+
+    const ptM2 = result.find((p) => p.id === 'M2' || p.name?.includes('M2'));
+    if (ptM2) {
+      if (ptP) {
+        const bX = isOriginAnchored ? lenAB : halfLen;
+        ptM2.x = Math.round(((posX + bX) / 2) * 1000) / 1000;
+      } else {
+        ptM2.x = isOriginAnchored
+          ? Math.round((lenAB / 2) * 1000) / 1000
+          : Math.round((halfLen / 2) * 1000) / 1000;
+      }
+      ptM2.y = 0;
     }
   }
 
@@ -2193,6 +2279,12 @@ export function compileMorphingSandboxConfig(
     carrierId.includes('tangent')
   ) {
     canvasTemplate = 'geometry_tangent_segment_carrier';
+  } else if (
+    modelId === 'lm-7a-02' ||
+    carrierId.includes('single_segment') ||
+    carrierId.includes('angle_carrier')
+  ) {
+    canvasTemplate = 'geometry_segment_midpoint_bisector';
   } else if (carrierId.includes('number_line') || carrierId.includes('number_axis') || modelId === 'lm-7a-01') {
     canvasTemplate = 'number_axis_dynamic';
   } else if (currentCarrier?.isAxis) {
@@ -2215,6 +2307,8 @@ export function compileMorphingSandboxConfig(
     param_sliders_json: paramSlidersJson,
     invariants_display_json: invariantsDisplayJson,
     carrier_json: carrierJson,
+    carrier_id: state?.carrierId || currentCarrier?.id || 'default',
+    carrierId: state?.carrierId || currentCarrier?.id || 'default',
   };
 }
 

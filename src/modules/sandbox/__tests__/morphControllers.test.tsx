@@ -417,8 +417,8 @@ describe('4D Morphing Controllers & X-Ray (Task 11.4 & 铁律 1/3 校验)', () =
     const ptB7A02 = solved7A02.find((p) => p.id === 'B');
     const ptM2_7A02 = solved7A02.find((p) => p.id === 'M2');
     const ptP7A02 = solved7A02.find((p) => p.id === 'P');
-    expect(ptB7A02?.x).toBe(8);
-    expect(ptM2_7A02?.x).toBe(4);
+    expect(ptB7A02?.x).toBe(4); // len_ab = 8, 对称分布 A(-4), B(4)
+    expect(ptM2_7A02?.x).toBe(2);
     expect(ptP7A02?.x).toBeCloseTo(2, 2);
     expect(ptP7A02?.y).toBeCloseTo(3.464, 2);
 

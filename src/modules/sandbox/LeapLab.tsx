@@ -413,6 +413,7 @@ export const LeapLab: React.FC<LeapLabProps> = ({
   }, [currentModel, carrierSpec, camouflageSpec]);
 
   const [currentStepIndex, setCurrentStepIndex] = useState<number>(0);
+  const stepTokenRef = React.useRef<number>(0);
 
   // 模型改变时重置步骤为 0 并默认回到分步推演
   useEffect(() => {
@@ -421,14 +422,16 @@ export const LeapLab: React.FC<LeapLabProps> = ({
     setSessionLeapSubTab('deduction');
   }, [currentModel.model_id, setSessionLeapSubTab]);
 
-  // 步骤推进与画布状态帧同步
+  // 步骤推进与画布状态帧同步 (引入 Step Token Guard 防止异步竞态覆盖)
   useEffect(() => {
     if (labMode !== 'step_deduction') return;
+    const currentToken = ++stepTokenRef.current;
     const currentStage = stages[currentStepIndex];
     if (!currentStage || !currentStage.state_config) return;
 
     const cfg = currentStage.state_config;
     setMorphState((prev) => {
+      if (currentToken !== stepTokenRef.current) return prev;
       const nextSliders = { ...prev.parameterValues, ...(cfg.sliders || {}) };
       return {
         ...prev,

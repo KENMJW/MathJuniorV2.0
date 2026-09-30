@@ -247,6 +247,16 @@ export function canInvertParam(
     }
   }
 
+  // 场景 3b：LM-7A-02 线段双中点与角平分线和差模型
+  if (
+    tpl === 'geometry_segment_midpoint_bisector' ||
+    (config?.sandbox_id && config.sandbox_id.includes('LM-7A-02'))
+  ) {
+    if (id === 'P' || name === 'P' || name.includes('P') || id === 'C' || name === 'C' || name.includes('C')) {
+      return true;
+    }
+  }
+
   // 场景 4：动点 t 参数模型
   // 具有明确 param_t 的模型，且属于动点 (非锚点)
   if (id === 'P' || name.includes('动点') || id === 'M1' || id === 'M2') {
@@ -488,6 +498,31 @@ export function handleParamInversion(
         onParamChange(patch);
         return;
       }
+    }
+  }
+
+  // 3b. LM-7A-02 线段双中点与角平分线和差模型:
+  if (
+    tpl === 'geometry_segment_midpoint_bisector' ||
+    (config?.sandbox_id && config.sandbox_id.includes('LM-7A-02'))
+  ) {
+    if (id === 'P' || name === 'P' || name.includes('P')) {
+      const lenAB = Number(paramValues['len_ab'] ?? 8.0);
+      const halfLen = lenAB / 2;
+      const safeMin = -halfLen + 0.2;
+      const safeMax = halfLen - 0.2;
+      const clampedX = Math.max(safeMin, Math.min(safeMax, Math.round(pt.X() * 10) / 10));
+      patch['pos_p'] = clampedX;
+      onParamChange(patch);
+      return;
+    }
+    if (id === 'C' || name === 'C' || name.includes('C')) {
+      let deg = Math.round((Math.atan2(pt.Y(), pt.X()) * 180) / Math.PI);
+      if (deg < 0) deg += 360;
+      const safeDeg = Math.max(10, Math.min(170, deg));
+      patch['angle_alpha'] = safeDeg;
+      onParamChange(patch);
+      return;
     }
   }
 
@@ -1828,6 +1863,38 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
         scope['sector_area'] = (n * Math.PI * r * r) / 360;
       }
 
+      // 注入 carrierId 与 modelId (支持跨载体不变量隔离与条件判定)
+      const rawCarrierId =
+        (config as any).carrier_id ||
+        (config as any).carrierId ||
+        (config as any).currentCarrierId ||
+        '';
+      scope['carrierId'] = rawCarrierId;
+      scope['carrier_id'] = rawCarrierId;
+      scope['modelId'] = config.sandbox_id || '';
+      scope['sandboxId'] = config.sandbox_id || '';
+
+      // LM-7A-02 线段双中点与角平分线和差模型
+      if (tpl === 'geometry_segment_midpoint_bisector' || (config.sandbox_id || '').includes('LM-7A-02')) {
+        const lenAB = Number(paramValues['len_ab'] ?? 8.0);
+        scope['len_ab'] = lenAB;
+        scope['half_len'] = lenAB / 2;
+        scope['angle_alpha'] = Number(paramValues['angle_alpha'] ?? 90.0);
+      }
+
+      // SB-QUADRATIC-VERTICAL-HEIGHT 抛物线铅垂高模型
+      if (config.sandbox_id === 'SB-QUADRATIC-VERTICAL-HEIGHT' || tpl.includes('vertical_height')) {
+        const kScale = Number(paramValues['k_scale'] ?? paramValues['a'] ?? -1);
+        const xp = Number(paramValues['x_p'] ?? 0);
+        scope['k_scale'] = kScale;
+        scope['a'] = kScale;
+        scope['x_p'] = xp;
+        const yP = Math.max(0, kScale * xp * xp + 4);
+        scope['h'] = yP;
+        scope['inv_h'] = yP;
+        scope['inv_area'] = 2 * yP;
+      }
+
       return scope;
     };
 
@@ -2550,10 +2617,13 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
           pt.on('drag', () => {
             isDraggingRef.current = true;
             if (
-              tpl.startsWith('number_axis') ||
+              (tpl.startsWith('number_axis') ||
               tpl.includes('number_line') ||
               tpl === 'axis' ||
-              tpl === 'number_axis_dynamic'
+              tpl === 'number_axis_dynamic') &&
+              config.sandbox_id !== 'SB-QUADRATIC-VERTICAL-HEIGHT' &&
+              !tpl.includes('quadratic') &&
+              !tpl.includes('parabola')
             ) {
               const coordsMode =
                 typeof window !== 'undefined' && (window as any).JXG?.COORDS_BY_USER !== undefined
@@ -2562,6 +2632,49 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
                   ? JXG.COORDS_BY_USER
                   : 1;
               pt.setPosition(coordsMode, [pt.X(), 0]);
+            }
+
+            // 针对 SB-QUADRATIC-VERTICAL-HEIGHT 铅垂高模型动点 P 约束
+            if (config.sandbox_id === 'SB-QUADRATIC-VERTICAL-HEIGHT' || tpl.includes('vertical_height')) {
+              if (ptDef.id === 'P' || ptDef.name?.includes('P')) {
+                const kScale = Number(paramValues['k_scale'] ?? paramValues['a'] ?? -1);
+                const xP = Math.max(-2, Math.min(2, pt.X()));
+                const yP = Math.max(0, kScale * xP * xP + 4);
+                const coordsMode =
+                  typeof window !== 'undefined' && (window as any).JXG?.COORDS_BY_USER !== undefined
+                    ? (window as any).JXG.COORDS_BY_USER
+                    : typeof JXG?.COORDS_BY_USER !== 'undefined'
+                    ? JXG.COORDS_BY_USER
+                    : 1;
+                pt.setPosition(coordsMode, [xP, yP]);
+                if (elements['Q']) {
+                  elements['Q'].setPosition(coordsMode, [xP, 0]);
+                }
+              }
+            }
+
+            // 针对 LM-7A-02 线段双中点载体动点 P 约束与双中点动态联动
+            if (tpl === 'geometry_segment_midpoint_bisector' || (config.sandbox_id || '').includes('LM-7A-02')) {
+              if (ptDef.id === 'P' || ptDef.name?.includes('P')) {
+                const lenAB = Number(paramValues['len_ab'] ?? 8.0);
+                const halfLen = lenAB / 2;
+                const safeMin = -halfLen + 0.2;
+                const safeMax = halfLen - 0.2;
+                const curX = Math.max(safeMin, Math.min(safeMax, pt.X()));
+                const coordsMode =
+                  typeof window !== 'undefined' && (window as any).JXG?.COORDS_BY_USER !== undefined
+                    ? (window as any).JXG.COORDS_BY_USER
+                    : typeof JXG?.COORDS_BY_USER !== 'undefined'
+                    ? JXG.COORDS_BY_USER
+                    : 1;
+                pt.setPosition(coordsMode, [curX, 0]);
+                if (elements['M1']) {
+                  elements['M1'].setPosition(coordsMode, [(-halfLen + curX) / 2, 0]);
+                }
+                if (elements['M2']) {
+                  elements['M2'].setPosition(coordsMode, [(curX + halfLen) / 2, 0]);
+                }
+              }
             }
             if (onParamChangeRef.current && canInvertParam(tpl, ptDef, isCircleTemplate, config)) {
               handleParamInversion(
@@ -2722,7 +2835,16 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
           paramValues['param_h'] !== undefined ||
           paramValues['h'] !== undefined;
 
-        const a = Number(paramValues['param_a'] ?? paramValues['a'] ?? currentScope['a'] ?? 1);
+        const isVerticalHeight =
+          sid === 'SB-QUADRATIC-VERTICAL-HEIGHT' || tpl.includes('vertical_height');
+
+        const a = Number(
+          paramValues['k_scale'] ??
+          paramValues['param_a'] ??
+          paramValues['a'] ??
+          currentScope['a'] ??
+          (isVerticalHeight ? -1 : 1)
+        );
         let hVal = 0;
         let kVal = 0;
         let fn: (x: number) => number;
@@ -2735,6 +2857,10 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
           fn = (x: number) => a * (x - hVal) * (x - hVal) + kVal;
           symX = hVal;
           vertY = kVal;
+        } else if (isVerticalHeight) {
+          fn = (x: number) => a * x * x + 4;
+          symX = 0;
+          vertY = 4;
         } else {
           const b = Number(currentScope['b'] ?? 0);
           const c = Number(currentScope['c'] ?? 0);
@@ -2757,7 +2883,7 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
         });
 
         // 顶点 V(symX, vertY)
-        if (!elements['p_vertex'] && !elements['V'] && !elements['pt_v']) {
+        if (!elements['p_vertex'] && !elements['V'] && !elements['pt_v'] && !isVerticalHeight) {
           board.create('point', [symX, vertY], {
             name: 'V',
             size: 5,
@@ -2766,6 +2892,40 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
             strokeWidth: 2,
             fixed: true,
           });
+        }
+
+        // 特别支持 SB-QUADRATIC-VERTICAL-HEIGHT 割线、三角形与铅垂高
+        if (isVerticalHeight) {
+          const ptA = elements['A'];
+          const ptB = elements['B'];
+          const ptP = elements['P'];
+          const ptQ = elements['Q'];
+
+          // 绘制割线 AB
+          if (ptA && ptB) {
+            board.create('segment', [ptA, ptB], {
+              strokeColor: '#38bdf8',
+              strokeWidth: 2.5,
+            });
+          }
+
+          // 绘制割线三角形 △PAB
+          if (ptA && ptP && ptB) {
+            board.create('polygon', [ptA, ptP, ptB], {
+              borders: { strokeColor: '#38bdf8', strokeWidth: 2 },
+              fillColor: '#38bdf8',
+              fillOpacity: 0.22,
+            });
+          }
+
+          // 绘制铅垂高线段 PQ (虚线橙色)
+          if (ptP && ptQ) {
+            board.create('segment', [ptP, ptQ], {
+              strokeColor: '#f59e0b',
+              strokeWidth: 2.5,
+              dash: 2,
+            });
+          }
         }
 
         // 水平对称跨度虚线
@@ -2781,7 +2941,7 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
 
         // 3. 判别式条件显隐交点与弦长线段
         const delta = currentScope['Delta'];
-        if (!isVertexForm && delta > 0 && a !== 0) {
+        if (!isVertexForm && !isVerticalHeight && delta > 0 && a !== 0) {
           const b = Number(currentScope['b'] ?? 0);
           const x1 = (-b - Math.sqrt(delta)) / (2 * a);
           const x2 = (-b + Math.sqrt(delta)) / (2 * a);
@@ -2805,7 +2965,7 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
             strokeColor: '#a855f7',
             strokeWidth: 3,
           });
-        } else if (!isVertexForm && delta === 0 && a !== 0) {
+        } else if (!isVertexForm && !isVerticalHeight && delta === 0 && a !== 0) {
           const b = Number(currentScope['b'] ?? 0);
           const x0 = -b / (2 * a);
           board.create('point', [x0, 0], {
@@ -3396,6 +3556,109 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
           }
         }
       }
+      // (十五点五) 线段双中点与角平分线和差模型 (LM-7A-02 / geometry_segment_midpoint_bisector)
+      else if (
+        tpl === 'geometry_segment_midpoint_bisector' ||
+        (config.sandbox_id || '').includes('LM-7A-02')
+      ) {
+        const ptA = elements['A'];
+        const ptB = elements['B'];
+        const ptP = elements['P'];
+        const ptM1 = elements['M1'];
+        const ptM2 = elements['M2'];
+        const ptO = elements['O'];
+        const ptC = elements['C'];
+        const ptM = elements['M'];
+        const ptN = elements['N'];
+
+        // 载体一：线段双中点载体 (single_segment)
+        if (ptA && ptB && ptP) {
+          // 1. 底层基准全长线段 AB
+          board.create('segment', [ptA, ptB], {
+            strokeColor: '#38bdf8',
+            strokeWidth: 3,
+          });
+
+          // 2. 分段线段 AP 与 PB 高亮
+          board.create('segment', [ptA, ptP], {
+            strokeColor: '#f59e0b',
+            strokeWidth: 3.5,
+          });
+          board.create('segment', [ptP, ptB], {
+            strokeColor: '#34c759',
+            strokeWidth: 3.5,
+          });
+
+          // 3. 双中点跨度线段 M1M2 (恒等折半)
+          if (ptM1 && ptM2) {
+            board.create('segment', [ptM1, ptM2], {
+              strokeColor: '#a855f7',
+              strokeWidth: 2.5,
+              dash: 2,
+            });
+          }
+        }
+        // 载体二：共顶点邻补角双平分线载体 (angle_carrier)
+        else if (ptO && ptC) {
+          // 1. 基准平角线段 (射线 OA 与 OB)
+          if (ptA && ptB) {
+            board.create('segment', [ptB, ptA], {
+              strokeColor: '#64748b',
+              strokeWidth: 2,
+            });
+          } else {
+            if (ptA) board.create('segment', [ptO, ptA], { strokeColor: '#64748b', strokeWidth: 2 });
+            if (ptB) board.create('segment', [ptO, ptB], { strokeColor: '#64748b', strokeWidth: 2 });
+          }
+
+          // 2. 动射线 OC
+          board.create('segment', [ptO, ptC], {
+            strokeColor: '#f59e0b',
+            strokeWidth: 3,
+          });
+
+          // 3. 内角平分线 OM 与外角平分线 ON
+          if (ptM) {
+            board.create('segment', [ptO, ptM], {
+              strokeColor: '#34c759',
+              strokeWidth: 2.5,
+              dash: 2,
+            });
+          }
+          if (ptN) {
+            board.create('segment', [ptO, ptN], {
+              strokeColor: '#a855f7',
+              strokeWidth: 2.5,
+              dash: 2,
+            });
+          }
+
+          // 4. 动态绘制 ∠MON = 90° 直角标折线
+          if (ptM && ptN) {
+            const radM = Math.atan2(ptM.Y(), ptM.X());
+            const radN = Math.atan2(ptN.Y(), ptN.X());
+            const sz = 0.8;
+            const r1X = sz * Math.cos(radM);
+            const r1Y = sz * Math.sin(radM);
+            const r2X = sz * Math.cos(radN);
+            const r2Y = sz * Math.sin(radN);
+            const cornerX = r1X + r2X;
+            const cornerY = r1Y + r2Y;
+            board.create('line', [[r1X, r1Y], [cornerX, cornerY]], {
+              straightFirst: false,
+              straightLast: false,
+              strokeColor: '#fbbf24',
+              strokeWidth: 2,
+            });
+            board.create('line', [[r2X, r2Y], [cornerX, cornerY]], {
+              straightFirst: false,
+              straightLast: false,
+              strokeColor: '#fbbf24',
+              strokeWidth: 2,
+            });
+          }
+        }
+      }
       // (十六) 基础多边形降级回退
       else {
         const hasExplicitPolys = Array.isArray(visualElements?.polygons) && visualElements.polygons.length > 0;
@@ -3425,8 +3688,11 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
     // (九) 46 概念沙盒声明式几何填充面与直角标渲染引擎 (TASK-FE-0021 步骤 2)
     const skipDefaultPolygons = [
       'SB-KP057', 'SB-KP053', 'SB-KP055', 'SB-KP068', 'SB-KP056',
-      'SB-KP062', 'SB-KP064', 'SB-KP065', 'SB-KP066', 'SB-KP058', 'SB-KP051'
+      'SB-KP062', 'SB-KP064', 'SB-KP065', 'SB-KP066', 'SB-KP058', 'SB-KP051',
+      'SB-QUADRATIC-VERTICAL-HEIGHT'
     ].includes(config.sandbox_id || '') ||
+    (config.sandbox_id || '').includes('LM-7A-02') ||
+    tpl === 'geometry_segment_midpoint_bisector' ||
     tpl === 'geometry_pythagorean_template' ||
     tpl.includes('midpoint_quad') ||
     tpl.includes('equilateral') ||

@@ -472,6 +472,21 @@ function formatInvariantTextRaw(
   }
 
   // 2. 纯几何不变量计算
+  const isGeometricType = [
+    'distance',
+    'angle',
+    'area',
+    'area_triangle',
+    'ratio',
+    'ratio_distance',
+    'distance_sum',
+    'vertical_distance',
+    'horizontal_distance',
+    'distance_sq',
+    'midpoint',
+    'point',
+  ].includes(spec.type || '');
+
   const val = evaluateInvariantValue(spec, pointMap);
 
   if (val !== null) {
@@ -480,6 +495,11 @@ function formatInvariantTextRaw(
     const text = formula.replace('{val}', formattedVal);
     const wrappedText = wrapFormulaLatex(text);
     return label ? `${label}: ${wrappedText}` : wrappedText;
+  }
+
+  // 几何测度依赖点未就绪时平滑隐藏，绝不下落到代数方程求值
+  if (isGeometricType) {
+    return null;
   }
 
   // 2.5 关系型守恒定理（直接展示几何关系结论，避免非数值方程被代数求值为 0）
@@ -496,10 +516,17 @@ function formatInvariantTextRaw(
       if (st) stateSuffix = ` (${st})`;
     }
 
-    // 如果包含 {val} 占位符
+    // 如果包含 {val} 占位符且非纯几何类型
     if (formula.includes('{val}')) {
-      const numVal = evaluateSafeExpression(formula.replace(/\{val\}/g, '0'), currentScope);
-      const formatted = Number.isFinite(numVal) ? Number(numVal).toFixed(2) : String(numVal);
+      const parts = formula.split('=');
+      const exprToEval = parts.length > 1
+        ? parts[parts.length - 1].replace(/\{val\}/g, '').trim()
+        : formula.replace(/\{val\}/g, '').trim();
+      const numVal = exprToEval ? evaluateSafeExpression(exprToEval, currentScope) : null;
+      if (numVal === null || typeof numVal === 'undefined' || !Number.isFinite(numVal)) {
+        return null;
+      }
+      const formatted = Number(numVal).toFixed(2);
       const text = formula.replace('{val}', formatted);
       const wrappedText = wrapFormulaLatex(text);
       return label ? `${label}: ${wrappedText}${stateSuffix}` : `${wrappedText}${stateSuffix}`;
