@@ -250,17 +250,59 @@ export function evaluateInvariantValue(
 }
 
 /**
+ * 展示层变量清洗字典：将代码变量名置换为标准初中数学排版符号，杜绝下划线引起的 KaTeX 下标乱码
+ */
+export function sanitizeFormulaForDisplay(formula: string): string {
+  if (!formula) return formula;
+  return formula
+    // 分数形态有理数
+    .replace(/\bp_num\s*\/\s*q_den\b/g, '\\frac{p}{q}')
+    .replace(/\bp_num\b/g, 'p')
+    .replace(/\bq_den\b/g, 'q')
+    .replace(/\bunit_scale\b/g, 'u')
+    // 相反数与实数
+    .replace(/\bval_a\b/g, 'a')
+    .replace(/\bval_base\b/g, 'a')
+    .replace(/\bzoom_level\b/g, 'k')
+    // 函数通用参数
+    .replace(/\bparam_a\b/g, 'a')
+    .replace(/\bparam_b\b/g, 'b')
+    .replace(/\bparam_c\b/g, 'c')
+    .replace(/\bparam_h\b/g, 'h')
+    .replace(/\bparam_k\b/g, 'k')
+    .replace(/\bparam_m\b/g, 'm')
+    .replace(/\bparam_n\b/g, 'n')
+    .replace(/\bparam_t\b/g, 't')
+    .replace(/\bslope_k\b/g, 'k')
+    .replace(/\bintercept_b\b/g, 'b')
+    .replace(/\bk_prop\b/g, 'k')
+    .replace(/\bpos_p\b/g, 'x_P')
+    .replace(/\bpoint_a\b/g, 'x_A')
+    .replace(/\bpoint_b\b/g, 'x_B')
+    .replace(/\brect_k\b/g, 'k')
+    .replace(/\binv_k\b/g, 'k')
+    .replace(/\bline_dist_d\b/g, 'd')
+    .replace(/\bchord_dist_d\b/g, 'd')
+    .replace(/\bcircle_r\b/g, 'r')
+    .replace(/\bradius_r\b/g, 'r')
+    .replace(/\bangle_n\b/g, 'n^\\circ')
+    .replace(/\bangle_alpha\b/g, '\\alpha')
+    .replace(/\brot_deg\b/g, '\\theta');
+}
+
+/**
  * 将含有 LaTeX 命令或数学表达式的文本片段规范包裹在 $...$ 中，使 MathRenderer / KaTeX 能够正常解析
  */
 export function wrapFormulaLatex(expr: string): string {
   if (!expr) return expr;
-  if (expr.includes('$')) return expr;
+  const sanitized = sanitizeFormulaForDisplay(expr);
+  if (sanitized.includes('$')) return sanitized;
   // 检测是否含有 LaTeX 特殊命令或转义符号 (\angle, \sqrt, \frac, ^\circ, ^, _, 等)
-  const hasLatex = /(\\[a-zA-Z]+|\^|_|\{|\})/.test(expr);
+  const hasLatex = /(\\[a-zA-Z]+|\^|_|\{|\})/.test(sanitized);
   if (hasLatex) {
-    return `$${expr.trim()}$`;
+    return `$${sanitized.trim()}$`;
   }
-  return expr;
+  return sanitized;
 }
 
 const EMOJI_SANITIZE_REGEX = /[\uD800-\uDBFF][\uDC00-\uDFFF]|[\u2600-\u27BF]/g;

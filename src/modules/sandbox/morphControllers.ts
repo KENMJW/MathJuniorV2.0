@@ -406,8 +406,10 @@ export function solveLM7B04(
   const riverD = params.river_d;
 
   const ptA = result.find((p) => p.id === 'A' || p.name?.startsWith('A'));
-  const xA = ptA ? ptA.x : -4;
+  const villageAx = params.village_ax !== undefined ? params.village_ax : (params.village_a_x !== undefined ? params.village_a_x : (ptA ? ptA.x : -4));
+  const xA = villageAx;
   const yA = ptA ? ptA.y : 4;
+  if (ptA) { ptA.x = xA; ptA.y = yA; }
   const d = riverD !== undefined ? riverD : 2;
 
   // 平移村庄 A'(xA, yA - river_d)
@@ -418,7 +420,7 @@ export function solveLM7B04(
   if (ptAPrime) {
     ptAPrime.x = aPrimeX;
     ptAPrime.y = aPrimeY;
-  } else if (riverD !== undefined || bridgeX !== undefined) {
+  } else if (riverD !== undefined || bridgeX !== undefined || params.village_ax !== undefined) {
     result.push({
       id: 'A_prime',
       name: "A'",
@@ -798,18 +800,42 @@ export function solveLM7A01(points: CarrierPoint[], params: Record<string, numbe
   const ptO = result.find((p) => p.id === 'Origin' || p.id === 'O');
   const ptA = result.find((p) => p.id === 'A');
   const ptB = result.find((p) => p.id === 'B');
-  let ptP = result.find((p) => p.id === 'P');
+  const ptP = result.find((p) => p.id === 'P');
 
-  const ptAVal = params.point_a !== undefined ? params.point_a : -3.0;
-  const ptBVal = params.point_b !== undefined ? params.point_b : 3.0;
-
+  // 1. 定点 A, B 与原点 O 坐标响应
+  const ptAVal = typeof params.point_a === 'number' ? params.point_a : -3.0;
+  const ptBVal = typeof params.point_b === 'number' ? params.point_b : 3.0;
   if (ptO) { ptO.x = 0; ptO.y = 0; }
   if (ptA) { ptA.x = ptAVal; ptA.y = 0; }
   if (ptB) { ptB.x = ptBVal; ptB.y = 0; }
 
-  if (params.param_t === undefined && params.pos_p !== undefined) {
-    if (ptP) { ptP.x = Math.round(params.pos_p * 1000) / 1000; ptP.y = 0; }
+  // 2. 动点 P: 统一绑定 pos_p 与 param_t，消除画布与遥测公式的脱节矛盾
+  const tOffset = typeof params.param_t === 'number' ? (params.param_t - 5.0) * 0.5 : 0;
+  let targetX = 1.0;
+
+  if (typeof params.pos_p === 'number') {
+    if (params.pos_p !== 1.0) {
+      targetX = params.pos_p + tOffset;
+    } else {
+      targetX = 1.0 + tOffset;
+    }
+  } else if (typeof params.slider_p === 'number') {
+    targetX = params.slider_p + tOffset;
+  } else {
+    targetX = 1.0 + tOffset;
   }
+
+  // 安全限幅于数轴可视范围 [-8, 8]
+  targetX = Math.max(-8, Math.min(8, Math.round(targetX * 1000) / 1000));
+
+  // 回写同步 params.pos_p，确保遥测公式 (invariants) 计算与画布动点坐标绝对一致
+  params.pos_p = targetX;
+
+  if (ptP) {
+    ptP.x = targetX;
+    ptP.y = 0;
+  }
+
   return result;
 }
 
@@ -842,16 +868,22 @@ export function solveLM8A08(points: CarrierPoint[], params: Record<string, numbe
   const result = points.map((p) => ({ ...p }));
   const root = params.param_root !== undefined ? params.param_root : 2.0;
   const vx = params.var_x !== undefined ? params.var_x : 3.0;
+  const telescopeN = params.telescope_n !== undefined ? params.telescope_n : (params.param_n !== undefined ? params.param_n : 4);
 
   const ptHole = result.find((p) => p.id === 'Hole');
   const ptRoot = result.find((p) => p.id === 'P_root');
   const ptAsympTop = result.find((p) => p.id === 'Asymp_top');
   const ptAsympBot = result.find((p) => p.id === 'Asymp_bot');
+  const ptSum = result.find((p) => p.id === 'Sum_pt');
 
   if (ptHole) { ptHole.x = root; ptHole.y = 0; }
   if (ptRoot) { ptRoot.x = vx; ptRoot.y = 1.0; }
   if (ptAsympTop) { ptAsympTop.x = root; ptAsympTop.y = 5; }
   if (ptAsympBot) { ptAsympBot.x = root; ptAsympBot.y = -5; }
+  if (ptSum) {
+    ptSum.x = telescopeN;
+    ptSum.y = Math.round((1 - 1 / (telescopeN + 1)) * 1000) / 1000;
+  }
   return result;
 }
 
@@ -1081,11 +1113,12 @@ export function solveLM8B17(points: CarrierPoint[], params: Record<string, numbe
   const result = points.map((p) => ({ ...p }));
   const shift = params.score_shift !== undefined ? params.score_shift : 0;
   const scaleB = params.var_scale_b !== undefined ? params.var_scale_b : 1.0;
+  const shotsCount = params.shots_count !== undefined ? params.shots_count : 5;
 
   const baseA = [8, 8.5, 7.5, 8, 8];
   const baseB = [6, 10, 7, 10, 7];
 
-  for (let i = 1; i <= 5; i++) {
+  for (let i = 1; i <= Math.min(5, shotsCount); i++) {
     const ptA = result.find((p) => p.id === `A${i}`);
     if (ptA) ptA.y = Math.round((baseA[i - 1] + shift) * 100) / 100;
     const ptB = result.find((p) => p.id === `B${i}`);
@@ -1176,7 +1209,9 @@ export function solveLM9A20(
 ): CarrierPoint[] {
   const result = points.map((p) => ({ ...p }));
   const s = 6.0;
-  const be = params.be_length !== undefined ? Math.max(0.1, Math.min(s - 0.1, params.be_length)) : 2.0;
+  const be = params.be_length !== undefined
+    ? Math.max(0.1, Math.min(s - 0.1, params.be_length))
+    : (params.half_angle_val !== undefined ? Math.max(0.1, Math.min(s - 0.1, params.half_angle_val / 20)) : 2.0);
 
   // 由半角 45° 得 tan(DAF) = (s - be) / (s + be) => DF = s * (s - be) / (s + be)
   const df = (s * (s - be)) / (s + be);
@@ -1202,8 +1237,10 @@ export function solveLM9A20(
   if (ptF) { ptF.x = fx; ptF.y = fy; }
 
   // 旋转点 G: 将 △ABE 绕 A 逆时针旋转 90°，B 落到 D，E 落到 G，坐标为 (3, 3 + be)
-  const gx = 3;
-  const gy = Math.round((3 + be) * 1000) / 1000;
+  // 支持 rotate_anim 动画插值进度 (0 ~ 1)
+  const anim = params.rotate_anim !== undefined ? Math.max(0, Math.min(1, params.rotate_anim)) : 1.0;
+  const gx = Math.round((ex * (1 - anim) + 3 * anim) * 1000) / 1000;
+  const gy = Math.round((ey * (1 - anim) + (3 + be) * anim) * 1000) / 1000;
   let ptG = result.find((p) => p.id === 'G' || p.name === 'G');
   if (ptG) {
     ptG.x = gx;
@@ -1434,7 +1471,8 @@ export function solveLM9A25(
 export function solveLM9A26(points: CarrierPoint[], params: Record<string, number>): CarrierPoint[] {
   const result = points.map((p) => ({ ...p }));
   const a = params.coeff_a !== undefined ? params.coeff_a : 0.5;
-  const t = params.slider_t !== undefined ? params.slider_t : 2.0;
+  const caseType = params.case_type !== undefined ? params.case_type : 1;
+  const t = params.slider_t !== undefined ? params.slider_t : (caseType === 2 ? 1.5 : 2.0);
 
   const yp = a * t * t - 2;
 
@@ -1468,7 +1506,8 @@ export function solveLM9A26(points: CarrierPoint[], params: Record<string, numbe
 export function solveLM9A27(points: CarrierPoint[], params: Record<string, number>): CarrierPoint[] {
   const result = points.map((p) => ({ ...p }));
   const a = params.coeff_a !== undefined ? params.coeff_a : -0.5;
-  const t = params.slider_t !== undefined ? params.slider_t : 0.0;
+  const targetType = params.target_type !== undefined ? params.target_type : 1;
+  const t = params.slider_t !== undefined ? params.slider_t : (targetType === 2 ? 1.0 : 0.0);
 
   const yp = a * t * t + 2;
 
@@ -1522,6 +1561,10 @@ export function solveLM9B29(
 ): CarrierPoint[] {
   const result = points.map((p) => ({ ...p }));
   const sliderXC = params.slider_xc !== undefined ? params.slider_xc : 1;
+  const alphaDeg = params.slider_angle_alpha !== undefined
+    ? params.slider_angle_alpha
+    : (params.angle_alpha !== undefined ? params.angle_alpha : 90.0);
+  const alphaRad = (alphaDeg * Math.PI) / 180;
 
   const ptA = result.find((p) => p.id === 'A' || p.name === 'A');
   const ptB = result.find((p) => p.id === 'B' || p.name === 'B');
@@ -1544,10 +1587,11 @@ export function solveLM9B29(
   }
 
   // 严格母子相似: △CAD ~ △EBC
-  // ∠A = ∠B = 90°, ∠DCE = 90° => BE = (AC · CB) / AD
+  // ∠A = ∠B = alpha, ∠DCE = alpha => BE = (AC · CB) / AD * sin(alpha)
   const ac = Math.max(0.001, xc - xA);
   const cb = Math.max(0.001, xB - xc);
-  const eb = (ac * cb) / Math.max(0.001, adHeight);
+  const sinAlpha = Math.sin(alphaRad) || 1;
+  const eb = ((ac * cb) / Math.max(0.001, adHeight)) * sinAlpha;
 
   if (ptE) {
     ptE.x = xB;
@@ -1681,7 +1725,8 @@ export function solveLM9B32(
   const xn = (ax - k * bx) / (1 - k);
 
   const ox = (xm + xn) / 2;
-  const radius = Math.abs(xn - xm) / 2;
+  const radiusOverride = params.slider_radius_R !== undefined ? params.slider_radius_R : (params.radius_r !== undefined ? params.radius_r : null);
+  const radius = radiusOverride !== null ? Math.max(0.5, radiusOverride) : Math.abs(xn - xm) / 2;
 
   const px = Math.round((ox + radius * Math.cos(thetaRad)) * 1000) / 1000;
   const py = Math.round((radius * Math.sin(thetaRad)) * 1000) / 1000;
@@ -1795,6 +1840,16 @@ export function solveLM9B34(
     ptPPrime.y = -roundedY;
   }
 
+  // 割线斜率 secant_m 辅助动点
+  const secantM = params.secant_m !== undefined ? params.secant_m : 0;
+  let ptSecant = result.find((p) => p.id === 'Secant' || p.name === 'Secant');
+  if (secantM !== 0) {
+    if (ptSecant) {
+      ptSecant.x = 2;
+      ptSecant.y = Math.round((2 * secantM) * 1000) / 1000;
+    }
+  }
+
   return result;
 }
 
@@ -1864,11 +1919,18 @@ export function solveLM9B36(
 export function solveLM9B37(points: CarrierPoint[], params: Record<string, number>): CarrierPoint[] {
   const result = points.map((p) => ({ ...p }));
   const pVal = params.slider_p !== undefined ? params.slider_p : 0.5;
+  const trials = params.slider_trials !== undefined ? params.slider_trials : (params.trials_count !== undefined ? params.trials_count : (params.param_n !== undefined ? params.param_n : 1000));
 
   const ptA = result.find((p) => p.id === 'Stage1_A');
   const ptB = result.find((p) => p.id === 'Stage1_B');
   if (ptA) { ptA.y = Math.round((6 * pVal) * 1000) / 1000; }
   if (ptB) { ptB.y = Math.round((-6 * (1 - pVal)) * 1000) / 1000; }
+
+  const ptSample = result.find((p) => p.id === 'Sample1');
+  if (ptSample) {
+    const error = 1.0 / Math.sqrt(Math.max(1, trials));
+    ptSample.y = Math.round(error * 1000) / 1000;
+  }
   return result;
 }
 
@@ -2053,7 +2115,7 @@ export function compileMorphingSandboxConfig(
     }
   }
 
-  const isCustomDriven = hasCustomParams && currentModelId.toUpperCase() !== 'LM-7A-01';
+  const isCustomDriven = Boolean(solver && solver !== solveGenericMorph) || hasCustomParams;
 
   const transformedPoints = solvedPoints.map((pt) => {
     // 全库 89 处硬编码数字动点名称正则清洗：彻底剔除像 A(-1,5)、B(-4,0)、村庄A(-4,4)、交点P(2,3)、O(0)、甲1(8) 这样的硬编码死数字

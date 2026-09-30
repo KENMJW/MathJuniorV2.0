@@ -611,6 +611,74 @@ export function applyGeometricKinematics(
   let constraints = ptDef.constraints;
   let isFixed = ptDef.isFixed;
 
+  // 0.1 SB-KP003: 相反数与绝对值
+  if (sid === 'SB-KP003' || tpl.includes('opposite')) {
+    const valA = Number(paramValues['val_a'] ?? 3);
+    if (ptDef.id === 'O') { x = 0; y = 0; constraints = 'fixed'; isFixed = true; }
+    else if (ptDef.id === 'A') { x = valA; y = 0; constraints = 'fixed'; isFixed = false; }
+    else if (ptDef.id === 'B') { x = -valA; y = 0; constraints = 'fixed'; isFixed = false; }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 0.2 SB-KP008: 实数的大小比较与估算 (被开方数逼近)
+  if (sid === 'SB-KP008' || tpl.includes('irrational_squeeze')) {
+    const valBase = Number(paramValues['val_base'] ?? 10);
+    const sqrtVal = Math.sqrt(Math.max(0, valBase));
+    const n = Math.floor(sqrtVal);
+    if (ptDef.id === 'p_left') { x = n; y = 0; constraints = 'fixed'; }
+    else if (ptDef.id === 'p_irr') { x = Math.round(sqrtVal * 100) / 100; y = 0; constraints = 'fixed'; }
+    else if (ptDef.id === 'p_right') { x = n + 1; y = 0; constraints = 'fixed'; }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 0.3 SB-KP034: 一次函数图象性质与斜率采样
+  if (sid === 'SB-KP034' || tpl.includes('linear_prop')) {
+    const k = Number(paramValues['slope_k'] ?? 1);
+    const b = Number(paramValues['intercept_b'] ?? 3);
+    const xSample = Number(paramValues['x_sample'] ?? 1);
+    if (ptDef.id === 'o' || ptDef.id === 'O') { x = 0; y = 0; constraints = 'fixed'; isFixed = true; }
+    else if (ptDef.id === 'p_int_x') { x = k !== 0 ? -b / k : 0; y = 0; constraints = 'fixed'; }
+    else if (ptDef.id === 'p_int_y') { x = 0; y = b; constraints = 'fixed'; }
+    else if (ptDef.id === 'P' || ptDef.id === 'p_sample') { x = xSample; y = k * xSample + b; constraints = 'fixed'; }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 0.4 SB-KP041: 二次函数区间最值
+  if (sid === 'SB-KP041' || tpl.includes('quadratic_extrema')) {
+    const h = Number(paramValues['param_h'] ?? 1);
+    const m = Number(paramValues['param_m'] ?? -2);
+    const n = Number(paramValues['param_n'] ?? 3);
+    if (ptDef.id === 'pt_v') { x = h; y = -3; constraints = 'fixed'; }
+    else if (ptDef.id === 'pt_m') { x = m; y = 0; constraints = 'fixed'; }
+    else if (ptDef.id === 'pt_n') { x = n; y = 0; constraints = 'fixed'; }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 0.5 SB-KP042: 二次函数割线不等式
+  if (sid === 'SB-KP042' || tpl.includes('quadratic_ineq')) {
+    const kLevel = Number(paramValues['param_k_level'] ?? 0);
+    const c = Number(paramValues['param_c'] ?? -4);
+    const delta = kLevel - c;
+    const xDist = delta >= 0 ? Math.sqrt(delta) : 0;
+    if (ptDef.id === 'pt_v') { x = 0; y = c; constraints = 'fixed'; }
+    else if (ptDef.id === 'pt_x1') { x = -xDist; y = kLevel; constraints = 'fixed'; }
+    else if (ptDef.id === 'pt_x2') { x = xDist; y = kLevel; constraints = 'fixed'; }
+    return { x, y, constraints, isFixed };
+  }
+
+  // 0.6 SB-KP051: 全等三角形判定模式
+  if (sid === 'SB-KP051' || tpl.includes('congruence_template')) {
+    const tx = Number(paramValues['trans_x'] ?? 5);
+    const ty = Number(paramValues['trans_y'] ?? 0);
+    if (ptDef.id === 'A1') { x = -5; y = 3; constraints = 'fixed'; }
+    else if (ptDef.id === 'B1') { x = -7; y = -2; constraints = 'fixed'; }
+    else if (ptDef.id === 'C1') { x = -2; y = -2; constraints = 'fixed'; }
+    else if (ptDef.id === 'A2') { x = -5 + tx; y = 3 + ty; constraints = 'fixed'; }
+    else if (ptDef.id === 'B2') { x = -7 + tx; y = -2 + ty; constraints = 'fixed'; }
+    else if (ptDef.id === 'C2') { x = -2 + tx; y = -2 + ty; constraints = 'fixed'; }
+    return { x, y, constraints, isFixed };
+  }
+
   // 1. SB-KP057: 勾股定理与赵爽弦图
   if (sid === 'SB-KP057' || tpl === 'geometry_pythagorean_template') {
     const legA = Number(paramValues['leg_a'] ?? 4);
@@ -747,20 +815,22 @@ export function applyGeometricKinematics(
     return { x, y, constraints, isFixed };
   }
 
-  // 8. SB-KP066: 正方形旋转与边长
+  // 8. SB-KP066: 正方形逼近路径、旋转与边长
   if (sid === 'SB-KP066' || tpl.includes('square')) {
     const sideA = Number(paramValues['side_a'] ?? 4);
     const rotAngle = Number(paramValues['rot_angle'] ?? 0);
     const theta = (rotAngle * Math.PI) / 180;
     const s = sideA / 2;
+    const w = s;
+    const h = s;
     const rot = (cx: number, cy: number) => ({
       x: cx * Math.cos(theta) - cy * Math.sin(theta),
       y: cx * Math.sin(theta) + cy * Math.cos(theta),
     });
-    if (ptDef.id === 'p_A') { const p = rot(-s, -s); x = p.x; y = p.y; constraints = 'fixed'; }
-    else if (ptDef.id === 'p_B') { const p = rot(s, -s); x = p.x; y = p.y; constraints = 'fixed'; }
-    else if (ptDef.id === 'p_C') { const p = rot(s, s); x = p.x; y = p.y; constraints = 'fixed'; }
-    else if (ptDef.id === 'p_D') { const p = rot(-s, s); x = p.x; y = p.y; constraints = 'fixed'; }
+    if (ptDef.id === 'p_A' || ptDef.id === 'A') { const p = rot(-w, -h); x = p.x; y = p.y; constraints = 'fixed'; }
+    else if (ptDef.id === 'p_B' || ptDef.id === 'B') { const p = rot(w, -h); x = p.x; y = p.y; constraints = 'fixed'; }
+    else if (ptDef.id === 'p_C' || ptDef.id === 'C') { const p = rot(w, h); x = p.x; y = p.y; constraints = 'fixed'; }
+    else if (ptDef.id === 'p_D' || ptDef.id === 'D') { const p = rot(-w, h); x = p.x; y = p.y; constraints = 'fixed'; }
     return { x, y, constraints, isFixed };
   }
 
@@ -2814,8 +2884,25 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
             ticks: { drawZero: true, strokeColor: '#475569', label: { color: '#cbd5e1', fontSize: 11 } },
           });
         }
-        // 若存在两个点，连接两点形成区间距离线段
-        if (elements['A'] && elements['B']) {
+        if (sid === 'SB-KP003' || tpl.includes('opposite')) {
+          if (elements['O'] && elements['A']) {
+            board.create('segment', [elements['O'], elements['A']], { strokeColor: '#38bdf8', strokeWidth: 3 });
+          }
+          if (elements['O'] && elements['B']) {
+            board.create('segment', [elements['O'], elements['B']], { strokeColor: '#f59e0b', strokeWidth: 3 });
+          }
+        } else if (sid === 'SB-KP008' || tpl.includes('irrational_squeeze')) {
+          const pL = elements['p_left'];
+          const pR = elements['p_right'];
+          const pIrr = elements['p_irr'];
+          if (pL && pR) {
+            board.create('segment', [pL, pR], { strokeColor: '#f59e0b', strokeWidth: 4 });
+          }
+          if (pIrr) {
+            const topPt = board.create('point', [() => pIrr.X(), 1.5], { visible: false, fixed: true });
+            board.create('segment', [pIrr, topPt], { strokeColor: '#a855f7', strokeWidth: 2, dash: 2 });
+          }
+        } else if (elements['A'] && elements['B']) {
           board.create('segment', [elements['A'], elements['B']], {
             strokeColor: '#38bdf8',
             strokeWidth: 3.5,
@@ -2937,6 +3024,44 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
             strokeWidth: 1.8,
             dash: 2,
           });
+        }
+
+        // 特别支持 SB-KP041 二次函数区间最值
+        if (sid === 'SB-KP041' || tpl.includes('extrema')) {
+          const h = Number(paramValues['param_h'] ?? 1);
+          const m = Number(paramValues['param_m'] ?? -2);
+          const n = Number(paramValues['param_n'] ?? 3);
+          const ptMTop = board.create('point', [m, (m - h) ** 2 - 3], { visible: false, fixed: true });
+          const ptNTop = board.create('point', [n, (n - h) ** 2 - 3], { visible: false, fixed: true });
+          const ptMBot = board.create('point', [m, -5], { visible: false, fixed: true });
+          const ptNBot = board.create('point', [n, -5], { visible: false, fixed: true });
+          board.create('segment', [ptMBot, ptMTop], { strokeColor: '#a855f7', strokeWidth: 1.8, dash: 2 });
+          board.create('segment', [ptNBot, ptNTop], { strokeColor: '#a855f7', strokeWidth: 1.8, dash: 2 });
+          board.create('functiongraph', [(x: number) => (x - h) ** 2 - 3, Math.min(m, n), Math.max(m, n)], {
+            strokeColor: '#f59e0b',
+            strokeWidth: 4,
+          });
+        }
+
+        // 特别支持 SB-KP042 二次函数割线不等式
+        if (sid === 'SB-KP042' || tpl.includes('ineq')) {
+          const kLevel = Number(paramValues['param_k_level'] ?? 0);
+          const c = Number(paramValues['param_c'] ?? -4);
+          board.create('line', [[-10, kLevel], [10, kLevel]], {
+            strokeColor: '#f59e0b',
+            strokeWidth: 2,
+            dash: 2,
+          });
+          const deltaVal = kLevel - c;
+          if (deltaVal >= 0) {
+            const xDist = Math.sqrt(deltaVal);
+            const ptX1 = board.create('point', [-xDist, kLevel], { name: 'x1', fillColor: '#38bdf8', strokeColor: '#fff', size: 4, fixed: true });
+            const ptX2 = board.create('point', [xDist, kLevel], { name: 'x2', fillColor: '#38bdf8', strokeColor: '#fff', size: 4, fixed: true });
+            const ptX1Axis = board.create('point', [-xDist, 0], { visible: false, fixed: true });
+            const ptX2Axis = board.create('point', [xDist, 0], { visible: false, fixed: true });
+            board.create('segment', [ptX1, ptX1Axis], { strokeColor: '#64748b', strokeWidth: 1.5, dash: 2 });
+            board.create('segment', [ptX2, ptX2Axis], { strokeColor: '#64748b', strokeWidth: 1.5, dash: 2 });
+          }
         }
 
         // 3. 判别式条件显隐交点与弦长线段
@@ -3065,6 +3190,24 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
               fillColor: '#38bdf8',
               fillOpacity: 0.18,
             });
+          }
+
+          // SB-KP034 斜率采样动点 P 与增量直角三角形
+          if (sid === 'SB-KP034' || paramValues['x_sample'] !== undefined) {
+            const xSample = Number(paramValues['x_sample'] ?? 1);
+            const ySample = k1 * xSample + b1;
+            const ptP = board.create('point', [xSample, ySample], {
+              name: 'P',
+              size: 5,
+              fillColor: '#f59e0b',
+              strokeColor: '#ffffff',
+              strokeWidth: 2,
+              fixed: true,
+            });
+            const ptQ = board.create('point', [xSample + 1, ySample], { visible: false, fixed: true });
+            const ptR = board.create('point', [xSample + 1, ySample + k1], { visible: false, fixed: true });
+            board.create('segment', [ptP, ptQ], { strokeColor: '#a855f7', strokeWidth: 1.8, dash: 2 });
+            board.create('segment', [ptQ, ptR], { strokeColor: '#a855f7', strokeWidth: 1.8, dash: 2 });
           }
 
           if (paramValues['slope_k2'] !== undefined || paramValues['k2'] !== undefined) {
@@ -3481,7 +3624,7 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
           if (ptO && ptB && ptBP) {
             board.create('line', [ptO, ptB], { strokeColor: '#64748b', strokeWidth: 1.5, dash: 3 });
           }
-        } else if ((tpl.includes('congruence_dual') || tpl.includes('dual_triangle') || tpl.includes('congruence_rotation')) && primaryPoints.length >= 6) {
+        } else if ((tpl.includes('congruence') || tpl.includes('similarity') || tpl.includes('dual') || tpl.includes('triangle')) && primaryPoints.length >= 6) {
           // 双三角形拓扑分离：前 3 点独立一角 (天蓝)，后 3 点独立一角 (靛紫)
           board.create('polygon', [primaryPoints[0], primaryPoints[1], primaryPoints[2]], {
             borders: { strokeColor: '#38bdf8', strokeWidth: 2.5 },
@@ -3668,18 +3811,29 @@ export const SandboxRenderer: React.FC<SandboxRendererProps> = ({
               strokeColor: '#38bdf8',
               strokeWidth: 3,
             });
-          } else if (primaryPoints.length === 3) {
-            board.create('polygon', primaryPoints, {
-              borders: { strokeColor: '#38bdf8', strokeWidth: 2.5 },
-              fillColor: '#38bdf8',
-              fillOpacity: 0.22,
-            });
-          } else if (primaryPoints.length >= 4) {
-            board.create('polygon', primaryPoints, {
-              borders: { strokeColor: '#38bdf8', strokeWidth: 2.5 },
-              fillColor: '#38bdf8',
-              fillOpacity: 0.22,
-            });
+          } else if (primaryPoints.length >= 3) {
+            const isCollinear = (pts: any[]): boolean => {
+              if (pts.length < 3) return true;
+              const p0 = pts[0], p1 = pts[1];
+              for (let i = 2; i < pts.length; i++) {
+                const cross = (p1.X() - p0.X()) * (pts[i].Y() - p0.Y()) - (p1.Y() - p0.Y()) * (pts[i].X() - p0.X());
+                if (Math.abs(cross) > 1e-3) return false;
+              }
+              return true;
+            };
+
+            if (isCollinear(primaryPoints)) {
+              board.create('segment', [primaryPoints[0], primaryPoints[primaryPoints.length - 1]], {
+                strokeColor: '#38bdf8',
+                strokeWidth: 3,
+              });
+            } else {
+              board.create('polygon', primaryPoints, {
+                borders: { strokeColor: '#38bdf8', strokeWidth: 2.5 },
+                fillColor: '#38bdf8',
+                fillOpacity: 0.22,
+              });
+            }
           }
         }
       }
