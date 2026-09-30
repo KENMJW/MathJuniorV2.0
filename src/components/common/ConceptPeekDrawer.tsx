@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { ALL_107_KNOWLEDGE_POINTS } from '../../modules/concept/allPointsData';
 import { mockLogicLines } from '../../modules/graph/mockGraphData';
 import { MathRenderer } from '../math/MathRenderer';
@@ -68,7 +69,7 @@ export const ConceptPeekDrawer: React.FC<ConceptPeekDrawerProps> = ({
 
   const defaultCloseLabel = backButtonLabel || (isEn ? 'Return ✕' : '返回练习 ✕');
 
-  return (
+  const content = (
     <div
       data-testid="concept-peek-drawer-overlay"
       style={{
@@ -80,7 +81,7 @@ export const ConceptPeekDrawer: React.FC<ConceptPeekDrawerProps> = ({
         backgroundColor: 'rgba(0, 0, 0, 0.45)',
         backdropFilter: 'blur(4px)',
         WebkitBackdropFilter: 'blur(4px)',
-        zIndex: 100,
+        zIndex: 9999,
         display: 'flex',
         justifyContent: isMobile ? 'center' : 'flex-end',
         alignItems: isMobile ? 'flex-end' : 'stretch',
@@ -93,10 +94,13 @@ export const ConceptPeekDrawer: React.FC<ConceptPeekDrawerProps> = ({
           width: isMobile ? '100%' : '540px',
           maxWidth: '100%',
           height: isMobile ? '82vh' : '100%',
+          maxHeight: isMobile ? '88vh' : '100%',
           backgroundColor: 'var(--bg-card, #ffffff)',
           borderTopLeftRadius: isMobile ? '24px' : '0px',
           borderTopRightRadius: isMobile ? '24px' : '0px',
-          boxShadow: '-4px 0 24px rgba(0, 0, 0, 0.15)',
+          boxShadow: isMobile
+            ? '0 -8px 30px rgba(0, 0, 0, 0.25)'
+            : '-4px 0 24px rgba(0, 0, 0, 0.15)',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
@@ -224,7 +228,9 @@ export const ConceptPeekDrawer: React.FC<ConceptPeekDrawerProps> = ({
           style={{
             flex: 1,
             overflowY: 'auto',
+            WebkitOverflowScrolling: 'touch',
             padding: '1.25rem 1.4rem',
+            paddingBottom: isMobile ? 'max(2rem, env(safe-area-inset-bottom, 24px))' : '1.4rem',
             display: 'flex',
             flexDirection: 'column',
             gap: '1.2rem',
@@ -486,6 +492,12 @@ export const ConceptPeekDrawer: React.FC<ConceptPeekDrawerProps> = ({
       </div>
     </div>
   );
+
+  if (typeof document !== 'undefined' && document.body) {
+    return createPortal(content, document.body);
+  }
+
+  return content;
 };
 
 export default ConceptPeekDrawer;
