@@ -13,6 +13,8 @@ import { normalizeOptionAnswer } from '../../engine/judge/normalizeOptionAnswer'
 import { useSessionStore } from '../../store/sessionStore';
 import { getSafeStem } from '../../engine/i18n/stemGuard';
 import { BookOpen, Star, RefreshCw, CheckCircle2, XCircle, ArrowRight } from 'lucide-react';
+import { ALL_107_KNOWLEDGE_POINTS } from './allPointsData';
+import { ConceptPeekDrawer } from '../../components/common/ConceptPeekDrawer';
 
 export interface QuickPracticeProps {
   pointId: string;
@@ -83,6 +85,17 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
   // 用户作答状态记录 (questionId -> selectedOptionKey)
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string>>({});
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [peekDrawerState, setPeekDrawerState] = useState<{
+    isOpen: boolean;
+    pointId?: string | null;
+    lineId?: string | null;
+    mode: 'concept' | 'line';
+  }>({
+    isOpen: false,
+    pointId: null,
+    lineId: null,
+    mode: 'concept',
+  });
 
   // 选项点击：即答即判
   const handleSelectOption = (q: QuickPracticeQuestion, optionKey: string) => {
@@ -140,12 +153,15 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
 
   const starRating = correctCount === 3 ? 3 : correctCount === 2 ? 2 : 1;
 
-  const handleGoToConcept = () => {
-    if (onReturnToConcept) {
-      onReturnToConcept();
-    } else {
-      window.dispatchEvent(new CustomEvent('concept-navigate-tab', { detail: 'stages' }));
-    }
+  const handleGoToConcept = (targetPointId?: string) => {
+    // 零跳转现场保护：优先原地弹起抽屉查阅
+    setPeekDrawerState({
+      isOpen: true,
+      pointId: targetPointId || pointId,
+      mode: 'concept',
+    });
+    // 兼顾原有回调（若外部需要感知）
+    onReturnToConcept?.();
   };
 
   return (
@@ -321,23 +337,63 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
                     data-testid={`solution-${q.question_id}`}
                     className="p-4 rounded-xl bg-amber-500/10 border-l-4 border-l-amber-500 border border-amber-500/20 flex flex-col gap-2.5 animate-in fade-in"
                   >
-                    <div className="flex items-center justify-between flex-wrap gap-2">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-amber-700">
-                        <Icon name="bulb" size={14} />
-                        <span>{isEn ? 'Teacher Pitfall Diagnosis' : '名师错因辨析与关键题眼'}</span>
-                      </div>
+                    {/* 错误诊断与考点/主线双层溯源锚定条 */}
+                    {(() => {
+                      const matchedKp = ALL_107_KNOWLEDGE_POINTS.find(
+                        (p) => p.point_id === q.primary_point_id
+                      );
+                      const lineId = matchedKp?.primary_line_id;
 
-                      {/* 常驻直达按钮：[ 回看概念精讲 ] */}
-                      <button
-                        type="button"
-                        onClick={handleGoToConcept}
-                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm active:scale-[0.98] transition-all"
-                      >
-                        <BookOpen className="w-3.5 h-3.5" />
-                        <span>{isEn ? 'Review Concept Guide' : '回看概念精讲'}</span>
-                        <ArrowRight className="w-3 h-3" />
-                      </button>
-                    </div>
+                      return (
+                        <div className="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-amber-500/20">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <div className="flex items-center gap-1.5 text-xs font-bold text-amber-700">
+                              <Icon name="bulb" size={14} />
+                              <span>{isEn ? 'Teacher Pitfall Diagnosis' : '名师错因辨析与关键题眼'}</span>
+                            </div>
+                            {matchedKp && (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-700 border border-blue-500/20">
+                                <Icon name="tag" size={12} />
+                                <span>{matchedKp.point_id}: {isEn ? matchedKp.name_en : matchedKp.name_zh}</span>
+                              </span>
+                            )}
+                          </div>
+
+                          {/* 双专属直达动作按钮 */}
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {/* 1. 12 大谱系题眼透视 */}
+                            {lineId && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setPeekDrawerState({
+                                    isOpen: true,
+                                    mode: 'line',
+                                    lineId: lineId,
+                                    pointId: q.primary_point_id,
+                                  })
+                                }
+                                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-sm active:scale-[0.98] transition-all"
+                              >
+                                <Icon name="search" size={13} />
+                                <span>{isEn ? 'Line X-Ray' : '谱系题眼透视'}</span>
+                              </button>
+                            )}
+
+                            {/* 2. 微观考点概念精讲 */}
+                            <button
+                              type="button"
+                              onClick={() => handleGoToConcept(q.primary_point_id)}
+                              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm active:scale-[0.98] transition-all"
+                            >
+                              <BookOpen className="w-3.5 h-3.5" />
+                              <span>{isEn ? 'Review Concept Guide' : '回看概念精讲'}</span>
+                              <ArrowRight className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })()}
 
                     {q.solutions_json && (
                       <div className="db-content-sub text-xs sm:text-sm text-slate-800 leading-relaxed overflow-hidden break-words">
@@ -404,7 +460,7 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
           <div className="flex items-center gap-2.5 shrink-0">
             <button
               type="button"
-              onClick={handleGoToConcept}
+              onClick={() => handleGoToConcept()}
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-blue-500/40 bg-white/80 text-blue-600 font-bold text-xs shadow-sm hover:bg-blue-500/10 active:scale-[0.98] transition-all"
             >
               <BookOpen className="w-3.5 h-3.5" />
@@ -422,6 +478,17 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
           </div>
         </div>
       )}
+
+      {/* 原地查阅概念精讲与谱系题眼抽屉 (零跳转现场保护) */}
+      <ConceptPeekDrawer
+        isOpen={peekDrawerState.isOpen}
+        onClose={() => setPeekDrawerState((prev) => ({ ...prev, isOpen: false }))}
+        pointId={peekDrawerState.pointId || pointId}
+        lineId={peekDrawerState.lineId}
+        mode={peekDrawerState.mode}
+        locale={locale}
+        backButtonLabel={isEn ? 'Back to Practice ✕' : '返回练习 ✕'}
+      />
     </div>
   );
 };

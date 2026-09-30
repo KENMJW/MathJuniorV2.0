@@ -11,8 +11,7 @@
  * 5. [铁律 2 考完即焚]：全内存 Zustand 驱动，一键彻底销毁，绝不落盘持久化
  */
 
-import React, { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useMemo } from 'react';
 import { GeneratedPaper, QuestionItem } from './drawQuestions';
 import { MathRenderer } from '../../components/math/MathRenderer';
 import { QuestionContent } from '../../components/common/QuestionContent';
@@ -29,6 +28,9 @@ import {
 import { normalizeOptionAnswer } from '../../engine/judge/normalizeOptionAnswer';
 import { useSessionStore } from '../../store/sessionStore';
 import { getSafeStem } from '../../engine/i18n/stemGuard';
+import { useDeviceResponsive } from '../../hooks/useDeviceResponsive';
+import { ALL_107_KNOWLEDGE_POINTS } from '../concept/allPointsData';
+import { mockLogicLines } from '../graph/mockGraphData';
 
 export { normalizeOptionAnswer };
 
@@ -55,31 +57,27 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
   onBackToWorkbench,
   timeSpentSeconds = 0,
 }) => {
-  let navigate: ((to: string) => void) | null = null;
-  try {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    navigate = useNavigate();
-  } catch {
-    navigate = null;
-  }
   const setExamScore = useSessionStore((state) => state.setExamScore);
   const resetScores = useSessionStore((state) => state.resetScores);
   const setSelectedConceptPointId = useSessionStore((state) => state.setSelectedConceptPointId);
   const locale = useSessionStore((state) => state.locale);
   const isEn = String(locale).toLowerCase().startsWith('en');
+  const { isMobile } = useDeviceResponsive();
+
+  // 错题速查抽屉状态（保持在内存中，绝对不触发路由跳出与考完即焚）
+  const [activeConceptPointId, setActiveConceptPointId] = useState<string | null>(null);
+  const [activeXRayQuestion, setActiveXRayQuestion] = useState<QuestionItem | null>(null);
 
   const handleReviewConcept = (pointId?: string) => {
     if (pointId) {
       setSelectedConceptPointId(pointId);
-    }
-    if (navigate) {
-      navigate('/math-junior/concept');
+      setActiveConceptPointId(pointId);
     }
   };
 
-  const handleReviewXRay = () => {
-    if (navigate) {
-      navigate('/math-junior/lab');
+  const handleReviewXRay = (question?: QuestionItem) => {
+    if (question) {
+      setActiveXRayQuestion(question);
     }
   };
 
@@ -276,17 +274,18 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
         width: '100%',
         maxWidth: '1100px',
         margin: '0 auto',
-        padding: '2rem 1rem',
+        padding: isMobile ? '1rem 0.75rem' : '2rem 1rem',
         display: 'flex',
         flexDirection: 'column',
-        gap: '2rem',
+        gap: isMobile ? '1.25rem' : '2rem',
         fontFamily: 'var(--font-family-system)',
+        boxSizing: 'border-box',
       }}
     >
       {/* 顶部总览卡片：总分、评级与四维认知素养雷达图 */}
       <div
         style={{
-          padding: '2rem',
+          padding: isMobile ? '1.25rem 1rem' : '2rem',
           borderRadius: 'var(--radius-xl)',
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
@@ -301,12 +300,13 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
         <div
           style={{
             display: 'flex',
+            flexDirection: isMobile ? 'column' : 'row',
             flexWrap: 'wrap',
-            alignItems: 'center',
+            alignItems: isMobile ? 'flex-start' : 'center',
             justifyContent: 'space-between',
-            gap: '1.5rem',
+            gap: isMobile ? '1rem' : '1.5rem',
             borderBottom: '1px solid var(--border-subtle)',
-            paddingBottom: '1.5rem',
+            paddingBottom: isMobile ? '1rem' : '1.5rem',
           }}
         >
           <div>
@@ -333,16 +333,17 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
             </div>
             <h1
               style={{
-                fontSize: '1.75rem',
+                fontSize: isMobile ? '1.25rem' : '1.75rem',
                 fontWeight: 900,
                 color: 'var(--text-primary)',
                 margin: '0.25rem 0',
                 letterSpacing: '-0.02em',
+                lineHeight: 1.3,
               }}
             >
               {(isEn ? paper.titleEn : paper.titleZh) || paper.titleZh}
             </h1>
-            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', margin: 0 }}>
+            <p style={{ fontSize: isMobile ? '0.75rem' : '0.875rem', color: 'var(--text-secondary)', margin: 0 }}>
               {isEn
                 ? `Full Score ${maxScore} Pts · Time Spent: ${timeString} · Accuracy Rate: ${accuracyRate}%`
                 : `全卷满分 ${maxScore} 分 · 考场用时：${timeString} · 答题正确率：${accuracyRate}%`}
@@ -355,14 +356,15 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
               display: 'flex',
               alignItems: 'baseline',
               gap: '0.5rem',
-              padding: '1rem 1.5rem',
+              padding: isMobile ? '0.75rem 1.25rem' : '1rem 1.5rem',
               borderRadius: 'var(--radius-lg)',
               backgroundColor: 'rgba(0, 122, 255, 0.1)',
               border: '1px solid rgba(0, 122, 255, 0.25)',
               color: 'var(--ios-blue)',
+              alignSelf: isMobile ? 'flex-start' : 'auto',
             }}
           >
-            <span style={{ fontSize: '2.75rem', fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1 }}>
+            <span style={{ fontSize: isMobile ? '2.25rem' : '2.75rem', fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1 }}>
               {totalScore}
             </span>
             <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-tertiary)' }}>
@@ -375,13 +377,13 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-            gap: '1.5rem',
+            gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(320px, 1fr))',
+            gap: isMobile ? '1rem' : '1.5rem',
             alignItems: 'center',
           }}
         >
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <RadarChart scores={radarScores} size={300} locale={locale} />
+            <RadarChart scores={radarScores} size={isMobile ? 260 : 300} locale={locale} />
           </div>
 
           <div
@@ -474,29 +476,7 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
               </div>
             </div>
 
-            {/* 考完即焚安全提示 */}
-            <div
-              style={{
-                padding: '0.75rem 1rem',
-                borderRadius: 'var(--radius-md)',
-                backgroundColor: 'rgba(255, 149, 0, 0.08)',
-                border: '1px solid rgba(255, 149, 0, 0.25)',
-                color: 'var(--text-primary)',
-                fontSize: '0.75rem',
-                lineHeight: 1.5,
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: '0.5rem',
-              }}
-            >
-              <Icon name="alert" size={15} style={{ marginTop: '0.125rem', color: 'var(--ios-amber)', flexShrink: 0 }} />
-              <div>
-                <strong>{isEn ? '[Iron Rule 2 Zero-Persistence Protection]: ' : '[铁律 2 零持久化保护]：'}</strong>
-                {isEn
-                  ? 'Mock exam session data and cognitive reports are stored strictly in browser memory. Exiting or refreshing completely burns all records with 0 writes to localStorage or IndexedDB.'
-                  : '本次模考过程数据与四维报告仅保留在当前浏览器会话内存中，退出或刷新即彻底焚毁，不向 localStorage / IndexedDB 写入任何痕迹。'}
-              </div>
-            </div>
+
           </div>
         </div>
 
@@ -506,7 +486,7 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
             display: 'flex',
             flexWrap: 'wrap',
             alignItems: 'center',
-            justifyContent: 'flex-end',
+            justifyContent: isMobile ? 'stretch' : 'flex-end',
             gap: '0.75rem',
             paddingTop: '1rem',
             borderTop: '1px solid var(--border-subtle)',
@@ -518,8 +498,9 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
             style={{
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'center',
               gap: '0.375rem',
-              padding: '0.625rem 1rem',
+              padding: isMobile ? '0.75rem 1rem' : '0.625rem 1rem',
               borderRadius: 'var(--radius-md)',
               fontSize: '0.75rem',
               fontWeight: 700,
@@ -528,6 +509,8 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
               color: 'var(--text-primary)',
               cursor: 'pointer',
               transition: 'background-color 0.2s',
+              flex: isMobile ? 1 : undefined,
+              minHeight: isMobile ? '44px' : undefined,
             }}
           >
             <Icon name="refresh" size={14} />
@@ -539,8 +522,9 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
             style={{
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'center',
               gap: '0.375rem',
-              padding: '0.625rem 1.25rem',
+              padding: isMobile ? '0.75rem 1.25rem' : '0.625rem 1.25rem',
               borderRadius: 'var(--radius-md)',
               fontSize: '0.75rem',
               fontWeight: 700,
@@ -550,6 +534,8 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
               cursor: 'pointer',
               boxShadow: '0 2px 8px rgba(255, 59, 48, 0.3)',
               transition: 'background-color 0.2s',
+              flex: isMobile ? 1 : undefined,
+              minHeight: isMobile ? '44px' : undefined,
             }}
           >
             <Icon name="trash" size={14} />
@@ -592,8 +578,8 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-              gap: '1rem',
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(320px, 1fr))',
+              gap: isMobile ? '0.75rem' : '1rem',
             }}
           >
             {choiceResults.map((r, idx) => (
@@ -702,7 +688,7 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                     <button
                       type="button"
                       data-testid={`wrong-q-review-xray-${r.question.question_id}`}
-                      onClick={handleReviewXRay}
+                      onClick={() => handleReviewXRay(r.question)}
                       style={{
                         display: 'inline-flex',
                         alignItems: 'center',
@@ -744,8 +730,8 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-              gap: '1rem',
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(320px, 1fr))',
+              gap: isMobile ? '0.75rem' : '1rem',
             }}
           >
             {fillResults.map((r, idx) => (
@@ -863,7 +849,7 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                     <button
                       type="button"
                       data-testid={`wrong-q-review-xray-${r.question.question_id}`}
-                      onClick={handleReviewXRay}
+                      onClick={() => handleReviewXRay(r.question)}
                       style={{
                         display: 'inline-flex',
                         alignItems: 'center',
@@ -1231,7 +1217,7 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                     <button
                       type="button"
                       data-testid={`wrong-q-review-xray-${r.question.question_id}`}
-                      onClick={handleReviewXRay}
+                      onClick={() => handleReviewXRay(r.question)}
                       style={{
                         display: 'inline-flex',
                         alignItems: 'center',
@@ -1258,6 +1244,328 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
       </div>
       {/* 底部安全呼吸垫片 (彻底消除 TabBar 遮挡) */}
       <div className="bottom-safe-spacer" data-testid="bottom-safe-spacer" />
+
+      {/* ===================== 错题回看概念精讲抽屉 (零跳转保护) ===================== */}
+      {activeConceptPointId && (() => {
+        const point = ALL_107_KNOWLEDGE_POINTS.find(p => p.point_id === activeConceptPointId) || {
+          point_id: activeConceptPointId,
+          name_zh: activeConceptPointId,
+          name_en: activeConceptPointId,
+          formal_definition_zh: '考点要点加载中...',
+          formal_definition_en: 'Loading point details...',
+          intuitive_essence_zh: '',
+          intuitive_essence_en: '',
+          origin_story_zh: '',
+          origin_story_en: '',
+          intrinsic_variation_zh: '',
+          intrinsic_variation_en: '',
+          grade: 7,
+          semester: 1,
+          domain: '',
+        };
+        const title = isEn ? point.name_en : point.name_zh;
+
+        return (
+          <div
+            data-testid="concept-peek-drawer-overlay"
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.45)',
+              backdropFilter: 'blur(4px)',
+              WebkitBackdropFilter: 'blur(4px)',
+              zIndex: 100,
+              display: 'flex',
+              justifyContent: isMobile ? 'center' : 'flex-end',
+              alignItems: isMobile ? 'flex-end' : 'stretch',
+            }}
+            onClick={() => setActiveConceptPointId(null)}
+          >
+            <div
+              data-testid="concept-peek-drawer"
+              style={{
+                width: isMobile ? '100%' : '520px',
+                maxWidth: '100%',
+                height: isMobile ? '82vh' : '100%',
+                backgroundColor: 'var(--bg-card, #ffffff)',
+                borderTopLeftRadius: isMobile ? '24px' : '0px',
+                borderTopRightRadius: isMobile ? '24px' : '0px',
+                boxShadow: '-4px 0 24px rgba(0, 0, 0, 0.15)',
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+                animation: 'fade-in 0.2s ease-out',
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* 抽屉头部 */}
+              <div
+                style={{
+                  padding: '1.25rem 1.5rem',
+                  borderBottom: '1px solid var(--border-subtle)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  backgroundColor: 'rgba(0, 122, 255, 0.04)',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', minWidth: 0 }}>
+                  <div
+                    style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '8px',
+                      backgroundColor: 'rgba(0, 122, 255, 0.12)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'var(--ios-blue)',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <Icon name="book" size={18} />
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: '0.7rem', color: 'var(--ios-blue)', fontWeight: 700 }}>
+                      {point.point_id} · {point.domain || (isEn ? 'Core Syllabus' : '中考核心考点')}
+                    </div>
+                    <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {title}
+                    </h3>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  data-testid="concept-peek-drawer-close"
+                  onClick={() => setActiveConceptPointId(null)}
+                  style={{
+                    padding: '0.4rem 0.8rem',
+                    borderRadius: 'var(--radius-pill, 9999px)',
+                    border: '1px solid var(--border-subtle)',
+                    backgroundColor: 'var(--bg-input, #f1f5f9)',
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    color: 'var(--text-secondary)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.25rem',
+                  }}
+                >
+                  <span>{isEn ? 'Back to Exam ✕' : '返回试卷 ✕'}</span>
+                </button>
+              </div>
+
+              {/* 抽屉正文 (滚动区域) */}
+              <div
+                style={{
+                  flex: 1,
+                  overflowY: 'auto',
+                  padding: '1.5rem',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1.25rem',
+                  fontSize: '0.875rem',
+                  lineHeight: 1.6,
+                }}
+              >
+                {/* 1. 正式定义与核心定理 */}
+                <div style={{ padding: '1rem', borderRadius: '12px', backgroundColor: 'var(--glass-bg-card)', border: '1px solid var(--border-subtle)' }}>
+                  <div style={{ fontWeight: 800, color: 'var(--ios-blue)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <Icon name="target" size={15} />
+                    <span>{isEn ? 'Formal Definition & Formula' : '核心定义与公理公式'}</span>
+                  </div>
+                  <div style={{ color: 'var(--text-primary)' }}>
+                    <MathRenderer content={isEn ? (point.formal_definition_en || point.formal_definition_zh) : point.formal_definition_zh} block />
+                  </div>
+                </div>
+
+                {/* 2. 直观本质 (数形结合) */}
+                {(point.intuitive_essence_zh || point.intuitive_essence_en) && (
+                  <div style={{ padding: '1rem', borderRadius: '12px', backgroundColor: 'var(--glass-bg-card)', border: '1px solid var(--border-subtle)' }}>
+                    <div style={{ fontWeight: 800, color: 'var(--ios-purple)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <Icon name="bulb" size={15} />
+                      <span>{isEn ? 'Intuitive Mathematical Essence' : '数形结合直观本质'}</span>
+                    </div>
+                    <div style={{ color: 'var(--text-secondary)' }}>
+                      <MathRenderer content={isEn ? (point.intuitive_essence_en || point.intuitive_essence_zh) : point.intuitive_essence_zh} />
+                    </div>
+                  </div>
+                )}
+
+                {/* 3. 中考高频易错与避坑生死线 */}
+                {(point.intrinsic_variation_zh || point.intrinsic_variation_en) && (
+                  <div style={{ padding: '1rem', borderRadius: '12px', backgroundColor: 'rgba(255, 149, 0, 0.08)', border: '1px solid rgba(255, 149, 0, 0.25)' }}>
+                    <div style={{ fontWeight: 800, color: 'var(--ios-amber)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <Icon name="alert" size={15} />
+                      <span>{isEn ? 'Exam Pitfalls & Variations' : '中考避坑指南与变式考查'}</span>
+                    </div>
+                    <div style={{ color: 'var(--text-primary)' }}>
+                      <MathRenderer content={isEn ? (point.intrinsic_variation_en || point.intrinsic_variation_zh) : point.intrinsic_variation_zh} />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ===================== 错题题眼透视抽屉 (零跳转保护) ===================== */}
+      {activeXRayQuestion && (() => {
+        const q = activeXRayQuestion;
+        const matchedPoint = ALL_107_KNOWLEDGE_POINTS.find(p => p.point_id === q.primary_point_id);
+        const lineId = matchedPoint?.primary_line_id;
+        const line = mockLogicLines.find(l => l.line_id === lineId) || mockLogicLines[0];
+
+        return (
+          <div
+            data-testid="xray-peek-drawer-overlay"
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.45)',
+              backdropFilter: 'blur(4px)',
+              WebkitBackdropFilter: 'blur(4px)',
+              zIndex: 100,
+              display: 'flex',
+              justifyContent: isMobile ? 'center' : 'flex-end',
+              alignItems: isMobile ? 'flex-end' : 'stretch',
+            }}
+            onClick={() => setActiveXRayQuestion(null)}
+          >
+            <div
+              data-testid="xray-peek-drawer"
+              style={{
+                width: isMobile ? '100%' : '540px',
+                maxWidth: '100%',
+                height: isMobile ? '82vh' : '100%',
+                backgroundColor: 'var(--bg-card, #ffffff)',
+                borderTopLeftRadius: isMobile ? '24px' : '0px',
+                borderTopRightRadius: isMobile ? '24px' : '0px',
+                boxShadow: '-4px 0 24px rgba(0, 0, 0, 0.15)',
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+                animation: 'fade-in 0.2s ease-out',
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* 抽屉头部 */}
+              <div
+                style={{
+                  padding: '1.25rem 1.5rem',
+                  borderBottom: '1px solid var(--border-subtle)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  backgroundColor: 'rgba(175, 82, 222, 0.04)',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', minWidth: 0 }}>
+                  <div
+                    style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '8px',
+                      backgroundColor: 'rgba(175, 82, 222, 0.12)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'var(--ios-purple)',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <Icon name="search" size={18} />
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: '0.7rem', color: 'var(--ios-purple)', fontWeight: 700 }}>
+                      {q.question_id} · {isEn ? 'Exam Focus X-Ray' : '中考题眼透视与母题拓扑'}
+                    </div>
+                    <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {isEn ? line.name_en : line.name_zh}
+                    </h3>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  data-testid="xray-peek-drawer-close"
+                  onClick={() => setActiveXRayQuestion(null)}
+                  style={{
+                    padding: '0.4rem 0.8rem',
+                    borderRadius: 'var(--radius-pill, 9999px)',
+                    border: '1px solid var(--border-subtle)',
+                    backgroundColor: 'var(--bg-input, #f1f5f9)',
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    color: 'var(--text-secondary)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.25rem',
+                  }}
+                >
+                  <span>{isEn ? 'Back to Exam ✕' : '返回试卷 ✕'}</span>
+                </button>
+              </div>
+
+              {/* 抽屉正文 */}
+              <div
+                style={{
+                  flex: 1,
+                  overflowY: 'auto',
+                  padding: '1.5rem',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1.25rem',
+                  fontSize: '0.875rem',
+                  lineHeight: 1.6,
+                }}
+              >
+                {/* 1. 题眼破局核心方法 */}
+                <div style={{ padding: '1rem', borderRadius: '12px', backgroundColor: 'var(--glass-bg-card)', border: '1px solid var(--border-subtle)' }}>
+                  <div style={{ fontWeight: 800, color: 'var(--ios-purple)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <Icon name="zap" size={15} />
+                    <span>{isEn ? 'Key Breakthrough Methodology' : '核心破局思想方法'}</span>
+                  </div>
+                  <div style={{ color: 'var(--text-primary)' }}>
+                    <MathRenderer content={(isEn ? line.methodology_en : line.methodology_zh) || line.methodology_zh || ''} />
+                  </div>
+                </div>
+
+                {/* 2. 中考命题矩阵与题型穿透 */}
+                <div style={{ padding: '1rem', borderRadius: '12px', backgroundColor: 'var(--glass-bg-card)', border: '1px solid var(--border-subtle)' }}>
+                  <div style={{ fontWeight: 800, color: 'var(--ios-blue)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <Icon name="chart" size={15} />
+                    <span>{isEn ? 'Examination Matrix & Topology' : '中考命题矩阵与能力阶梯'}</span>
+                  </div>
+                  <div style={{ color: 'var(--text-secondary)' }}>
+                    <MathRenderer content={(isEn ? line.exam_matrix_en : line.exam_matrix_zh) || line.exam_matrix_zh || ''} />
+                  </div>
+                </div>
+
+                {/* 3. 压轴模型与考点反哺 */}
+                {q.combination_id && (
+                  <div style={{ padding: '1rem', borderRadius: '12px', backgroundColor: 'rgba(0, 122, 255, 0.06)', border: '1px solid rgba(0, 122, 255, 0.2)' }}>
+                    <div style={{ fontWeight: 800, color: 'var(--ios-blue)', marginBottom: '0.35rem' }}>
+                      {isEn ? 'Capstone Model Link:' : '压轴模型与穿透连通：'}
+                    </div>
+                    <div style={{ color: 'var(--text-primary)', fontSize: '0.8rem' }}>
+                      {isEn ? `This question integrates ${q.primary_point_id} with flagship capstone model ${q.combination_id}.` : `本题综合考核基础考点【${q.primary_point_id}】与压轴旗舰模型【${q.combination_id}】。`}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 };

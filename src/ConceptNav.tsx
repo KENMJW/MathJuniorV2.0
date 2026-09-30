@@ -609,7 +609,6 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
               pointId={currentPoint.point_id}
               initialQuestions={practiceQuestions}
               allQuestions={practiceQuestions}
-              onReturnToConcept={() => setActiveSubTab("stages")}
             />
           )}
         </main>

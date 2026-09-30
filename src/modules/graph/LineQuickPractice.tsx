@@ -13,6 +13,8 @@ import { Icon } from '../../components/common/Icon';
 import { useSessionStore } from '../../store/sessionStore';
 import { normalizeOptionAnswer } from '../../engine/judge/normalizeOptionAnswer';
 import { getSafeStem } from '../../engine/i18n/stemGuard';
+import { ALL_107_KNOWLEDGE_POINTS } from '../concept/allPointsData';
+import { ConceptPeekDrawer } from '../../components/common/ConceptPeekDrawer';
 
 export interface LineQuickPracticeProps {
   lineId: string;
@@ -93,6 +95,19 @@ export const LineQuickPractice: React.FC<LineQuickPracticeProps> = ({
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string>>({});
   const [isSubmitted, setIsSubmitted] = useState<Record<string, boolean>>({});
   const [batchFinished, setBatchFinished] = useState<boolean>(false);
+
+  // 查阅抽屉状态 (零跳转现场保护)
+  const [peekDrawerState, setPeekDrawerState] = useState<{
+    isOpen: boolean;
+    mode: 'concept' | 'line';
+    pointId?: string | null;
+    lineId?: string | null;
+  }>({
+    isOpen: false,
+    mode: 'line',
+    pointId: null,
+    lineId: null,
+  });
 
   // 抽取新一批 3 题
   const drawNewBatch = useCallback(
@@ -397,30 +412,172 @@ export const LineQuickPractice: React.FC<LineQuickPracticeProps> = ({
             })}
           </div>
 
-          {/* 解析区域 (提交后展示，支持图锚点混合渲染) */}
-          {isSubmitted[currentQ.question_id] && currentQ.solutions_json && (
-            <div
-              style={{
-                padding: '0.8rem 1rem',
-                borderRadius: '12px',
-                background: 'rgba(0, 113, 227, 0.05)',
-                borderLeft: '4px solid var(--ios-blue)',
-                fontSize: '0.88rem',
-                color: 'var(--text-primary)',
-                lineHeight: 1.5,
-              }}
-            >
-              <div style={{ fontWeight: 600, marginBottom: '0.3rem', color: 'var(--ios-blue)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                <Icon name="book" size={15} />
-                <span>{locale === 'en' ? 'Analysis & Solution:' : '主线核心思路解析：'}</span>
+          {/* 解析与考点溯源区域 (提交后展示，支持图锚点混合渲染与零跳转抽屉) */}
+          {isSubmitted[currentQ.question_id] && currentQ.solutions_json && (() => {
+            const matchedKp = ALL_107_KNOWLEDGE_POINTS.find(
+              (p) => p.point_id === currentQ.primary_point_id
+            );
+            const isWrong =
+              selectedAnswers[currentQ.question_id] &&
+              normalizeOptionAnswer(selectedAnswers[currentQ.question_id]) !==
+                normalizeOptionAnswer(currentQ.answer_standard);
+
+            return (
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.75rem',
+                }}
+              >
+                {/* 12 大知识谱系与核心考点双层锚定条 */}
+                <div
+                  style={{
+                    padding: '0.75rem 1rem',
+                    borderRadius: '12px',
+                    backgroundColor: isWrong
+                      ? 'rgba(255, 149, 0, 0.08)'
+                      : 'rgba(0, 122, 255, 0.05)',
+                    border: `1px solid ${
+                      isWrong ? 'rgba(255, 149, 0, 0.25)' : 'rgba(0, 122, 255, 0.2)'
+                    }`,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.5rem',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      flexWrap: 'wrap',
+                      gap: '0.5rem',
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        fontSize: '0.8rem',
+                        fontWeight: 700,
+                        color: isWrong ? 'var(--ios-orange, #d97706)' : 'var(--ios-blue)',
+                        flexWrap: 'wrap',
+                      }}
+                    >
+                      <Icon name="tag" size={14} />
+                      <span>
+                        {locale === 'en'
+                          ? `Line: ${lineId} ${lineName || ''}`
+                          : `归属主线谱系：${lineId} ${lineName || ''}`}
+                      </span>
+                      {matchedKp && (
+                        <span style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>
+                          · {matchedKp.point_id}: {locale === 'en' ? matchedKp.name_en : matchedKp.name_zh}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* 双专属直达动作按钮 */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                      {/* 1. 12 大谱系题眼透视 */}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setPeekDrawerState({
+                            isOpen: true,
+                            mode: 'line',
+                            lineId: lineId,
+                            pointId: currentQ.primary_point_id,
+                          })
+                        }
+                        style={{
+                          padding: '0.3rem 0.65rem',
+                          borderRadius: 'var(--radius-pill, 9999px)',
+                          border: '1px solid rgba(175, 82, 222, 0.25)',
+                          backgroundColor: 'rgba(175, 82, 222, 0.1)',
+                          color: 'var(--ios-purple)',
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.3rem',
+                        }}
+                      >
+                        <Icon name="search" size={12} />
+                        <span>{locale === 'en' ? 'Line X-Ray' : '谱系题眼透视'}</span>
+                      </button>
+
+                      {/* 2. 微观考点概念精讲 */}
+                      {matchedKp && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setPeekDrawerState({
+                              isOpen: true,
+                              mode: 'concept',
+                              pointId: matchedKp.point_id,
+                              lineId: lineId,
+                            })
+                          }
+                          style={{
+                            padding: '0.3rem 0.65rem',
+                            borderRadius: 'var(--radius-pill, 9999px)',
+                            border: '1px solid rgba(0, 122, 255, 0.25)',
+                            backgroundColor: 'rgba(0, 122, 255, 0.1)',
+                            color: 'var(--ios-blue)',
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.3rem',
+                          }}
+                        >
+                          <Icon name="book" size={12} />
+                          <span>{locale === 'en' ? 'Review Concept' : '回看考点精讲'}</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 核心思路解析 */}
+                <div
+                  style={{
+                    padding: '0.8rem 1rem',
+                    borderRadius: '12px',
+                    background: 'rgba(0, 113, 227, 0.05)',
+                    borderLeft: '4px solid var(--ios-blue)',
+                    fontSize: '0.88rem',
+                    color: 'var(--text-primary)',
+                    lineHeight: 1.5,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontWeight: 600,
+                      marginBottom: '0.3rem',
+                      color: 'var(--ios-blue)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                    }}
+                  >
+                    <Icon name="book" size={15} />
+                    <span>{locale === 'en' ? 'Analysis & Solution:' : '主线核心思路解析：'}</span>
+                  </div>
+                  <SolutionList
+                    solutions={currentQ.solutions_json}
+                    images={currentQ.image_paths_json}
+                    locale={locale.startsWith('en') ? 'en' : 'zh'}
+                  />
+                </div>
               </div>
-              <SolutionList
-                solutions={currentQ.solutions_json}
-                images={currentQ.image_paths_json}
-                locale={locale.startsWith('en') ? 'en' : 'zh'}
-              />
-            </div>
-          )}
+            );
+          })()}
 
           {/* 交互操作栏 */}
           <div
@@ -536,6 +693,17 @@ export const LineQuickPractice: React.FC<LineQuickPracticeProps> = ({
           </div>
         </div>
       )}
+
+      {/* 原地查阅概念精讲与12大谱系题眼抽屉 (零跳转现场保护) */}
+      <ConceptPeekDrawer
+        isOpen={peekDrawerState.isOpen}
+        onClose={() => setPeekDrawerState((prev) => ({ ...prev, isOpen: false }))}
+        pointId={peekDrawerState.pointId}
+        lineId={peekDrawerState.lineId}
+        mode={peekDrawerState.mode}
+        locale={locale}
+        backButtonLabel={locale === 'en' ? 'Back to Practice ✕' : '返回练习 ✕'}
+      />
     </div>
   );
 };

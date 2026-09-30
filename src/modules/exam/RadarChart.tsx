@@ -25,6 +25,7 @@ export interface RadarChartProps {
   size?: number;
   className?: string;
   locale?: string;
+  showDimensionList?: boolean;
 }
 
 interface DimensionConfig {
@@ -76,6 +77,7 @@ export const RadarChart: React.FC<RadarChartProps> = ({
   size = 320,
   className = '',
   locale = 'zh-CN',
+  showDimensionList = false,
 }) => {
   const isEn = String(locale).toLowerCase().startsWith('en');
   const cx = size / 2;
@@ -257,55 +259,57 @@ export const RadarChart: React.FC<RadarChartProps> = ({
         </svg>
       </div>
 
-      {/* 四维维度量化微说明清单 */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: '0.5rem',
-          marginTop: '1rem',
-          width: '100%',
-          maxWidth: '380px',
-        }}
-      >
-        {DIMENSIONS.map((dim, idx) => (
-          <div
-            key={dim.key}
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              padding: '0.5rem 0.65rem',
-              borderRadius: 'var(--radius-sm, 12px)',
-              background: 'var(--bg-input)',
-              border: '1px solid var(--border-subtle)',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                {isEn ? dim.titleEn : dim.titleZh}
-              </span>
-              <span
-                style={{ fontSize: '0.75rem', fontWeight: 900, color: dim.color }}
-              >
-                {scoreValues[idx]}{isEn ? ' pts' : '分'}
-              </span>
-            </div>
-            <p
+      {/* 四维维度量化微说明清单（可选） */}
+      {showDimensionList && (
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, 1fr)',
+            gap: '0.5rem',
+            marginTop: '1rem',
+            width: '100%',
+            maxWidth: '380px',
+          }}
+        >
+          {DIMENSIONS.map((dim, idx) => (
+            <div
+              key={dim.key}
               style={{
-                margin: '0.2rem 0 0 0',
-                fontSize: '0.65rem',
-                color: 'var(--text-tertiary)',
-                lineHeight: 1.3,
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
+                display: 'flex',
+                flexDirection: 'column',
+                padding: '0.5rem 0.65rem',
+                borderRadius: 'var(--radius-sm, 12px)',
+                background: 'var(--bg-input)',
+                border: '1px solid var(--border-subtle)',
               }}
             >
-              {isEn ? dim.descEn : dim.desc}
-            </p>
-          </div>
-        ))}
-      </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                  {isEn ? dim.titleEn : dim.titleZh}
+                </span>
+                <span
+                  style={{ fontSize: '0.75rem', fontWeight: 900, color: dim.color }}
+                >
+                  {scoreValues[idx]}{isEn ? ' pts' : '分'}
+                </span>
+              </div>
+              <p
+                style={{
+                  margin: '0.2rem 0 0 0',
+                  fontSize: '0.65rem',
+                  color: 'var(--text-tertiary)',
+                  lineHeight: 1.3,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
+                {isEn ? dim.descEn : dim.desc}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
