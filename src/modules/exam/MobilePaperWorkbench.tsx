@@ -189,6 +189,7 @@ export const MobilePaperWorkbench: React.FC<MobilePaperWorkbenchProps> = ({
       fullScore: spec.totalScore,
       selectedKpIds: coveredKpIds,
       difficultyDistribution: diffSpec.weights,
+      excludeQuestionIds: useSessionStore.getState().recentExamQuestionIds || [],
     };
 
     const meta = {
@@ -196,13 +197,26 @@ export const MobilePaperWorkbench: React.FC<MobilePaperWorkbenchProps> = ({
       titleEn: DEFAULT_TITLE_EN,
       fullScore: spec.totalScore,
       timeLimitMinutes: spec.timeLimitMinutes,
+      seed: Date.now() ^ Math.floor(Math.random() * 0x100000000),
     };
 
     try {
       const paper = await drawQuestionsFromDb(dbClient, config, meta);
+      const drawnIds = [
+        ...paper.choiceQuestions.map((q) => q.question_id),
+        ...paper.fillQuestions.map((q) => q.question_id),
+        ...paper.solutionQuestions.map((q) => q.question_id),
+      ];
+      useSessionStore.getState().recordExamQuestionIds(drawnIds);
       onStartExam(paper);
     } catch {
       const paper = drawQuestions(questionPool, config, meta);
+      const drawnIds = [
+        ...paper.choiceQuestions.map((q) => q.question_id),
+        ...paper.fillQuestions.map((q) => q.question_id),
+        ...paper.solutionQuestions.map((q) => q.question_id),
+      ];
+      useSessionStore.getState().recordExamQuestionIds(drawnIds);
       onStartExam(paper);
     } finally {
       setIsGenerating(false);

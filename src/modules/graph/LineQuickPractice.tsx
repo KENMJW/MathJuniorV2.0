@@ -51,9 +51,9 @@ export const LineQuickPractice: React.FC<LineQuickPracticeProps> = ({
   const sessionLocale = useSessionStore((state) => state.locale);
   const locale = propLocale || sessionLocale;
 
-  const presentedIds = useSessionStore((state) => state.presentedIds);
-  const addPresentedId = useSessionStore((state) => state.addPresentedId);
-  const clearPresentedIds = useSessionStore((state) => state.clearPresentedIds);
+  const linePresentedIds = useSessionStore((state) => state.linePresentedIds[lineId] || new Set<string>());
+  const addLinePresentedIds = useSessionStore((state) => state.addLinePresentedIds);
+  const clearLinePresentedIds = useSessionStore((state) => state.clearLinePresentedIds);
   const recordPracticeScore = useSessionStore((state) => state.recordPracticeScore);
 
   // 1. 严格锁定 L4~L6 难度与 single_choice 题型
@@ -82,7 +82,7 @@ export const LineQuickPractice: React.FC<LineQuickPracticeProps> = ({
     if (linePool.length < 3) {
       return linePool;
     }
-    const { drawnQuestions } = drawFromPool(linePool, presentedIds, [], defaultPicker);
+    const { drawnQuestions } = drawFromPool(linePool, linePresentedIds, [], defaultPicker);
     return drawnQuestions;
   });
 
@@ -107,14 +107,14 @@ export const LineQuickPractice: React.FC<LineQuickPracticeProps> = ({
         return;
       }
 
-      const drawResult = drawFromPool(poolToUse, presentedIds, currentBatchIds, defaultPicker);
+      const drawResult = drawFromPool(poolToUse, linePresentedIds, currentBatchIds, defaultPicker);
 
       if (drawResult.poolExhausted) {
-        clearPresentedIds();
-        currentBatchIds.forEach((id) => addPresentedId(id));
+        clearLinePresentedIds(lineId);
+        addLinePresentedIds(lineId, currentBatchIds);
       }
 
-      drawResult.drawnQuestions.forEach((q) => addPresentedId(q.question_id));
+      addLinePresentedIds(lineId, drawResult.drawnQuestions.map((q) => q.question_id));
 
       setCurrentQuestions(drawResult.drawnQuestions);
       setCurrentBatchIds(drawResult.drawnQuestions.map((q) => q.question_id));
@@ -123,7 +123,7 @@ export const LineQuickPractice: React.FC<LineQuickPracticeProps> = ({
       setIsSubmitted({});
       setBatchFinished(false);
     },
-    [presentedIds, currentBatchIds, clearPresentedIds, addPresentedId]
+    [linePresentedIds, currentBatchIds, clearLinePresentedIds, addLinePresentedIds, lineId]
   );
 
   // 监听 lineId 切换重置

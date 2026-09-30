@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MathRenderer } from '../../components/math/MathRenderer';
 import { QuestionContent } from '../../components/common/QuestionContent';
 import { QuestionImage } from '../../components/common/QuestionImage';
@@ -52,9 +52,9 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
   const storeLocale = useSessionStore((state) => state.locale);
   const locale = propLocale || storeLocale || 'zh-CN';
   const isEn = String(locale).toLowerCase().startsWith('en');
-  const presentedIds = useSessionStore((state) => state.presentedIds);
-  const addPresentedIds = useSessionStore((state) => state.addPresentedIds);
-  const clearPresentedIds = useSessionStore((state) => state.clearPresentedIds);
+  const presentedIds = useSessionStore((state) => state.conceptPresentedIds);
+  const addPresentedIds = useSessionStore((state) => state.addConceptPresentedIds);
+  const clearPresentedIds = useSessionStore((state) => state.clearConceptPresentedIds);
   const recordPracticeScore = useSessionStore((state) => state.recordPracticeScore);
 
   // 初始化当前 3 道快练题
@@ -63,12 +63,22 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
       return initialQuestions.slice(0, 3);
     }
     const eligible = filterEligibleQuestions(allQuestions, pointId);
-    if (eligible.length < 3) {
+    if (eligible.length === 0) {
       return [];
+    }
+    if (eligible.length < 3) {
+      return eligible;
     }
     const { drawnQuestions } = drawFromPool(eligible, presentedIds, []);
     return drawnQuestions;
   });
+
+  // 响应式同步外部异步传入的三级真题
+  useEffect(() => {
+    if (initialQuestions && initialQuestions.length > 0) {
+      setCurrentQuestions(initialQuestions.slice(0, 3));
+    }
+  }, [initialQuestions]);
 
   // 用户作答状态记录 (questionId -> selectedOptionKey)
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string>>({});
@@ -90,14 +100,14 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
 
   // 换一批练习（核心闭环：台账 H2 验证点）
   const handleNextBatch = () => {
-    const eligible = filterEligibleQuestions(allQuestions, pointId);
-    if (eligible.length < 3) {
+    const pool = allQuestions && allQuestions.length >= 3 ? allQuestions : filterEligibleQuestions(allQuestions, pointId);
+    if (pool.length < 3) {
       setToastMessage(isEn ? 'Not enough practice questions (min 3)' : '该考点题库不足3题，无法组卷');
       return;
     }
 
     const currentBatchIds = currentQuestions.map((q) => q.question_id);
-    const result = drawFromPool(eligible, presentedIds, currentBatchIds);
+    const result = drawFromPool(pool, presentedIds, currentBatchIds);
 
     if (result.poolExhausted) {
       clearPresentedIds();
@@ -209,6 +219,16 @@ export const QuickPractice: React.FC<QuickPracticeProps> = ({
                     <span className="text-xs px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 font-bold border border-blue-500/20">
                       {isEn ? `Level L${q.difficulty_level}` : `难度 L${q.difficulty_level}`}
                     </span>
+                    {q._tier === 'advance' && (
+                      <span className="text-xs px-2 py-0.5 rounded bg-purple-500/10 text-purple-600 font-bold border border-purple-500/20">
+                        {q._tierLabel || (isEn ? 'Advanced L4' : '思维进阶 · L4')}
+                      </span>
+                    )}
+                    {q._tier === 'expanded' && (
+                      <span className="text-xs px-2 py-0.5 rounded bg-sky-500/10 text-sky-600 font-bold border border-sky-500/20">
+                        {q._tierLabel || (isEn ? 'Extended Topic' : '同谱拓展')}
+                      </span>
+                    )}
                     <span className="text-xs text-slate-400 font-mono">
                       {q.question_id}
                     </span>

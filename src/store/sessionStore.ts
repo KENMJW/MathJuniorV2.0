@@ -17,6 +17,19 @@ export interface SessionState {
   hasPresentedId: (id: string) => boolean;
   clearPresentedIds: () => void;
 
+  // 1.1 命名空间去重池：模块一概念快练、模块二主线快练、模块四全卷去重
+  conceptPresentedIds: Set<string>;
+  addConceptPresentedIds: (ids: string[]) => void;
+  clearConceptPresentedIds: () => void;
+
+  linePresentedIds: Record<string, Set<string>>;
+  addLinePresentedIds: (lineId: string, ids: string[]) => void;
+  clearLinePresentedIds: (lineId?: string) => void;
+
+  recentExamQuestionIds: string[];
+  recordExamQuestionIds: (ids: string[]) => void;
+  clearRecentExamQuestionIds: () => void;
+
   // 2. 即时得分与会话答题记录
   practiceScores: Record<string, number>;
   examScore: ExamSessionScore | null;
@@ -93,6 +106,9 @@ const initialState = {
 
 export const useSessionStore = create<SessionState>((set, get) => ({
   presentedIds: new Set<string>(),
+  conceptPresentedIds: new Set<string>(),
+  linePresentedIds: {},
+  recentExamQuestionIds: [],
   ...initialState,
 
   addPresentedId: (id: string) => {
@@ -117,6 +133,55 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
   clearPresentedIds: () => {
     set({ presentedIds: new Set<string>() });
+  },
+
+  addConceptPresentedIds: (ids: string[]) => {
+    set((state) => {
+      const next = new Set(state.conceptPresentedIds);
+      ids.forEach((id) => next.add(id));
+      return { conceptPresentedIds: next };
+    });
+  },
+
+  clearConceptPresentedIds: () => {
+    set({ conceptPresentedIds: new Set<string>() });
+  },
+
+  addLinePresentedIds: (lineId: string, ids: string[]) => {
+    set((state) => {
+      const current = state.linePresentedIds[lineId] ? new Set(state.linePresentedIds[lineId]) : new Set<string>();
+      ids.forEach((id) => current.add(id));
+      return {
+        linePresentedIds: {
+          ...state.linePresentedIds,
+          [lineId]: current,
+        },
+      };
+    });
+  },
+
+  clearLinePresentedIds: (lineId?: string) => {
+    set((state) => {
+      if (lineId) {
+        const next = { ...state.linePresentedIds };
+        delete next[lineId];
+        return { linePresentedIds: next };
+      }
+      return { linePresentedIds: {} };
+    });
+  },
+
+  recordExamQuestionIds: (ids: string[]) => {
+    set((state) => {
+      // 保持最近 200 道试卷题目记录
+      const combined = Array.from(new Set([...state.recentExamQuestionIds, ...ids]));
+      const trimmed = combined.slice(Math.max(0, combined.length - 200));
+      return { recentExamQuestionIds: trimmed };
+    });
+  },
+
+  clearRecentExamQuestionIds: () => {
+    set({ recentExamQuestionIds: [] });
   },
 
   recordPracticeScore: (questionId: string, score: number) => {
@@ -217,6 +282,9 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   resetAll: () => {
     set({
       presentedIds: new Set<string>(),
+      conceptPresentedIds: new Set<string>(),
+      linePresentedIds: {},
+      recentExamQuestionIds: [],
       ...initialState,
     });
   },

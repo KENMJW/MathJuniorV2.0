@@ -336,11 +336,37 @@ export const GraphNav: React.FC<GraphNavProps> = ({
         const placeholders = linePointIds.map(() => '?').join(',');
         const rows = await dbClient.query<any>(
           'questions',
-          `SELECT * FROM questions WHERE primary_point_id IN (${placeholders}) AND question_type = 'single_choice' AND difficulty_level BETWEEN 4 AND 6 ORDER BY RANDOM() LIMIT 20`,
+          `SELECT * FROM questions WHERE primary_point_id IN (${placeholders}) AND question_type = 'single_choice' AND difficulty_level BETWEEN 4 AND 6 ORDER BY RANDOM()`,
           linePointIds
         );
         if (active && rows && rows.length > 0) {
-          const mapped = mapRawRowsToQuestions(rows);
+          // 考点轮转均衡抽样 (Round-Robin)：杜绝大考点吞噬小考点
+          const pointMap = new Map<string, any[]>();
+          linePointIds.forEach((pid) => pointMap.set(pid, []));
+          for (const row of rows) {
+            const list = pointMap.get(row.primary_point_id);
+            if (list) {
+              list.push(row);
+            } else {
+              pointMap.set(row.primary_point_id, [row]);
+            }
+          }
+
+          const balancedRows: any[] = [];
+          let addedInRound = true;
+          while (balancedRows.length < 20 && addedInRound) {
+            addedInRound = false;
+            for (const pid of linePointIds) {
+              const list = pointMap.get(pid);
+              if (list && list.length > 0) {
+                balancedRows.push(list.shift());
+                addedInRound = true;
+                if (balancedRows.length >= 20) break;
+              }
+            }
+          }
+
+          const mapped = mapRawRowsToQuestions(balancedRows.length > 0 ? balancedRows : rows.slice(0, 20));
           if (mapped.length >= 3) {
             setDbPracticeQuestions(mapped);
             return;

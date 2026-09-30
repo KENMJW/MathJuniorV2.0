@@ -32,6 +32,8 @@ export interface QuickPracticeQuestion {
   answer_standard: string;
   solutions_json?: string | null;
   image_paths_json?: string | null;
+  _tier?: 'local' | 'advance' | 'expanded';
+  _tierLabel?: string;
 }
 
 export interface DrawResult {
@@ -134,11 +136,24 @@ export function drawFromPool(
 }
 
 /**
- * 默认随机选取器
+ * 默认随机选取器 (正规 Fisher-Yates 算法，杜绝 Timsort 偏倚)
  */
 export function defaultPicker<T>(items: T[], count: number): T[] {
-  const shuffled = [...items].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, count);
+  const arr = [...items];
+  const getRandomFloat = () => {
+    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+      const buf = new Uint32Array(1);
+      crypto.getRandomValues(buf);
+      return buf[0] / (0xffffffff + 1);
+    }
+    return Math.random();
+  };
+
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(getRandomFloat() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr.slice(0, count);
 }
 
 /**

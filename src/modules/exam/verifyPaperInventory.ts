@@ -19,6 +19,7 @@ export interface PaperConfig {
   fillScore?: number;
   fullScore?: number;
   difficultyDistribution?: [number, number, number, number, number]; // L1~L5 占比
+  excludeQuestionIds?: string[]; // 排除已出试卷题目 (跨卷去重)
 }
 
 export interface InventoryCheckResult {

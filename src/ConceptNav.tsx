@@ -340,21 +340,90 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
     };
   }, [currentPoint.point_id, currentPoint.sandbox_id]);
 
-  // 异步从 questions.db 加载真实单点练习题
+  // 异步从 questions.db 加载真实中考题 (纯真题三级平滑阶梯兜底机制)
   useEffect(() => {
     let active = true;
     async function loadPractice() {
       try {
-        const rows = await dbClient.query<any>(
+        // 【第一级】：本考点基础真题 (L1~L3) 随机抽样
+        const tier1Rows = await dbClient.query<any>(
           'questions',
-          `SELECT * FROM questions WHERE primary_point_id = ? AND question_type = 'single_choice' ORDER BY difficulty_level ASC, question_id ASC`,
+          `SELECT * FROM questions 
+           WHERE primary_point_id = ? AND question_type = 'single_choice' AND difficulty_level BETWEEN 1 AND 3 
+           ORDER BY RANDOM() LIMIT 3`,
           [currentPoint.point_id]
         );
-        if (active && rows) {
-          const mapped = mapRawRowsToQuestions(rows);
-          setDbPracticeQuestions(mapped);
+        let finalQuestions: QuickPracticeQuestion[] = [];
+        if (tier1Rows && tier1Rows.length > 0) {
+          const mappedTier1 = mapRawRowsToQuestions(tier1Rows).map((q) => ({
+            ...q,
+            _tier: 'local' as const,
+          }));
+          finalQuestions.push(...mappedTier1);
         }
-      } catch {
+
+        // 【第二级】：若不足 3 题，从本考点进阶真题 (L4~L5) 补足差额
+        if (finalQuestions.length < 3) {
+          const needed = 3 - finalQuestions.length;
+          const existIds = finalQuestions.map((q) => q.question_id);
+          const placeholders = existIds.map(() => '?').join(',');
+          const excludeClause = existIds.length > 0 ? `AND question_id NOT IN (${placeholders})` : '';
+
+          const tier2Rows = await dbClient.query<any>(
+            'questions',
+            `SELECT * FROM questions 
+             WHERE primary_point_id = ? AND question_type = 'single_choice' AND difficulty_level BETWEEN 4 AND 5 ${excludeClause}
+             ORDER BY difficulty_level ASC, RANDOM() LIMIT ?`,
+            [currentPoint.point_id, ...existIds, needed]
+          );
+          if (tier2Rows && tier2Rows.length > 0) {
+            const mappedTier2 = mapRawRowsToQuestions(tier2Rows).map((q) => ({
+              ...q,
+              _tier: 'advance' as const,
+              _tierLabel: `思维进阶 · L${q.difficulty_level}`,
+            }));
+            finalQuestions.push(...mappedTier2);
+          }
+        }
+
+        // 【第三级】：若仍不足 3 题，从同主线 (primary_line_id) 兄弟考点真题中同源借调
+        if (finalQuestions.length < 3) {
+          const needed = 3 - finalQuestions.length;
+          const existIds = finalQuestions.map((q) => q.question_id);
+          const excludePlaceholders = existIds.map(() => '?').join(',');
+          const excludeClause = existIds.length > 0 ? `AND question_id NOT IN (${excludePlaceholders})` : '';
+
+          // 从静态考点库 ALL_107_KNOWLEDGE_POINTS 查找同主线的兄弟考点
+          const siblingPoints = ALL_107_KNOWLEDGE_POINTS.filter(
+            (kp) => kp.primary_line_id === currentPoint.primary_line_id && kp.point_id !== currentPoint.point_id
+          );
+          const siblingIds = siblingPoints.map((kp) => kp.point_id);
+
+          if (siblingIds.length > 0) {
+            const siblingPlaceholders = siblingIds.map(() => '?').join(',');
+            const tier3Rows = await dbClient.query<any>(
+              'questions',
+              `SELECT * FROM questions 
+               WHERE primary_point_id IN (${siblingPlaceholders}) AND question_type = 'single_choice' ${excludeClause}
+               ORDER BY difficulty_level ASC, RANDOM() LIMIT ?`,
+              [...siblingIds, ...existIds, needed]
+            );
+            if (tier3Rows && tier3Rows.length > 0) {
+              const mappedTier3 = mapRawRowsToQuestions(tier3Rows).map((q) => ({
+                ...q,
+                _tier: 'expanded' as const,
+                _tierLabel: `同谱拓展 · ${q.primary_point_id}`,
+              }));
+              finalQuestions.push(...mappedTier3);
+            }
+          }
+        }
+
+        if (active) {
+          setDbPracticeQuestions(finalQuestions);
+        }
+      } catch (err) {
+        console.warn('[loadPractice] Fallback query error:', err);
         if (active) setDbPracticeQuestions(null);
       }
     }
@@ -362,7 +431,7 @@ export const ConceptNav: React.FC<ConceptNavProps> = ({
     return () => {
       active = false;
     };
-  }, [currentPoint.point_id]);
+  }, [currentPoint.point_id, currentPoint.primary_line_id]);
 
   const sandboxConfig = useMemo(() => {
     return dbSandboxConfig || getSandboxConfigForPoint(currentPoint.sandbox_id);

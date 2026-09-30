@@ -10,6 +10,7 @@
  */
 
 import { PaperConfig, isQuestionSubsetAllowed } from './verifyPaperInventory';
+import { mapDbDifficultyToExam } from './difficultyRipple';
 
 export interface QuestionItem {
   question_id: string;
@@ -49,15 +50,32 @@ export interface GeneratedPaper {
 }
 
 /**
- * 伪随机洗牌 (Fisher-Yates)
+ * 随机洗牌 (Fisher-Yates)
+ * 若显式提供 seed，则采用同余伪随机序列以保证属性测试的可复现性；
+ * 若未提供 seed，则采用真随机熵，杜绝固定种子带来的试卷内容绝对重复问题。
  */
-function shuffleArray<T>(array: T[], seed?: number): T[] {
+export function shuffleArray<T>(array: T[], seed?: number): T[] {
   const arr = [...array];
-  let s = seed !== undefined ? seed : 1234567;
-  for (let i = arr.length - 1; i > 0; i--) {
-    s = (s * 16807 + 11) % 2147483647;
-    const j = Math.floor((s / 2147483647) * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
+  if (seed !== undefined) {
+    let s = seed;
+    for (let i = arr.length - 1; i > 0; i--) {
+      s = (s * 16807 + 11) % 2147483647;
+      const j = Math.floor((s / 2147483647) * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+  } else {
+    const getRandomFloat = () => {
+      if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+        const buf = new Uint32Array(1);
+        crypto.getRandomValues(buf);
+        return buf[0] / (0xffffffff + 1);
+      }
+      return Math.random();
+    };
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(getRandomFloat() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
   }
   return arr;
 }
@@ -91,46 +109,125 @@ export function generateSolutionScoreLadder(
 }
 
 /**
- * 按当期学期优先倾斜与难度梯度抽取指定数量题目
+ * 使用 Hamilton-Hare 最大余数法计算各难度档位配额
+ * @param count 目标抽题总数
+ * @param distribution 5 档比例数组 [L1, L2, L3, L4, L5]，如 [25, 30, 25, 15, 5]
+ */
+export function calculateDifficultyQuotas(
+  count: number,
+  distribution?: [number, number, number, number, number]
+): [number, number, number, number, number] {
+  if (count <= 0) return [0, 0, 0, 0, 0];
+  const dist = distribution && distribution.length === 5 ? distribution : [25, 30, 25, 15, 5];
+  const totalWeight = dist.reduce((sum, w) => sum + Math.max(0, w), 0);
+  const weights = totalWeight > 0 ? dist.map(w => Math.max(0, w)) : [1, 1, 1, 1, 1];
+  const safeTotal = weights.reduce((sum, w) => sum + w, 0);
+
+  const exactQuotas = weights.map(w => (count * w) / safeTotal);
+  const baseQuotas = exactQuotas.map(q => Math.floor(q));
+  const remainders = exactQuotas.map((q, idx) => ({ idx, rem: q - baseQuotas[idx] }));
+
+  let remaining = count - baseQuotas.reduce((sum, q) => sum + q, 0);
+  remainders.sort((a, b) => b.rem - a.rem);
+
+  for (let i = 0; i < remaining; i++) {
+    baseQuotas[remainders[i % remainders.length].idx] += 1;
+  }
+
+  return baseQuotas as [number, number, number, number, number];
+}
+
+/**
+ * 按当期学期优先倾斜、真实难度波浪权重与跨卷去重过滤抽取指定数量题目
  */
 function drawPoolWithPriority(
   pool: QuestionItem[],
   count: number,
   targetMaxGrade: number,
   targetMaxSemester: number,
-  seed?: number
+  difficultyDistribution?: [number, number, number, number, number],
+  seed?: number,
+  excludeQuestionIds?: string[]
 ): QuestionItem[] {
   if (count <= 0 || pool.length === 0) return [];
 
-  // 分隔当期池与历史池
-  const currentPool = pool.filter(
-    (q) => q.grade_level === targetMaxGrade && q.semester === targetMaxSemester
-  );
-  const historyPool = pool.filter(
-    (q) => !(q.grade_level === targetMaxGrade && q.semester === targetMaxSemester)
-  );
+  // 1. 跨卷去重过滤：若未做题目充足，优先从未使用题目中抽取
+  const excludeSet = new Set(excludeQuestionIds || []);
+  const freshQuestions = pool.filter((q) => !excludeSet.has(q.question_id));
+  const candidatePool = freshQuestions.length >= count ? freshQuestions : pool;
 
-  // 目标倾斜：65% 来自当期池，35% 来自历史池
-  const targetCurrentCount = Math.round(count * 0.65);
-  const actualCurrentCount = Math.min(targetCurrentCount, currentPool.length);
-  const remainingNeeded = count - actualCurrentCount;
-  const actualHistoryCount = Math.min(remainingNeeded, historyPool.length);
+  // 2. 使用 Hamilton-Hare 最大余数法计算 5 档目标题量配额
+  const quotas = calculateDifficultyQuotas(count, difficultyDistribution);
 
-  // 洗牌
-  const shuffledCurrent = shuffleArray(currentPool, seed);
-  const shuffledHistory = shuffleArray(historyPool, seed ? seed + 7 : undefined);
+  // 3. 将候选池划分为 5 个试卷难度桶 (1 ~ 5)
+  const buckets: Record<number, QuestionItem[]> = { 1: [], 2: [], 3: [], 4: [], 5: [] };
+  for (const q of candidatePool) {
+    const examLvl = mapDbDifficultyToExam(q.difficulty_level);
+    buckets[examLvl].push(q);
+  }
 
-  let selected = [
-    ...shuffledCurrent.slice(0, actualCurrentCount),
-    ...shuffledHistory.slice(0, actualHistoryCount),
-  ];
+  // 4. 对每个桶分别执行当期优先倾斜与随机洗牌
+  const orderedBuckets: Record<number, QuestionItem[]> = { 1: [], 2: [], 3: [], 4: [], 5: [] };
+  for (let lvl = 1; lvl <= 5; lvl++) {
+    const b = buckets[lvl];
+    const current = b.filter(
+      (q) => q.grade_level === targetMaxGrade && q.semester === targetMaxSemester
+    );
+    const history = b.filter(
+      (q) => !(q.grade_level === targetMaxGrade && q.semester === targetMaxSemester)
+    );
+    const shuffledCurrent = shuffleArray(current, seed ? seed + lvl * 17 : undefined);
+    const shuffledHistory = shuffleArray(history, seed ? seed + lvl * 31 : undefined);
+    orderedBuckets[lvl] = [...shuffledCurrent, ...shuffledHistory];
+  }
 
-  // 若仍有不足额，从两池剩余部分尽力补齐
+  // 5. 按照 quotas 分配名额
+  const selected: QuestionItem[] = [];
+  const takenCount: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+
+  // 第一遍：直接从对应难度桶提取配额
+  for (let lvl = 1; lvl <= 5; lvl++) {
+    const needed = quotas[lvl - 1];
+    const available = orderedBuckets[lvl].length;
+    const take = Math.min(needed, available);
+    if (take > 0) {
+      selected.push(...orderedBuckets[lvl].slice(0, take));
+      takenCount[lvl] = take;
+    }
+  }
+
+  // 第二遍：波浪外向级联吸收，填补不足配额
   if (selected.length < count) {
-    const usedIds = new Set(selected.map((q) => q.question_id));
-    const remainingAll = pool.filter((q) => !usedIds.has(q.question_id));
-    const shuffledRemaining = shuffleArray(remainingAll, seed ? seed + 13 : undefined);
-    selected = [...selected, ...shuffledRemaining.slice(0, count - selected.length)];
+    for (let lvl = 1; lvl <= 5; lvl++) {
+      let deficit = quotas[lvl - 1] - takenCount[lvl];
+      if (deficit <= 0) continue;
+
+      for (let dist = 1; dist <= 4 && deficit > 0; dist++) {
+        const neighbors = [lvl - dist, lvl + dist].filter((n) => n >= 1 && n <= 5);
+        for (const n of neighbors) {
+          const avail = orderedBuckets[n].length - takenCount[n];
+          if (avail > 0) {
+            const take = Math.min(deficit, avail);
+            selected.push(...orderedBuckets[n].slice(takenCount[n], takenCount[n] + take));
+            takenCount[n] += take;
+            deficit -= take;
+            if (deficit <= 0) break;
+          }
+        }
+      }
+    }
+  }
+
+  // 第三遍：若仍有极端不足，从全池任意剩余题目补足
+  if (selected.length < count) {
+    for (let lvl = 1; lvl <= 5 && selected.length < count; lvl++) {
+      const avail = orderedBuckets[lvl].length - takenCount[lvl];
+      if (avail > 0) {
+        const take = Math.min(count - selected.length, avail);
+        selected.push(...orderedBuckets[lvl].slice(takenCount[lvl], takenCount[lvl] + take));
+        takenCount[lvl] += take;
+      }
+    }
   }
 
   // 严格按题目难度升序排列，呈现考场阶梯感
@@ -201,27 +298,33 @@ export function drawQuestions(
   );
   const actualSolutionCount = solutionLadder.length;
 
-  // 3. 抽取各题型题目
+  // 3. 抽取各题型题目 (落实难度分布加权与跨卷去重)
   const rawChoice = drawPoolWithPriority(
     choicePool,
     reqChoiceCount,
     targetMaxGrade,
     targetMaxSemester,
-    meta?.seed
+    config.difficultyDistribution,
+    meta?.seed,
+    config.excludeQuestionIds
   );
   const rawFill = drawPoolWithPriority(
     fillPool,
     reqFillCount,
     targetMaxGrade,
     targetMaxSemester,
-    meta?.seed ? meta.seed + 1 : undefined
+    config.difficultyDistribution,
+    meta?.seed ? meta.seed + 1 : undefined,
+    config.excludeQuestionIds
   );
   const rawSolution = drawPoolWithPriority(
     solutionPool,
     actualSolutionCount,
     targetMaxGrade,
     targetMaxSemester,
-    meta?.seed ? meta.seed + 2 : undefined
+    config.difficultyDistribution,
+    meta?.seed ? meta.seed + 2 : undefined,
+    config.excludeQuestionIds
   );
 
   // 4. 为抽取的题目注入标准单题分值，保证整卷满分严格守恒
@@ -268,6 +371,7 @@ export async function drawQuestionsFromDb(
     titleEn?: string;
     fullScore?: number;
     timeLimitMinutes?: number;
+    seed?: number;
   }
 ): Promise<GeneratedPaper> {
   const hasKpFilter = Boolean(config.selectedKpIds && config.selectedKpIds.length > 0);

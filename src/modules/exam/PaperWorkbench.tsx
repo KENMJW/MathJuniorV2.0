@@ -319,22 +319,38 @@ export const PaperWorkbench: React.FC = () => {
   const handleGeneratePaper = async () => {
     if (!inventoryResult.canGenerate) return;
     setIsGenerating(true);
+    const recentExamIds = useSessionStore.getState().recentExamQuestionIds || [];
+    const configToDraw: PaperConfig = {
+      ...currentConfig,
+      excludeQuestionIds: recentExamIds,
+    };
+    const seed = Date.now() ^ Math.floor(Math.random() * 0x100000000);
+    const meta = {
+      titleZh: isEn ? DEFAULT_TITLE_ZH : paperTitle,
+      titleEn: isEn ? paperTitle : DEFAULT_TITLE_EN,
+      fullScore: spec.totalScore,
+      timeLimitMinutes: spec.timeLimitMinutes,
+      seed,
+    };
+
     try {
-      const paper = await drawQuestionsFromDb(dbClient, currentConfig, {
-        titleZh: isEn ? DEFAULT_TITLE_ZH : paperTitle,
-        titleEn: isEn ? paperTitle : DEFAULT_TITLE_EN,
-        fullScore: spec.totalScore,
-        timeLimitMinutes: spec.timeLimitMinutes,
-      });
+      const paper = await drawQuestionsFromDb(dbClient, configToDraw, meta);
+      const drawnIds = [
+        ...paper.choiceQuestions.map((q) => q.question_id),
+        ...paper.fillQuestions.map((q) => q.question_id),
+        ...paper.solutionQuestions.map((q) => q.question_id),
+      ];
+      useSessionStore.getState().recordExamQuestionIds(drawnIds);
       setGeneratedPaper(paper);
       setActiveView('print');
     } catch {
-      const paper = drawQuestions(questionPool, currentConfig, {
-        titleZh: isEn ? DEFAULT_TITLE_ZH : paperTitle,
-        titleEn: isEn ? paperTitle : DEFAULT_TITLE_EN,
-        fullScore: spec.totalScore,
-        timeLimitMinutes: spec.timeLimitMinutes,
-      });
+      const paper = drawQuestions(questionPool, configToDraw, meta);
+      const drawnIds = [
+        ...paper.choiceQuestions.map((q) => q.question_id),
+        ...paper.fillQuestions.map((q) => q.question_id),
+        ...paper.solutionQuestions.map((q) => q.question_id),
+      ];
+      useSessionStore.getState().recordExamQuestionIds(drawnIds);
       setGeneratedPaper(paper);
       setActiveView('print');
     } finally {
@@ -346,22 +362,38 @@ export const PaperWorkbench: React.FC = () => {
   const handleStartOnlineExam = async () => {
     if (!inventoryResult.canGenerate) return;
     setIsGenerating(true);
+    const recentExamIds = useSessionStore.getState().recentExamQuestionIds || [];
+    const configToDraw: PaperConfig = {
+      ...currentConfig,
+      excludeQuestionIds: recentExamIds,
+    };
+    const seed = Date.now() ^ Math.floor(Math.random() * 0x100000000);
+    const meta = {
+      titleZh: isEn ? DEFAULT_TITLE_ZH : paperTitle,
+      titleEn: isEn ? paperTitle : DEFAULT_TITLE_EN,
+      fullScore: spec.totalScore,
+      timeLimitMinutes: spec.timeLimitMinutes,
+      seed,
+    };
+
     try {
-      const paper = await drawQuestionsFromDb(dbClient, currentConfig, {
-        titleZh: isEn ? DEFAULT_TITLE_ZH : paperTitle,
-        titleEn: isEn ? paperTitle : DEFAULT_TITLE_EN,
-        fullScore: spec.totalScore,
-        timeLimitMinutes: spec.timeLimitMinutes,
-      });
+      const paper = await drawQuestionsFromDb(dbClient, configToDraw, meta);
+      const drawnIds = [
+        ...paper.choiceQuestions.map((q) => q.question_id),
+        ...paper.fillQuestions.map((q) => q.question_id),
+        ...paper.solutionQuestions.map((q) => q.question_id),
+      ];
+      useSessionStore.getState().recordExamQuestionIds(drawnIds);
       setGeneratedPaper(paper);
       setActiveView('online_exam');
     } catch {
-      const paper = drawQuestions(questionPool, currentConfig, {
-        titleZh: isEn ? DEFAULT_TITLE_ZH : paperTitle,
-        titleEn: isEn ? paperTitle : DEFAULT_TITLE_EN,
-        fullScore: spec.totalScore,
-        timeLimitMinutes: spec.timeLimitMinutes,
-      });
+      const paper = drawQuestions(questionPool, configToDraw, meta);
+      const drawnIds = [
+        ...paper.choiceQuestions.map((q) => q.question_id),
+        ...paper.fillQuestions.map((q) => q.question_id),
+        ...paper.solutionQuestions.map((q) => q.question_id),
+      ];
+      useSessionStore.getState().recordExamQuestionIds(drawnIds);
       setGeneratedPaper(paper);
       setActiveView('online_exam');
     } finally {
