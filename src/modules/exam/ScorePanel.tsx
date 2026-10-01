@@ -11,9 +11,15 @@
  * 5. [铁律 2 考完即焚]：全内存 Zustand 驱动，一键彻底销毁，绝不落盘持久化
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { GeneratedPaper, QuestionItem } from './drawQuestions';
 import { MathRenderer } from '../../components/math/MathRenderer';
+import { AnswerFormulaRenderer } from '../../components/math/AnswerFormulaRenderer';
+import {
+  detectBlankCount,
+  parseStandardAnswerSlots,
+  deserializeStudentSlots,
+} from './blankParser';
 import { QuestionContent } from '../../components/common/QuestionContent';
 import { SourceTag } from '../../components/common/SourceTag';
 import { SolutionList } from './SolutionList';
@@ -33,6 +39,22 @@ import { ALL_107_KNOWLEDGE_POINTS } from '../concept/allPointsData';
 import { mockLogicLines } from '../graph/mockGraphData';
 
 export { normalizeOptionAnswer };
+
+/**
+ * 三端自适应平滑滚动至指定元素顶部
+ * 兼容 Cockpit(桌面端)/CardDeck(移动端)/SplitBoard(平板端) 各自独立的 <main> 滚动容器
+ */
+export const scrollToElementTop = (el: HTMLElement | null) => {
+  if (!el) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const scrollParent = el.closest('main') || el.closest('.overflow-y-auto');
+  if (scrollParent) {
+    scrollParent.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+};
 
 export interface ScorePanelProps {
   paper: GeneratedPaper;
@@ -57,6 +79,7 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
   onBackToWorkbench,
   timeSpentSeconds = 0,
 }) => {
+  const panelTopRef = useRef<HTMLDivElement>(null);
   const setExamScore = useSessionStore((state) => state.setExamScore);
   const resetScores = useSessionStore((state) => state.resetScores);
   const setSelectedConceptPointId = useSessionStore((state) => state.setSelectedConceptPointId);
@@ -91,10 +114,46 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
     });
   }, [paper.choiceQuestions, choiceAnswers]);
 
-  // 2. 填空题判分结果 (接入 isMathAnswerEquivalent)
+  // 2. 填空题判分结果 (接入 isMathAnswerEquivalent + 多空槽位智能解析)
   const fillResults = useMemo(() => {
     return paper.fillQuestions.map((q) => {
-      const studentAns = fillAnswers[q.question_id] || '';
+      const rawAns = fillAnswers[q.question_id] || '';
+      const bCount = detectBlankCount({ ...q, locale });
+      const standardSlots = parseStandardAnswerSlots(q.answer_standard);
+      const studentSlots = deserializeStudentSlots(rawAns, bCount);
+
+      if (bCount > 1) {
+        const slotResults = studentSlots.map((sAns, i) => {
+          const stdAns = standardSlots[i] || '';
+          const eq = isMathAnswerEquivalent(sAns, stdAns, []);
+          const ok = eq === true || eq === 'suspect';
+          return {
+            slotIndex: i,
+            studentAns: sAns,
+            standardAns: stdAns,
+            isCorrect: ok,
+            isSuspect: eq === 'suspect',
+          };
+        });
+        const correctSlotsCount = slotResults.filter((s) => s.isCorrect).length;
+        const isAllCorrect = correctSlotsCount === bCount;
+        const pointsPerSlot = q.score_default / bCount;
+        const calculatedScore = Math.round(correctSlotsCount * pointsPerSlot);
+
+        return {
+          question: q,
+          blankCount: bCount,
+          isMultiSlot: true,
+          studentAns: rawAns,
+          standardAns: q.answer_standard || '',
+          slotResults,
+          isCorrect: isAllCorrect,
+          isSuspect: slotResults.some((s) => s.isSuspect),
+          score: calculatedScore,
+        };
+      }
+
+      const studentAns = rawAns;
       const standardAns = q.answer_standard || '';
       const eqResult = isMathAnswerEquivalent(studentAns, standardAns, []);
       let isCorrect = false;
@@ -109,9 +168,27 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
         score = q.score_default; // 疑似正确安全兜底
       }
 
-      return { question: q, studentAns, standardAns, isCorrect, isSuspect, score };
+      return {
+        question: q,
+        blankCount: 1,
+        isMultiSlot: false,
+        studentAns,
+        standardAns,
+        slotResults: [
+          {
+            slotIndex: 0,
+            studentAns,
+            standardAns,
+            isCorrect: isCorrect || isSuspect,
+            isSuspect,
+          },
+        ],
+        isCorrect,
+        isSuspect,
+        score,
+      };
     });
-  }, [paper.fillQuestions, fillAnswers]);
+  }, [paper.fillQuestions, fillAnswers, locale]);
 
   // 3. 解答题判分结果 (接入 calculateSolutionScore rubric)
   const solutionResults = useMemo(() => {
@@ -119,14 +196,17 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
       let steps: RubricStep[] = [];
       try {
         if (q.rubric_checklist_json) {
-          steps = JSON.parse(q.rubric_checklist_json);
+          const parsed = JSON.parse(q.rubric_checklist_json);
+          if (Array.isArray(parsed)) {
+            steps = parsed;
+          }
         }
       } catch {
         steps = [];
       }
 
-      // 若题库未配置踩分点，默认生成 2 步阶梯
-      if (!steps || steps.length === 0) {
+      // 若题库未配置踩分点或非合法数组，默认生成 2 步阶梯
+      if (!Array.isArray(steps) || steps.length === 0) {
         const half = Math.floor(q.score_default / 2);
         steps = [
           { stepIndex: 1, descriptionZh: '完成基本推理与推导步骤', points: half },
@@ -190,9 +270,10 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
     // ① 知识广度：考点掌握覆盖率
     const pointStats: Record<string, { earned: number; total: number }> = {};
     const recordPoint = (pid: string, earned: number, max: number) => {
-      if (!pointStats[pid]) pointStats[pid] = { earned: 0, total: 0 };
-      pointStats[pid].earned += earned;
-      pointStats[pid].total += max;
+      const safePid = pid || 'UNKNOWN';
+      if (!pointStats[safePid]) pointStats[safePid] = { earned: 0, total: 0 };
+      pointStats[safePid].earned += earned;
+      pointStats[safePid].total += max;
     };
     choiceResults.forEach((r) => recordPoint(r.question.primary_point_id, r.score, r.question.score_default));
     fillResults.forEach((r) => recordPoint(r.question.primary_point_id, r.score, r.question.score_default));
@@ -220,7 +301,8 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
     let geomEarned = 0;
     let geomTotal = 0;
     const recordGeom = (q: QuestionItem, earned: number, max: number) => {
-      if (q.primary_point_id.includes('G') || q.combination_id) {
+      const pid = q.primary_point_id || '';
+      if (pid.includes('G') || q.combination_id) {
         geomEarned += earned;
         geomTotal += max;
       }
@@ -238,7 +320,8 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
       calcTotal += r.question.score_default;
     });
     solutionResults.forEach((r) => {
-      if (!r.question.primary_point_id.includes('G')) {
+      const pid = r.question.primary_point_id || '';
+      if (!pid.includes('G')) {
         calcEarned += r.score;
         calcTotal += r.maxScore;
       }
@@ -270,6 +353,8 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
 
   return (
     <div
+      ref={panelTopRef}
+      id="score-panel-root"
       style={{
         width: '100%',
         maxWidth: '1100px',
@@ -282,6 +367,105 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
         boxSizing: 'border-box',
       }}
     >
+      {/* 滚动常驻吸顶导航条 (z-index: 30，绝不干扰 z-index: 100 的概念精讲/题眼透视抽屉) */}
+      <div
+        data-testid="score-sticky-navbar"
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 30,
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          backgroundColor: 'rgba(255, 255, 255, 0.88)',
+          borderBottom: '1px solid var(--border-subtle)',
+          margin: isMobile ? '-1rem -0.75rem 0.5rem -0.75rem' : '-2rem -1rem 1rem -1rem',
+          padding: isMobile ? '0.625rem 0.75rem' : '0.75rem 1.5rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '0.75rem',
+          boxShadow: '0 2px 10px rgba(0, 0, 0, 0.04)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', minWidth: 0 }}>
+          <span
+            style={{
+              fontSize: isMobile ? '0.8125rem' : '0.875rem',
+              fontWeight: 800,
+              color: 'var(--text-primary)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.375rem',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            <Icon name="check-circle" size={16} />
+            <span>{isEn ? 'Exam Review' : '实战测评复盘'}</span>
+          </span>
+          <span
+            style={{
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              color: 'var(--ios-blue)',
+              backgroundColor: 'rgba(0, 122, 255, 0.1)',
+              padding: '0.125rem 0.5rem',
+              borderRadius: '9999px',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {totalScore} / {maxScore} {isEn ? 'pts' : '分'}
+          </span>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <button
+            type="button"
+            data-testid="sticky-back-to-top"
+            onClick={() => scrollToElementTop(panelTopRef.current)}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.25rem',
+              padding: isMobile ? '0.5rem 0.75rem' : '0.5rem 0.875rem',
+              borderRadius: 'var(--radius-md)',
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              backgroundColor: 'var(--glass-bg-card)',
+              border: '1px solid var(--border-subtle)',
+              color: 'var(--text-secondary)',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            <Icon name="arrow-up" size={13} />
+            <span>{isEn ? 'Back to Top' : '回到顶部'}</span>
+          </button>
+          <button
+            type="button"
+            data-testid="sticky-back-to-workbench"
+            onClick={handleBurnAndLeave}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.25rem',
+              padding: isMobile ? '0.5rem 0.875rem' : '0.5rem 1rem',
+              borderRadius: 'var(--radius-md)',
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              backgroundColor: 'var(--ios-blue)',
+              border: 'none',
+              color: '#ffffff',
+              cursor: 'pointer',
+              boxShadow: '0 2px 6px rgba(0, 122, 255, 0.25)',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            <Icon name="chevron-left" size={14} />
+            <span>{isEn ? 'Back to Exam Center' : '回到实战测评'}</span>
+          </button>
+        </div>
+      </div>
+
       {/* 顶部总览卡片：总分、评级与四维认知素养雷达图 */}
       <div
         style={{
@@ -518,6 +702,7 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
           </button>
           <button
             type="button"
+            data-testid="back-to-workbench-btn"
             onClick={handleBurnAndLeave}
             style={{
               display: 'flex',
@@ -528,18 +713,18 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
               borderRadius: 'var(--radius-md)',
               fontSize: '0.75rem',
               fontWeight: 700,
-              backgroundColor: 'var(--ios-red)',
+              backgroundColor: 'var(--ios-blue)',
               border: 'none',
               color: '#ffffff',
               cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(255, 59, 48, 0.3)',
+              boxShadow: '0 2px 8px rgba(0, 122, 255, 0.25)',
               transition: 'background-color 0.2s',
               flex: isMobile ? 1 : undefined,
               minHeight: isMobile ? '44px' : undefined,
             }}
           >
-            <Icon name="trash" size={14} />
-            <span>{isEn ? 'Burn & Leave' : '考完即焚并离开'}</span>
+            <Icon name="chevron-left" size={14} />
+            <span>{isEn ? 'Back to Exam Center' : '回到实战测评'}</span>
           </button>
         </div>
       </div>
@@ -787,34 +972,103 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                     images={r.question.image_paths_json}
                   />
                 </div>
-                <div
-                  style={{
-                    fontSize: '0.75rem',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '0.5rem',
-                    backgroundColor: 'var(--glass-bg-card)',
-                    padding: '0.625rem 0.75rem',
-                    borderRadius: 'var(--radius-md)',
-                    border: '1px solid var(--border-subtle)',
-                    wordBreak: 'break-word',
-                    overflowWrap: 'anywhere',
-                    maxWidth: '100%',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
-                    <span style={{ color: 'var(--text-tertiary)', flexShrink: 0 }}>{isEn ? 'Your Fill-in: ' : '您的填空：'}</span>
-                    <span style={{ fontWeight: 600, color: 'var(--text-primary)', wordBreak: 'break-word', overflowWrap: 'anywhere', flex: 1, minWidth: 0 }}>
-                      <MathRenderer content={r.studentAns || (isEn ? '(Blank)' : '（未填写）')} />
-                    </span>
+                {r.isMultiSlot && r.slotResults && r.slotResults.length > 1 ? (
+                  <div
+                    style={{
+                      fontSize: '0.75rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.625rem',
+                      backgroundColor: 'var(--glass-bg-card)',
+                      padding: '0.75rem',
+                      borderRadius: 'var(--radius-md)',
+                      border: '1px solid var(--border-subtle)',
+                      wordBreak: 'break-word',
+                      overflowWrap: 'anywhere',
+                      maxWidth: '100%',
+                    }}
+                  >
+                    {r.slotResults.map((slot) => {
+                      const slotNum = slot.slotIndex + 1;
+                      return (
+                        <div
+                          key={slot.slotIndex}
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.375rem',
+                            padding: '0.5rem 0.625rem',
+                            borderRadius: 'var(--radius-sm)',
+                            backgroundColor: slot.isCorrect
+                              ? 'rgba(52, 199, 89, 0.05)'
+                              : 'rgba(255, 59, 48, 0.05)',
+                            border: `1px solid ${
+                              slot.isCorrect ? 'rgba(52, 199, 89, 0.2)' : 'rgba(255, 59, 48, 0.2)'
+                            }`,
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+                            <span style={{ fontWeight: 700, color: 'var(--text-secondary)' }}>
+                              {isEn ? `Blank (${slotNum})` : `第 (${slotNum}) 空`}
+                            </span>
+                            <span
+                              style={{
+                                fontSize: '0.6875rem',
+                                fontWeight: 700,
+                                color: slot.isCorrect ? 'var(--ios-green)' : 'var(--ios-red)',
+                              }}
+                            >
+                              {slot.isCorrect
+                                ? (isEn ? '✓ Correct' : '✓ 正确')
+                                : (isEn ? '✗ Incorrect' : '✗ 答案不符')}
+                            </span>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
+                            <span style={{ color: 'var(--text-tertiary)', flexShrink: 0 }}>{isEn ? 'Your Fill-in: ' : '您的填空：'}</span>
+                            <span style={{ fontWeight: 600, color: 'var(--text-primary)', wordBreak: 'break-word', overflowWrap: 'anywhere', flex: 1, minWidth: 0 }}>
+                              <AnswerFormulaRenderer content={slot.studentAns || (isEn ? '(Blank)' : '（未填写）')} />
+                            </span>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
+                            <span style={{ color: 'var(--text-tertiary)', flexShrink: 0 }}>{isEn ? 'Standard Answer: ' : '标准答案：'}</span>
+                            <span style={{ fontWeight: 600, color: 'var(--ios-blue)', wordBreak: 'break-word', overflowWrap: 'anywhere', flex: 1, minWidth: 0 }}>
+                              <AnswerFormulaRenderer content={slot.standardAns || '—'} />
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
-                    <span style={{ color: 'var(--text-tertiary)', flexShrink: 0 }}>{isEn ? 'Standard Answer: ' : '标准答案：'}</span>
-                    <span style={{ fontWeight: 600, color: 'var(--ios-blue)', wordBreak: 'break-word', overflowWrap: 'anywhere', flex: 1, minWidth: 0 }}>
-                      <MathRenderer content={r.standardAns || '—'} />
-                    </span>
+                ) : (
+                  <div
+                    style={{
+                      fontSize: '0.75rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.5rem',
+                      backgroundColor: 'var(--glass-bg-card)',
+                      padding: '0.625rem 0.75rem',
+                      borderRadius: 'var(--radius-md)',
+                      border: '1px solid var(--border-subtle)',
+                      wordBreak: 'break-word',
+                      overflowWrap: 'anywhere',
+                      maxWidth: '100%',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
+                      <span style={{ color: 'var(--text-tertiary)', flexShrink: 0 }}>{isEn ? 'Your Fill-in: ' : '您的填空：'}</span>
+                      <span style={{ fontWeight: 600, color: 'var(--text-primary)', wordBreak: 'break-word', overflowWrap: 'anywhere', flex: 1, minWidth: 0 }}>
+                        <AnswerFormulaRenderer content={r.studentAns || (isEn ? '(Blank)' : '（未填写）')} />
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
+                      <span style={{ color: 'var(--text-tertiary)', flexShrink: 0 }}>{isEn ? 'Standard Answer: ' : '标准答案：'}</span>
+                      <span style={{ fontWeight: 600, color: 'var(--ios-blue)', wordBreak: 'break-word', overflowWrap: 'anywhere', flex: 1, minWidth: 0 }}>
+                        <AnswerFormulaRenderer content={r.standardAns || '—'} />
+                      </span>
+                    </div>
                   </div>
-                </div>
+                )}
                 {!r.isCorrect && (
                   <div
                     style={{
@@ -989,14 +1243,11 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
                     <span style={{ color: 'var(--text-tertiary)', display: 'block', marginBottom: '0.25rem' }}>
                       {isEn ? 'Your Exam Derivation Steps:' : '您的考场解答过程：'}
                     </span>
-                    <div
-                      style={{
-                        color: 'var(--text-primary)',
-                        whiteSpace: 'pre-wrap',
-                        fontFamily: 'monospace',
-                      }}
-                    >
-                      {r.studentDraft}
+                    <div style={{ marginTop: '0.25rem' }}>
+                      <AnswerFormulaRenderer
+                        content={r.studentDraft}
+                        multiline={true}
+                      />
                     </div>
                   </div>
                 )}
@@ -1242,6 +1493,87 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({
           </div>
         </div>
       </div>
+
+      {/* 卷尾总结与快捷返航卡片 */}
+      <div
+        data-testid="bottom-completion-card"
+        style={{
+          display: 'flex',
+          flexDirection: isMobile ? 'column' : 'row',
+          alignItems: isMobile ? 'flex-start' : 'center',
+          justifyContent: 'space-between',
+          gap: '1.25rem',
+          padding: isMobile ? '1.25rem 1rem' : '1.5rem 2rem',
+          borderRadius: 'var(--radius-xl)',
+          backgroundColor: 'var(--glass-bg)',
+          border: '1px solid var(--border-subtle)',
+          boxShadow: 'var(--shadow-sm)',
+        }}
+      >
+        <div>
+          <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>
+            {isEn ? 'All Questions Reviewed' : '已完成全卷深度复盘'}
+          </div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+            {isEn
+              ? 'Scores, rubrics and concept links have been fully presented. Returning will safely clear the current exam session.'
+              : '得分、踩分自核与考点链接均已完整查阅。返回后将安全销毁本次测评会话。'}
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', width: isMobile ? '100%' : 'auto' }}>
+          <button
+            type="button"
+            data-testid="bottom-back-to-top-btn"
+            onClick={() => scrollToElementTop(panelTopRef.current)}
+            style={{
+              flex: isMobile ? 1 : undefined,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.375rem',
+              padding: isMobile ? '0.75rem 1rem' : '0.625rem 1.25rem',
+              borderRadius: 'var(--radius-md)',
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              backgroundColor: 'var(--glass-bg-card)',
+              border: '1px solid var(--border-subtle)',
+              color: 'var(--text-primary)',
+              cursor: 'pointer',
+              minHeight: isMobile ? '44px' : undefined,
+            }}
+          >
+            <Icon name="arrow-up" size={14} />
+            <span>{isEn ? 'Back to Top' : '回到顶部'}</span>
+          </button>
+          <button
+            type="button"
+            data-testid="bottom-back-to-workbench-btn"
+            onClick={handleBurnAndLeave}
+            style={{
+              flex: isMobile ? 2 : undefined,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.375rem',
+              padding: isMobile ? '0.75rem 1.5rem' : '0.625rem 1.5rem',
+              borderRadius: 'var(--radius-md)',
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              backgroundColor: 'var(--ios-blue)',
+              border: 'none',
+              color: '#ffffff',
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(0, 122, 255, 0.25)',
+              minHeight: isMobile ? '44px' : undefined,
+            }}
+          >
+            <Icon name="chevron-left" size={14} />
+            <span>{isEn ? 'Back to Exam Center' : '回到实战测评'}</span>
+          </button>
+        </div>
+      </div>
+
       {/* 底部安全呼吸垫片 (彻底消除 TabBar 遮挡) */}
       <div className="bottom-safe-spacer" data-testid="bottom-safe-spacer" />
 

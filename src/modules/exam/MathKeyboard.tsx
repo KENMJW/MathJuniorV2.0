@@ -10,6 +10,7 @@
 
 import React, { useState } from 'react';
 import { MathRenderer } from '../../components/math/MathRenderer';
+import { AnswerFormulaRenderer } from '../../components/math/AnswerFormulaRenderer';
 import { Icon } from '../../components/common/Icon';
 import { useSessionStore } from '../../store/sessionStore';
 
@@ -111,7 +112,7 @@ export const MathKeyboard: React.FC<MathKeyboardProps> = ({
         left: 0,
         right: 0,
         zIndex: 900,
-        padding: '0.75rem 1rem',
+        padding: '0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom, 0px)) 1rem',
         backdropFilter: 'blur(24px)',
         WebkitBackdropFilter: 'blur(24px)',
         background: 'var(--glass-bg-elevated, rgba(255, 255, 255, 0.95))',
@@ -138,12 +139,12 @@ export const MathKeyboard: React.FC<MathKeyboardProps> = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            gap: '0.75rem',
+            gap: '0.5rem',
             borderBottom: '1px solid var(--border-subtle)',
             paddingBottom: '0.5rem',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', overflow: 'hidden' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', overflow: 'hidden', minWidth: 0, flex: 1 }}>
             <span
               style={{
                 display: 'inline-flex',
@@ -168,13 +169,14 @@ export const MathKeyboard: React.FC<MathKeyboardProps> = ({
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
+                minWidth: 0,
               }}
             >
               {displayTargetTitle}
             </span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexShrink: 0 }}>
             <button
               type="button"
               onClick={onBackspace}
@@ -182,7 +184,7 @@ export const MathKeyboard: React.FC<MathKeyboardProps> = ({
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '0.25rem',
-                padding: '0.3rem 0.65rem',
+                padding: '0.3rem 0.6rem',
                 fontSize: '0.75rem',
                 fontWeight: 600,
                 borderRadius: '8px',
@@ -200,7 +202,7 @@ export const MathKeyboard: React.FC<MathKeyboardProps> = ({
               type="button"
               onClick={onClear}
               style={{
-                padding: '0.3rem 0.65rem',
+                padding: '0.3rem 0.6rem',
                 fontSize: '0.75rem',
                 fontWeight: 600,
                 borderRadius: '8px',
@@ -238,7 +240,7 @@ export const MathKeyboard: React.FC<MathKeyboardProps> = ({
           </div>
         </div>
 
-        {/* 实时 KaTeX 公式预览视窗 */}
+        {/* 实时 KaTeX 公式预览视窗 (接入 AnswerFormulaRenderer) */}
         <div
           style={{
             display: 'flex',
@@ -268,10 +270,13 @@ export const MathKeyboard: React.FC<MathKeyboardProps> = ({
               color: 'var(--text-primary)',
               overflowX: 'auto',
               whiteSpace: 'nowrap',
+              WebkitOverflowScrolling: 'touch',
+              flex: 1,
+              minWidth: 0,
             }}
           >
             {currentValue ? (
-              <MathRenderer content={currentValue} />
+              <AnswerFormulaRenderer content={currentValue} />
             ) : (
               <span style={{ color: 'var(--text-tertiary)', fontStyle: 'italic', fontSize: '0.75rem' }}>
                 {isEn ? 'Cursor ready. Click symbols below to insert.' : '光标聚焦已就绪，点击下方符号快捷插入'}

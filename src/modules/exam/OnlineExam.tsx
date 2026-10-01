@@ -15,12 +15,20 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { GeneratedPaper, QuestionItem } from './drawQuestions';
 import { MathRenderer } from '../../components/math/MathRenderer';
+import { AnswerFormulaRenderer } from '../../components/math/AnswerFormulaRenderer';
 import { QuestionContent } from '../../components/common/QuestionContent';
 import { QuestionImage } from '../../components/common/QuestionImage';
 import { SourceTag } from '../../components/common/SourceTag';
 import { MathKeyboard } from './MathKeyboard';
 import { ScorePanel } from './ScorePanel';
+import { ScorePanelErrorBoundary } from './ScorePanelErrorBoundary';
 import { Icon } from '../../components/common/Icon';
+import {
+  detectBlankCount,
+  getBlankSlotsMeta,
+  serializeStudentSlots,
+  deserializeStudentSlots,
+} from './blankParser';
 import { useSessionStore } from '../../store/sessionStore';
 import { getSafeStem } from '../../engine/i18n/stemGuard';
 import { useDeviceResponsive } from '../../hooks/useDeviceResponsive';
@@ -58,6 +66,7 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
   // 全局唯一数学键盘控制状态
   const [keyboardVisible, setKeyboardVisible] = useState<boolean>(false);
   const [focusedQuestionId, setFocusedQuestionId] = useState<string | null>(null);
+  const [focusedSlotIndex, setFocusedSlotIndex] = useState<number>(0);
   const [focusedQuestionType, setFocusedQuestionType] = useState<'fill' | 'solution' | null>(null);
   const [focusedTitle, setFocusedTitle] = useState<string>('');
 
@@ -105,13 +114,16 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
   };
 
   // 填空题输入聚焦，唤起全局伴随键盘
-  const handleFocusFill = (q: QuestionItem, idx: number) => {
+  const handleFocusFill = (q: QuestionItem, idx: number, slotIdx: number = 0, blankCount: number = 1) => {
     setFocusedQuestionId(q.question_id);
     setFocusedQuestionType('fill');
+    setFocusedSlotIndex(slotIdx);
+    const qNum = paper.choiceQuestions.length + idx + 1;
+    const slotSuffix = blankCount > 1 ? (isEn ? ` Slot (${slotIdx + 1})` : ` 第 (${slotIdx + 1}) 空`) : '';
     setFocusedTitle(
       isEn
-        ? `Q${paper.choiceQuestions.length + idx + 1} Fill-in Input`
-        : `第 ${paper.choiceQuestions.length + idx + 1} 题 填空输入`
+        ? `Q${qNum} Fill-in${slotSuffix}`
+        : `第 ${qNum} 题 填空${slotSuffix}`
     );
     setKeyboardVisible(true);
   };
@@ -120,6 +132,7 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
   const handleFocusSolution = (q: QuestionItem, idx: number) => {
     setFocusedQuestionId(q.question_id);
     setFocusedQuestionType('solution');
+    setFocusedSlotIndex(0);
     setFocusedTitle(
       isEn
         ? `Q${paper.choiceQuestions.length + paper.fillQuestions.length + idx + 1} Derivation Scratchpad`
@@ -132,19 +145,40 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
   const currentInputValue = useMemo(() => {
     if (!focusedQuestionId || !focusedQuestionType) return '';
     if (focusedQuestionType === 'fill') {
-      return fillAnswers[focusedQuestionId] || '';
+      const q = paper.fillQuestions.find((item) => item.question_id === focusedQuestionId);
+      const bCount = q ? detectBlankCount({ ...q, locale }) : 1;
+      const raw = fillAnswers[focusedQuestionId] || '';
+      if (bCount > 1) {
+        const slots = deserializeStudentSlots(raw, bCount);
+        return slots[focusedSlotIndex] || '';
+      }
+      return raw;
     }
     return solutionAnswers[focusedQuestionId] || '';
-  }, [focusedQuestionId, focusedQuestionType, fillAnswers, solutionAnswers]);
+  }, [focusedQuestionId, focusedQuestionType, focusedSlotIndex, fillAnswers, solutionAnswers, paper.fillQuestions, locale]);
 
   // 键盘字符插入
   const handleKeyboardInsert = (token: string) => {
     if (!focusedQuestionId || !focusedQuestionType) return;
     if (focusedQuestionType === 'fill') {
-      setFillAnswers((prev) => ({
-        ...prev,
-        [focusedQuestionId]: (prev[focusedQuestionId] || '') + token,
-      }));
+      const q = paper.fillQuestions.find((item) => item.question_id === focusedQuestionId);
+      const bCount = q ? detectBlankCount({ ...q, locale }) : 1;
+      if (bCount > 1) {
+        setFillAnswers((prev) => {
+          const raw = prev[focusedQuestionId] || '';
+          const slots = deserializeStudentSlots(raw, bCount);
+          slots[focusedSlotIndex] = (slots[focusedSlotIndex] || '') + token;
+          return {
+            ...prev,
+            [focusedQuestionId]: serializeStudentSlots(slots),
+          };
+        });
+      } else {
+        setFillAnswers((prev) => ({
+          ...prev,
+          [focusedQuestionId]: (prev[focusedQuestionId] || '') + token,
+        }));
+      }
     } else {
       setSolutionAnswers((prev) => ({
         ...prev,
@@ -157,10 +191,24 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
   const handleKeyboardBackspace = () => {
     if (!focusedQuestionId || !focusedQuestionType) return;
     if (focusedQuestionType === 'fill') {
-      setFillAnswers((prev) => ({
-        ...prev,
-        [focusedQuestionId]: (prev[focusedQuestionId] || '').slice(0, -1),
-      }));
+      const q = paper.fillQuestions.find((item) => item.question_id === focusedQuestionId);
+      const bCount = q ? detectBlankCount({ ...q, locale }) : 1;
+      if (bCount > 1) {
+        setFillAnswers((prev) => {
+          const raw = prev[focusedQuestionId] || '';
+          const slots = deserializeStudentSlots(raw, bCount);
+          slots[focusedSlotIndex] = (slots[focusedSlotIndex] || '').slice(0, -1);
+          return {
+            ...prev,
+            [focusedQuestionId]: serializeStudentSlots(slots),
+          };
+        });
+      } else {
+        setFillAnswers((prev) => ({
+          ...prev,
+          [focusedQuestionId]: (prev[focusedQuestionId] || '').slice(0, -1),
+        }));
+      }
     } else {
       setSolutionAnswers((prev) => ({
         ...prev,
@@ -173,7 +221,21 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
   const handleKeyboardClear = () => {
     if (!focusedQuestionId || !focusedQuestionType) return;
     if (focusedQuestionType === 'fill') {
-      setFillAnswers((prev) => ({ ...prev, [focusedQuestionId]: '' }));
+      const q = paper.fillQuestions.find((item) => item.question_id === focusedQuestionId);
+      const bCount = q ? detectBlankCount({ ...q, locale }) : 1;
+      if (bCount > 1) {
+        setFillAnswers((prev) => {
+          const raw = prev[focusedQuestionId] || '';
+          const slots = deserializeStudentSlots(raw, bCount);
+          slots[focusedSlotIndex] = '';
+          return {
+            ...prev,
+            [focusedQuestionId]: serializeStudentSlots(slots),
+          };
+        });
+      } else {
+        setFillAnswers((prev) => ({ ...prev, [focusedQuestionId]: '' }));
+      }
     } else {
       setSolutionAnswers((prev) => ({ ...prev, [focusedQuestionId]: '' }));
     }
@@ -205,6 +267,10 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
     setKeyboardVisible(false);
     setExamState('submitted');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    const scrollParent = document.querySelector('main.overflow-y-auto') || document.querySelector('main');
+    if (scrollParent) {
+      scrollParent.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   // 重新作答此卷 (重置作答状态)
@@ -225,8 +291,15 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
     allQuestions.forEach((q) => {
       if (q.question_type === 'single_choice' && choiceAnswers[q.question_id]) {
         answered++;
-      } else if (q.question_type === 'fill_blank' && (fillAnswers[q.question_id] || '').trim()) {
-        answered++;
+      } else if (q.question_type === 'fill_blank') {
+        const raw = fillAnswers[q.question_id] || '';
+        const bCount = detectBlankCount({ ...q, locale });
+        if (bCount > 1) {
+          const slots = deserializeStudentSlots(raw, bCount);
+          if (slots.some((s) => s.trim().length > 0)) answered++;
+        } else if (raw.trim()) {
+          answered++;
+        }
       } else if (q.question_type === 'solution' && (solutionAnswers[q.question_id] || '').trim()) {
         answered++;
       }
@@ -248,17 +321,19 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
   // 若已提交，渲染复盘与踩分大屏
   if (examState === 'submitted') {
     return (
-      <ScorePanel
-        paper={paper}
-        choiceAnswers={choiceAnswers}
-        fillAnswers={fillAnswers}
-        solutionAnswers={solutionAnswers}
-        solutionCheckedSteps={solutionCheckedSteps}
-        onStepCheckChange={handleStepCheckChange}
-        onResetExam={handleResetExam}
-        onBackToWorkbench={onBackToWorkbench}
-        timeSpentSeconds={timeSpent}
-      />
+      <ScorePanelErrorBoundary onBackToWorkbench={onBackToWorkbench} locale={locale}>
+        <ScorePanel
+          paper={paper}
+          choiceAnswers={choiceAnswers}
+          fillAnswers={fillAnswers}
+          solutionAnswers={solutionAnswers}
+          solutionCheckedSteps={solutionCheckedSteps}
+          onStepCheckChange={handleStepCheckChange}
+          onResetExam={handleResetExam}
+          onBackToWorkbench={onBackToWorkbench}
+          timeSpentSeconds={timeSpent}
+        />
+      </ScorePanelErrorBoundary>
     );
   }
 
@@ -631,7 +706,11 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                 {paper.fillQuestions.map((q, idx) => {
                   const qNum = paper.choiceQuestions.length + idx + 1;
                   const isFlagged = flaggedIds.has(q.question_id);
-                  const currentAns = fillAnswers[q.question_id] || '';
+                  const rawAns = fillAnswers[q.question_id] || '';
+                  const blankCount = detectBlankCount({ ...q, locale });
+                  const slotsMeta = getBlankSlotsMeta(blankCount, isEn);
+                  const currentSlots = deserializeStudentSlots(rawAns, blankCount);
+                  const hasAnyAns = currentSlots.some((s) => s.trim().length > 0);
 
                   return (
                     <div
@@ -645,7 +724,7 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                         backgroundColor: 'var(--glass-bg)',
                         border: isFlagged
                           ? '1px solid rgba(255, 59, 48, 0.35)'
-                          : currentAns.trim()
+                          : hasAnyAns
                           ? '1px solid rgba(0, 122, 255, 0.35)'
                           : '1px solid var(--border-subtle)',
                         boxShadow: 'var(--shadow-sm)',
@@ -706,81 +785,104 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                         <QuestionContent content={getSafeStem(q, isEn)} images={q.image_paths_json} />
                       </div>
 
-                      {/* 填空作答输入区 */}
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                        <div style={{ position: 'relative' }}>
-                          <input
-                            type="text"
-                            placeholder={isEn ? 'Click here to invoke math keyboard to answer...' : '点击此处唤起数学键盘作答...'}
-                            value={currentAns}
-                            onChange={(e) =>
-                              setFillAnswers((prev) => ({
-                                ...prev,
-                                [q.question_id]: e.target.value,
-                              }))
-                            }
-                            onFocus={() => handleFocusFill(q, idx)}
-                            style={{
-                              width: '100%',
-                              boxSizing: 'border-box',
-                              padding: '0.75rem 6.5rem 0.75rem 1rem',
-                              borderRadius: 'var(--radius-lg)',
-                              backgroundColor: 'var(--glass-bg-card)',
-                              border: '1px solid var(--border-subtle)',
-                              color: 'var(--text-primary)',
-                              fontSize: '0.875rem',
-                              fontFamily: 'monospace',
-                              outline: 'none',
-                              transition: 'border-color 0.2s',
-                            }}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleFocusFill(q, idx)}
-                            style={{
-                              position: 'absolute',
-                              right: '0.5rem',
-                              top: '50%',
-                              transform: 'translateY(-50%)',
-                              padding: '0.25rem 0.625rem',
-                              borderRadius: 'var(--radius-sm)',
-                              fontSize: '0.75rem',
-                              fontWeight: 500,
-                              backgroundColor: 'rgba(0, 122, 255, 0.1)',
-                              border: '1px solid rgba(0, 122, 255, 0.2)',
-                              color: 'var(--ios-blue)',
-                              cursor: 'pointer',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '0.25rem',
-                            }}
-                          >
-                            <Icon name="keyboard" size={12} />
-                            <span>{isEn ? 'Math Keyboard' : '符号键盘'}</span>
-                          </button>
-                        </div>
+                      {/* 填空作答槽位组 (单空/多空自适应，且实时渲染预览卡片严格置于输入框上方) */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
+                        {slotsMeta.map((slot) => {
+                          const currentSlotVal = currentSlots[slot.index] || '';
 
-                        {/* 即时 LaTeX 渲染预览 */}
-                        {currentAns.trim() && (
-                          <div
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '0.5rem',
-                              padding: '0.375rem 0.75rem',
-                              borderRadius: 'var(--radius-md)',
-                              backgroundColor: 'var(--glass-bg-card)',
-                              fontSize: '0.75rem',
-                              color: 'var(--text-secondary)',
-                              border: '1px solid var(--border-subtle)',
-                            }}
-                          >
-                            <span style={{ color: 'var(--text-tertiary)', flexShrink: 0 }}>{isEn ? 'Real-time Preview:' : '实时渲染:'}</span>
-                            <div style={{ overflowX: 'auto' }}>
-                              <MathRenderer content={currentAns} />
+                          return (
+                            <div key={`slot-${slot.index}`} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                              {/* 实时公式预览卡片 (严格位于输入框上方) */}
+                              {currentSlotVal.trim() && (
+                                <div
+                                  style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                    padding: '0.375rem 0.75rem',
+                                    borderRadius: 'var(--radius-md)',
+                                    backgroundColor: 'var(--glass-bg-card)',
+                                    fontSize: '0.75rem',
+                                    color: 'var(--text-secondary)',
+                                    border: '1px solid var(--border-subtle)',
+                                  }}
+                                >
+                                  <span style={{ color: 'var(--text-tertiary)', flexShrink: 0, fontWeight: 600 }}>
+                                    {blankCount > 1
+                                      ? `${isEn ? slot.labelEn : slot.labelZh} ${isEn ? 'Preview:' : '实时渲染:'}`
+                                      : (isEn ? 'Real-time Preview:' : '实时渲染:')}
+                                  </span>
+                                  <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                                    <AnswerFormulaRenderer content={currentSlotVal} />
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* 填空输入框与键盘快捷唤起 */}
+                              <div style={{ position: 'relative' }}>
+                                <input
+                                  type="text"
+                                  placeholder={isEn ? slot.placeholderEn : slot.placeholderZh}
+                                  value={currentSlotVal}
+                                  onChange={(e) => {
+                                    const nextVal = e.target.value;
+                                    if (blankCount > 1) {
+                                      const nextSlots = [...currentSlots];
+                                      nextSlots[slot.index] = nextVal;
+                                      setFillAnswers((prev) => ({
+                                        ...prev,
+                                        [q.question_id]: serializeStudentSlots(nextSlots),
+                                      }));
+                                    } else {
+                                      setFillAnswers((prev) => ({
+                                        ...prev,
+                                        [q.question_id]: nextVal,
+                                      }));
+                                    }
+                                  }}
+                                  onFocus={() => handleFocusFill(q, idx, slot.index, blankCount)}
+                                  style={{
+                                    width: '100%',
+                                    boxSizing: 'border-box',
+                                    padding: '0.75rem 6.5rem 0.75rem 1rem',
+                                    borderRadius: 'var(--radius-lg)',
+                                    backgroundColor: 'var(--glass-bg-card)',
+                                    border: '1px solid var(--border-subtle)',
+                                    color: 'var(--text-primary)',
+                                    fontSize: '0.875rem',
+                                    fontFamily: 'monospace',
+                                    outline: 'none',
+                                    transition: 'border-color 0.2s',
+                                  }}
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => handleFocusFill(q, idx, slot.index, blankCount)}
+                                  style={{
+                                    position: 'absolute',
+                                    right: '0.5rem',
+                                    top: '50%',
+                                    transform: 'translateY(-50%)',
+                                    padding: '0.25rem 0.625rem',
+                                    borderRadius: 'var(--radius-sm)',
+                                    fontSize: '0.75rem',
+                                    fontWeight: 500,
+                                    backgroundColor: 'rgba(0, 122, 255, 0.1)',
+                                    border: '1px solid rgba(0, 122, 255, 0.2)',
+                                    color: 'var(--ios-blue)',
+                                    cursor: 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '0.25rem',
+                                  }}
+                                >
+                                  <Icon name="keyboard" size={12} />
+                                  <span>{isEn ? 'Math Keyboard' : '符号键盘'}</span>
+                                </button>
+                              </div>
                             </div>
-                          </div>
-                        )}
+                          );
+                        })}
                       </div>
                     </div>
                   );
@@ -894,7 +996,7 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                       </div>
 
                       {/* 解答草稿输入框 */}
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
                           <span>{isEn ? 'Exam steps & scratchpad (self-assess against official rubrics upon submission):' : '考场作答与推导记录（交卷后将根据官方踩分点自核打钩）：'}</span>
                           <button
@@ -916,6 +1018,31 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                             <span>{isEn ? 'Open Math Keyboard' : '打开数学符号键盘'}</span>
                           </button>
                         </div>
+
+                        {/* 实时推导排版预览卡片 (严格位于输入框上方) */}
+                        {currentDraft.trim() && (
+                          <div
+                            style={{
+                              padding: '0.625rem 0.875rem',
+                              borderRadius: 'var(--radius-md)',
+                              backgroundColor: 'var(--glass-bg-card)',
+                              border: '1px solid var(--border-subtle)',
+                              fontSize: '0.8rem',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '0.35rem',
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: 'var(--ios-blue)', fontWeight: 700, fontSize: '0.72rem' }}>
+                              <Icon name="eye" size={12} />
+                              <span>{isEn ? 'Real-time Derivation Preview:' : '实时推导排版预览:'}</span>
+                            </div>
+                            <div style={{ color: 'var(--text-primary)', overflowX: 'auto', WebkitOverflowScrolling: 'touch', minHeight: '24px' }}>
+                              <AnswerFormulaRenderer content={currentDraft} multiline={true} />
+                            </div>
+                          </div>
+                        )}
+
                         <textarea
                           rows={4}
                           placeholder={isEn ? 'Type key steps, auxiliary line constructions, or calculations...' : '可键入主要步骤、辅助线设法或计算过程...'}
@@ -949,8 +1076,12 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
               </div>
             </div>
           )}
-          {/* 底部安全呼吸垫片 (彻底消除 TabBar 遮挡) */}
-          <div className="bottom-safe-spacer" data-testid="bottom-safe-spacer" />
+          {/* 底部安全呼吸垫片 (彻底消除 TabBar 与弹出键盘遮挡) */}
+          <div
+            className="bottom-safe-spacer"
+            data-testid="bottom-safe-spacer"
+            style={{ height: keyboardVisible ? (isMobile ? '300px' : '260px') : undefined }}
+          />
         </div>
 
         {/* ===================== 右侧：控制指挥舱 (绝对固定常驻) ===================== */}
@@ -1109,11 +1240,15 @@ export const OnlineExam: React.FC<OnlineExamProps> = ({
                 let isAnswered = false;
                 if (q.question_type === 'single_choice' && choiceAnswers[q.question_id]) {
                   isAnswered = true;
-                } else if (
-                  q.question_type === 'fill_blank' &&
-                  (fillAnswers[q.question_id] || '').trim()
-                ) {
-                  isAnswered = true;
+                } else if (q.question_type === 'fill_blank') {
+                  const raw = fillAnswers[q.question_id] || '';
+                  const bCount = detectBlankCount({ ...q, locale });
+                  if (bCount > 1) {
+                    const slots = deserializeStudentSlots(raw, bCount);
+                    isAnswered = slots.some((s) => s.trim().length > 0);
+                  } else {
+                    isAnswered = Boolean(raw.trim());
+                  }
                 } else if (
                   q.question_type === 'solution' &&
                   (solutionAnswers[q.question_id] || '').trim()

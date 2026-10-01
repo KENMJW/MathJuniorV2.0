@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { RotateCcw, BookOpen, ExternalLink, Download } from 'lucide-react';
 import { useSessionStore, Locale } from '../../store/sessionStore';
 import { APP_VERSION } from '../../config/version';
+import { UserManualModal } from './UserManualModal';
 
 export { APP_VERSION };
 
@@ -15,6 +16,7 @@ export const SystemFooter: React.FC<SystemFooterProps> = ({ className = '', loca
   const locale = propLocale ?? storeLocale;
   const isEn = locale === 'en';
   const [isPurging, setIsPurging] = useState(false);
+  const [isManualModalOpen, setIsManualModalOpen] = useState(false);
 
   const handleForcePurgeCache = async () => {
     try {
@@ -63,18 +65,17 @@ export const SystemFooter: React.FC<SystemFooterProps> = ({ className = '', loca
         >
           {APP_VERSION}
         </span>
-        <a
-          href="/manual.html"
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          type="button"
+          onClick={() => setIsManualModalOpen(true)}
           data-testid="footer-manual-link"
-          title={isEn ? 'Open user operation manual in new tab' : '在新标签页打开操作使用说明书'}
+          title={isEn ? 'Open user operation manual' : '打开操作使用说明书'}
           className="inline-flex items-center gap-1 text-[11px] text-text-secondary hover:text-ios-blue px-2.5 py-0.5 rounded-full bg-black/[0.04] hover:bg-blue-50 transition-colors cursor-pointer border border-black/[0.06] hover:border-blue-200 active:scale-95 font-medium"
         >
           <BookOpen className="w-3 h-3 text-ios-blue" />
           <span>{isEn ? 'User Manual' : '使用说明书'}</span>
           <ExternalLink className="w-2.5 h-2.5 text-text-tertiary" />
-        </a>
+        </button>
         <a
           href="/manual.pdf"
           download="全科核心素养提分系统V2.0_操作使用说明书.pdf"
@@ -96,6 +97,12 @@ export const SystemFooter: React.FC<SystemFooterProps> = ({ className = '', loca
           <span>{isEn ? 'Clear Cache' : '刷新缓存'}</span>
         </button>
       </div>
+
+      <UserManualModal
+        isOpen={isManualModalOpen}
+        onClose={() => setIsManualModalOpen(false)}
+        locale={locale}
+      />
     </footer>
   );
 };

@@ -160,7 +160,8 @@ describe('OnlineExam & Assessment Center (Tasks 17.5 + 17.6 & 铁律 2/3/9/10 �
     expect(html).toContain('单选题复盘');
     expect(html).toContain('填空题等价判分复盘');
     expect(html).toContain('解答题踩分点自核 (Rubric Checklist)');
-    expect(html).toContain('考完即焚并离开');
+    expect(html).toContain('回到实战测评');
+    expect(html).toContain('回到顶部');
   });
 
   it('6. [铁律 2] 考完即焚 (零持久化)：作答、判分与重置过程绝不写 localStorage / IndexedDB', () => {
@@ -287,5 +288,65 @@ describe('OnlineExam & Assessment Center (Tasks 17.5 + 17.6 & 铁律 2/3/9/10 �
     // 应该获得满分 8 分且显示正确判定
     expect(html).toContain('8');
     expect(html).toContain('正确');
+  });
+
+  it('10. 阶段三验证：ScorePanel 常驻吸顶导航、卷尾返航卡片与多空复盘槽位呈现', () => {
+    const multiBlankPaper = {
+      ...testPaper,
+      choiceQuestions: [],
+      fillQuestions: [
+        {
+          ...testPaper.fillQuestions[0],
+          question_id: 'Q-MULTI-BLANK',
+          stem_zh: '已知关于 x 的方程有两个根，则根为 ______，判别式为 ______。',
+          answer_standard: 'x=2；\\Delta=4',
+          score_default: 6,
+        },
+      ],
+      solutionQuestions: [
+        {
+          ...testPaper.solutionQuestions[0],
+          question_id: 'Q-SOL-DRAFT',
+          score_default: 10,
+        },
+      ],
+    };
+
+    const html = renderToString(
+      <ScorePanel
+        paper={multiBlankPaper}
+        choiceAnswers={{}}
+        fillAnswers={{
+          'Q-MULTI-BLANK': JSON.stringify(['x=2', '\\Delta=4']),
+        }}
+        solutionAnswers={{
+          'Q-SOL-DRAFT': '解：由题意得 \\sqrt{2}x = 4\n故 x = 2\\sqrt{2}',
+        }}
+        solutionCheckedSteps={{}}
+        onStepCheckChange={() => {}}
+        onResetExam={() => {}}
+        onBackToWorkbench={() => {}}
+      />
+    );
+
+    // 1. 验证常驻吸顶条存在
+    expect(html).toContain('data-testid="score-sticky-navbar"');
+    expect(html).toContain('data-testid="sticky-back-to-top"');
+    expect(html).toContain('data-testid="sticky-back-to-workbench"');
+
+    // 2. 验证多空题槽位呈现
+    expect(html).toContain('第 (1) 空');
+    expect(html).toContain('第 (2) 空');
+    expect(html).toContain('✓ 正确');
+
+    // 3. 验证解答题推导草稿使用公式渲染容器
+    expect(html).toContain('您的考场解答过程：');
+    expect(html).toContain('data-testid="answer-formula-renderer"');
+
+    // 4. 验证卷尾总结返航卡片
+    expect(html).toContain('data-testid="bottom-completion-card"');
+    expect(html).toContain('data-testid="bottom-back-to-top-btn"');
+    expect(html).toContain('data-testid="bottom-back-to-workbench-btn"');
+    expect(html).toContain('已完成全卷深度复盘');
   });
 });
